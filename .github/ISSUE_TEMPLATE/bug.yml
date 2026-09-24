@@ -1,0 +1,80 @@
+name: Bug report
+description: Something in SOS does not work as it should.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. English or Russian, whichever is easier. Можно по-русски.
+
+        **Security problem?** Please do not report it here. Use
+        [private reporting](https://github.com/svoya-os/sos/security/advisories/new) instead,
+        see [SECURITY.md](https://github.com/svoya-os/sos/blob/main/SECURITY.md).
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Where does the problem show up?
+      options:
+        - Jackson (assistant, panel, `j` command)
+        - Svoya Shell (bar, launcher, notifications, control center, lock screen, greeter)
+        - "`sos` command (GPU Doctor, fixes, modules, models, themes, updates, undo)"
+        - First-run wizard
+        - Installer or ISO
+        - Drivers and GPU
+        - Themes and branding
+        - Documentation
+        - Other or not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+  - type: input
+    id: version
+    attributes:
+      label: SOS version or build
+      description: Output of `sos --version`, or the name of the ISO file you installed from.
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: GPU and machine
+      placeholder: "RTX 4070 12 GB, Ryzen 7 7700, 32 GB RAM, desktop"
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `sos gpu`
+      description: Optional, but it helps a lot with anything related to drivers, CUDA or ROCm.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: >
+        For example `journalctl --user -b -u jacksond` for Jackson, or `journalctl -b` for the
+        system. Remove anything private before posting.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+        - label: I removed private information (keys, tokens, file contents, names) from logs and screenshots.
+          required: true

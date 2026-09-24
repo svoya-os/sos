@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — control center</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  .cc { right: 14px; top: 38px; width: 380px; padding: 14px 14px 6px; }
+
+  /* top row: who + power */
+  .cc-top { display: flex; align-items: center; gap: 10px; height: 28px; }
+  .cc-top .avatar { width: 28px; height: 28px; font-size: 12.5px; }
+  .cc-top .who { font: 500 13px/1 "Plex Sans"; color: var(--text); }
+  .cc-top .bat { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); display: flex; align-items: center; gap: 6px; }
+  .cc-top .bat svg.i { width: 15px; height: 15px; stroke-width: 1.5; color: var(--text-dim); }
+  .icb {
+    width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--text-dim);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .icb svg.i { width: 15px; height: 15px; stroke-width: 1.7; }
+
+  /* connectivity tiles */
+  .cc-tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 12px; }
+  .ct {
+    height: 52px; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); min-width: 0;
+    display: flex; align-items: center; gap: 10px; padding: 0 10px 0 11px;
+  }
+  .ct .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--accent); color: var(--accent-ink); }
+  .ct .ic svg.i { width: 15px; height: 15px; stroke-width: 1.9; }
+  .ct .tx { min-width: 0; }
+  .ct .tx b { display: block; font: 500 13px/16px "Plex Sans"; color: var(--text); }
+  .ct .tx span { display: block; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct .chev { margin-left: auto; width: 14px; height: 14px; color: var(--text-faint); stroke-width: 1.8; }
+
+  /* sliders */
+  .cc-block { margin-top: 8px; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); padding: 2px 14px; }
+  .sl { display: flex; align-items: center; gap: 14px; height: 38px; }
+  .sl + .sl { border-top: 1px solid var(--line); }
+  .sl svg.i { width: 16px; height: 16px; color: var(--text-dim); stroke-width: 1.6; }
+  .sl .v { width: 26px; text-align: right; font: 400 11px/1 "Plex Mono"; color: var(--text-dim); }
+
+  /* sections */
+  .cc-sec { margin-top: 14px; }
+  .cc-sec > .caps { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 9px; }
+  .cc-sec > .caps a { text-transform: none; letter-spacing: 0.02em; font-weight: 400; color: var(--text-dim); }
+
+  .sw { width: 12px; height: 12px; border-radius: 50%; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; left: 4px; top: 4px; width: 4px; height: 4px; border-radius: 50%; }
+  .sw.g { background: #141518; box-shadow: inset 0 0 0 1px #4a4f57; }
+  .sw.g::after { background: #ffb547; }
+  .sw.p { background: #f8f7f3; box-shadow: inset 0 0 0 1px #bfbab0; }
+  .sw.p::after { background: #2b3af7; }
+  .sw.a { background: linear-gradient(90deg, #141518 50%, #f8f7f3 50%); box-shadow: inset 0 0 0 1px #8e8a81; }
+  .sw.a::after { display: none; }
+
+  .fm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .fm > div {
+    height: 38px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line);
+    display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 8px;
+    font: 500 12px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap;
+  }
+  .fm > div svg.i { width: 14px; height: 14px; stroke-width: 1.8; }
+  .fm > div.on { background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent); color: var(--text); }
+  .fm > div.on svg.i { color: var(--accent); }
+  .fm-note { margin: 8px 2px 0; }
+
+  /* AI & privacy */
+  .ai { border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); }
+  .ai-h { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .ai-h .t b { display: block; font: 500 13px/17px "Plex Sans"; color: var(--text); }
+  .ai-h .t span { display: block; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .ai-h .switch { margin-left: auto; }
+  .ai-r { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 14px; font: 400 13px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap; }
+  .ai-r + .ai-r { border-top: 1px solid var(--line); }
+  .ai-r .v { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 400 11.5px/1 "Plex Mono"; color: var(--text); }
+  .ai-r .v small { font-size: 11px; color: var(--text-faint); }
+  .ai-r .v b { font-weight: 500; font-size: 12.5px; }
+  .ai-r .lnk { margin-left: auto; display: flex; align-items: center; gap: 4px; font: 500 12.5px/1 "Plex Sans"; color: var(--accent); }
+  .ai-r .lnk svg.i { width: 13px; height: 13px; stroke-width: 2; }
+  .ai-r .n { color: var(--text); font-weight: 500; }
+
+  /* notifications */
+  .nt { display: flex; gap: 11px; padding: 10px 2px 10px; }
+  .nt > div { min-width: 0; flex: 1; }
+  .nt + .nt { border-top: 1px solid var(--line); }
+  .nt .ico { width: 24px; height: 24px; border-radius: 7px; flex: none; display: grid; place-items: center; background: var(--surface-3); color: var(--text-dim); }
+  .nt .ico svg.i { width: 13px; height: 13px; stroke-width: 1.9; }
+  .nt .ico.jk { background: var(--accent-soft); }
+  .nt .ico.jk svg.scope { width: 16px; height: 8px; }
+  .nt .h { display: flex; align-items: center; gap: 8px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); height: 16px; }
+  .nt .h b { color: var(--text-dim); font-weight: 500; }
+  .nt .b { margin-top: 3px; font: 400 13px/19px "Plex Sans"; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nt .b span { color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>Svoya OS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <section class="window active" style="left:48px; top:392px; width:640px; height:456px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="activity"></svg><b>Trackio</b>tts-finetune · localhost:7860</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content" data-trackio="running" data-w="578" data-h="236"></div>
+  </section>
+
+  <section class="window" style="left:720px; top:572px; width:600px; height:276px;">
+    <div class="titlebar">
+      <div class="t"><span class="glyph"></span><b>Терминал</b>~/ai/projects/tts-finetune</div>
+      <i data-ctl></i>
+    </div>
+    <pre class="term-body" data-training="running"></pre>
+  </section>
+
+  <!-- control center -->
+  <section class="panel cc">
+    <div class="cc-top">
+      <span class="avatar">М</span>
+      <span class="who">Максим</span>
+      <span class="bat"><svg data-i="battery"></svg>82%</span>
+      <span class="spacer"></span>
+      <span class="icb"><svg data-i="settings"></svg></span>
+      <span class="icb"><svg data-i="lock"></svg></span>
+      <span class="icb"><svg data-i="power"></svg></span>
+    </div>
+
+    <div class="cc-tiles">
+      <div class="ct">
+        <span class="ic"><svg data-i="wifi"></svg></span>
+        <span class="tx"><b>Wi-Fi</b><span>Дом-5G</span></span>
+        <svg class="chev" data-i="chevronRight"></svg>
+      </div>
+      <div class="ct">
+        <span class="ic"><svg data-i="bluetooth"></svg></span>
+        <span class="tx"><b>Bluetooth</b><span>WH-1000XM5</span></span>
+        <svg class="chev" data-i="chevronRight"></svg>
+      </div>
+    </div>
+
+    <div class="cc-block">
+      <div class="sl"><svg data-i="volume"></svg><span class="slider"><i style="width:64%"></i><b style="left:64%"></b></span><span class="v">64</span></div>
+      <div class="sl"><svg data-i="sun"></svg><span class="slider"><i style="width:80%"></i><b style="left:80%"></b></span><span class="v">80</span></div>
+    </div>
+
+    <div class="cc-sec">
+      <div class="segm">
+        <span class="t-g"><i class="sw g"></i>Графит</span>
+        <span class="t-p"><i class="sw p"></i>Бумага</span>
+        <span class="t-a"><i class="sw a"></i>Авто</span>
+      </div>
+    </div>
+
+    <div class="cc-sec">
+      <div class="caps">Фокус</div>
+      <div class="fm">
+        <div><svg data-i="briefcase"></svg>Работа</div>
+        <div class="on"><svg data-i="activity"></svg>Обучение</div>
+        <div><svg data-i="presentation"></svg>Презентация</div>
+      </div>
+      <div class="fm-note meta">ГП занят обучением · тревожат только задачи</div>
+    </div>
+
+    <div class="cc-sec">
+      <div class="ai">
+        <div class="ai-h">
+          <div class="t"><b>ИИ и приватность</b><span>один переключатель выключает весь ИИ</span></div>
+          <span class="switch on"></span>
+        </div>
+        <div class="ai-r">Маршрут<span class="v"><span class="dot ok"></span>локально · qwen3.5-14b</span></div>
+        <div class="ai-r">Потрачено сегодня<span class="v"><small>облако ×3</small><b>0,42 €</b></span></div>
+        <div class="ai-r"><span>Данные уходили <span class="n">3 раза</span> сегодня</span><span class="lnk">открыть журнал<svg data-i="chevronRight"></svg></span></div>
+      </div>
+    </div>
+
+    <div class="cc-sec">
+      <div class="caps">Уведомления · 3<a>очистить</a></div>
+      <div class="nt">
+        <span class="ico jk"><svg class="scope" data-kind="answer" data-amp="3.4" data-freq="1.4" data-seed="0.3" width="16" height="8"></svg></span>
+        <div><div class="h"><b>Джексон</b>18:31</div><div class="b">Чекпойнт step-1800 сохранён. <span>Loss 0.412</span></div></div>
+      </div>
+      <div class="nt">
+        <span class="ico"><svg data-i="refresh"></svg></span>
+        <div><div class="h"><b>Обновления</b>17:05</div><div class="b">Svoya OS 26.10.1 — 3 пакета. <span>Сначала снимок</span></div></div>
+      </div>
+      <div class="nt">
+        <span class="ico"><svg data-i="download"></svg></span>
+        <div><div class="h"><b>Модели</b>16:12</div><div class="b">Wan 2.2 TI2V 5B скачана. <span>11,4 ГБ · влезет</span></div></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+  // the segment that matches the rendered theme is the selected one
+  const t = document.documentElement.dataset.theme;
+  document.querySelector(t === 'paper' ? '.t-p' : '.t-g').classList.add('on');
+  Svoya.init({ bar: { pressed: true, jackson: 'idle' } });
+</script>
+</body>
+</html>

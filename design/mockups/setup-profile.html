@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — first run · 5/7 profile</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<link rel="stylesheet" href="setup.css">
+<script src="shell.js"></script>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+  .pf { padding: 18px 18px 16px; height: 186px; display: flex; flex-direction: column; }
+  .pf .top { display: flex; align-items: center; gap: 12px; }
+  .pf .top h3 { font: 500 15px/20px "Plex Sans"; color: var(--text); }
+  .pf .sel { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); display: grid; place-items: center; }
+  .pf.on .sel { background: var(--accent); box-shadow: none; color: var(--accent-ink); }
+  .pf:not(.on) .sel svg { display: none; }
+  .pf .sel svg.i { width: 11px; height: 11px; stroke-width: 2.8; }
+  .pf p { margin-top: 12px; font: 400 13px/20px "Plex Sans"; color: var(--text-dim); }
+  .pf .mods { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+  .pf .foot { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .pf .foot b { font-weight: 400; color: var(--text-dim); }
+  .pf .foot .ok { color: var(--ok); display: flex; align-items: center; gap: 5px; }
+  .pf .foot .ok svg.i { width: 11px; height: 11px; stroke-width: 2.4; }
+  .pf.on .tile.lg { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
+
+  .pf.mod { border-style: dashed; border-color: var(--line-strong); }
+  .pf.mod .switch { margin-left: auto; }
+
+  .summary {
+    margin-top: 20px; display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 14px;
+    background: var(--surface); border: 1px solid var(--line);
+  }
+  [data-theme="paper"] .summary { background: var(--surface-2); }
+  .summary svg.i { width: 18px; height: 18px; color: var(--text-dim); }
+  .summary .t { font: 400 13px/20px "Plex Sans"; color: var(--text-dim); }
+  .summary .t b { color: var(--text); font-weight: 500; }
+  .summary .r { margin-left: auto; display: flex; align-items: center; gap: 18px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; }
+  .summary .r b { font: 500 13px/1 "Plex Mono"; color: var(--text); margin-right: 5px; }
+  .summary .r .meter { width: 72px; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper"><div class="grain"></div></div>
+
+  <div class="wz">
+    <div class="wz-top">
+      <div class="brand"><svg class="morse"></svg>Настройка <span>· первый запуск</span></div>
+      <div class="wz-steps">
+        <div class="seg"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i></div>
+        <span class="n"><b>5</b> / 7</span>
+      </div>
+      <div class="aux">
+        <span class="tbtn"><svg data-i="accessibility"></svg><kbd>Super</kbd><kbd>Alt</kbd><kbd>A</kbd></span>
+        <span class="tbtn">пропустить настройку</span>
+      </div>
+    </div>
+
+    <div class="wz-body">
+      <div class="wz-eyebrow">Профиль</div>
+      <h1 class="wz-h">Чем ты будешь заниматься?</h1>
+      <p class="wz-sub">Профиль — только стартовый набор модулей. Любой модуль потом ставится и&nbsp;удаляется одной командой, с&nbsp;откатом: <code>svoya modules</code>.</p>
+
+      <div class="grid">
+        <div class="card pf">
+          <div class="top"><span class="tile lg"><svg data-i="compass"></svg></span><h3>Новичок</h3><span class="sel"><svg data-i="check"></svg></span></div>
+          <p>Браузер, офис, заметки и&nbsp;Джексон. Терминал — только если сам захочешь.</p>
+          <div class="mods"><span class="tag">Основа</span><span class="tag">Джексон</span></div>
+          <div class="foot"><span><b>2,1 ГБ</b> · 3 мин</span></div>
+        </div>
+        <div class="card pf">
+          <div class="top"><span class="tile lg"><svg data-i="aperture"></svg></span><h3>Творец</h3><span class="sel"><svg data-i="check"></svg></span></div>
+          <p>Картинки, видео и&nbsp;голос у&nbsp;себя: ComfyUI, Wan&nbsp;2.2, F5-TTS. Без облака и&nbsp;очередей.</p>
+          <div class="mods"><span class="tag">Студия</span><span class="tag">Локальные модели</span></div>
+          <div class="foot"><span><b>34 ГБ</b> · 15 мин</span><span class="ok"><svg data-i="check"></svg>видеокарта подходит</span></div>
+        </div>
+        <div class="card pf on">
+          <div class="top"><span class="tile lg"><svg data-i="flask"></svg></span><h3>ML-инженер</h3><span class="sel"><svg data-i="check"></svg></span></div>
+          <p>Обучение и&nbsp;эксперименты: окружение на&nbsp;проект, CUDA без конфликтов, трекинг.</p>
+          <div class="mods"><span class="tag">ML-лаборатория</span><span class="tag">Локальные модели</span><span class="tag">Dev</span></div>
+          <div class="foot"><span><b>21 ГБ</b> · 9 мин</span><span class="ok"><svg data-i="check"></svg>видеокарта подходит</span></div>
+        </div>
+        <div class="card pf">
+          <div class="top"><span class="tile lg"><svg data-i="nodes"></svg></span><h3>Строитель агентов</h3><span class="sel"><svg data-i="check"></svg></span></div>
+          <p>Агенты в&nbsp;песочницах, MCP-серверы, журнал каждого действия и&nbsp;откат.</p>
+          <div class="mods"><span class="tag">Агенты</span><span class="tag">Dev</span><span class="tag">Локальные модели</span></div>
+          <div class="foot"><span><b>16 ГБ</b> · 7 мин</span></div>
+        </div>
+        <div class="card pf">
+          <div class="top"><span class="tile lg"><svg data-i="terminal"></svg></span><h3>Хакер</h3><span class="sel"><svg data-i="check"></svg></span></div>
+          <p>Тайлинг, клавиатура везде, всё настраивается текстовыми файлами.</p>
+          <div class="mods"><span class="tag">Dev</span><span class="tag">Тайлинг</span></div>
+          <div class="foot"><span><b>1,4 ГБ</b> · 2 мин</span></div>
+        </div>
+        <div class="card pf mod">
+          <div class="top"><span class="tile lg"><svg data-i="cloudOff"></svg></span><h3>Только офлайн</h3><span class="switch"></span></div>
+          <p>Никаких облачных моделей и&nbsp;сетевых запросов от&nbsp;ИИ. Модули — с&nbsp;флешки или из&nbsp;зеркала.</p>
+          <div class="foot" style="margin-top:auto"><span>дополняет любой профиль</span></div>
+        </div>
+      </div>
+
+      <div class="summary">
+        <svg data-i="package"></svg>
+        <div class="t">Будет установлено: <b>ML-лаборатория, Локальные модели, Dev</b>. Перед установкой — снимок системы.</div>
+        <div class="r"><span><b>21,4 ГБ</b>из 1,8 ТБ свободных</span><span><b>≈ 9 мин</b></span></div>
+      </div>
+    </div>
+
+    <div class="wz-foot">
+      <button class="btn lg back"><svg data-i="chevronRight" style="transform:scaleX(-1)"></svg>Назад</button>
+      <div class="mid">каждый шаг можно пропустить · любой выбор <b>отменяется</b></div>
+      <button class="btn lg primary">Дальше<span class="k">Enter</span></button>
+    </div>
+  </div>
+
+</div>
+<script>
+  Svoya.init({ bar: false });
+</script>
+</body>
+</html>

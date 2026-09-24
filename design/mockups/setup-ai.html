@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — first run · 6/7 AI</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<link rel="stylesheet" href="setup.css">
+<script src="shell.js"></script>
+<style>
+  .cols { display: grid; grid-template-columns: 608px 1fr; gap: 16px; margin-top: 32px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--surface); }
+  [data-theme="paper"] .card { background: var(--surface-2); }
+  .card .hd { display: flex; align-items: center; gap: 10px; padding: 14px 18px 0; }
+  .card .hd h3 { font: 500 14px/20px "Plex Sans"; color: var(--text); }
+  .card .hd .r { margin-left: auto; }
+
+  /* GPU */
+  .gpu { padding: 16px 18px 16px; }
+  .gpu .row1 { display: flex; align-items: center; gap: 14px; }
+  .gpu .nm { font: 500 15px/20px "Plex Sans"; color: var(--text); }
+  .gpu .spec { margin-top: 2px; }
+  .gpu .doc { margin-left: auto; display: flex; align-items: center; gap: 7px; font: 400 11px/1 "Plex Mono"; color: var(--ok); white-space: nowrap; }
+  .gpu .doc svg.i { width: 13px; height: 13px; stroke-width: 2; }
+  .gpu .mem { margin-top: 14px; display: flex; align-items: center; gap: 12px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .gpu .mem .vram { flex: 1; }
+  .gpu .mem b { font-weight: 400; color: var(--text-dim); }
+
+  /* model list */
+  .mlist { margin-top: 12px; border-top: 1px solid var(--line); }
+  .mrow { display: grid; grid-template-columns: 18px 182px 1fr 62px 172px; align-items: center; gap: 14px; height: 52px; padding: 0 18px; }
+  .mrow + .mrow { border-top: 1px solid var(--line); }
+  .mrow .rd { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+  .mrow.on .rd { box-shadow: inset 0 0 0 5px var(--accent); }
+  .mrow .n { font: 500 12.5px/16px "Plex Mono"; color: var(--text); white-space: nowrap; }
+  .mrow .n small { display: block; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .mrow:not(.on) .n { font-weight: 400; color: var(--text-dim); }
+  .mrow .sz { justify-self: end; font: 400 12px/1 "Plex Mono"; color: var(--text-dim); }
+  .mrow .st { font: 400 11px/15px "Plex Mono"; justify-self: start; display: block; }
+  .mrow .st small { display: block; color: var(--text-faint); }
+  .mrow .vram i.warn { background: var(--warn); }
+  .mrow.voice .rd { display: none; }
+  .mrow.voice { grid-template-columns: 18px 1fr auto; }
+  .mrow.voice .ic { width: 16px; height: 16px; color: var(--text-dim); }
+  .mrow.voice .n { font-weight: 400; color: var(--text); }
+
+  /* cloud */
+  .cloud-sub { padding: 4px 18px 0; font: 400 12.5px/19px "Plex Sans"; color: var(--text-dim); }
+  .plist { margin-top: 12px; border-top: 1px solid var(--line); }
+  .prow { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 18px; }
+  .prow + .prow { border-top: 1px solid var(--line); }
+  .prow .pn { font: 500 13px/16px "Plex Sans"; color: var(--text); }
+  .prow .pn small { display: block; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .prow .r { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .prow .saved { display: flex; align-items: center; gap: 6px; font: 400 11px/1 "Plex Mono"; color: var(--ok); }
+  .prow .saved svg.i { width: 12px; height: 12px; stroke-width: 2.2; }
+
+  .note { display: flex; gap: 12px; padding: 14px 18px 16px; border-radius: 14px; border: 1px solid var(--line); }
+  .note svg.i { width: 18px; height: 18px; color: var(--accent); margin-top: 1px; stroke-width: 1.6; }
+  .note b { display: block; font: 500 13px/19px "Plex Sans"; color: var(--text); }
+  .note p { margin-top: 3px; font: 400 12.5px/19px "Plex Sans"; color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper"><div class="grain"></div></div>
+
+  <div class="wz">
+    <div class="wz-top">
+      <div class="brand"><svg class="morse"></svg>Настройка <span>· первый запуск</span></div>
+      <div class="wz-steps">
+        <div class="seg"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i></div>
+        <span class="n"><b>6</b> / 7</span>
+      </div>
+      <div class="aux">
+        <span class="tbtn"><svg data-i="accessibility"></svg><kbd>Super</kbd><kbd>Alt</kbd><kbd>A</kbd></span>
+        <span class="tbtn">пропустить настройку</span>
+      </div>
+    </div>
+
+    <div class="wz-body">
+      <div class="wz-eyebrow">ИИ</div>
+      <h1 class="wz-h">Джексон и модели</h1>
+      <p class="wz-sub">Нашли видеокарту и&nbsp;подобрали модель, которая в&nbsp;неё влезет. Облако — по&nbsp;желанию: ключи лежат в&nbsp;системной связке, а&nbsp;не&nbsp;в&nbsp;файлах.</p>
+
+      <div class="cols">
+        <div class="col">
+          <div class="card gpu">
+            <div class="row1">
+              <span class="tile lg"><svg data-i="gpu"></svg></span>
+              <div>
+                <div class="nm">NVIDIA GeForce RTX 4090</div>
+                <div class="spec meta">24 ГБ · драйвер 595.58 · CUDA 13.0</div>
+              </div>
+              <span class="doc"><svg data-i="shieldCheck"></svg>GPU Doctor: всё в порядке</span>
+            </div>
+            <div class="mem"><span>видеопамять</span><div class="vram"><i style="width:1.8%"></i><span class="cap"></span></div><span><b>0,4</b> / 24 ГБ</span></div>
+          </div>
+
+          <div class="card">
+            <div class="hd"><h3>Модель для Джексона</h3><span class="r meta">оценка для твоей видеокарты</span></div>
+            <div class="mlist">
+              <div class="mrow on">
+                <span class="rd"></span>
+                <span class="n">qwen3.5-14b<small>Q5_K_M · ≈ 70 ток/с</small></span>
+                <div class="vram"><i style="width:42.5%"></i><span class="cap"></span></div>
+                <span class="sz">10,2 ГБ</span>
+                <span class="st ok">влезет<small>останется 13,8 ГБ</small></span>
+              </div>
+              <div class="mrow">
+                <span class="rd"></span>
+                <span class="n">qwen3.5-32b<small>Q4_K_M · ≈ 34 ток/с</small></span>
+                <div class="vram"><i class="warn" style="width:82.5%"></i><span class="cap"></span></div>
+                <span class="sz">19,8 ГБ</span>
+                <span class="st warn">впритык<small>Студии не хватит места</small></span>
+              </div>
+              <div class="mrow">
+                <span class="rd"></span>
+                <span class="n">gemma-3-4b<small>Q8_0 · ≈ 140 ток/с</small></span>
+                <div class="vram"><i style="width:18%"></i><span class="cap"></span></div>
+                <span class="sz">4,3 ГБ</span>
+                <span class="st ok">влезет<small>быстрее, но слабее</small></span>
+              </div>
+              <div class="mrow voice">
+                <svg class="ic" data-i="mic"></svg>
+                <span class="n">Голос · whisper-v3-turbo<small>держи Super+J и говори · русский и английский · 1,6 ГБ</small></span>
+                <span class="switch on"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="hd"><h3>Облачные модели</h3><span class="tag line">необязательно</span></div>
+            <div class="cloud-sub">Без ключей Джексон работает полностью на&nbsp;этом компьютере.</div>
+            <div class="plist">
+              <div class="prow"><span class="pn">Anthropic<small>Claude</small></span><span class="r"><span class="saved"><svg data-i="check"></svg>ключ в связке · лимит 10 €/мес</span></span></div>
+              <div class="prow"><span class="pn">OpenAI<small>GPT</small></span><span class="r"><button class="btn sm">Добавить ключ</button></span></div>
+              <div class="prow"><span class="pn">Google<small>Gemini</small></span><span class="r"><button class="btn sm">Добавить ключ</button></span></div>
+              <div class="prow"><span class="pn">OpenRouter<small>сотни моделей, один счёт</small></span><span class="r"><button class="btn sm">Добавить ключ</button></span></div>
+            </div>
+          </div>
+          <div class="note solid">
+            <svg data-i="shield"></svg>
+            <div>
+              <b>В облако — только по твоему слову</b>
+              <p>Запрос уходит наружу, если ты выбрал облачную модель или разрешил это для задачи. Каждый такой запрос виден в&nbsp;строке состояния и&nbsp;в&nbsp;журнале, с&nbsp;ценой.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wz-foot">
+      <button class="btn lg back"><svg data-i="chevronRight" style="transform:scaleX(-1)"></svg>Назад</button>
+      <div class="mid">скачается после настройки: <b>11,8 ГБ</b> · можно продолжать работать</div>
+      <button class="btn lg primary">Дальше<span class="k">Enter</span></button>
+    </div>
+  </div>
+
+</div>
+<script>
+  Svoya.init({ bar: false });
+</script>
+</body>
+</html>

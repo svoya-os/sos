@@ -1,0 +1,109 @@
+name: Hardware report
+description: Tell us how SOS runs on your machine, whether it works well or not at all.
+title: "[hardware] "
+labels: ["hardware"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hardware reports decide which machines we test and fix first. Thank you!
+        English or Russian, whichever is easier. Можно по-русски.
+
+        If something is broken, you can also open a bug report and link it here.
+  - type: dropdown
+    id: result
+    attributes:
+      label: Overall result
+      options:
+        - Works well
+        - Works, with problems
+        - Does not work
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: SOS version or build
+      description: Output of `sos --version`, or the name of the ISO file.
+    validations:
+      required: true
+  - type: dropdown
+    id: form-factor
+    attributes:
+      label: Machine type
+      options:
+        - Desktop
+        - Laptop
+        - Mini PC
+        - Virtual machine
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Machine or motherboard model
+      placeholder: "ThinkPad P16 Gen 2, or ASUS TUF B650-PLUS"
+  - type: input
+    id: cpu-ram
+    attributes:
+      label: CPU and RAM
+      placeholder: "Ryzen 9 7950X, 64 GB"
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU(s) and video memory
+      placeholder: "RTX 4090 24 GB; or Radeon RX 7900 XTX 24 GB; or none"
+    validations:
+      required: true
+  - type: dropdown
+    id: secure-boot
+    attributes:
+      label: Secure Boot
+      options:
+        - "On"
+        - "Off"
+        - Not sure
+    validations:
+      required: true
+  - type: checkboxes
+    id: works
+    attributes:
+      label: What works?
+      description: Tick everything you tried and found working.
+      options:
+        - label: Live session boots
+        - label: Installation finishes
+        - label: GPU driver loads (`sos gpu` shows no errors)
+        - label: Suspend and resume
+        - label: External monitors
+        - label: Wi-Fi
+        - label: Bluetooth
+        - label: Sound, microphone and camera
+        - label: The model suggested by the first-run wizard runs
+        - label: Image or video generation (Studio)
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `sos gpu`
+      render: text
+  - type: textarea
+    id: lspci
+    attributes:
+      label: Graphics and network devices
+      description: "Output of: `lspci -nnk | grep -A3 -E 'VGA|3D|Display|Network'`"
+      render: text
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: What did not work, workarounds you used, kernel parameters, BIOS settings.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: I removed serial numbers and other private information from the outputs above.
+          required: true

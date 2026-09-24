@@ -1,0 +1,191 @@
+# Svoya model catalog: license facts that drive fit/pull warnings and the default catalog view.
+# SPDX-License-Identifier: Apache-2.0 — facts researched 2026-09; always re-check the model card.
+#
+#   match        lowercase substrings of "<repo>/<file>" that identify the model (first match wins,
+#                so specific entries come before families)
+#   commercial   true | false | "conditional" (thresholds, revenue caps, use policies)
+#   excluded     regions the license does not grant rights in ("EU", "UK", "KR", "US")
+#   excluded_multimodal  regions excluded only for the multimodal (vision) variants
+#   vram_gb      typical need for the common quantization, if known (≈, for the catalog view)
+#   params_b     parameters in billions
+#
+# Default `svoya models list --catalog` view = models usable commercially in the user's region (EU).
+
+[[model]]
+id = "qwen-image-2.1"
+name = "Qwen-Image 2.1"
+kind = "image"
+match = ["qwen-image-2.1", "qwen_image_2.1", "qwen-image-2_1"]
+license = "Qwen non-commercial"
+commercial = false
+note = { en = "Non-commercial license, unlike Qwen-Image (Apache-2.0).", ru = "Некоммерческая лицензия, в отличие от Qwen-Image (Apache-2.0)." }
+
+[[model]]
+id = "qwen-image"
+name = "Qwen-Image"
+kind = "image"
+repo = "Qwen/Qwen-Image"
+match = ["qwen-image", "qwen_image"]
+license = "Apache-2.0"
+commercial = true
+params_b = 20
+
+[[model]]
+id = "z-image-turbo"
+name = "Z-Image-Turbo 6B"
+kind = "image"
+repo = "Tongyi-MAI/Z-Image-Turbo"
+match = ["z-image-turbo", "z_image_turbo"]
+license = "Apache-2.0"
+commercial = true
+params_b = 6
+vram_gb = 16
+note = { en = "Fits 16 GB.", ru = "Влезает в 16 ГБ." }
+
+[[model]]
+id = "flux2-klein-9b"
+name = "FLUX.2 klein 9B"
+kind = "image"
+match = ["flux.2-klein-9b", "flux2-klein-9b", "flux-2-klein-9b", "flux2_klein_9b"]
+license = "FLUX non-commercial"
+commercial = false
+params_b = 9
+note = { en = "Non-commercial; the 4B variant is Apache-2.0.", ru = "Некоммерческая; вариант 4B — Apache-2.0." }
+
+[[model]]
+id = "flux2-klein-4b"
+name = "FLUX.2 klein 4B"
+kind = "image"
+match = ["flux.2-klein-4b", "flux2-klein-4b", "flux-2-klein-4b", "flux2_klein_4b"]
+license = "Apache-2.0"
+commercial = true
+params_b = 4
+
+[[model]]
+id = "wan2.2-ti2v-5b"
+name = "Wan 2.2 TI2V 5B"
+kind = "video"
+repo = "Wan-AI/Wan2.2-TI2V-5B"
+match = ["wan2.2-ti2v-5b", "wan2.2_ti2v_5b", "wan2_2_ti2v_5b"]
+license = "Apache-2.0"
+commercial = true
+params_b = 5
+vram_gb = 11.4
+note = { en = "Runs on consumer GPUs; 5 s of 720p in minutes.", ru = "Работает на обычных видеокартах; 5 с 720p за минуты." }
+
+[[model]]
+id = "wan2.2"
+name = "Wan 2.2"
+kind = "video"
+match = ["wan2.2", "wan2_2", "wan-2.2"]
+license = "Apache-2.0"
+commercial = true
+
+[[model]]
+id = "ltx-2.5-19b"
+name = "LTX-2.5 19B"
+kind = "video"
+match = ["ltx-2.5", "ltx2.5", "ltx_2.5", "ltx-2_5"]
+license = "LTX Open"
+commercial = "conditional"
+params_b = 19
+vram_gb = 31
+note = { en = "Free for commercial use under $10M annual revenue.", ru = "Бесплатно для коммерции при выручке до $10 млн в год." }
+
+[[model]]
+id = "hunyuanvideo-1.5"
+name = "HunyuanVideo 1.5"
+kind = "video"
+repo = "tencent/HunyuanVideo-1.5"
+match = ["hunyuanvideo-1.5", "hunyuanvideo1.5", "hunyuanvideo_1.5", "hunyuanvideo-1_5"]
+license = "Tencent Hunyuan Community"
+commercial = "conditional"
+excluded = ["EU", "UK", "KR"]
+note = { en = "The license excludes the EU (and the UK, South Korea).", ru = "Лицензия не действует в ЕС (а также в Великобритании и Южной Корее)." }
+
+[[model]]
+id = "minimax-h3"
+name = "MiniMax-H3"
+kind = "video"
+match = ["minimax-h3", "minimax_h3"]
+license = "MiniMax"
+commercial = "conditional"
+excluded = ["EU", "UK", "KR", "US"]
+note = { en = "The license excludes the EU, UK, South Korea and the US.", ru = "Лицензия не действует в ЕС, Великобритании, Южной Корее и США." }
+
+[[model]]
+id = "parakeet-tdt-0.6b-v3"
+name = "Parakeet TDT 0.6B v3"
+kind = "stt"
+repo = "nvidia/parakeet-tdt-0.6b-v3"
+match = ["parakeet-tdt-0.6b-v3", "parakeet_tdt_0.6b_v3", "parakeet-tdt-0.6b-v3-int8"]
+license = "CC-BY-4.0"
+commercial = true
+attribution = true
+params_b = 0.6
+vram_gb = 2
+languages = ["ru", "en", "et"]
+note = { en = "Speech recognition incl. Russian, English, Estonian. Attribution required.", ru = "Распознавание речи: русский, английский, эстонский. Нужна атрибуция." }
+
+[[model]]
+id = "chatterbox"
+name = "Chatterbox"
+kind = "tts"
+repo = "ResembleAI/chatterbox"
+match = ["chatterbox"]
+license = "MIT"
+commercial = true
+vram_gb = 4
+
+[[model]]
+id = "qwen3-tts"
+name = "Qwen3-TTS"
+kind = "tts"
+match = ["qwen3-tts", "qwen3_tts"]
+license = "Apache-2.0"
+commercial = true
+params_b = 0.6
+vram_gb = 2
+
+[[model]]
+id = "llama-4"
+name = "Llama 4 (multimodal)"
+kind = "llm"
+match = ["llama-4", "llama4"]
+license = "Llama 4 Community"
+commercial = "conditional"
+excluded_multimodal = ["EU"]
+note = { en = "Multimodal rights are not granted to EU users; >700M MAU needs a separate license.", ru = "Мультимодальные права не предоставляются пользователям из ЕС; при >700 млн MAU нужна отдельная лицензия." }
+
+[[model]]
+id = "gpt-oss"
+name = "gpt-oss"
+kind = "llm"
+match = ["gpt-oss"]
+license = "Apache-2.0"
+commercial = true
+
+[[model]]
+id = "qwen3"
+name = "Qwen3"
+kind = "llm"
+match = ["qwen3-", "qwen3_"]
+license = "Apache-2.0"
+commercial = true
+
+[[model]]
+id = "mistral-small-3"
+name = "Mistral Small 3.x"
+kind = "llm"
+match = ["mistral-small-3"]
+license = "Apache-2.0"
+commercial = true
+
+[[model]]
+id = "gemma-3"
+name = "Gemma 3"
+kind = "llm"
+match = ["gemma-3", "gemma3"]
+license = "Gemma Terms of Use"
+commercial = "conditional"
+note = { en = "Commercial use allowed under Google's use policy.", ru = "Коммерческое использование разрешено с учётом политики Google." }

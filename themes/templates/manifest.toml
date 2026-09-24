@@ -1,0 +1,79 @@
+# Svoya theme templates → files.  SPDX-License-Identifier: Apache-2.0
+#
+# `svoya theme apply` renders every [[target]] with the tokens of the chosen theme.
+# Path placeholders: {config} = $XDG_CONFIG_HOME (~/.config), {state} = ~/.local/state, {home} = $HOME.
+#
+#   template       file in this directory (syntax: see cli/README.md → "Template language")
+#   path           where the result goes
+#   keep_original  when the user already had this file (without the `svoya:generated` marker), it is
+#                  backed up ONCE as <file>.pre-svoya and this line — which includes the backup — is put
+#                  right after our header, so the user's own settings survive and our colors win.
+#   merge          "ini" | "keyvalue": update only our keys inside the user's file (backup once);
+#                  used for files other programs also write (qt6ct.conf, btop.conf).
+#   reload         live-reload hint handled by svoya: hyprland | kitty
+#
+# Users can opt out per target in ~/.config/svoya/svoya.toml:   [theme] skip = ["kitty", "fastfetch"]
+
+[[target]]
+id = "hyprland"
+template = "hyprland-colors.conf"
+path = "{config}/hypr/svoya-colors.conf"
+reload = "hyprland"
+
+[[target]]
+id = "kitty"
+template = "kitty.conf"
+path = "{config}/kitty/kitty.conf"
+keep_original = "include {backup}"
+reload = "kitty"
+
+[[target]]
+id = "foot"
+template = "foot.ini"
+path = "{config}/foot/foot.ini"
+keep_original = "include={backup}"
+
+[[target]]
+id = "gtk3"
+template = "gtk-3.0.css"
+path = "{config}/gtk-3.0/gtk.css"
+keep_original = '@import url("file://{backup}");'
+
+[[target]]
+id = "gtk4"
+template = "gtk-4.0.css"
+path = "{config}/gtk-4.0/gtk.css"
+keep_original = '@import url("file://{backup}");'
+
+[[target]]
+id = "qt6ct-colors"
+template = "qt6ct-colors.conf"
+path = "{config}/qt6ct/colors/svoya.conf"
+
+[[target]]
+id = "qt6ct"
+template = "qt6ct.conf"
+path = "{config}/qt6ct/qt6ct.conf"
+merge = "ini"
+
+[[target]]
+id = "btop-theme"
+template = "btop.theme"
+path = "{config}/btop/themes/svoya.theme"
+
+[[target]]
+id = "btop"
+template = "btop.conf"
+path = "{config}/btop/btop.conf"
+merge = "keyvalue"
+
+[[target]]
+id = "fastfetch"
+template = "fastfetch.jsonc"
+path = "{config}/fastfetch/config.jsonc"
+
+[[target]]
+id = "fuzzel"
+template = "fuzzel.ini"
+path = "{config}/fuzzel/fuzzel.ini"
+keep_original = "include={backup}"

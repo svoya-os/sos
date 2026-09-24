@@ -1,0 +1,62 @@
+/* Svoya OS — first-run wizard shell (shared by setup-*.html). Extends components.css. */
+
+.wz { position: absolute; inset: 0; z-index: 2; }
+
+/* top strip: brand · progress · accessibility / skip */
+.wz-top {
+  position: absolute; left: 0; right: 0; top: 0; height: 64px; padding: 0 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.wz-top .brand { display: flex; align-items: center; gap: 12px; font: 500 13px/1 "Plex Sans"; color: var(--text); }
+.wz-top .brand svg.morse { color: var(--text); }
+.wz-top .brand span { color: var(--text-faint); font-weight: 400; }
+.wz-steps { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; }
+.wz-steps .seg { display: flex; gap: 5px; }
+.wz-steps .seg i { width: 26px; height: 3px; border-radius: 2px; background: var(--line-strong); }
+.wz-steps .seg i.done { background: color-mix(in srgb, var(--accent) 55%, var(--line-strong)); }
+.wz-steps .seg i.now { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent); }
+[data-theme="paper"] .wz-steps .seg i.now { box-shadow: none; }
+.wz-steps .n { font: 500 11.5px/1 "Plex Mono"; color: var(--text-dim); letter-spacing: 0.04em; }
+.wz-steps .n b { color: var(--text); font-weight: 500; }
+.wz-top .aux { display: flex; align-items: center; gap: 20px; }
+.wz-top .aux .tbtn kbd { margin-left: -2px; }
+
+/* content column */
+.wz-body { position: absolute; left: 50%; top: 104px; width: 1040px; transform: translateX(-50%); }
+.wz-eyebrow { font: 500 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.wz-h { margin-top: 14px; font: 500 28px/34px "Plex Sans"; letter-spacing: -0.005em; color: var(--text); }
+.wz-sub { margin-top: 10px; max-width: 660px; font: 400 14px/22px "Plex Sans"; color: var(--text-dim); }
+.wz-sub code, .wz-note code { font: 400 12.5px/1 "Plex Mono"; color: var(--text); padding: 2px 5px; border-radius: 5px; background: var(--surface-3); }
+
+/* choice card */
+.card {
+  position: relative; border-radius: 14px; background: var(--surface); border: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+[data-theme="paper"] .card { background: var(--surface-2); }
+.card.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 0 5px var(--accent-soft); }
+.card .ck {
+  position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--accent); color: var(--accent-ink);
+}
+.card .ck svg.i { width: 12px; height: 12px; stroke-width: 2.6; }
+.card .ring {
+  position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
+}
+
+/* footer */
+.wz-foot {
+  position: absolute; left: 50%; bottom: 36px; width: 1040px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px;
+}
+.wz-foot .mid { flex: 1; text-align: center; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+.wz-foot .mid b { color: var(--text-dim); font-weight: 400; }
+.wz-foot .btn.lg .k { font: 400 11px/1 "Plex Mono"; opacity: 0.62; margin-left: 2px; }
+.wz-foot .btn.back { color: var(--text-dim); }
+
+/* bordered blocks that are not choice cards still sit on a solid surface (matte, no see-through) */
+.solid { background: var(--surface); }
+[data-theme="paper"] .solid { background: var(--surface-2); }
+.wz-foot .btn.back { background: var(--surface); }
+[data-theme="paper"] .wz-foot .btn.back { background: var(--surface-2); }

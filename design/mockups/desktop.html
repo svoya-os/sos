@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — desktop mockup</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<script>
+  const params = new URLSearchParams(location.search);
+  document.documentElement.dataset.theme = params.get('theme') || 'graphite';
+</script>
+</head>
+<body>
+<div class="screen">
+
+  <!-- wallpaper: a quiet horizon line that carries one Morse "СОС" -->
+  <div class="wallpaper">
+    <svg class="signal" viewBox="0 0 1440 900" id="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>SOS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <!-- top bar -->
+  <header class="bar">
+    <div class="bar-left">
+      <div class="mark" title="СОС"><svg id="mark" width="66" height="10"></svg></div>
+      <div class="ws"><span class="on">1</span><span>2</span><span>3</span><span class="empty">4</span></div>
+      <div class="win-title">Терминал<i>/</i><span>tts-finetune</span></div>
+    </div>
+    <div class="bar-right">
+      <div class="seg"><span class="dot"></span><span>обучение</span><span class="meter acc"><i style="width:62%"></i></span><span>62%</span></div>
+      <div class="seg"><span class="k">GPU</span><span>64°</span><span class="k">·</span><span>11,2/24 ГБ</span></div>
+      <div class="ico">
+        <svg viewBox="0 0 24 24"><path d="M2.5 9a15 15 0 0 1 19 0"/><path d="M5.5 12.5a10.5 10.5 0 0 1 13 0"/><path d="M8.7 16a6 6 0 0 1 6.6 0"/><circle cx="12" cy="19.3" r="0.6"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18 6.5a8 8 0 0 1 0 11"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2.5" y="7.5" width="17" height="9" rx="2"/><path d="M21.5 10.5v3"/><rect x="4.5" y="9.5" width="10" height="5" rx="0.8" fill="currentColor" stroke="none"/></svg>
+      </div>
+      <div class="seg">RU</div>
+      <div class="jack-mini"><svg id="mini" width="22" height="10"></svg></div>
+      <time>Чт 24 сен<b>18:42</b></time>
+    </div>
+  </header>
+
+  <!-- a floating terminal: a fine-tune running -->
+  <section class="window" style="left:48px; top:572px; width:600px; height:276px;">
+    <div class="titlebar">
+      <div class="t"><span class="glyph"></span><b>Терминал</b>~/ai/projects/tts-finetune</div>
+      <div class="ctl">
+        <span><svg viewBox="0 0 8 8"><path d="M1.5 4h5"/></svg></span>
+        <span><svg viewBox="0 0 8 8"><path d="M1.5 1.5h5v5h-5z"/></svg></span>
+        <span><svg viewBox="0 0 8 8"><path d="M1.8 1.8l4.4 4.4M6.2 1.8L1.8 6.2"/></svg></span>
+      </div>
+    </div>
+<pre class="term-body"><span class="a">›</span> sos run train.py
+<span class="m">  среда    </span>torch 2.13 · CUDA 13.0 · RTX 4090 <span class="d">24 ГБ</span>
+<span class="m">  модель   </span>qwen3-tts-0.6b <span class="d">+</span> LoRA r16
+<span class="m">  данные   </span>ru-voice <span class="d">·</span> 48 213 примеров
+<span class="m">  трекинг  </span><span class="c">localhost:7860</span> <span class="d">(trackio)</span>
+
+<span class="m">эпоха 2/3</span>  <span class="a">████████████████░░░░░░░░░</span>  62%
+<span class="d">           loss</span> 0.412 <span class="g">↓</span>   <span class="d">3,1 шаг/с · ещё</span> 18 мин
+<span class="g">•</span> чекпойнт <span class="m">runs/0924-1832/step-1800</span>
+<span class="cur"></span></pre>
+  </section>
+
+  <!-- Jackson -->
+  <section class="jackson">
+    <div class="j-head">
+      <svg class="scope" id="scope" width="92" height="22"></svg>
+      <span class="name">Джексон</span>
+      <span class="chip"><span class="dot ok"></span>локально · qwen3.5-14b</span>
+      <span class="spacer"></span>
+      <span class="keys"><kbd>Super</kbd><kbd>J</kbd></span>
+    </div>
+    <div class="j-input">Хочу короткое видео для канала. Какая модель влезет в мою видеокарту?<span class="caret"></span></div>
+    <div class="j-answer">
+      <p>У тебя RTX 4090 на 24 ГБ. Из моделей, которые можно использовать коммерчески в ЕС, лучше всего подходит <b>Wan 2.2 5B</b>: займёт около 11 ГБ, а пятисекундный ролик в 720p соберётся примерно за 4 минуты. <span class="dim">Обучение сейчас занимает 11,2 ГБ, так что лучше запустить после него.</span></p>
+      <div class="fit">
+        <div class="row"><span class="n">Wan 2.2 TI2V 5B <em>Apache-2.0</em></span><div class="vram"><i style="width:47.5%"></i><span class="cap"></span></div><span class="sz">11,4 ГБ</span><span class="st ok"><svg class="ic" viewBox="0 0 12 12"><path d="M2.2 6.4l2.4 2.4 5.2-5.6"/></svg>влезет</span></div>
+        <div class="row"><span class="n">LTX-2.5 19B <em>LTX Open</em></span><div class="vram"><i class="over" style="width:100%"></i><span class="cap"></span></div><span class="sz">31 ГБ</span><span class="st warn">≈ с выгрузкой в ОЗУ</span></div>
+        <div class="row muted"><span class="n">HunyuanVideo 1.5 <em>Tencent</em></span><div class="vram empty"></div><span class="sz">—</span><span class="st bad">× лицензия не для ЕС</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary">Установить в Студию <span class="k">Enter</span></button>
+        <button class="btn">Поставить в очередь после обучения</button>
+      </div>
+    </div>
+    <div class="j-foot">
+      <div class="l"><span class="dot ok"></span>0,8 с · 312 токенов · 0 € · данные не покидали компьютер</div>
+      <div class="r"><span><kbd>Tab</kbd>уточнить</span><span><kbd>Esc</kbd>закрыть</span></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const NS = 'http://www.w3.org/2000/svg';
+  const MORSE = ['...', '---', '...']; // С О С  (same in Russian and international Morse)
+
+  // Wallpaper signal: a faded horizon line carrying one Morse "СОС" burst.
+  (function () {
+    const svg = document.getElementById('signal');
+    const y = 700, u = 6.5, h = 14, x0 = 1030;
+    let x = x0, d = `M ${x0 - 70} ${y} L ${x0} ${y}`;
+    MORSE.forEach((letter, li) => {
+      [...letter].forEach((sym, si) => {
+        const w = (sym === '.' ? 1 : 3) * u;
+        d += ` L ${x} ${y - h} L ${x + w} ${y - h} L ${x + w} ${y}`;
+        x += w;
+        if (si < letter.length - 1) { d += ` L ${x + u} ${y}`; x += u; }
+      });
+      if (li < MORSE.length - 1) { d += ` L ${x + 3 * u} ${y}`; x += 3 * u; }
+    });
+    d += ` L ${x + 70} ${y}`;
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="fade" x1="0" x2="1440" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
+          <stop offset=".22" stop-color="var(--accent)" stop-opacity=".9"/>
+          <stop offset=".86" stop-color="var(--accent)" stop-opacity=".9"/>
+          <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="burst" x1="${x0 - 70}" x2="${x + 70}" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
+          <stop offset=".18" stop-color="var(--accent)" stop-opacity="1"/>
+          <stop offset=".82" stop-color="var(--accent)" stop-opacity="1"/>
+          <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path class="base" d="M 0 ${y} L 1440 ${y}" stroke="url(#fade)"/>
+      <path class="pulse" d="${d}" stroke="url(#burst)"/>
+      <text class="tick" x="${x0}" y="${y + 26}">··· ——— ···</text>`;
+  })();
+
+  // Morse mark in the bar.
+  (function () {
+    const svg = document.getElementById('mark');
+    let x = 0; const cy = 5;
+    MORSE.forEach((letter, li) => {
+      [...letter].forEach((sym) => {
+        const e = document.createElementNS(NS, 'rect');
+        if (sym === '.') { e.setAttribute('x', x); e.setAttribute('y', cy - 1.6); e.setAttribute('width', 3.2); e.setAttribute('height', 3.2); e.setAttribute('rx', 1.6); x += 3.2 + 2.4; }
+        else { e.setAttribute('x', x); e.setAttribute('y', cy - 1.6); e.setAttribute('width', 8); e.setAttribute('height', 3.2); e.setAttribute('rx', 1.6); x += 8 + 2.4; }
+        e.setAttribute('fill', li === 1 ? 'var(--accent)' : 'currentColor');
+        svg.append(e);
+      });
+      x += 3.2;
+    });
+    svg.setAttribute('width', Math.ceil(x));
+  })();
+
+  // Jackson's oscilloscope trace (listening/answering), and the tiny one in the bar.
+  function scope(id, w, h, amp, freq, seed) {
+    const svg = document.getElementById(id);
+    let d = '';
+    for (let i = 0; i <= w; i += 1) {
+      const t = i / w;
+      const env = Math.sin(Math.PI * t) ** 1.6;
+      const v = Math.sin(t * freq * 2 * Math.PI + seed) * 0.62 + Math.sin(t * freq * 5.3 * Math.PI + seed * 2) * 0.28 + Math.sin(t * freq * 11.7 * Math.PI) * 0.1;
+      const y = h / 2 - v * env * amp;
+      d += (i ? ' L ' : 'M ') + i + ' ' + y.toFixed(2);
+    }
+    const base = document.createElementNS(NS, 'path');
+    base.setAttribute('d', `M 0 ${h / 2} L ${w} ${h / 2}`);
+    base.setAttribute('stroke', 'var(--accent)'); base.setAttribute('stroke-opacity', '0.25'); base.setAttribute('stroke-width', '1');
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d); p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'var(--accent)');
+    p.setAttribute('stroke-width', '1.5'); p.setAttribute('stroke-linejoin', 'round');
+    svg.append(base, p);
+  }
+  scope('scope', 92, 22, 9.5, 3.2, 0.7);
+  scope('mini', 22, 10, 4, 1.6, 0.2);
+</script>
+</body>
+</html>

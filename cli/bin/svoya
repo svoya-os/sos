@@ -1,0 +1,16 @@
+#!/usr/bin/python3 -I
+# svoya — Svoya OS system tool. SPDX-License-Identifier: Apache-2.0
+# Installed: /usr/bin/svoya with the package in /usr/lib/svoya/svoya_cli (ARCHITECTURE §3).
+# Checkout:  cli/bin/svoya uses cli/svoya_cli next to it.
+import os
+import sys
+
+_here = os.path.dirname(os.path.realpath(__file__))
+for _cand in (os.path.join(_here, ".."), "/usr/lib/svoya"):
+    if os.path.isdir(os.path.join(_cand, "svoya_cli")):
+        sys.path.insert(0, os.path.abspath(_cand))
+        break
+
+from svoya_cli.main import main  # noqa: E402
+
+sys.exit(main())

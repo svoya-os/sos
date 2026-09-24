@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — Jackson approval (T2)</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  .j-head .chip.warn { color: var(--warn); }
+  .j-head .chip svg.i { width: 12px; height: 12px; }
+  .j-answer p { max-width: 660px; }
+
+  /* approval card */
+  .approve {
+    margin-top: 14px; border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden;
+    background: var(--surface);
+  }
+  [data-theme="paper"] .approve { background: var(--surface); }
+  .ap-head {
+    display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 14px 0 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tier {
+    font: 600 11px/1 "Plex Mono"; letter-spacing: 0.04em; color: var(--accent-ink); background: var(--accent);
+    height: 20px; padding: 0 6px; border-radius: 5px; display: inline-flex; align-items: center;
+  }
+  .ap-head .wait { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 400 11px/1 "Plex Mono"; color: var(--text-dim); }
+  .ap-head .wait .dot { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .ap-body { padding: 14px 14px 14px; }
+  .ap-title { display: flex; align-items: baseline; gap: 12px; }
+  .ap-title h3 { font: 500 15px/22px "Plex Sans"; color: var(--text); }
+  .ap-title .size { margin-left: auto; font: 500 12px/1 "Plex Mono"; color: var(--text); }
+  .ap-src { margin-top: 3px; }
+
+  .code {
+    margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--inset); border: 1px solid var(--line);
+    font: 400 12px/19px "Plex Mono"; color: var(--text); white-space: pre; overflow: hidden;
+  }
+  .code .p { color: var(--accent); }
+  .code .c { color: var(--text-faint); }
+  .code .add { color: var(--ok); }
+  .code .chg { color: var(--warn); }
+  .code .d { color: var(--text-faint); }
+
+  .facts { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; column-gap: 28px; margin-top: 12px; }
+  .facts > div { display: flex; gap: 8px; font: 400 11px/16px "Plex Mono"; color: var(--text-dim); white-space: nowrap; }
+  .facts > div span { color: var(--text-faint); }
+
+  .taint {
+    display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 10px 12px;
+    border-radius: 8px; background: color-mix(in srgb, var(--warn) 9%, transparent);
+    font: 400 13px/19px "Plex Sans"; color: var(--text);
+  }
+  .taint svg.i { width: 15px; height: 15px; color: var(--warn); margin-top: 2px; stroke-width: 1.7; }
+  .taint span { color: var(--text-dim); }
+
+  .ap-acts { display: flex; gap: 8px; margin-top: 14px; }
+  .ap-acts .btn.no { margin-left: auto; color: var(--text-dim); }
+
+  /* background app: ComfyUI */
+  .comfy-win .content { top: 36px; }
+  .comfy-win .canvas { position: absolute; left: 0; right: 0; top: 40px; bottom: 0; }
+  .apptb .warn-n { display: flex; align-items: center; gap: 7px; color: var(--bad); font: 400 11px/1 "Plex Mono"; margin-right: 10px; }
+  .apptb .warn-n svg.i { width: 13px; height: 13px; }
+  .taint .l2 { display: block; color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>Svoya OS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <!-- background: ComfyUI with a workflow that misses a node -->
+  <section class="window comfy-win" style="left:72px; top:214px; width:1296px; height:640px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="workflow"></svg><b>ComfyUI</b>~/ai/projects/reels</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content">
+      <div class="apptb">
+        <span class="tab on"><span class="mod"></span>reels_wan22_i2v.json</span>
+        <span class="tab">portrait_lora_v3.json</span>
+        <span class="grow"></span>
+        <span class="warn-n"><svg data-i="alert"></svg>1 нода не найдена</span>
+        <span class="btn sm dis"><svg data-i="play"></svg>Запустить</span>
+      </div>
+      <div class="canvas"><div class="comfy" id="graph"></div></div>
+    </div>
+  </section>
+
+  <!-- Jackson asks for approval -->
+  <section class="jackson">
+    <div class="j-head">
+      <svg class="scope" data-kind="waiting" width="92" height="22"></svg>
+      <span class="name">Джексон</span>
+      <span class="chip"><span class="dot ok"></span>локально · qwen3.5-14b</span>
+      <span class="spacer"></span>
+      <span class="keys"><kbd>Super</kbd><kbd>J</kbd></span>
+    </div>
+    <div class="j-input">Поставь ноду для LoRA в Wan — в воркфлоу её не хватает</div>
+    <div class="j-answer">
+      <p>Нужна нода <b>WanVideoLoraSelect</b> из пакета kijai/ComfyUI-WanVideoWrapper. Поставлю её в&nbsp;окружение ComfyUI — сама система не&nbsp;изменится. Вот что именно я&nbsp;сделаю:</p>
+
+      <div class="approve">
+        <div class="ap-head">
+          <span class="tier">T2</span>
+          <span class="caps">сеть и установка</span>
+          <span class="wait"><span class="dot"></span>ждёт твоего решения</span>
+        </div>
+        <div class="ap-body">
+          <div class="ap-title">
+            <h3>Установить кастомную ноду ComfyUI из GitHub</h3>
+            <span class="size">38 МБ</span>
+          </div>
+          <div class="ap-src meta">github.com/kijai/ComfyUI-WanVideoWrapper · тег v1.3.2 · коммит 7f3c2e1 · Apache-2.0</div>
+<div class="code"><span class="p">$</span> cd /srv/ai/comfyui/custom_nodes
+<span class="p">$</span> git clone --depth 1 -b v1.3.2 https://github.com/kijai/ComfyUI-WanVideoWrapper
+<span class="p">$</span> uv pip install -r ComfyUI-WanVideoWrapper/requirements.txt  <span class="c"># окружение comfyui</span>
+<span class="add">+ accelerate 1.10.1</span>   <span class="add">+ diffusers 0.35.1</span>   <span class="add">+ ftfy 6.3.1</span>   <span class="chg">~ einops 0.8.0 → 0.8.1</span></div>
+          <div class="facts">
+            <div><span>сеть</span>github.com, pypi.org</div>
+            <div><span>диск</span>38 МБ + 212 МБ пакетов</div>
+            <div><span>откат</span>снимок перед установкой</div>
+          </div>
+          <div class="taint">
+            <svg data-i="globe"></svg>
+            <div>В этом ответе есть содержимое из интернета — README репозитория.<span class="l2">Команды выше составил я. Инструкции со страницы не выполняются.</span></div>
+          </div>
+          <div class="ap-acts">
+            <button class="btn primary">Разрешить один раз <span class="k">Enter</span></button>
+            <button class="btn">Всегда в этом проекте</button>
+            <button class="btn no">Отклонить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="j-foot">
+      <div class="l"><span class="dot ok"></span>1,4 с · 1 204 токена · 0 € · в сеть: только чтение github.com</div>
+      <div class="r"><span><kbd>Tab</kbd>уточнить</span><span><kbd>Esc</kbd>свернуть</span></div>
+    </div>
+  </section>
+
+</div>
+<script>
+  Svoya.comfy(document.getElementById('graph'), {
+    nodes: [
+      { id: 'img', x: 24, y: 26, w: 232, title: 'Загрузить изображение', outs: [['IMAGE', 'image'], ['MASK', 'image']], widgets: [['image', 'frame_001.png']], img: 'photo', imgH: 92 },
+      { id: 'lora', x: 24, y: 280, w: 236, title: 'WanVideoLoraSelect', state: 'missing', outs: [['LORA', 'lora']], widgets: [['lora', 'reels_style_v2'], ['strength', '0.80']], note: 'нода не найдена' },
+      { id: 'model', x: 318, y: 452, w: 250, title: 'WanVideoModelLoader', ins: [['lora', 'lora']], outs: [['MODEL', 'model']], widgets: [['model', 'wan2.2_ti2v_5B_fp16']] },
+      { id: 'text', x: 360, y: 36, w: 290, title: 'WanVideoTextEncode', outs: [['text_embeds', 'text']], widgets: [['prompt', 'набережная, закат, 35 мм']] },
+      { id: 'enc', x: 360, y: 250, w: 250, title: 'WanVideoImageToVideoEncode', ins: [['image', 'image']], outs: [['image_embeds', 'image']] },
+      { id: 'samp', x: 700, y: 170, w: 250, title: 'WanVideoSampler', ins: [['model', 'model'], ['text_embeds', 'text'], ['image_embeds', 'image']], outs: [['samples', 'latent']], widgets: [['steps', '30'], ['cfg', '5.0'], ['seed', '42']] },
+      { id: 'dec', x: 740, y: 40, w: 226, title: 'WanVideoDecode', ins: [['samples', 'latent']], outs: [['images', 'video']], widgets: [['tile', '272 × 272']] },
+      { id: 'out', x: 1030, y: 30, w: 226, title: 'Сохранить видео', ins: [['images', 'video']], widgets: [['формат', 'h264 · 24 к/с'], ['путь', 'reels/out_']], img: 'video', imgH: 118 },
+      { id: 'note', x: 1030, y: 296, w: 226, title: 'Заметка', state: 'note', body: 'reels: 5 с, 720p, seed 42.<br>LoRA обучена 22 сен, 1 800 шагов.', bodyH: 44 },
+    ],
+    links: [['img', 0, 'enc', 0], ['lora', 0, 'model', 0], ['model', 0, 'samp', 0], ['text', 0, 'samp', 1], ['enc', 0, 'samp', 2], ['samp', 0, 'dec', 0], ['dec', 0, 'out', 0]],
+  });
+  Svoya.init({ bar: { title: ['ComfyUI', 'reels_wan22_i2v.json'] } });
+</script>
+</body>
+</html>

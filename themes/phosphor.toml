@@ -1,0 +1,49 @@
+# Svoya OS theme tokens — Phosphor ("era" theme). SPDX-License-Identifier: Apache-2.0
+id = "phosphor"
+mode = "dark"
+pair = "paper"
+
+[name]
+en = "Phosphor"
+ru = "Фосфор"
+
+[color]
+wall = "#050806"
+bar = "#070b08"
+surface = "#0b100d"
+surface2 = "#0f1611"
+surface3 = "#16201a"
+line = "#1a261e"
+lineStrong = "#2b3d31"
+text = "#d4f4dd"
+textDim = "#85a68f"
+textFaint = "#56705e"
+accent = "#5cf08f"
+accentSoft = "#1f5cf08f"
+accentInk = "#03140a"
+ok = "#5cf08f"
+warn = "#ffb347"
+bad = "#ff7a6b"
+cloud = "#6fd8ea"
+shadow = "#d9000000"
+
+[font]
+sans = "IBM Plex Sans"
+mono = "IBM Plex Mono"
+pixel = "Departure Mono"
+
+[shape]
+radius = 11
+radiusSmall = 6
+radiusLarge = 16
+border = 1
+
+[motion]
+fast = 120
+base = 180
+slow = 260
+
+[effects]
+grain = 0.08
+glow = true
+scanlines = true

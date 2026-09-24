@@ -1,0 +1,59 @@
+name: Feature request
+description: Suggest an idea or an improvement for SOS.
+title: "[feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. English or Russian, whichever is easier. Можно по-русски.
+
+        Please read [VISION.md](https://github.com/svoya-os/sos/blob/main/docs/VISION.md)
+        first, especially "What we deliberately do not do", and check the
+        [roadmap](https://github.com/svoya-os/sos/blob/main/docs/ROADMAP.md): your idea may
+        already be planned.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation and what gets in your way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: How it could work from your point of view. Commands, screens and examples are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+      description: What have you tried? How do other systems or tools solve it?
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Jackson
+        - Svoya Shell
+        - "`sos` command"
+        - Modules and model store
+        - First-run wizard and installer
+        - Themes and design
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: promise
+    attributes:
+      label: The promise
+      description: >
+        Every feature has to keep the promise in the README: no ads, no account, no telemetry;
+        AI never starts by itself and can be switched off; local by default; everything
+        reversible; data in plain files.
+      options:
+        - label: As far as I can tell, this idea keeps the promise.
+          required: true

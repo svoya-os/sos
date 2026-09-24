@@ -1,0 +1,133 @@
+# REUSE.toml — copyright and licensing for every file in this repository.
+# Specification: https://reuse.software/spec-3.3/   Check with: reuse lint
+#
+# How to read this file
+# * Annotations are tried top to bottom. When several match a file, the LAST match wins,
+#   so the list runs from general (everything) to specific (fonts, third-party pieces).
+# * precedence = "closest" (the default): an SPDX header inside a file beats this file.
+#   A file that carries only an SPDX-License-Identifier gets its copyright line from here.
+# * Project policy (docs/ARCHITECTURE.md §7): code Apache-2.0 · artwork and documentation
+#   CC-BY-SA-4.0 · fonts and third-party material under their own licenses.
+#   Full license texts live in LICENSES/.
+# * Contributors keep the copyright on what they write (DCO, no CLA — see CONTRIBUTING.md).
+#   "SOS (Svoya Operating System) contributors" means everyone in the git history of this
+#   repository.
+#
+# LICENSES/GPL-3.0-or-later.txt and LICENSES/LGPL-3.0-only.txt are kept for reference
+# (dependencies such as Calamares and Quickshell). No file here uses them yet, so
+# `reuse lint` lists them as unused until one does.
+
+version = 1
+
+# 1. Default: everything is code, Apache-2.0.
+[[annotations]]
+path = "**"
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 SOS (Svoya Operating System) contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+# 2. Documentation (prose): CC BY-SA 4.0.
+#    Component READMEs and prompt files inside jackson/, cli/, shell/… stay Apache-2.0,
+#    because they ship with the code.
+[[annotations]]
+path = ["*.md", "docs/**", "design/**/*.md"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 SOS (Svoya Operating System) contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# 3. Artwork: logo, wallpapers, boot and login themes, sounds, rendered mockups.
+[[annotations]]
+path = ["branding/**", "design/out/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 SOS (Svoya Operating System) contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# 3a. …except the tools that generate the artwork: they are code.
+[[annotations]]
+path = ["branding/tools/**", "branding/**/*.py"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 SOS (Svoya Operating System) contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+# 4. Fonts, wherever they are copied (design/fonts/ today, maybe branding/ later).
+#    IBM Plex Sans / Mono — SIL Open Font License 1.1, Reserved Font Name "Plex".
+[[annotations]]
+path = ["**/IBMPlex*", "**/IBM-Plex-OFL.txt"]
+precedence = "closest"
+SPDX-FileCopyrightText = '2017 IBM Corp. with Reserved Font Name "Plex"'
+SPDX-License-Identifier = "OFL-1.1"
+
+#    Departure Mono — MIT.
+[[annotations]]
+path = "**/DepartureMono*"
+precedence = "closest"
+SPDX-FileCopyrightText = "2024 Helena Zhang & Tobias Fried"
+SPDX-License-Identifier = "MIT"
+
+# 5. Code of Conduct: Contributor Covenant 2.1 (CC BY 4.0), with our contact details filled in.
+[[annotations]]
+path = "CODE_OF_CONDUCT.md"
+precedence = "closest"
+SPDX-FileCopyrightText = [
+  "Contributor Covenant contributors <https://www.contributor-covenant.org>",
+  "2026 SOS (Svoya Operating System) contributors",
+]
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# 6. Mockup runtime: our code plus line-icon geometry redrawn from Lucide (ISC); Lucide's
+#    Feather-derived icons (search, lock, moon, power…) are MIT. Notices as in Lucide's LICENSE.
+#    If this file later gets its own SPDX header, that header must keep all three licenses.
+[[annotations]]
+path = "design/mockups/shell.js"
+precedence = "closest"
+SPDX-FileCopyrightText = [
+  "2026 SOS (Svoya Operating System) contributors",
+  "2026 Lucide Icons and Contributors",
+  "2013-present Cole Bemis",
+]
+SPDX-License-Identifier = "Apache-2.0 AND ISC AND MIT"
+
+# 7. Lucide icons vendored for Svoya Shell: ISC. Full notices: shell/assets/icons/LICENSE-lucide.txt.
+[[annotations]]
+path = "shell/assets/icons/*.svg"
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Lucide Icons and Contributors"
+SPDX-License-Identifier = "ISC"
+
+# 7a. Lucide icons that Lucide's LICENSE lists as derived from Feather are also MIT.
+#     When you add a Lucide icon, check that list (old Feather names: alert-circle is now
+#     circle-alert, x-circle is circle-x, alert-triangle is triangle-alert) and add it here.
+[[annotations]]
+path = [
+  "shell/assets/icons/arrow-right.svg",
+  "shell/assets/icons/check.svg",
+  "shell/assets/icons/chevron-down.svg",
+  "shell/assets/icons/chevron-right.svg",
+  "shell/assets/icons/circle-alert.svg",
+  "shell/assets/icons/circle-x.svg",
+  "shell/assets/icons/clipboard.svg",
+  "shell/assets/icons/clock.svg",
+  "shell/assets/icons/corner-down-left.svg",
+  "shell/assets/icons/download.svg",
+  "shell/assets/icons/info.svg",
+  "shell/assets/icons/lock.svg",
+  "shell/assets/icons/log-out.svg",
+  "shell/assets/icons/monitor.svg",
+  "shell/assets/icons/moon.svg",
+  "shell/assets/icons/power.svg",
+  "shell/assets/icons/search.svg",
+  "shell/assets/icons/terminal.svg",
+  "shell/assets/icons/trash.svg",
+  "shell/assets/icons/triangle-alert.svg",
+  "shell/assets/icons/x.svg",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = ["2026 Lucide Icons and Contributors", "2013-present Cole Bemis"]
+SPDX-License-Identifier = "ISC AND MIT"
+
+# 7b. Our own glyphs (svoya-*), redrawn on Lucide geometry like the mockup runtime (see 6).
+[[annotations]]
+path = "shell/assets/icons/svoya-*.svg"
+precedence = "closest"
+SPDX-FileCopyrightText = ["2026 SOS (Svoya Operating System) contributors", "2026 Lucide Icons and Contributors"]
+SPDX-License-Identifier = "Apache-2.0 AND ISC"

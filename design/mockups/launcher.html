@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — launcher (Super+Space)</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  .launcher { left: 50%; top: 118px; width: 640px; transform: translateX(-50%); }
+
+  .l-in { display: flex; align-items: center; gap: 12px; height: 64px; padding: 0 18px 0 20px; }
+  .l-in > svg.i { width: 19px; height: 19px; color: var(--text-faint); stroke-width: 1.6; }
+  .l-in .q { font: 400 20px/28px "Plex Sans"; letter-spacing: -0.005em; color: var(--text); display: flex; align-items: center; }
+  .l-in .q .caret { display: inline-block; width: 2px; height: 23px; background: var(--accent); margin-left: 2px; }
+  .l-in .scope-src { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+
+  .l-list { border-top: 1px solid var(--line); padding: 4px 8px 8px; }
+  .grp { padding: 14px 12px 7px; }
+  .grp:first-child { padding-top: 10px; }
+
+  .row {
+    position: relative; display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px;
+    border-radius: 9px; white-space: nowrap;
+  }
+  .row .n { font: 400 13.5px/1 "Plex Sans"; color: var(--text); }
+  .row .n b { font-weight: 600; }
+  .row .s { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); margin-left: -2px; overflow: hidden; text-overflow: ellipsis; }
+  .row .s em { font-style: normal; color: var(--text-dim); }
+  .row .r { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .row.sel { background: var(--surface-3); }
+  [data-theme="paper"] .row.sel { background: var(--surface-3); }
+  .row .s .dot { width: 5px; height: 5px; margin: 0 6px 1px 0; vertical-align: middle; }
+
+  .ask { margin: 8px -8px 0; padding: 8px 8px 0; border-top: 1px solid var(--line); }
+  .ask .tile svg.scope { width: 14px; height: 8px; }
+  .ask .q-quote { color: var(--text-dim); }
+
+  .l-foot {
+    display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 18px;
+    border-top: 1px solid var(--line); font: 400 11px/1 "Plex Mono"; color: var(--text-faint);
+  }
+  .l-foot .l { display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>Svoya OS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <section class="window" style="left:48px; top:572px; width:600px; height:276px;">
+    <div class="titlebar">
+      <div class="t"><span class="glyph"></span><b>Терминал</b>~/ai/projects/tts-finetune</div>
+      <i data-ctl></i>
+    </div>
+    <pre class="term-body" data-training="running"></pre>
+  </section>
+
+  <section class="panel launcher">
+    <div class="l-in">
+      <svg data-i="search"></svg>
+      <span class="q">comf<span class="caret"></span></span>
+      <span class="spacer"></span>
+      <span class="keys"><kbd>Super</kbd><kbd>Space</kbd></span>
+    </div>
+
+    <div class="l-list">
+      <div class="grp caps">Приложения</div>
+      <div class="row sel">
+        <span class="tile acc"><svg data-i="workflow"></svg></span>
+        <span class="n"><b>Comf</b>yUI</span>
+        <span class="s"><span class="dot ok"></span>работает · localhost:8188</span>
+        <span class="r"><kbd>Enter</kbd></span>
+      </div>
+      <div class="row">
+        <span class="tile"><svg data-i="shield"></svg></span>
+        <span class="n"><b>Comf</b>yUI — безопасный режим</span>
+        <span class="s">без кастомных нод</span>
+      </div>
+
+      <div class="grp caps">Модули</div>
+      <div class="row">
+        <span class="tile"><svg data-i="package"></svg></span>
+        <span class="n">Студия</span>
+        <span class="s"><em>ComfyUI</em> 0.4.11 · Wan 2.2 · F5-TTS · установлен</span>
+      </div>
+
+      <div class="grp caps">Файлы</div>
+      <div class="row">
+        <span class="tile"><svg data-i="fileCode"></svg></span>
+        <span class="n">reels_wan22_i2v.json</span>
+        <span class="s">~/ai/projects/reels/<em>comfy</em></span>
+        <span class="r">вчера, 23:14</span>
+      </div>
+
+      <div class="grp caps">Действия</div>
+      <div class="row">
+        <span class="tile"><svg data-i="restart"></svg></span>
+        <span class="n">Перезапустить <b>Comf</b>yUI</span>
+        <span class="s">освободит 9,8 ГБ видеопамяти</span>
+      </div>
+      <div class="row">
+        <span class="tile"><svg data-i="download"></svg></span>
+        <span class="n">Обновить <b>Comf</b>yUI до 0.4.12</span>
+        <span class="s">сначала снимок системы</span>
+      </div>
+
+      <div class="ask">
+        <div class="row">
+          <span class="tile acc"><svg class="scope" data-kind="answer" data-amp="3.2" data-freq="1.4" data-seed="0.3" width="14" height="8"></svg></span>
+          <span class="n">Спросить Джексона <span class="q-quote">«comf»</span></span>
+          <span class="s">локально · qwen3.5-14b</span>
+          <span class="r"><span class="hint"><kbd>?</kbd>или<kbd>Tab</kbd></span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="l-foot">
+      <div class="l">7 результатов · 4 мс · поиск не выходит в сеть</div>
+      <div class="hints">
+        <span class="hint"><kbd>↑</kbd><kbd>↓</kbd>выбрать</span>
+        <span class="hint"><kbd>Esc</kbd>закрыть</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+  Svoya.init({ bar: { jackson: 'idle' } });
+</script>
+</body>
+</html>

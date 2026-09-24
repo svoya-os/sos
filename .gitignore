@@ -1,0 +1,73 @@
+# Files that never belong in the SOS repository.
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build output: images and packages (published through releases, never committed)
+/build/
+/dist/
+*.iso
+*.img
+*.qcow2
+*.squashfs
+*.deb
+*.ddeb
+*.udeb
+*.buildinfo
+*.changes
+*.dsc
+*.orig.tar.*
+*.debian.tar.*
+
+# debhelper leftovers inside packages/*/debian/
+**/debian/.debhelper/
+**/debian/debhelper-build-stamp
+**/debian/files
+**/debian/*.substvars
+**/debian/*.debhelper
+**/debian/*.debhelper.log
+obj-*/
+
+# Quickshell / QML tooling
+.qmlls.ini
+*.qmlc
+*.jsc
+
+# Models and datasets live in /srv/ai, never in git
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+
+# Secrets: never commit them (see SECURITY.md)
+secrets.env
+.env
+.env.*
+!.env.example
+*.key
+*.p12
+*.pfx
+private-keys-v1.d/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Design tooling
+node_modules/

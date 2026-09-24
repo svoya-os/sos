@@ -1,0 +1,25 @@
+# Code owners for SOS. https://docs.github.com/articles/about-code-owners
+#
+# PLACEHOLDER: the team @svoya-os/maintainers does not exist yet. Create it in the svoya-os
+# organization (or replace it with GitHub usernames) before turning on "Require review from
+# Code Owners" in the branch rules. Later rules override earlier ones for the same path.
+
+# Everything
+*                           @svoya-os/maintainers
+
+# Security-sensitive areas: two approving reviews required (CONTRIBUTING.md,
+# "Security-sensitive areas"). Assign a dedicated security team here once it exists.
+/jackson/                   @svoya-os/maintainers
+/packages/                  @svoya-os/maintainers
+/modules/                   @svoya-os/maintainers
+/image/                     @svoya-os/maintainers
+/installer/                 @svoya-os/maintainers
+/.github/workflows/         @svoya-os/maintainers
+
+# Policies
+/SECURITY.md                @svoya-os/maintainers
+/GOVERNANCE.md              @svoya-os/maintainers
+/TRADEMARKS.md              @svoya-os/maintainers
+/LICENSE                    @svoya-os/maintainers
+/LICENSES/                  @svoya-os/maintainers
+/REUSE.toml                 @svoya-os/maintainers

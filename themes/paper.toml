@@ -1,0 +1,49 @@
+# Svoya OS theme tokens — Paper (default light). SPDX-License-Identifier: Apache-2.0
+id = "paper"
+mode = "light"
+pair = "graphite"
+
+[name]
+en = "Paper"
+ru = "Бумага"
+
+[color]
+wall = "#e9e6de"
+bar = "#f3f1eb"
+surface = "#f8f7f3"
+surface2 = "#fdfcfa"
+surface3 = "#eceae4"
+line = "#dcd8ce"
+lineStrong = "#bfbab0"
+text = "#151515"
+textDim = "#5d5a54"
+textFaint = "#8e8a81"
+accent = "#2b3af7"
+accentSoft = "#172b3af7"
+accentInk = "#ffffff"
+ok = "#1f7a3c"
+warn = "#9a5b00"
+bad = "#c8321f"
+cloud = "#0e7c91"
+shadow = "#59282214"
+
+[font]
+sans = "IBM Plex Sans"
+mono = "IBM Plex Mono"
+pixel = "Departure Mono"
+
+[shape]
+radius = 11
+radiusSmall = 6
+radiusLarge = 16
+border = 1
+
+[motion]
+fast = 120
+base = 180
+slow = 260
+
+[effects]
+grain = 0.05
+glow = false
+scanlines = false

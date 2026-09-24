@@ -1,0 +1,434 @@
+<!doctype html>
+<!--
+  Svoya OS · Plymouth theme «svoya-signal» — browser simulation.
+
+  A tiny re-implementation of the parts of the Plymouth script API the theme uses (Image, Image.Text,
+  Image.Scale, Sprite, Window, Plymouth.Set*Function), running a line-by-line port of
+  svoya-signal/svoya-signal.script with the real sprites and the same generated geometry
+  (preview-data.js). Open it in a browser to play the boot; keys:
+     P  passphrase prompt   ·   type/backspace to add or remove dots   ·   Esc  back to normal
+     Q  question prompt     ·   M  add a message   ·   H  hide messages
+     1–7 modes: boot, shutdown, reboot, updates, system-upgrade, firmware-upgrade, system-reset
+     R  restart             ·   L  toggle language (ru/en)
+  generate.py renders fixed frames with  preview.html#{"t": 1.9, "progress": 0.24, ...}.
+
+  SPDX-License-Identifier: Apache-2.0
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — Plymouth preview</title>
+<style>
+  @font-face { font-family: "Plex Mono"; src: url("../../design/fonts/IBMPlexMono-Regular.ttf"); font-weight: 400; }
+  @font-face { font-family: "Plex Mono"; src: url("../../design/fonts/IBMPlexMono-Medium.ttf"); font-weight: 500; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  canvas { display: block; }
+  #hud { position: fixed; left: 12px; top: 10px; font: 11px/1.5 "Plex Mono", monospace; color: #67655f; }
+</style>
+<script src="preview-data.js"></script>
+</head>
+<body>
+<canvas id="screen"></canvas>
+<div id="hud"></div>
+<script>
+"use strict";
+const D = window.SVOYA_PLYMOUTH, G0 = D.geometry;
+const THEME = "svoya-signal/";
+const canvas = document.getElementById("screen");
+const ctx = canvas.getContext("2d");
+
+// ─────────────── mini Plymouth runtime ───────────────
+const files = {};
+function loadFiles(names) {
+  return Promise.all(names.map(n => new Promise((ok, fail) => {
+    const im = new window.Image(); im.onload = () => { files[n] = im; ok(); }; im.onerror = () => fail(n); im.src = THEME + n;
+  })));
+}
+class PImage {
+  constructor(src, w, h) { this.src = src; this.w = w; this.h = h; }
+  GetWidth() { return this.w; }
+  GetHeight() { return this.h; }
+  Scale(w, h) {
+    w = Math.max(1, Math.trunc(w)); h = Math.max(1, Math.trunc(h));
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d"); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "low";
+    g.drawImage(this.src, 0, 0, w, h);
+    return new PImage(c, w, h);
+  }
+}
+function Image(name) { const im = files[name]; return im ? new PImage(im, im.naturalWidth, im.naturalHeight) : null; }
+Image.Text = function (text, r, g, b, a, font, align) {
+  if (text === null || text === undefined) return null;
+  const px = parseFloat(/(\d+(?:\.\d+)?)px/.exec(font)[1]);
+  const c = document.createElement("canvas"), g2 = c.getContext("2d");
+  g2.font = `400 ${px}px "Plex Mono"`;
+  const w = Math.ceil(g2.measureText(text).width) + 2, h = Math.ceil(px * 1.32);
+  c.width = w; c.height = h;
+  g2.font = `400 ${px}px "Plex Mono"`; g2.textBaseline = "alphabetic";
+  g2.fillStyle = `rgba(${r * 255},${g * 255},${b * 255},${a})`;
+  g2.fillText(text, 1, Math.round(px * 1.02));
+  return new PImage(c, w, h);
+};
+const sprites = [];
+class Sprite {
+  constructor(image) { this.x = 0; this.y = 0; this.z = 0; this.o = 1; this.image = image || null; sprites.push(this); }
+  SetImage(i) { this.image = i; } SetX(v) { this.x = Math.trunc(v); } SetY(v) { this.y = Math.trunc(v); }
+  SetZ(v) { this.z = v; } SetOpacity(v) { this.o = v; } GetImage() { return this.image; }
+}
+let W = 1920, H = 1080;
+const bg = { top: D.bg[0], bottom: D.bg[1] };
+const Window = { GetWidth: () => W, GetHeight: () => H, GetX: () => 0, GetY: () => 0,
+  SetBackgroundTopColor() {}, SetBackgroundBottomColor() {} };
+const cb = {};
+let MODE = "boot", CAPS = 0;
+const Plymouth = { GetMode: () => MODE, GetCapslockState: () => CAPS };
+for (const k of ["Refresh", "BootProgress", "UpdateStatus", "DisplayNormal", "DisplayPassword", "DisplayQuestion",
+                 "DisplayMessage", "HideMessage", "Quit", "SystemUpdate", "DisplayHotplug"])
+  Plymouth[`Set${k}Function`] = fn => { cb[k] = fn; };
+const PM = { Int: Math.trunc, Min: Math.min, Max: Math.max, Cos: Math.cos, Sin: Math.sin, Pi: Math.PI };
+
+function paint() {
+  canvas.width = W; canvas.height = H;
+  const grd = ctx.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0, `rgb(${bg.top})`); grd.addColorStop(1, `rgb(${bg.bottom})`);
+  ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+  ctx.imageSmoothingEnabled = false;
+  for (const s of [...sprites].sort((a, b) => a.z - b.z)) {
+    if (!s.image || s.o <= 0.001) continue;
+    ctx.globalAlpha = Math.min(1, s.o);
+    ctx.drawImage(s.image.src, s.x, s.y, s.image.w, s.image.h);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ─────────────── port of svoya-signal.script ───────────────
+let S;  // script globals (the script's implicit global scope)
+function runScript(lang) {
+  sprites.length = 0;
+  const g = Object.assign({}, G0);
+  g.SYMBOL_X = D.symbols.map(s => s[0]); g.SYMBOL_W = D.symbols.map(s => s[1]);
+  g.SYMBOL_ON = D.symbols.map(s => s[2]); g.SYMBOL_LEN = D.symbols.map(s => s[3]);
+  const [TR, TG, TB] = D.text.map(v => v / 255), [DR, DG, DB] = D.dim.map(v => v / 255);
+  S = g;
+
+  const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const ease_out = v => { const k = 1 - clamp01(v); return 1 - k * k * k; };
+  const smooth = v => { const k = clamp01(v); return k * k * (3 - 2 * k); };
+  const approach = (cur, target, rate) => cur + (target - cur) * rate;
+  const phase = (t, start, len) => clamp01((t - start) / len);
+  const make_sprite = (image, z) => { const s = new Sprite(); if (image) s.SetImage(image); s.SetZ(z); s.SetOpacity(0); return s; };
+  const text_image = (text, r, gg, b, font) => {
+    if (!text) return null; const im = Image.Text(text, r, gg, b, 1, font, "center");
+    if (!im || im.GetWidth() < 1) return null; return im;
+  };
+  const fit_width = (im, max_w) => (!im ? null : im.GetWidth() <= max_w ? im
+    : im.Scale(max_w, PM.Int(im.GetHeight() * max_w / im.GetWidth())));
+
+  g.mode = Plymouth.GetMode(); g.lang = lang;
+  g.frame = 0; g.progress = { target: 0, shown: 0 }; g.ui = { state: "normal", dim: 0, quit: 0 };
+  const img = g.img = {
+    spot: Image("spot.png"), streak: Image("streak.png"), line: Image("line.png"), lit: Image("lit.png"),
+    litfade: Image("lit-fade.png"), burst: Image("burst.png"), flare_dot: Image("flare-dot.png"),
+    flare_dash: Image("flare-dash.png"), haze: Image("haze.png"), wordmark: Image(`wordmark-${lang}.png`),
+    chevron: Image("chevron.png"), bullet: Image("bullet.png"), cursor: Image("cursor.png"), rule: Image("rule.png"),
+    caps: Image(`caps-${lang}.png`),
+  };
+  const capname = { shutdown: "shutdown", reboot: "reboot", updates: "updates", "system-upgrade": "upgrade",
+                    "firmware-upgrade": "firmware", "system-reset": "reset" }[g.mode] || "boot";
+  img.caption = Image(`caption-${capname}-${lang}.png`);
+  img.unlock = Image(`caption-unlock-${lang}.png`);
+  img.question = Image(`caption-question-${lang}.png`);
+  img.keepon = Image(`caption-keepon-${lang}.png`);
+  g.travels = ["shutdown", "reboot", "system-reset"].includes(g.mode) ? 0 : 1;
+  g.with_percent = ["updates", "system-upgrade", "firmware-upgrade"].includes(g.mode) ? 1 : 0;
+
+  const s = g.s = {};
+  s.haze = make_sprite(img.haze, 1); s.line = make_sprite(null, 10); s.litfade = make_sprite(null, 11);
+  s.lit = make_sprite(null, 11); s.streak = make_sprite(null, 12); s.spot = make_sprite(img.spot, 13);
+  s.burst = make_sprite(img.burst, 14); s.flare = [];
+  for (let i = 0; i < g.N_SYMBOLS; i++) s.flare[i] = make_sprite(g.SYMBOL_LEN[i] === 1 ? img.flare_dot : img.flare_dash, 15);
+  s.wordmark = make_sprite(img.wordmark, 20); s.caption = make_sprite(img.caption, 20);
+  s.percent = make_sprite(null, 20); s.keepon = make_sprite(img.keepon, 20);
+  s.p_caption = make_sprite(img.unlock, 30); s.p_text = make_sprite(null, 30); s.p_chevron = make_sprite(img.chevron, 30);
+  s.p_cursor = make_sprite(img.cursor, 31); s.p_rule = make_sprite(null, 30); s.p_caps = make_sprite(img.caps, 30);
+  s.p_entry = make_sprite(null, 30);
+  const bullets = g.bullets = { count: 0, made: 0, sprite: [] };
+  const msg = g.msg = { count: 0, text: [], image: [], sprite: [] };
+  const line = g.line = {}, travel = g.travel = {}, word = g.word = {}, caption = g.caption = {},
+        field = g.field = {}, prompt = g.prompt = {}, lit = g.lit = {};
+
+  function layout() {
+    g.W = Window.GetWidth(); g.H = Window.GetHeight(); g.X0 = Window.GetX(); g.Y0 = Window.GetY();
+    line.w = PM.Int(PM.Min(g.W * g.LINE_FRAC, g.LINE_MAX));
+    line.x = g.X0 + PM.Int((g.W - line.w) / 2);
+    line.y = g.Y0 + PM.Int(g.H * g.LINE_Y_FRAC);
+    line.cx = g.X0 + PM.Int(g.W / 2);
+    line.fade = PM.Int(line.w * g.FADE_FRAC);
+    travel.x0 = line.x + line.fade - g.BURST_LEAD;
+    travel.x1 = line.x + line.w - line.fade - g.BURST_W + g.BURST_TAIL;
+    s.line.SetImage(img.line.Scale(line.w, img.line.GetHeight())); s.line.SetX(line.x); s.line.SetY(line.y - g.LINE_CORE);
+    s.litfade.SetImage(img.litfade.Scale(line.fade, img.litfade.GetHeight())); s.litfade.SetX(line.x); s.litfade.SetY(line.y - g.LINE_CORE);
+    s.lit.SetY(line.y - g.LINE_CORE);
+    s.streak.SetY(line.y - PM.Int(img.streak.GetHeight() / 2));
+    s.spot.SetX(line.cx - PM.Int(img.spot.GetWidth() / 2)); s.spot.SetY(line.y - PM.Int(img.spot.GetHeight() / 2));
+    s.burst.SetY(line.y - g.BURST_BASE);
+    for (let i = 0; i < g.N_SYMBOLS; i++) s.flare[i].SetY(line.y - g.FLARE_BASE);
+    const hw = PM.Int(line.w * 1.3), hh = PM.Int(hw * img.haze.GetHeight() / img.haze.GetWidth());
+    s.haze.SetImage(img.haze.Scale(hw, hh)); s.haze.SetX(line.cx - PM.Int(hw / 2)); s.haze.SetY(line.y - PM.Int(hh / 2));
+    word.y = line.y + g.WORD_GAP;
+    s.wordmark.SetX(line.cx - PM.Int(img.wordmark.GetWidth() / 2));
+    caption.y = word.y + img.wordmark.GetHeight() + g.CAPTION_GAP;
+    s.caption.SetX(line.cx - PM.Int(img.caption.GetWidth() / 2));
+    s.keepon.SetX(line.cx - PM.Int(img.keepon.GetWidth() / 2));
+    field.w = PM.Min(g.FIELD_W, g.W - 64); field.x = g.X0 + PM.Int((g.W - field.w) / 2);
+    prompt.y = line.y + g.PROMPT_GAP;
+    s.p_caption.SetX(line.cx - PM.Int(img.unlock.GetWidth() / 2)); s.p_caption.SetY(prompt.y);
+    s.p_rule.SetImage(img.rule.Scale(field.w, 1)); s.p_rule.SetX(field.x);
+    s.p_chevron.SetX(field.x);
+    msg.base_y = g.Y0 + g.H - g.MSG_BOTTOM;
+    place_prompt_rows(); place_messages();
+  }
+  function place_prompt_rows() {
+    let text_h = 0;
+    if (prompt.text_img) text_h = prompt.text_img.GetHeight() + 10;
+    prompt.row_y = prompt.y + img.unlock.GetHeight() + 14 + text_h;
+    s.p_chevron.SetY(prompt.row_y);
+    s.p_cursor.SetY(prompt.row_y + PM.Int((img.chevron.GetHeight() - img.cursor.GetHeight()) / 2));
+    s.p_entry.SetY(prompt.row_y + PM.Int((img.chevron.GetHeight() - 18) / 2));
+    s.p_rule.SetY(prompt.row_y + img.chevron.GetHeight() + 10);
+    s.p_caps.SetX(field.x + field.w - img.caps.GetWidth());
+    s.p_caps.SetY(prompt.row_y + PM.Int((img.chevron.GetHeight() - img.caps.GetHeight()) / 2));
+    bullets.y = prompt.row_y + PM.Int((img.chevron.GetHeight() - img.bullet.GetHeight()) / 2);
+    bullets.x = field.x + img.chevron.GetWidth() + 12;
+    bullets.max = PM.Int((field.w - img.chevron.GetWidth() - 12 - img.caps.GetWidth() - 16) / g.BULLET_PITCH);
+    for (let i = 0; i < bullets.made; i++) { bullets.sprite[i].SetX(bullets.x + i * g.BULLET_PITCH); bullets.sprite[i].SetY(bullets.y); }
+  }
+  function place_messages() {
+    for (let i = 0; i < msg.count; i++) {
+      const im = msg.image[i];
+      if (im) { msg.sprite[i].SetX(g.X0 + PM.Int((g.W - im.GetWidth()) / 2)); msg.sprite[i].SetY(msg.base_y - (msg.count - i) * g.MSG_LINE); }
+    }
+  }
+  function display_message_callback(text) {
+    if (msg.count >= 3) {
+      msg.sprite[0].SetOpacity(0);
+      for (let i = 1; i < msg.count; i++) { msg.text[i - 1] = msg.text[i]; msg.image[i - 1] = msg.image[i]; msg.sprite[i - 1] = msg.sprite[i]; }
+      msg.count--;
+    }
+    const im = fit_width(text_image(text, DR, DG, DB, g.FONT_MONO_SMALL), g.W - 64);
+    msg.text[msg.count] = text; msg.image[msg.count] = im;
+    msg.sprite[msg.count] = make_sprite(im, 40); msg.sprite[msg.count].SetOpacity(1);
+    msg.count++; place_messages();
+  }
+  function hide_message_callback(text) {
+    for (let i = 0; i < msg.count; i++) {
+      if (msg.text[i] === text) {
+        msg.sprite[i].SetOpacity(0);
+        for (let j = i + 1; j < msg.count; j++) { msg.text[j - 1] = msg.text[j]; msg.image[j - 1] = msg.image[j]; msg.sprite[j - 1] = msg.sprite[j]; }
+        msg.count--; place_messages(); return;
+      }
+    }
+  }
+  function set_prompt_text(text) {
+    if (text === prompt.last_text) return;
+    prompt.last_text = text;
+    prompt.text_img = fit_width(text_image(text, DR, DG, DB, g.FONT_MONO), g.W - 64);
+    if (prompt.text_img) {
+      s.p_text.SetImage(prompt.text_img);
+      s.p_text.SetX(line.cx - PM.Int(prompt.text_img.GetWidth() / 2));
+      s.p_text.SetY(prompt.y + img.unlock.GetHeight() + 10);
+    }
+    place_prompt_rows();
+  }
+  function set_bullets(n) {
+    bullets.count = n;
+    const shown = PM.Min(n, bullets.max);
+    while (bullets.made < shown) {
+      bullets.sprite[bullets.made] = make_sprite(img.bullet, 31);
+      bullets.sprite[bullets.made].SetX(bullets.x + bullets.made * g.BULLET_PITCH);
+      bullets.sprite[bullets.made].SetY(bullets.y);
+      bullets.made++;
+    }
+    bullets.shown = shown;
+    prompt.cursor_x = bullets.x + shown * g.BULLET_PITCH;
+  }
+  function display_password_callback(prompt_text, bullet_count) {
+    g.ui.state = "password"; s.p_caption.SetImage(img.unlock); set_prompt_text(prompt_text); set_bullets(bullet_count);
+  }
+  function display_question_callback(prompt_text, entry) {
+    g.ui.state = "question"; s.p_caption.SetImage(img.question); set_prompt_text(prompt_text); set_bullets(0);
+    prompt.entry_img = null;
+    if (entry) prompt.entry_img = text_image(entry, TR, TG, TB, g.FONT_MONO);
+    prompt.cursor_x = bullets.x;
+    if (prompt.entry_img) { s.p_entry.SetImage(prompt.entry_img); s.p_entry.SetX(bullets.x); prompt.cursor_x = bullets.x + prompt.entry_img.GetWidth() + 4; }
+  }
+  function display_normal_callback() { g.ui.state = "normal"; }
+  function boot_progress_callback(duration, fraction) { if (!g.with_percent && fraction > g.progress.target) g.progress.target = fraction; }
+  function system_update_callback(percent) {
+    g.progress.target = clamp01(percent / 100);
+    if (percent !== g.progress.percent) {
+      g.progress.percent = percent;
+      const im = text_image("" + PM.Int(percent) + " %", DR, DG, DB, g.FONT_MONO);
+      if (im) { s.percent.SetImage(im); s.percent.SetX(line.cx - PM.Int(im.GetWidth() / 2)); s.percent.SetY(caption.y + img.caption.GetHeight() + 12); }
+    }
+  }
+  function update_status_callback(status) {
+    if (status.substring(0, 17) === "fsckd-cancel-msg:") display_message_callback(status.substring(17, 4096));
+  }
+  function quit_callback() { g.ui.quit = 1; g.progress.target = 1; }
+  function key_level(unit_time, i) {
+    const u = unit_time - g.SYMBOL_ON[i];
+    if (u < 0) return 0;
+    const on = g.SYMBOL_LEN[i];
+    if (u < on) return smooth(u / 0.45);
+    const d = (u - on) / 2.2;
+    if (d >= 1) return 0;
+    return (1 - d) * (1 - d);
+  }
+  function refresh_callback() {
+    g.frame++;
+    const t = g.frame / g.FPS;
+    const t_stretch = g.T_SPOT + g.T_HOLD, t_line = t_stretch + g.T_STRETCH;
+    const spot_in = ease_out(phase(t, 0, g.T_SPOT));
+    const stretch = ease_out(phase(t, t_stretch, g.T_STRETCH));
+    const settle = smooth(phase(t, t_line - 0.1, g.T_SETTLE));
+    const burst_in = ease_out(phase(t, t_line, g.T_BURST));
+    const word_in = ease_out(phase(t, t_line + 0.12, g.T_WORD));
+    const want_dim = g.ui.state !== "normal" ? 1 : 0;
+    g.ui.dim = approach(g.ui.dim, want_dim, 0.18);
+    const signal = 1 - 0.62 * g.ui.dim;
+    s.spot.SetOpacity(spot_in * (1 - smooth(phase(t, t_stretch, g.T_STRETCH * 0.55))));
+    if (t >= t_stretch && settle < 1) {
+      const sw = PM.Int(img.streak.GetWidth() * 0.5 + (line.w - img.streak.GetWidth() * 0.5) * stretch);
+      s.streak.SetImage(img.streak.Scale(sw, img.streak.GetHeight()));
+      s.streak.SetX(line.cx - PM.Int(sw / 2));
+      s.streak.SetOpacity((1 - settle) * 0.95);
+    } else s.streak.SetOpacity(0);
+    s.line.SetOpacity(g.BASE_OPACITY * settle * signal);
+    s.haze.SetOpacity((0.35 + 0.65 * settle) * spot_in * (1 - 0.5 * g.ui.dim));
+    if (burst_in > 0.5 && g.progress.shown < g.progress.target) g.progress.shown = approach(g.progress.shown, g.progress.target, 0.06);
+    if (!g.travels) g.progress.shown = 0.5;
+    const bx = PM.Int(travel.x0 + (travel.x1 - travel.x0) * g.progress.shown);
+    s.burst.SetX(bx);
+    s.burst.SetOpacity(burst_in * g.BURST_REST * signal);
+    const lit_w = bx + g.BURST_LEAD - (line.x + line.fade);
+    if (g.travels && lit_w > 0) {
+      if (lit_w !== lit.last_w) { s.lit.SetImage(img.lit.Scale(lit_w, img.lit.GetHeight())); s.lit.SetX(line.x + line.fade); lit.last_w = lit_w; }
+      s.lit.SetOpacity(burst_in * 0.9 * signal); s.litfade.SetOpacity(burst_in * 0.9 * signal);
+    } else {
+      s.lit.SetOpacity(0);
+      s.litfade.SetOpacity(g.travels ? burst_in * 0.9 * signal : 0);
+    }
+    const kt = (t - t_line) / g.KEY_UNIT;
+    let unit_time = kt % g.KEY_PERIOD;
+    if (kt < 0) unit_time = -100;
+    for (let i = 0; i < g.N_SYMBOLS; i++) {
+      s.flare[i].SetX(bx + g.SYMBOL_X[i] - g.FLARE_PAD);
+      s.flare[i].SetOpacity(key_level(unit_time, i) * burst_in * signal);
+    }
+    const word_op = word_in * (1 - g.ui.dim);
+    s.wordmark.SetY(word.y + PM.Int(4 * (1 - word_in))); s.wordmark.SetOpacity(word_op * 0.92);
+    s.caption.SetY(caption.y + PM.Int(4 * (1 - word_in))); s.caption.SetOpacity(word_op);
+    s.percent.SetOpacity(word_op * g.with_percent);
+    s.keepon.SetY(caption.y + img.caption.GetHeight() + 40); s.keepon.SetOpacity(word_op * g.with_percent);
+    let p = g.ui.dim;
+    if (g.ui.state === "normal") p = g.ui.dim * g.ui.dim;
+    s.p_caption.SetOpacity(p);
+    s.p_text.SetOpacity(p * (prompt.text_img ? 1 : 0));
+    s.p_chevron.SetOpacity(p); s.p_rule.SetOpacity(p);
+    const blink = 0.35 + 0.65 * (0.5 + 0.5 * PM.Cos(2 * PM.Pi * t / 1.1));
+    s.p_cursor.SetX(prompt.cursor_x); s.p_cursor.SetOpacity(p * blink);
+    s.p_entry.SetOpacity(p * (g.ui.state === "question" && prompt.entry_img ? 1 : 0));
+    let caps = 0;
+    if (g.ui.state === "password" && Plymouth.GetCapslockState) caps = Plymouth.GetCapslockState();
+    s.p_caps.SetOpacity(p * caps);
+    for (let i = 0; i < bullets.made; i++) bullets.sprite[i].SetOpacity(p * (g.ui.state === "password" && i < bullets.shown ? 1 : 0));
+  }
+
+  layout();
+  Plymouth.SetRefreshFunction(refresh_callback);
+  Plymouth.SetBootProgressFunction(boot_progress_callback);
+  Plymouth.SetUpdateStatusFunction(update_status_callback);
+  Plymouth.SetDisplayNormalFunction(display_normal_callback);
+  Plymouth.SetDisplayPasswordFunction(display_password_callback);
+  Plymouth.SetDisplayQuestionFunction(display_question_callback);
+  Plymouth.SetDisplayMessageFunction(display_message_callback);
+  Plymouth.SetHideMessageFunction(hide_message_callback);
+  Plymouth.SetQuitFunction(quit_callback);
+  Plymouth.SetSystemUpdateFunction(system_update_callback);
+  Plymouth.SetDisplayHotplugFunction(() => layout());
+}
+
+// ─────────────── driving it ───────────────
+const SPRITES = ["spot.png", "streak.png", "line.png", "lit.png", "lit-fade.png", "burst.png", "flare-dot.png",
+  "flare-dash.png", "haze.png", "wordmark-ru.png", "wordmark-en.png", "chevron.png", "bullet.png", "cursor.png",
+  "rule.png", "caps-ru.png", "caps-en.png"];
+for (const n of ["boot", "shutdown", "reboot", "updates", "upgrade", "firmware", "reset", "unlock", "question", "keepon"])
+  for (const l of ["ru", "en"]) SPRITES.push(`caption-${n}-${l}.png`);
+
+// A fixed state: simulate from frame 0 so every eased value has its real history.
+function renderState(st) {
+  MODE = st.mode || "boot"; CAPS = st.caps ? 1 : 0; W = st.w || 1920; H = st.h || 1080;
+  runScript(st.lang || "ru");
+  const frames = Math.round(st.t * G0.FPS);
+  const promptAt = frames - Math.round(G0.FPS * 1.0);
+  for (let f = 0; f < frames; f++) {
+    if (f === 10) {
+      if (st.progress !== undefined) cb.BootProgress(f / G0.FPS, st.progress);
+      if (st.percent !== undefined) cb.SystemUpdate(st.percent);
+    }
+    if (f === promptAt) {
+      for (const m of st.messages || []) cb.DisplayMessage(m);
+      if (st.password !== undefined) cb.DisplayPassword(st.prompt || "", st.password);
+      if (st.question !== undefined) cb.DisplayQuestion(st.prompt || "", st.question);
+    }
+    cb.Refresh();
+  }
+  paint();
+}
+
+// Interactive: real time, keyboard driven.
+function play() {
+  let lang = "ru", typed = 0, t0 = performance.now(), frame = 0, prog = 0;
+  const hud = document.getElementById("hud");
+  const start = (m) => { MODE = m || MODE; runScript(lang); t0 = performance.now(); frame = 0; prog = 0; typed = 0; };
+  start("boot");
+  addEventListener("keydown", (e) => {
+    const k = e.key;
+    if (k === "r" || k === "R") start();
+    else if (k === "l" || k === "L") { lang = lang === "ru" ? "en" : "ru"; start(); }
+    else if ("1234567".includes(k)) start(["boot", "shutdown", "reboot", "updates", "system-upgrade", "firmware-upgrade", "system-reset"][+k - 1]);
+    else if (k === "Escape") cb.DisplayNormal();
+    else if ((k === "p" || k === "P") && S.ui.state === "normal") cb.DisplayPassword("Please enter passphrase for disk Samsung SSD 990 PRO (luks-3f1c)", typed = 0);
+    else if ((k === "q" || k === "Q") && S.ui.state === "normal") cb.DisplayQuestion("Продолжить без сети? [д/н]", "");
+    else if ((k === "m" || k === "M") && S.ui.state === "normal") cb.DisplayMessage("Проверка файловой системы на /dev/nvme0n1p2 — " + (10 + (Math.random() * 80 | 0)) + " %");
+    else if ((k === "h" || k === "H") && S.ui.state === "normal") { while (S.msg.count) cb.HideMessage(S.msg.text[0]); }
+    else if (S.ui.state === "password") { if (k === "Backspace") typed = Math.max(0, typed - 1); else if (k.length === 1) typed++; cb.DisplayPassword(S.prompt.last_text, typed); }
+    else if (e.key === "CapsLock") CAPS = e.getModifierState("CapsLock") ? 1 : 0;
+  });
+  (function tick() {
+    const target = Math.floor((performance.now() - t0) / 1000 * G0.FPS);
+    while (frame < target) {
+      frame++;
+      if (frame % 25 === 0) { prog = Math.min(1, prog + 0.018 + Math.random() * 0.02); if (MODE === "boot") cb.BootProgress(frame / 50, prog); else cb.SystemUpdate(Math.round(prog * 100)); }
+      cb.Refresh();
+    }
+    paint();
+    hud.textContent = `${MODE} · ${lang} · t=${(frame / 50).toFixed(2)} s · progress ${(S.progress.shown * 100).toFixed(0)} %  —  P passphrase · Q question · M message · H hide · 1–7 modes · L language · R restart`;
+    requestAnimationFrame(tick);
+  })();
+}
+
+(async () => {
+  await document.fonts.load('400 13px "Plex Mono"');
+  await document.fonts.load('500 13px "Plex Mono"');
+  await loadFiles(SPRITES);
+  if (location.hash.length > 1) {
+    document.getElementById("hud").remove();
+    renderState(JSON.parse(decodeURIComponent(location.hash.slice(1))));
+  } else play();
+  window.__ready = true;
+})();
+</script>
+</body>
+</html>

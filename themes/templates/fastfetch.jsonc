@@ -1,0 +1,36 @@
+// svoya:generated — theme «{{ name.ru }}» / {{ name.en }} ({{ id }}). Written by `svoya theme apply`; edits are overwritten.
+// Your previous config (if any) is kept as config.jsonc.pre-svoya.
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "data",
+    "source": "$1··· $2——— $1···",
+    "color": { "1": "{{ color.textDim | ansi }}", "2": "{{ color.accent | ansi }}" },
+    "padding": { "top": 1, "right": 3 }
+  },
+  "display": {
+    "separator": "  ",
+    "color": {
+      "keys": "{{ color.textDim | ansi }}",
+      "title": "{{ color.accent | ansi }}",
+      "output": "{{ color.text | ansi }}",
+      "separator": "{{ color.textFaint | ansi }}"
+    },
+    "key": { "width": 10 }
+  },
+  "modules": [
+    "title",
+    { "type": "os", "key": "os" },
+    { "type": "kernel", "key": "kernel" },
+    { "type": "uptime", "key": "uptime" },
+    { "type": "packages", "key": "packages" },
+    { "type": "wm", "key": "wm" },
+    { "type": "terminal", "key": "terminal" },
+    { "type": "cpu", "key": "cpu" },
+    { "type": "gpu", "key": "gpu" },
+    { "type": "memory", "key": "memory" },
+    { "type": "disk", "key": "disk", "folders": "/:/srv/ai" },
+    "break",
+    "colors"
+  ]
+}

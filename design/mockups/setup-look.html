@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — first run · 3/7 look</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<link rel="stylesheet" href="setup.css">
+<script src="shell.js"></script>
+<style>
+  .themes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .themes .card { padding: 8px 8px 0; }
+  .pv { position: relative; height: 145px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+  .pv .mini { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform: scale(0.16111); transform-origin: 0 0; }
+  .pv .mini .wallpaper::after { display: none; }
+  .pv .mini.day { clip-path: polygon(0 0, 58% 0, 42% 100%, 0 100%); }
+  .pv::after { content: ""; position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.18); pointer-events: none; }
+  .tx { padding: 12px 6px 14px; }
+  .tx .nm { display: flex; align-items: center; gap: 8px; font: 500 15px/20px "Plex Sans"; color: var(--text); }
+  .tx .nm .tag { margin-left: 2px; }
+  .tx .nm .sel { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); display: grid; place-items: center; }
+  .card.on .tx .nm .sel { background: var(--accent); box-shadow: none; color: var(--accent-ink); }
+  .card:not(.on) .tx .nm .sel svg { display: none; }
+  .tx .nm .sel svg.i { width: 11px; height: 11px; stroke-width: 2.8; }
+  .tx .d { margin-top: 3px; font: 400 13px/20px "Plex Sans"; color: var(--text-dim); }
+  .tx .hex { margin-top: 8px; display: flex; gap: 10px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .tx .hex span { display: flex; align-items: center; gap: 5px; }
+  .tx .hex i { width: 9px; height: 9px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); }
+
+  /* auto: day / night strip */
+  .auto { margin-top: 20px; display: grid; grid-template-columns: 372px 1fr; gap: 40px; align-items: center; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); }
+  .auto h4 { font: 500 13px/18px "Plex Sans"; color: var(--text); }
+  .auto p { margin-top: 3px; font: 400 12.5px/19px "Plex Sans"; color: var(--text-dim); }
+  .day24 { position: relative; height: 44px; }
+  .day24 .track { position: absolute; left: 0; right: 0; top: 11px; height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; }
+  .day24 .track i { display: block; height: 100%; }
+  .day24 .n { background: #2a2d33; }
+  .day24 .p { background: #d9d5cb; }
+  [data-theme="paper"] .day24 .n { background: #3a3d44; }
+  [data-theme="paper"] .day24 .p { background: #cdc8bc; }
+  .day24 .lbl { position: absolute; top: 28px; transform: translateX(-50%); font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; }
+  .day24 .lbl.edge-l { transform: none; }
+  .day24 .lbl.edge-r { transform: translateX(-100%); }
+  .day24 .now { position: absolute; top: 6px; width: 2px; height: 16px; margin-left: -1px; border-radius: 1px; background: var(--accent); }
+  .day24 .now-l { position: absolute; top: 28px; transform: translateX(-50%); font: 500 11px/1 "Plex Mono"; color: var(--accent); }
+
+  .opts { margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .opt-t { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 14px; border: 1px solid var(--line); }
+  .opt-t b { display: block; font: 500 13px/18px "Plex Sans"; color: var(--text); }
+  .opt-t span { display: block; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+  .opt-t .switch { margin-left: auto; }
+  .opt-t .play { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--text-dim); margin-left: auto; }
+  .opt-t .play svg.i { width: 11px; height: 11px; stroke-width: 2; margin-left: 1px; }
+  .opt-t .play + .switch { margin-left: 0; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <div class="grain"></div>
+  </div>
+
+  <div class="wz">
+    <div class="wz-top">
+      <div class="brand"><svg class="morse"></svg>Настройка <span>· первый запуск</span></div>
+      <div class="wz-steps">
+        <div class="seg"><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i></div>
+        <span class="n"><b>3</b> / 7</span>
+      </div>
+      <div class="aux">
+        <span class="tbtn"><svg data-i="accessibility"></svg><kbd>Super</kbd><kbd>Alt</kbd><kbd>A</kbd></span>
+        <span class="tbtn">пропустить настройку</span>
+      </div>
+    </div>
+
+    <div class="wz-body">
+      <div class="wz-eyebrow">Оформление</div>
+      <h1 class="wz-h">Как будет выглядеть система?</h1>
+      <p class="wz-sub">Тема применяется сразу — прямо на этом экране. Передумать можно когда угодно: в центре управления или командой <code>svoya theme</code>.</p>
+
+      <div class="themes">
+        <div class="card" data-pick="graphite">
+          <div class="pv" data-mini="graphite"></div>
+          <div class="tx">
+            <div class="nm">Графит<span class="sel"><svg data-i="check"></svg></span></div>
+            <div class="d">Тёмная, янтарный сигнал</div>
+            <div class="hex"><span><i style="background:#0c0d0f"></i>0c0d0f</span><span><i style="background:#ffb547"></i>ffb547</span></div>
+          </div>
+        </div>
+        <div class="card" data-pick="paper">
+          <div class="pv" data-mini="paper"></div>
+          <div class="tx">
+            <div class="nm">Бумага<span class="sel"><svg data-i="check"></svg></span></div>
+            <div class="d">Светлая, чернильный синий</div>
+            <div class="hex"><span><i style="background:#e9e6de"></i>e9e6de</span><span><i style="background:#2b3af7"></i>2b3af7</span></div>
+          </div>
+        </div>
+        <div class="card" data-pick="auto">
+          <div class="pv" data-mini="graphite" data-day="paper"></div>
+          <div class="tx">
+            <div class="nm">Авто<span class="tag line">по умолчанию</span><span class="sel"><svg data-i="check"></svg></span></div>
+            <div class="d">Бумага днём, Графит ночью</div>
+            <div class="hex"><span><svg class="i" data-i="sun" style="width:11px;height:11px"></svg>07:00</span><span><svg class="i" data-i="moon" style="width:11px;height:11px"></svg>20:00</span></div>
+          </div>
+        </div>
+        <div class="card" data-pick="phosphor">
+          <div class="pv" data-mini="phosphor"></div>
+          <div class="tx">
+            <div class="nm">Фосфор<span class="sel"><svg data-i="check"></svg></span></div>
+            <div class="d">Зелёный люминофор, для души</div>
+            <div class="hex"><span><i style="background:#050806"></i>050806</span><span><i style="background:#5cf08f"></i>5cf08f</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="auto solid">
+        <div>
+          <h4>Как работает «Авто»</h4>
+          <p>Место не спрашиваем: по умолчанию 07:00 и 20:00. По&nbsp;закату&nbsp;— только если разрешишь геолокацию.</p>
+        </div>
+        <div class="day24">
+          <div class="track"><i class="n" style="width:29.17%"></i><i class="p" style="width:54.17%"></i><i class="n" style="width:16.66%"></i></div>
+          <span class="lbl edge-l" style="left:0">00:00</span>
+          <span class="lbl" style="left:29.17%">07:00 · Бумага</span>
+          <span class="lbl" style="left:83.33%">20:00 · Графит</span>
+          <span class="lbl edge-r" style="left:100%">24:00</span>
+          <span class="now" style="left:77.9%"></span>
+          <span class="now-l" style="left:77.9%; top:-14px">сейчас 18:42</span>
+        </div>
+      </div>
+
+      <div class="opts">
+        <div class="opt-t solid"><div><b>Звук запуска</b><span>··· ——— ··· синусом, 1,8 с</span></div><span class="play"><svg data-i="play"></svg></span><span class="switch on"></span></div>
+        <div class="opt-t solid"><div><b>Меньше движения</b><span>без анимаций, скоп статичен</span></div><span class="switch"></span></div>
+        <div class="opt-t solid"><div><b>Высокий контраст</b><span>для всех тем, текст AAA</span></div><span class="switch"></span></div>
+      </div>
+    </div>
+
+    <div class="wz-foot">
+      <button class="btn lg back"><svg data-i="chevronRight" style="transform:scaleX(-1)"></svg>Назад</button>
+      <div class="mid">каждый шаг можно пропустить · любой выбор <b>отменяется</b></div>
+      <button class="btn lg primary">Дальше<span class="k">Enter</span></button>
+    </div>
+  </div>
+
+</div>
+<script>
+  const MINI = (theme) => `<div class="mini" data-theme="${theme}"><div class="screen">
+      <div class="wallpaper"><svg class="signal"></svg><div class="grain"></div></div>
+      <header class="bar"></header>
+      <section class="window" style="left:48px; top:572px; width:600px; height:276px;">
+        <div class="titlebar"><div class="t"><span class="glyph"></span><b>Терминал</b>~/ai/projects/tts-finetune</div><i data-ctl></i></div>
+        <pre class="term-body" data-training="running"></pre>
+      </section>
+      <section class="jackson">
+        <div class="j-head"><svg class="scope" data-kind="answer" width="92" height="22"></svg><span class="name">Джексон</span><span class="chip"><span class="dot ok"></span>локально · qwen3.5-14b</span><span class="spacer"></span><span class="keys"><kbd>Super</kbd><kbd>J</kbd></span></div>
+        <div class="j-input">Какая модель для видео влезет в мою видеокарту?</div>
+        <div class="j-answer"><p>У тебя RTX 4090 на 24 ГБ. Лучше всего подходит <b>Wan 2.2 5B</b>: займёт около 11 ГБ, пятисекундный ролик в 720p соберётся примерно за 4 минуты.</p>
+          <div class="fit"><div class="row"><span class="n">Wan 2.2 TI2V 5B</span><div class="vram"><i style="width:47.5%"></i></div><span class="sz">11,4 ГБ</span><span class="st ok">влезет</span></div></div>
+          <div class="actions"><button class="btn primary">Установить в Студию</button><button class="btn">Позже</button></div></div>
+        <div class="j-foot"><div class="l"><span class="dot ok"></span>0,8 с · 312 токенов · 0 € · данные не покидали компьютер</div></div>
+      </section>
+    </div></div>`;
+  document.querySelectorAll('[data-mini]').forEach((pv) => {
+    pv.innerHTML = MINI(pv.dataset.mini) + (pv.dataset.day ? MINI(pv.dataset.day).replace('class="mini"', 'class="mini day"') : '');
+  });
+  document.querySelectorAll('.mini header.bar').forEach((el) => Svoya.bar({ el }));
+  const t = document.documentElement.dataset.theme;
+  document.querySelector(`[data-pick="${t}"]`)?.classList.add('on');
+  Svoya.init({ bar: false });
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Svoya OS — notifications</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  .toasts { position: absolute; right: 18px; top: 44px; width: 330px; z-index: 6; display: flex; flex-direction: column; gap: 10px; }
+  .toasts .toast { position: relative; right: auto; top: auto; }
+  .toast .h { height: 14px; }
+  .toast .h .x { width: 12px; height: 12px; color: var(--text-faint); stroke-width: 2; }
+  .toast .h .app-ic { width: 14px; height: 14px; color: var(--text-dim); stroke-width: 1.8; }
+  .toast.jk { border-color: var(--line-strong); }
+  .toast.jk .h svg.scope { filter: var(--glow); }
+  .toast .b { margin-top: 10px; }
+  .toast .sub { margin-top: 5px; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>Svoya OS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <section class="window active" style="left:300px; top:92px; width:712px; height:440px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="activity"></svg><b>Trackio</b>tts-finetune · localhost:7860</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content" data-trackio="done" data-w="650" data-h="252"></div>
+  </section>
+
+  <section class="window" style="left:48px; top:572px; width:600px; height:276px;">
+    <div class="titlebar">
+      <div class="t"><span class="glyph"></span><b>Терминал</b>~/ai/projects/tts-finetune</div>
+      <i data-ctl></i>
+    </div>
+    <pre class="term-body" data-training="done"></pre>
+  </section>
+
+  <div class="toasts">
+    <div class="toast jk">
+      <div class="h">
+        <svg class="scope" data-kind="answer" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg>
+        <b>Джексон</b>сейчас<span class="spacer"></span><svg class="x" data-i="x"></svg>
+      </div>
+      <div class="b">Обучение завершено — loss <b>0.298</b>.<br>Запустить оценку?</div>
+      <div class="sub">tts-finetune · 3 эпохи · 54 мин · 2 900 шагов</div>
+      <div class="acts">
+        <button class="btn sm primary">Запустить оценку</button>
+        <button class="btn sm">Позже</button>
+      </div>
+    </div>
+
+    <div class="toast">
+      <div class="h">
+        <svg class="app-ic" data-i="refresh"></svg>
+        <b>Обновления</b>19:24<span class="spacer"></span><svg class="x" data-i="x"></svg>
+      </div>
+      <div class="b">Доступна Svoya OS 26.10.1: 3 пакета, <span>одно исправление безопасности.</span></div>
+      <div class="sub">сначала снимок · откат из меню загрузки</div>
+      <div class="acts">
+        <button class="btn sm">Установить</button>
+        <button class="btn sm">Ночью, в 03:00</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+  Svoya.init({ bar: { title: ['Trackio', 'tts-finetune'], job: { label: 'обучение готово', done: true }, gpu: ['41°', '1,4/24 ГБ'], time: '19:26' } });
+</script>
+</body>
+</html>

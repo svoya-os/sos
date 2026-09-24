@@ -1,0 +1,53 @@
+/* svoya:generated — theme «{{ name.ru }}» / {{ name.en }} ({{ id }}). Written by `svoya theme apply`; edits are overwritten.
+   Your own CSS: keep it in gtk.css.pre-svoya (imported below when it exists).
+   Named colors understood by adw-gtk3 and other libadwaita-style GTK3 themes. Matte: no translucency. */
+
+@define-color accent_color {{ color.accent | hex }};
+@define-color accent_bg_color {{ color.accent | hex }};
+@define-color accent_fg_color {{ color.accentInk | hex }};
+
+@define-color destructive_color {{ color.bad | hex }};
+@define-color destructive_bg_color {{ color.bad | hex }};
+@define-color destructive_fg_color {{ color.accentInk | hex }};
+@define-color success_color {{ color.ok | hex }};
+@define-color success_bg_color {{ color.ok | hex }};
+@define-color success_fg_color {{ color.accentInk | hex }};
+@define-color warning_color {{ color.warn | hex }};
+@define-color warning_bg_color {{ color.warn | hex }};
+@define-color warning_fg_color {{ color.accentInk | hex }};
+@define-color error_color {{ color.bad | hex }};
+@define-color error_bg_color {{ color.bad | hex }};
+@define-color error_fg_color {{ color.accentInk | hex }};
+
+@define-color window_bg_color {{ color.surface | hex }};
+@define-color window_fg_color {{ color.text | hex }};
+@define-color view_bg_color {{ color.surface2 | hex }};
+@define-color view_fg_color {{ color.text | hex }};
+@define-color headerbar_bg_color {{ color.surface | hex }};
+@define-color headerbar_fg_color {{ color.text | hex }};
+@define-color headerbar_border_color {{ color.line | hex }};
+@define-color headerbar_backdrop_color {{ color.surface | hex }};
+@define-color headerbar_shade_color {{ color.line | hex }};
+@define-color card_bg_color {{ color.surface2 | hex }};
+@define-color card_fg_color {{ color.text | hex }};
+@define-color card_shade_color {{ color.line | hex }};
+@define-color dialog_bg_color {{ color.surface2 | hex }};
+@define-color dialog_fg_color {{ color.text | hex }};
+@define-color popover_bg_color {{ color.surface2 | hex }};
+@define-color popover_fg_color {{ color.text | hex }};
+@define-color sidebar_bg_color {{ color.bar | hex }};
+@define-color sidebar_fg_color {{ color.text | hex }};
+@define-color sidebar_backdrop_color {{ color.bar | hex }};
+@define-color sidebar_border_color {{ color.line | hex }};
+@define-color shade_color {{ color.shadow | rgba }};
+@define-color scrollbar_outline_color {{ color.line | hex }};
+
+/* legacy names used by older GTK3 themes */
+@define-color theme_bg_color {{ color.surface | hex }};
+@define-color theme_fg_color {{ color.text | hex }};
+@define-color theme_base_color {{ color.surface2 | hex }};
+@define-color theme_text_color {{ color.text | hex }};
+@define-color theme_selected_bg_color {{ color.accent | hex }};
+@define-color theme_selected_fg_color {{ color.accentInk | hex }};
+@define-color insensitive_fg_color {{ color.textFaint | hex }};
+@define-color borders {{ color.line | hex }};

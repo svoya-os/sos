@@ -1,0 +1,34 @@
+# Line endings: LF everywhere, including checkouts on Windows.
+* text=auto eol=lf
+
+# Diff drivers
+*.py    text diff=python
+*.md    text diff=markdown
+*.html  text diff=html
+*.css   text diff=css
+*.sh    text eol=lf
+*.svg   text
+
+# Binary files: never normalized, never diffed as text
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.gif   binary
+*.ico   binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.pf2   binary
+*.ogg   binary
+*.oga   binary
+*.wav   binary
+*.flac  binary
+*.pdf   binary
+*.gpg   binary
+*.iso   binary
+
+# GitHub language statistics: mockups and docs are not the product's code.
+design/** linguist-documentation
+docs/**   linguist-documentation

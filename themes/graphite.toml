@@ -1,0 +1,49 @@
+# Svoya OS theme tokens — Graphite (default dark). SPDX-License-Identifier: Apache-2.0
+id = "graphite"
+mode = "dark"
+pair = "paper"
+
+[name]
+en = "Graphite"
+ru = "Графит"
+
+[color]
+wall = "#0c0d0f"
+bar = "#0e0f11"
+surface = "#141518"
+surface2 = "#191b1f"
+surface3 = "#22252a"
+line = "#25282d"
+lineStrong = "#363a41"
+text = "#ebe8e1"
+textDim = "#9d9a92"
+textFaint = "#67655f"
+accent = "#ffb547"
+accentSoft = "#24ffb547"   # ARGB (alpha first), 14%
+accentInk = "#1b1204"
+ok = "#8fd48a"
+warn = "#ffb547"
+bad = "#ff7a6b"
+cloud = "#7ad3e6"
+shadow = "#b3000000"
+
+[font]
+sans = "IBM Plex Sans"
+mono = "IBM Plex Mono"
+pixel = "Departure Mono"
+
+[shape]
+radius = 11
+radiusSmall = 6
+radiusLarge = 16
+border = 1
+
+[motion]
+fast = 120
+base = 180
+slow = 260
+
+[effects]
+grain = 0.07
+glow = true
+scanlines = false
