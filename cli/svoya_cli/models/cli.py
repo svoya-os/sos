@@ -587,7 +587,8 @@ def cmd_suggest(args, ctx: Ctx) -> int:
     for a in res["alternatives"]:
         ui.out(f"  {st.faint('○')} {a['name']} {st.faint(a['quant'])}  {i18n.gib(a['sizeBytes'])}  "
                f"{st.faint(suggest_mod.describe(a))}")
-        ui.note(a["pull"], indent=4)
+        if a["verdict"] != "no":              # no ready-made command for a download that cannot run here
+            ui.note(a["pull"], indent=4)
     return 0
 
 

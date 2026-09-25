@@ -149,7 +149,8 @@ def _speed(c: Choice, hw: dict, verdict: str) -> tuple[str, int]:
     tps = 0.55 * _bandwidth(hw) / max(per_token, 0.1)
     if verdict == "offload":
         tps /= 3
-    cls = "fast" if tps >= 40 else "good" if tps >= 15 else "slow" if tps >= 6 else "very-slow"
+    # people read ~5–8 tokens/s: from 10 tok/s an answer outruns the eye
+    cls = "fast" if tps >= 30 else "good" if tps >= 10 else "slow" if tps >= 4 else "very-slow"
     return cls, int(round(tps))
 
 
@@ -171,6 +172,9 @@ def evaluate(c: Choice, hw: dict) -> dict:
         "mmproj": c.mmproj["file"] if c.mmproj else None,
         "sizeBytes": c.size + (c.mmproj["size"] if c.mmproj else 0),
         "memoryBytes8k": est.total, "ctx": CTX, "verdict": verdict, "nCpuMoe": n_cpu_moe, "gpuLayers": gpu_layers,
+        # what it takes to run at all: on CPU the model plus what the system keeps for itself
+        "needBytes": est.total + (est_mod.RAM_RESERVE if hw["backend"] == "cpu" else 0),
+        "needKind": "ram" if hw["backend"] == "cpu" else "vram",
         "diskOk": disk_ok, "speed": speed, "tokensPerSecond": tps, "license": c.model.get("license"),
         "vision": bool(c.model.get("vision")), "note": pick(c.model.get("note")),
         "pull": f"sos models pull {c.id} --yes",
@@ -218,5 +222,11 @@ VERDICT_TEXT = {"fits": ("fits", "влезет"), "offload": ("with offload to R
 
 def describe(e: dict) -> str:
     v = tr(*VERDICT_TEXT[e["verdict"]])
+    if e["verdict"] == "no":
+        # a speed for a model that cannot run here only confuses: say what it would need instead
+        need = e.get("needBytes") or e.get("memoryBytes8k") or e.get("sizeBytes") or 0
+        gb = f"{need / 1024 ** 3:.1f}".replace(".", "," if tr("en", "ru") == "ru" else ".")
+        what = tr("RAM", "ОЗУ") if e.get("needKind") == "ram" else tr("VRAM", "видеопамяти")
+        return f"{v} · {tr('needs', 'нужно')} ~{gb} {tr('GB', 'ГБ')} {what}"
     sp = tr(*SPEED[e["speed"]])
     return f"{v} · {sp} (~{e['tokensPerSecond']} {tr('tok/s', 'ток/с')})"
