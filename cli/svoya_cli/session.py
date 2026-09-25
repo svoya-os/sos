@@ -3,8 +3,9 @@
 1. ``sos theme apply <configured|auto>`` (in-process; files are rewritten only if they changed)
    then ``dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE …``
 2. ``systemctl --user start --no-block jacksond.service`` (skipped while AI is off: ``sos ai off``)
-3. ``quickshell -p /usr/share/svoya/shell`` — unless it is already running
-4. first login only (no ``~/.config/svoya/first-run-done``): ``quickshell -p …/shell/setup``
+3. ``quickshell -p /usr/share/svoya/shell`` — unless it is already running — through
+   ``/usr/lib/svoya/shell-run``: output to ``$XDG_RUNTIME_DIR/sos-shell.log``, restart after a crash
+4. first login only (no ``~/.config/svoya/first-run-done``): ``quickshell -p …/shell/setup`` (logged, no restart)
 5. warm the status cache in the background (apt/snapper counts)
 
 A second call in the same session changes nothing. Nothing here waits on the network or on apt.
@@ -59,6 +60,16 @@ def _log(ctx: Ctx, lines: list[str]) -> None:
         pass
 
 
+SHELL_RUN = "/usr/lib/svoya/shell-run"
+
+
+def _supervised(ctx: Ctx, once: bool = False) -> list[str]:
+    """argv prefix for a shell config dir: shell-run (log + restart) when installed, else quickshell -p."""
+    if ctx.sys(SHELL_RUN).exists():
+        return [SHELL_RUN, "--once"] if once else [SHELL_RUN]
+    return ["quickshell", "-p"]
+
+
 def start(ctx: Ctx) -> list[dict]:
     steps: list[dict] = []
     cfg = config_mod.load(ctx.paths)
@@ -74,7 +85,8 @@ def start(ctx: Ctx) -> list[dict]:
 
     # 1b. hand the compositor's environment to systemd --user and D-Bus (jacksond, portals, apps
     #     started by services); svoya-session exported the rest before Hyprland started
-    names = [n for n in ("WAYLAND_DISPLAY", "HYPRLAND_INSTANCE_SIGNATURE", "XDG_CURRENT_DESKTOP", "DISPLAY")
+    names = [n for n in ("WAYLAND_DISPLAY", "HYPRLAND_INSTANCE_SIGNATURE", "XDG_CURRENT_DESKTOP", "DISPLAY",
+                         "LANG", "LANGUAGE", "LC_ALL", "LC_MESSAGES")
              if ctx.env.get(n)]
     if names and r.which("dbus-update-activation-environment"):
         res = r.run(["dbus-update-activation-environment", "--systemd", *names], timeout=5, mutating=True)
@@ -101,7 +113,7 @@ def start(ctx: Ctx) -> list[dict]:
     elif running(ctx, ["quickshell", "-p", shell]):
         steps.append({"step": "shell", "ok": True, "detail": "already running"})
     elif r.which("quickshell"):
-        ok = r.spawn(["quickshell", "-p", shell])
+        ok = r.spawn([*_supervised(ctx), shell])
         steps.append({"step": "shell", "ok": ok, "detail": shell})
     else:
         steps.append({"step": "shell", "ok": False, "detail": "quickshell not installed"})
@@ -112,7 +124,7 @@ def start(ctx: Ctx) -> list[dict]:
         if running(ctx, ["quickshell", "-p", setup]):
             steps.append({"step": "first-run", "ok": True, "detail": "already running"})
         elif r.which("quickshell"):
-            steps.append({"step": "first-run", "ok": r.spawn(["quickshell", "-p", setup]), "detail": setup})
+            steps.append({"step": "first-run", "ok": r.spawn([*_supervised(ctx, once=True), setup]), "detail": setup})
     # 5. warm the status cache (apt/snapper counts) without waiting
     r.spawn([*svoya_argv(), "status", "--refresh-cache"], mutating=False)
     return steps

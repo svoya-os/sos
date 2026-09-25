@@ -11,4 +11,5 @@ override_dh_auto_install:
 
 override_dh_fixperms:
 	dh_fixperms
-	chmod 0755 $(PKG)/usr/bin/svoya-session $(PKG)/usr/lib/svoya/greeter-session $(PKG)/usr/lib/svoya/session-keyboard
+	chmod 0755 $(PKG)/usr/bin/svoya-session $(PKG)/usr/lib/svoya/greeter-session $(PKG)/usr/lib/svoya/session-keyboard \
+		$(PKG)/usr/lib/svoya/shell-run

@@ -1,0 +1,45 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Keep the SOS Shell running for this Wayland session (started by `sos session-start`):
+#   - its output goes to $XDG_RUNTIME_DIR/sos-shell.log (this boot only; `sos doctor --report` reads it)
+#   - after a crash it starts again, at most 5 times in 2 minutes, then says so in a notification
+#   - it stops when the compositor is gone (logout) or when the shell quits on purpose (exit 0)
+# Usage: shell-run [--once] [SHELL_DIR]    (--once: log only, never restart — the first-run wizard)
+set -u
+once=0
+if [ "${1:-}" = "--once" ]; then
+    once=1
+    shift
+fi
+dir=${1:-/usr/share/svoya/shell}
+run=${XDG_RUNTIME_DIR:-/tmp}
+log="$run/sos-shell.log"
+sock="$run/${WAYLAND_DISPLAY:-wayland-0}"
+starts=()
+
+say() { printf '== %s %s\n' "$(date -Is 2>/dev/null)" "$*" >>"$log" 2>/dev/null; }
+
+while :; do
+    say "quickshell -p $dir"
+    quickshell -p "$dir" >>"$log" 2>&1
+    rc=$?
+    say "quickshell -p $dir exited with $rc"
+    [ "$once" = 1 ] && exit "$rc"
+    [ "$rc" -eq 0 ] && exit 0                 # Qt.quit(): asked to stop
+    [ -S "$sock" ] || exit 0                  # the session is over
+    now=$(date +%s)
+    starts+=("$now")
+    recent=0
+    for t in "${starts[@]}"; do
+        [ $((now - t)) -lt 120 ] && recent=$((recent + 1))
+    done
+    if [ "$recent" -ge 5 ]; then
+        say "giving up: $recent crashes in 2 minutes"
+        if command -v notify-send >/dev/null; then
+            notify-send -u critical -a SOS "Оболочка SOS не запускается" \
+                "Журнал: $log · Super+Enter — терминал, sos doctor — проверка" 2>/dev/null || true
+        fi
+        exit 1
+    fi
+    sleep 1
+done

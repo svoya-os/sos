@@ -18,7 +18,8 @@ mapfile -t shell_files < <(
         printf '%s\n' image/overlay-live/usr/lib/svoya/vm-test-agent image/overlay-live/usr/lib/svoya/live-user-groups \
             installer/sos-install installer/scripts/launch \
             packages/svoya-session/files/usr/bin/svoya-session packages/svoya-session/files/usr/lib/svoya/greeter-session \
-            packages/svoya-session/files/usr/lib/svoya/session-keyboard packages/svoya-base/files/usr/lib/svoya/setup-snapper
+            packages/svoya-session/files/usr/lib/svoya/session-keyboard packages/svoya-session/files/usr/lib/svoya/shell-run \
+            packages/svoya-base/files/usr/lib/svoya/setup-snapper
     } | sort -u | while read -r f; do [ -f "$f" ] && echo "$f"; done
 )
 mapfile -t maint_scripts < <(find packages -path '*/debian/*' \( -name '*.preinst' -o -name '*.postinst' -o -name '*.prerm' -o -name '*.postrm' -o -name 'qt-private-deps' \) | sort)
@@ -53,7 +54,7 @@ sys.exit(1 if bad else 0)
 PY
 
 echo "== JSON"
-python3 -c 'import json,sys; [json.load(open(p)) for p in sys.argv[1:]]; print(len(sys.argv)-1, "JSON files ok")' tests/vm/plan.json || rc=1
+python3 -c 'import json,sys; [json.load(open(p)) for p in sys.argv[1:]]; print(len(sys.argv)-1, "JSON files ok")' tests/vm/plan.json tests/vm/journeys.json || rc=1
 
 echo "== Python"
 python3 -m py_compile tests/vm/*.py installer/scripts/*.py image/lib/*.py packages/lib/*.py installer/branding/generate.py || rc=1

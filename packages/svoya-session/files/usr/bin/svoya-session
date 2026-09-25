@@ -7,7 +7,9 @@ set -uo pipefail
 
 export XDG_SESSION_TYPE=wayland
 export XDG_SESSION_DESKTOP=sos
-export XDG_CURRENT_DESKTOP=sos:Hyprland
+# Hyprland and its portal expect exactly "Hyprland" (anything else shows a warning banner at every
+# login); SOS itself is XDG_SESSION_DESKTOP / DESKTOP_SESSION.
+export XDG_CURRENT_DESKTOP=Hyprland
 export DESKTOP_SESSION=sos
 export QT_QPA_PLATFORM="wayland;xcb"
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
@@ -63,7 +65,7 @@ misc {
 }
 bind = SUPER, RETURN, exec, kitty
 bind = SUPER, Q, killactive
-exec-once = sh -c 'sos session-start || exec quickshell -p /usr/share/svoya/shell'
+exec-once = sh -c 'sos session-start || exec /usr/lib/svoya/shell-run'
 source = $HOME/.config/hypr/user.conf
 EOF
 fi

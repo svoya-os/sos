@@ -156,6 +156,19 @@ class SessionTest(SandboxTest):
         self.assertFalse(any(c[0] == "quickshell" for c in r2.spawned))
         self.assertNotIn("first-run", steps2)
 
+    def test_shell_runs_supervised_when_shell_run_is_installed(self):
+        shell = self.sb.dir / "shell"
+        self.sb.write("/usr/lib/svoya/shell-run", "#!/bin/sh\n")
+        r = FakeRunner(available={"systemctl", "quickshell"})
+        ctx = self.sb.ctx(r, SVOYA_SHELL_DIR=str(shell), WAYLAND_DISPLAY="wayland-1", LANG="ru_RU.UTF-8")
+        session.start(ctx)
+        self.assertIn(["/usr/lib/svoya/shell-run", str(shell)], r.spawned)                 # logs + restarts
+        self.assertIn(["/usr/lib/svoya/shell-run", "--once", f"{shell}/setup"], r.spawned)  # wizard: logs only
+        self.assertFalse(any(c[:1] == ["quickshell"] for c in r.spawned))
+        # the language reaches services started later (Jackson answers in the user's language)
+        imported = [c for c in r.calls if c[:3] == ["systemctl", "--user", "import-environment"]]
+        self.assertTrue(imported and "LANG" in imported[0])
+
     def test_ai_switched_off_skips_jackson(self):
         (self.sb.home / ".config/svoya").mkdir(parents=True)
         (self.sb.home / ".config/svoya/svoya.toml").write_text("[ai]\nenabled = false\n")
