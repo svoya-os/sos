@@ -1020,6 +1020,78 @@ def match(text: str, osc: OsControl | None = None, names: tuple[str, ...] = ()) 
     return None
 
 
+# ---------------------------------------------------------------------------
+# decisions: a short command the patterns missed («сделай-ка потише, соседи жалуются») is mapped to
+# an intent by the local model in one step (jackson/decide.py), and run only when the model is sure
+
+# (intent, what it does in Russian, in English) — commands without arguments only
+DECIDABLE: list[tuple[str, str, str]] = [
+    ("volume_up", "сделать звук громче", "make the sound louder"),
+    ("volume_down", "сделать звук тише", "make the sound quieter"),
+    ("mute", "выключить звук совсем", "mute the sound"),
+    ("unmute", "снова включить звук", "unmute the sound"),
+    ("brightness_up", "сделать экран ярче", "make the screen brighter"),
+    ("brightness_down", "сделать экран темнее", "make the screen dimmer"),
+    ("wifi_on", "включить Wi-Fi", "turn Wi-Fi on"),
+    ("wifi_off", "выключить Wi-Fi", "turn Wi-Fi off"),
+    ("bluetooth_on", "включить Bluetooth", "turn Bluetooth on"),
+    ("bluetooth_off", "выключить Bluetooth", "turn Bluetooth off"),
+    ("lock", "заблокировать экран", "lock the screen"),
+    ("screenshot", "сделать снимок экрана", "take a screenshot"),
+    ("battery", "сказать заряд батареи", "tell the battery level"),
+    ("time", "сказать, который час", "tell the time"),
+]
+NOT_A_COMMAND = ("ничего из этого: вопрос «как», «почему», «что», просьба о другом или разговор",
+                 "none of these: a how/why/what question, another request or a chat")
+DECIDE_HINT = re.compile(r"(звук|громк|тиш|тих|музык|колонк|наушник|яркост|ярч|темн|экран|вай ?фай|wi ?fi|интернет|"
+                         r"блют|bluetooth|блок|скрин|снимок|заряд|батаре|который час|сколько времени|врем|"
+                         r"sound|volume|loud|quiet|music|bright|dim|screen|internet|lock|screenshot|battery|"
+                         r"charge|time)")
+READ_ONLY_HINT = re.compile(r"(заряд|батаре|который час|сколько времени|врем|battery|charge|time)")
+QUESTION_RE = re.compile(r"^(почему|зачем|как|что|какой|какая|какие|где|когда|откуда|можно ли|правда ли|"
+                         r"why|how|what|which|where|when|is|are|can|could|does|do)\b")
+DECIDE_MAX_WORDS = 12
+DECIDE_MIN_P = 0.8          # read-only intents (battery, time)
+DECIDE_MIN_P_CHANGE = 0.9   # intents that change something (volume, Wi-Fi, lock)
+
+
+def decision_candidate(text: str, names: tuple[str, ...] = ()) -> str | None:
+    """The normalized request when it is short and sounds like a system command, else None."""
+    if len(text) > 160 or "\n" in text.strip():
+        return None
+    norm = normalize(text, names)
+    if not norm or len(norm.split()) > DECIDE_MAX_WORDS or not DECIDE_HINT.search(norm):
+        return None
+    # a question can only be answered by a read-only intent: don't spend a model step on the rest
+    if (QUESTION_RE.match(norm) or text.strip().endswith("?")) and not READ_ONLY_HINT.search(norm):
+        return None
+    return norm
+
+
+def decision_options(lang: str) -> list[str]:
+    ru = norm_lang(lang) == "ru"
+    return [(d_ru if ru else d_en) for _, d_ru, d_en in DECIDABLE] + [NOT_A_COMMAND[0 if ru else 1]]
+
+
+def decided_match(index: int, p: float, norm: str, question: bool | None = None) -> FastMatch | None:
+    """The intent the model picked, if it is sure enough; a question («почему не работает Wi-Fi»)
+    never switches anything, it can only be answered by a read-only intent."""
+    if not 0 <= index < len(DECIDABLE):
+        return None                                   # «none of these»
+    name = DECIDABLE[index][0]
+    intent = next((i for i in INTENTS if i.name == name), None)
+    if intent is None:
+        return None
+    changes = intent.tier != T0
+    if question is None:
+        question = bool(QUESTION_RE.match(norm)) or norm.endswith("?")
+    if changes and question:
+        return None
+    if p < (DECIDE_MIN_P_CHANGE if changes else DECIDE_MIN_P):
+        return None
+    return FastMatch(intent, {}, norm)
+
+
 def run(m: FastMatch, ctx: FastCtx) -> FastResult:
     result = m.intent.handler(ctx, m.args)
     if m.name not in ("help", "models"):  # long factual listings stay plain

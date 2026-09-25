@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import shutil
 import tempfile
@@ -34,8 +35,11 @@ Reply = dict[str, Any]   # {"text": "..."} and/or {"tool_calls": [{"name", "args
 
 class _Server:
     def __init__(self, script: list[Reply] | Callable[[dict[str, Any]], Reply] | None = None,
-                 models: list[str] | None = None, status: int = 200, chunk: int = 7, delay: float = 0.0) -> None:
+                 models: list[str] | None = None, status: int = 200, chunk: int = 7, delay: float = 0.0,
+                 decide: Callable[[dict[str, Any]], dict[str, float]] | None = None) -> None:
         self.script = script if script is not None else [{"text": "Привет!"}]
+        # decisions (non-streaming requests with logprobs): {first token: probability}
+        self.decide = decide
         self.models = models or ["qwen3.5-4b"]
         self.status = status
         self.chunk = chunk
@@ -104,6 +108,16 @@ class _Server:
                 server.headers.append(dict(self.headers))
                 if server.status != 200:
                     self._json(server.status, {"error": {"message": "boom", "type": "server_error"}})
+                    return
+                if body.get("logprobs") and not body.get("stream"):
+                    probs = server.decide(body) if server.decide else {"A": 1.0}
+                    ranked = sorted(probs.items(), key=lambda kv: -kv[1])
+                    top = [{"token": tok, "logprob": math.log(pr)} for tok, pr in ranked]
+                    self._json(200, {"choices": [{"index": 0, "finish_reason": "length",
+                                                  "message": {"role": "assistant", "content": ranked[0][0]},
+                                                  "logprobs": {"content": [{"token": ranked[0][0],
+                                                                            "logprob": top[0]["logprob"],
+                                                                            "top_logprobs": top}]}}]})
                     return
                 self.send_response(200)
                 self.send_header("Content-Type", "text/event-stream")

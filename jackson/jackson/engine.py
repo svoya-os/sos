@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
-from . import aiswitch, fastpath
+from . import aiswitch, decide, fastpath
 from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
@@ -290,12 +290,19 @@ class Engine:
 
     async def _fastpath(self, turn: Turn) -> bool:
         match = await asyncio.to_thread(fastpath.match, turn.text, self.app.osc, (self.app.avatar.name,))
+        decided = None
         if match is None:
-            return False
+            decided = await self._fast_decide(turn)
+            if decided is None:
+                return False
+            match = decided[0]
         lang = turn.session.lang
         turn.model, turn.provider = "fastpath", "jackson"
+        reason = t("route.fastpath", lang)
+        if decided is not None:
+            reason = t("route.fastpath_decided", lang, p=round(decided[1] * 100), model=decided[2])
         await self._emit(turn, {"type": "route", "model": "fastpath", "provider": "jackson", "local": True,
-                                "reason": t("route.fastpath", lang), "task": "command"})
+                                "reason": reason, "task": "command"})
         call_id = new_id("call")
         args = fastpath.public_args(match)
         name = f"fast.{match.name}"
@@ -317,6 +324,44 @@ class Engine:
         if result.after is not None:  # e.g. `sos ai off`, which stops Jackson himself: answer first
             self._after(result.after, match.name)
         return True
+
+    def _local_decider(self) -> tuple[Any, str] | None:
+        """A healthy local OpenAI-compatible server and its smallest good chat model (cached health)."""
+        from .router import order_local_models
+        for name in self.app.local_provider_names():
+            prov = self.app.providers.get(name)
+            if prov is None or getattr(prov, "kind", "") != "openai":
+                continue
+            h = self.app.health.get(name, timeout=0.5)
+            if not h.ok or h.loading or not h.models:
+                continue
+            models = order_local_models(h.models, "chat", prov.cfg)
+            if models:
+                return prov, models[0]
+        return None
+
+    async def _fast_decide(self, turn: Turn) -> tuple[fastpath.FastMatch, float, str] | None:
+        """A short request that sounds like a system command but matched no pattern: the local model
+        picks the command in one step; it runs only when the model is sure (fastpath.decided_match)."""
+        if not self.config.fastpath_decide or not self.app.ai_state().get("enabled", True):
+            return None
+        norm = fastpath.decision_candidate(turn.text, (self.app.avatar.name,))
+        if norm is None:
+            return None
+        target = await asyncio.to_thread(self._local_decider)
+        if target is None:
+            return None
+        prov, model = target
+        options = fastpath.decision_options(turn.session.lang)
+        picked = await asyncio.to_thread(decide.choose, prov, model, turn.text, options)
+        if picked is None:
+            return None
+        match = fastpath.decided_match(picked.index, picked.p, norm)
+        self.app.audit.append("fastpath.decide", turn=turn.id, model=model, p=round(picked.p, 3),
+                              option=picked.index, intent=match.name if match else None)
+        if match is None:
+            return None
+        return match, picked.p, model
 
     def _after(self, fn: Callable[[], Any], what: str, delay: float = 0.3) -> None:
         """Run *fn* shortly after the answer went out (in a thread, never blocking the loop)."""

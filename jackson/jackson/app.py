@@ -198,7 +198,8 @@ class Jackson:
         new = load_config(self.paths)
         changed = []
         for attr in ("language", "address", "persona", "humor", "max_steps", "route", "pricing",
-                     "tools", "snapshots", "skills_enabled", "skills_max_active", "mcp_on_change"):
+                     "tools", "snapshots", "skills_enabled", "skills_max_active", "fastpath_decide",
+                     "mcp_on_change"):
             if getattr(self.config, attr) != getattr(new, attr):
                 setattr(self.config, attr, getattr(new, attr))
                 changed.append(attr)

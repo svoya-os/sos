@@ -175,6 +175,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ru": "быстрая команда без модели",
         "en": "quick command, no model needed",
     },
+    "route.fastpath_decided": {
+        "ru": "понял команду по смыслу: {model} уверена на {p}%",
+        "en": "understood the command: {model} is {p}% sure",
+    },
     "route.none": {
         "ru": "Нет доступной модели: {why}",
         "en": "No model available: {why}",

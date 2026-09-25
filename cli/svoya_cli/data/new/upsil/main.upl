@@ -11,6 +11,9 @@ llm m = llm.Model(temperature = 0.2)
 try {
     val plan = [m] => prompts.plan_prompt(topic) -> json(prompts.PLAN)
     print(prompts.render(plan))
+    // решение вместо текста: модель выбирает уровень, UpsiL возвращает вероятности
+    val level = [m] => prompts.level_prompt(topic) -> score(prompts.LEVELS)
+    print("сложность: {level}")                     // например, «средне (72%)»
 } catch (e: llm.FormatError) {
     print("Модель так и не ответила по форме: {e}")
     sys.exit(1)

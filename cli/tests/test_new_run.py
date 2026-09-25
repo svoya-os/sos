@@ -101,7 +101,7 @@ class NewTest(SandboxTest):
         r = subprocess.run([sys.executable, "-m", "upsil", "test"], cwd=p, env=env,
                            capture_output=True, text=True, timeout=60)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertIn("3 tests", r.stdout)
+        self.assertIn("4 tests: 4 passed", r.stdout)
 
     def test_refuses_non_empty_dir_and_bad_names(self):
         (self.sb.dir / "x").mkdir()

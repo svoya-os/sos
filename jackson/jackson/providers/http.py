@@ -239,6 +239,39 @@ def post_sse(url: str, payload: dict[str, Any], headers: dict[str, str], *, conn
     return conn, resp
 
 
+def post_json(url: str, payload: dict[str, Any], headers: dict[str, str] | None = None, *, timeout: float = 5.0,
+              use_proxy: bool = True, provider: str = "") -> tuple[int, Any]:
+    """A small JSON POST (no streaming): (status, parsed body or None). Network errors raise ProviderError."""
+    conn = Connection(url, connect_timeout=timeout, read_timeout=timeout, use_proxy=use_proxy,
+                      provider=provider)
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    try:
+        c, path = conn._make_conn()
+        conn.conn = c
+        c.connect()
+        if c.sock is not None:
+            c.sock.settimeout(timeout)
+        c.request("POST", path, body=body, headers={"User-Agent": USER_AGENT, "Accept": "application/json",
+                                                    "Content-Type": "application/json", **(headers or {})})
+        resp = c.getresponse()
+        conn.resp = resp
+        raw = resp.read(4 << 20)
+        try:
+            data = json.loads(raw.decode("utf-8", "replace")) if raw else None
+        except ValueError:
+            data = None
+        return resp.status, data
+    except (socket.timeout, TimeoutError) as exc:
+        raise ProviderError(f"no answer from {conn.host_label} (timeout)", kind="timeout", retryable=True,
+                            provider=provider) from exc
+    except (OSError, http.client.HTTPException) as exc:
+        reason = getattr(exc, "strerror", None) or exc.__class__.__name__
+        raise ProviderError(f"cannot connect to {conn.host_label} ({reason})", kind="network",
+                            retryable=True, provider=provider) from exc
+    finally:
+        conn.close()
+
+
 def get_json(url: str, headers: dict[str, str] | None = None, *, timeout: float = 2.0,
              use_proxy: bool = True, provider: str = "") -> tuple[int, Any]:
     conn = Connection(url, connect_timeout=timeout, read_timeout=timeout, use_proxy=use_proxy,

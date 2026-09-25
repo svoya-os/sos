@@ -15,3 +15,8 @@ fun test_hours_are_optional() {
     val plan = json.parse(r"""{"title": "Go", "steps": ["тур"]}""")
     assert prompts.render(plan) == "Go\n1. тур"
 }
+
+fun test_levels_go_from_easy_to_hard() {
+    assert prompts.LEVELS[0] == "легко" and len(prompts.LEVELS) == 3
+    assert "Rust" in prompts.level_prompt("Rust")
+}

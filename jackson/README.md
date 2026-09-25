@@ -50,7 +50,7 @@ from the file manager too).
 
 ```
 ask ─► fast path? ──yes──► run + verify ─► token ─► done (0 tokens, 0 €)
-          │no
+          │no   (a short command-like request: the local model picks a command — 1 step, logprobs)
           ▼
        router ─► route event (model, local?, human reason)
           ▼
@@ -271,6 +271,17 @@ Wi-Fi on/off, Bluetooth on/off, «что ты умеешь», «отмени», 
 локально» / «можно облако». Matching is anchored to the whole utterance, so «как сделать тёмную тему
 в VS Code?» goes to a model. Measured 110–140 ms wall (CLI start included) with the background
 service running, 3–8 ms inside Jackson.
+
+**Commands in your own words** (`jackson/decide.py`, `[fastpath] decide = true`): when no pattern
+matches a short request that sounds like one of the simple commands («слушай, сделай-ка потише,
+соседи жалуются»), the local model picks the command in one step: the options are labelled A, B, C…,
+the model writes one letter, and the server's `logprobs` give each option's probability (the idea of
+TypeSafe's Jev and of UpsiL's `-> choice`, with nothing leaving the machine). The command runs only
+when the model is at least 90 % sure (80 % for read-only ones such as battery and time), a question
+(«почему не работает Wi-Fi?») never switches anything, and «none of these» is always an option;
+otherwise the request goes to the model as before. The route event says so («понял команду по
+смыслу: qwen3.5-4b уверена на 96%»), and the audit log records the decision. The constant list of
+options comes first in the prompt, so llama.cpp's prompt cache keeps it and only the request is read.
 
 ## Look, name and the AI switch
 

@@ -118,6 +118,9 @@ DEFAULTS: dict[str, Any] = {
     },
     "snapshots": {"enabled": True, "snapper_config": ""},
     "skills": {"enabled": True, "max_active": 2},
+    # decide: a short system command the patterns missed is mapped to one by the local model
+    # (one step, probabilities, nothing leaves the machine; see jackson/decide.py)
+    "fastpath": {"decide": True},
     "mcp": {"on_change": "block", "servers": {}},
     "voice": {"enabled": False},  # v0.2, see jackson/voice.py
 }
@@ -228,6 +231,7 @@ class Config:
     snapshots: SnapshotConfig = field(default_factory=SnapshotConfig)
     skills_enabled: bool = True
     skills_max_active: int = 2
+    fastpath_decide: bool = True
     mcp_on_change: str = "block"
     mcp_servers: dict[str, McpServerConfig] = field(default_factory=dict)
     voice: dict[str, Any] = field(default_factory=dict)
@@ -413,6 +417,8 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
     sk = data.get("skills") or {}
     cfg.skills_enabled = _as_bool(sk.get("enabled"), True)
     cfg.skills_max_active = int(_as_num(sk.get("max_active"), 2, 0, 10))
+    fp = data.get("fastpath") or {}
+    cfg.fastpath_decide = _as_bool(fp.get("decide"), True)
 
     mcp = data.get("mcp") or {}
     cfg.mcp_on_change = _choice(mcp.get("on_change"), ("block", "warn"), "block", "mcp.on_change", warnings)
