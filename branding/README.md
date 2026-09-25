@@ -71,6 +71,9 @@ deterministic, apart from Chromium's anti-aliasing and dither noise (±2/255).
   signal color.
 * **Folded mark** (icon, avatars, favicons): the same nine symbols in three lines, С / О / С. Dots sit
   centred over the dashes, and rows are 1.25 *d* apart.
+* **The app icon is neutral**: every symbol in `text` `#ebe8e1` on the graphite tile; the ——— is set apart by
+  a soft glow, not by color. It sits in the launcher and the bar next to whatever accent the user picks,
+  so it carries none (DESIGN §11). The amber/ink signal stays in the lockups for the web and print.
 * **Wordmarks**: «СОС» (Cyrillic) and SOS (Latin), IBM Plex Sans SemiBold with +0.20 em tracking, drawn as
   outlines. Taglines: «Своя Операционная Система» / "Svoya Operating System", set in text, not locked up.
 * **Lockups**. Horizontal: *d* = 0.18 × cap height, and the mark sits 0.62 × cap height from the wordmark,

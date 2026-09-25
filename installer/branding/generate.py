@@ -19,13 +19,12 @@ OUT = HERE / "svoya"
 WALL = (12, 13, 15, 255)          # #0c0d0f
 TEXT = (235, 232, 225, 255)       # #ebe8e1
 DIM = (157, 154, 146, 255)        # #9d9a92
-ACCENT = (255, 181, 71, 255)      # #ffb547
 
 
 def morse(draw: ImageDraw.ImageDraw, x: float, y: float, unit: float) -> float:
-    """Draw ··· ——— ··· (СОС / SOS); the dashes carry the accent. Returns the end x."""
+    """Draw ··· ——— ··· (СОС / SOS) in the neutral text color (DESIGN §12). Returns the end x."""
     h = unit
-    for group, color, width in ((3, TEXT, unit), (3, ACCENT, unit * 3), (3, TEXT, unit)):
+    for group, color, width in ((3, TEXT, unit), (3, TEXT, unit * 3), (3, TEXT, unit)):
         for _ in range(group):
             draw.rounded_rectangle((x, y, x + width, y + h), radius=h / 2, fill=color)
             x += width + unit
@@ -48,12 +47,13 @@ def font(size: int, weight: str = "Regular") -> ImageFont.FreeTypeFont:
 def logo() -> None:
     im = Image.new("RGBA", (320, 80), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    morse(d, 12, 32, 12)
+    unit = 10                                   # 27 units wide: the whole mark fits with margins
+    morse(d, (320 - morse_width(unit)) / 2, (80 - unit) / 2, unit)
     im.save(OUT / "logo.png", optimize=True)
 
 
 def icon() -> None:
-    src = ROOT / "branding" / "logo" / "icon" / "png" / "svoya-128.png"
+    src = ROOT / "branding" / "logo" / "icon" / "png" / "sos-128.png"
     if src.exists():
         Image.open(src).convert("RGBA").save(OUT / "icon.png", optimize=True)
         return

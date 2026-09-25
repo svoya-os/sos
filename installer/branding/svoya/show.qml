@@ -13,7 +13,6 @@ Presentation {
     readonly property color text: "#ebe8e1"
     readonly property color textDim: "#9d9a92"
     readonly property color textFaint: "#67655f"
-    readonly property color accent: "#ffb547"
 
     Timer {
         interval: 9000
@@ -30,7 +29,7 @@ Presentation {
                 width: modelData ? 24 : 8
                 height: 8
                 radius: 4
-                color: modelData ? presentation.accent : presentation.text
+                color: presentation.text          // neutral mark, like the boot splash (DESIGN §12)
             }
         }
     }
@@ -85,7 +84,7 @@ Presentation {
             Text {
                 visible: slide.meta.length > 0
                 text: slide.meta
-                color: presentation.accent
+                color: presentation.textFaint
                 font.family: "IBM Plex Mono"
                 font.pixelSize: 12
                 font.letterSpacing: 1.6

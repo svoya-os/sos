@@ -33,7 +33,8 @@ SUBCOMMANDS = ("ask", "status", "models", "memory", "notes", "audit", "undo", "a
                "avatar", "doctor", "mcp", "version", "help")
 
 # Graphite defaults (themes/graphite.toml); theme.json overrides them when present.
-DEFAULT_COLORS = {"accent": "#ffb547", "ok": "#8fd48a", "warn": "#ffb547", "bad": "#ff7a6b", "cloud": "#7ad3e6",
+# Semantic colors never reuse the accent (DESIGN §10): warn is yellow, not amber.
+DEFAULT_COLORS = {"accent": "#ffb547", "ok": "#8fd48a", "warn": "#f5cf52", "bad": "#ff6b6b", "cloud": "#7ad3e6",
                   "textDim": "#9d9a92", "textFaint": "#67655f"}
 
 

@@ -1,13 +1,20 @@
 /* SOS installer, Graphite theme (design/DESIGN.md). SPDX-License-Identifier: Apache-2.0
-   Matte surfaces, 1px hairlines, one amber signal colour. */
+   Matte surfaces, 1px hairlines. The accent budget (DESIGN §11): the accent colours only the primary
+   button (Next / Install), text selection and the live install progress; focus, hover, list
+   selection and the current step stay neutral, so the installer matches the neutral boot (§12). */
 
 QWidget {
     background-color: #141518;
     color: #ebe8e1;
     font-family: "IBM Plex Sans";
     font-size: 13px;
-    selection-background-color: #ffb547;
-    selection-color: #1b1204;
+    selection-background-color: #22252a;
+    selection-color: #ebe8e1;
+}
+
+QLineEdit, QTextEdit, QPlainTextEdit {
+    selection-background-color: rgba(255, 181, 71, 0.35);
+    selection-color: #ebe8e1;
 }
 
 #mainApp, #sidebarApp {
@@ -30,7 +37,7 @@ QPushButton {
     padding: 7px 16px;
     font-weight: 500;
 }
-QPushButton:hover { border-color: #ffb547; }
+QPushButton:hover { border-color: #67655f; }
 QPushButton:pressed { background-color: #22252a; }
 QPushButton:disabled { color: #67655f; border-color: #25282d; }
 QPushButton:default, QPushButton#view-button-next, QPushButton#view-button-install {
@@ -46,7 +53,7 @@ QLineEdit, QComboBox, QSpinBox, QListView, QTreeView, QTableView, QTextEdit, QPl
     border-radius: 6px;
     padding: 4px 6px;
 }
-QLineEdit:focus, QComboBox:focus { border: 2px solid #ffb547; }
+QLineEdit:focus, QComboBox:focus { border: 2px solid rgba(235, 232, 225, 0.7); }
 
 QComboBox QAbstractItemView {
     background-color: #191b1f;
@@ -54,6 +61,12 @@ QComboBox QAbstractItemView {
 }
 
 QCheckBox, QRadioButton { background: transparent; spacing: 8px; }
+
+QListView::item:selected, QTreeView::item:selected, QTableView::item:selected {
+    background-color: #22252a;
+    color: #ebe8e1;
+    border-left: 2px solid #ebe8e1;
+}
 
 QProgressBar {
     background-color: #22252a;

@@ -216,7 +216,9 @@ def icon_svg(spec: IconSpec, title: str = "SOS") -> str:
     t = n - 2 * spec.inset
     x = y = spec.inset
     sw = spec.stroke
-    ink, signal = GRAPHITE["text"], GRAPHITE["accent"]
+    # Neutral like the boot screens (DESIGN §11–§12): the icon sits next to whatever accent the
+    # user picks, so it carries none; the ——— is set apart by a soft glow, not by color.
+    ink = signal = GRAPHITE["text"]
     top, bottom = "#1d1f23", "#101114"            # surface-2 → just above wall: matte graphite
     edge = "#2d3036"                              # between line and lineStrong
     defs = [f'    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">'
@@ -224,7 +226,7 @@ def icon_svg(spec: IconSpec, title: str = "SOS") -> str:
     if spec.highlight:
         defs.append(f'    <linearGradient id="signal-edge" x1="0" y1="0" x2="1" y2="0">'
                     f'<stop offset="0" stop-color="{signal}" stop-opacity="0"/>'
-                    f'<stop offset=".5" stop-color="{signal}" stop-opacity=".55"/>'
+                    f'<stop offset=".5" stop-color="{signal}" stop-opacity=".32"/>'
                     f'<stop offset="1" stop-color="{signal}" stop-opacity="0"/></linearGradient>')
     if spec.glow:
         sd = spec.folded.d * 0.45
@@ -246,7 +248,7 @@ def icon_svg(spec: IconSpec, title: str = "SOS") -> str:
     f = spec.folded
     if spec.glow:
         glow = [pill(ex, ey, w, h, signal) for ex, ey, w, h, dash in f.elements(n / 2, n / 2) if dash]
-        body.append('  <g filter="url(#glow)" opacity=".5">' + "".join(glow) + "</g>\n")
+        body.append('  <g filter="url(#glow)" opacity=".38">' + "".join(glow) + "</g>\n")
     body.append(folded_body(f, n / 2, n / 2, ink, signal))
     return svg_doc(n, n, "".join(body), title,
                    "SOS icon · graphite tile with the mark folded into С / О / С · CC BY-SA 4.0")
