@@ -73,6 +73,18 @@ class ModelTest(Base):
         self.assertIn("Открыл установку Qwen3.5 4B (3,2 ГБ)", r.text)
 
 
+class LiveModelTest(Base):
+    def test_live_session_says_install_sos_first(self):
+        self.runner.live = True
+        m, r = self.say("какая модель подойдёт")
+        self.assertIn("Этой машине подойдёт Qwen3.5 4B", r.text)
+        self.assertIn("Сначала установи СОС", r.text)
+        self.assertNotIn("Поставить: «установи модель»", r.text)
+        m, r = self.say("установи модель")
+        self.assertEqual(self.spawned(), [])                      # nothing downloads into RAM
+        self.assertIn("живая сессия", r.text)
+
+
 class NoTerminalTest(Base):
     extra = set()
 

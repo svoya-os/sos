@@ -957,14 +957,22 @@ def h_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
     return FastResult(True, lead + what, f"sos install {key}", None)
 
 
-def _suggested(ctx: FastCtx) -> tuple[dict[str, Any], str, bool] | None:
-    """(the suggested model, its size, runs on a GPU) from `sos models suggest --json`."""
+def _suggested(ctx: FastCtx) -> tuple[dict[str, Any], str, bool, bool] | None:
+    """(the suggested model, its size, runs on a GPU, live session) from `sos models suggest --json`."""
     data = ctx.osc.svoya.models_suggest()
     if data is None:
         return None
     d = data["default"]
     gpu = (data.get("hardware") or {}).get("backend") not in (None, "cpu")
-    return d, fmt_bytes(d.get("sizeBytes") or 0, ctx.lang), gpu
+    return d, fmt_bytes(d.get("sizeBytes") or 0, ctx.lang), gpu, data.get("live") is True
+
+
+def _live_first(ctx: FastCtx) -> str:
+    """The live session keeps files in RAM: a model downloaded there is gone after a reboot."""
+    return ctx.say("Только это живая сессия: модель легла бы в оперативную память и пропала после перезагрузки. "
+                   "Сначала установи СОС («Установить СОС» — первое в Super+Space), потом скажи «установи модель».",
+                   "This is the live session, though: the model would sit in RAM and be gone after a reboot. "
+                   "Install SOS first (\"Install SOS\", first in Super+Space), then say \"install the model\".")
 
 
 def h_model_suggest(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
@@ -974,14 +982,14 @@ def h_model_suggest(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
         return FastResult(False, ctx.say("Не смог подобрать: команда sos не ответила. В терминале: sos models suggest",
                                          "Could not pick one: the sos command did not answer. In a terminal: "
                                          "sos models suggest"), verified=False)
-    d, size, gpu = got
+    d, size, gpu, live = got
     speed = d.get("tokensPerSecond")
     pace = ctx.say(f", около {speed} токенов в секунду {'на видеокарте' if gpu else 'на процессоре'}" if speed else "",
                    f", about {speed} tokens a second {'on the GPU' if gpu else 'on the CPU'}" if speed else "")
-    return FastResult(True, ctx.say(f"Этой машине подойдёт {d.get('name', d['id'])} ({d.get('quant', '')}, {size}{pace}). "
-                                    f"Поставить: «установи модель».",
-                                    f"This machine suits {d.get('name', d['id'])} ({d.get('quant', '')}, {size}{pace}). "
-                                    f"To install it: \"install the model\"."), d["id"], True)
+    then = _live_first(ctx) if live else ctx.say("Поставить: «установи модель».", "To install it: \"install the model\".")
+    return FastResult(True, ctx.say(f"Этой машине подойдёт {d.get('name', d['id'])} ({d.get('quant', '')}, {size}{pace}). ",
+                                    f"This machine suits {d.get('name', d['id'])} ({d.get('quant', '')}, {size}{pace}). ")
+                      + then, d["id"], True)
 
 
 def h_model_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
@@ -990,7 +998,11 @@ def h_model_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
         return FastResult(False, ctx.say("Не смог подобрать модель: команда sos не ответила. В терминале: sos models suggest",
                                          "Could not pick a model: the sos command did not answer. In a terminal: "
                                          "sos models suggest"), verified=False)
-    d, size, _ = got
+    d, size, _, live = got
+    if live:
+        return FastResult(True, ctx.say(f"{d.get('name', d['id'])} ({size}) — хороший выбор. ",
+                                         f"{d.get('name', d['id'])} ({size}) is a good pick. ") + _live_first(ctx),
+                          d["id"], None)
     if not ctx.osc.open_terminal(["sos", "install", d["id"]]):
         return FastResult(False, ctx.say(f"Не нашёл терминал. Поставь сам: sos install {d['id']}",
                                          f"No terminal found. Install it yourself: sos install {d['id']}"), verified=False)

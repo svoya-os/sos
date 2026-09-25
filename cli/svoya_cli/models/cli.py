@@ -575,7 +575,8 @@ def cmd_suggest(args, ctx: Ctx) -> int:
     from . import suggest as suggest_mod
     res = suggest_mod.suggest(ctx)
     if args.json:
-        ui.print_json(res)
+        # "live": a download would land in RAM (Jackson says to install SOS first)
+        ui.print_json({**res, "live": live.is_live(ctx)})
         return 0
     st = ui.style()
     hw = res["hardware"]
