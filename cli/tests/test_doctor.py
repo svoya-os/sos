@@ -140,6 +140,15 @@ class ProblemsTest(DoctorBase):
         self.assertEqual(c.status, "fail")
         self.assertEqual(c.fix.commands, [["apt", "install", "linux-modules-nvidia-595-open-6.17.0-10-generic"]])
 
+    def test_software_rendering_is_said(self):
+        checks, _, _ = self.run_checks(self.runner("rx7900xtx.txt"), SVOYA_RENDERER="software")
+        c = checks["gpu.detect"]
+        self.assertEqual(c.status, "ok")
+        self.assertIn("drawn on the CPU", c.msg[0])
+        self.assertIn("рисует процессор", c.msg[1])
+        checks, _, _ = self.run_checks(self.runner("rx7900xtx.txt"))
+        self.assertNotIn("CPU", checks["gpu.detect"].msg[0])
+
     def test_suspend_not_configured(self):
         self.healthy_nvidia()
         self.sb.path("/etc/modprobe.d/svoya-nvidia.conf").unlink()

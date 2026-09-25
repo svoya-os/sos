@@ -53,6 +53,7 @@ class Facts:
     vulkan_icds: list = field(default_factory=list)
     boot_vga: str | None = None
     aq_drm_devices: str | None = None
+    renderer: str | None = None       # SVOYA_RENDERER: "software" when gpu-env chose the CPU
     # compute
     uv_backend_env: str | None = None
     uv_present: bool = False
@@ -224,6 +225,7 @@ def gather(ctx: Ctx, *, gpu_only: bool = False) -> Facts:
     for d in ("/usr/share/vulkan/icd.d", "/etc/vulkan/icd.d"):
         f.vulkan_icds += sorted(Path(p).name for p in glob.glob(str(ctx.sys(d)) + "/*.json"))
     f.boot_vga = next((g.pci.slot for g in f.gpus if g.pci.boot_vga), None)
+    f.renderer = ctx.env.get("SVOYA_RENDERER")
     f.aq_drm_devices = ctx.env.get("AQ_DRM_DEVICES")
     if f.aq_drm_devices is None:
         for p in [ctx.paths.config_home / "hypr" / "user.conf", ctx.paths.config_home / "hypr" / "hyprland.conf",

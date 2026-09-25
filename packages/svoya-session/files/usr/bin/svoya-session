@@ -26,6 +26,9 @@ if [ -e /proc/driver/nvidia/version ]; then
     export __GLX_VENDOR_LIBRARY_NAME=nvidia
     export NVD_BACKEND=direct
 fi
+# VirtualBox, VMware, «safe graphics» (nomodeset): draw on the CPU, or Hyprland does not start.
+# shellcheck source=packages/svoya-session/files/usr/lib/svoya/gpu-env
+[ -r /usr/lib/svoya/gpu-env ] && . /usr/lib/svoya/gpu-env
 
 state="${XDG_STATE_HOME:-$HOME/.local/state}/svoya/hypr"
 mkdir -p "$state" "$HOME/.config/hypr"
@@ -47,8 +50,10 @@ fi
 # Tell systemd --user and D-Bus about the session (portals, Jackson); WAYLAND_DISPLAY is added by
 # `sos session-start` once the compositor runs.
 if command -v dbus-update-activation-environment >/dev/null; then
+    # (the software-rendering variables too, so D-Bus-started apps and portals draw the same way)
     dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP \
-        XDG_CURRENT_DESKTOP DESKTOP_SESSION QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME HF_HOME >/dev/null 2>&1 || true
+        XDG_CURRENT_DESKTOP DESKTOP_SESSION QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME HF_HOME \
+        ${SVOYA_RENDERER:+MESA_LOADER_DRIVER_OVERRIDE LIBGL_ALWAYS_SOFTWARE SVOYA_RENDERER} >/dev/null 2>&1 || true
 fi
 
 conf=/usr/share/svoya/hypr/hyprland.conf

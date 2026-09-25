@@ -10,6 +10,9 @@ export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=sos-greeter
 export QT_QPA_PLATFORM=wayland
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+# VirtualBox, VMware, «safe graphics» (nomodeset): draw on the CPU, or Hyprland does not start.
+# shellcheck source=packages/svoya-session/files/usr/lib/svoya/gpu-env
+[ -r /usr/lib/svoya/gpu-env ] && . /usr/lib/svoya/gpu-env
 
 greeter_dir=/usr/share/svoya/shell/greeter
 run="${XDG_RUNTIME_DIR:-/tmp}/svoya-greeter"

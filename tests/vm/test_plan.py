@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import re
 import sys
 import unittest
 
@@ -22,6 +23,17 @@ class PlanTests(unittest.TestCase):
         combos = [keys.parse_combo(s["keys"]) for s in plan["steps"] if s["action"] == "key"]
         self.assertIn(["meta_l", "spc"], combos)
         self.assertIn(["meta_l", "j"], combos)
+
+    def test_safe_graphics_plan_boots_the_second_entry(self):
+        plan = run.load_plan(HERE / "safe-graphics.json")
+        keys_pressed = [keys.parse_combo(s["keys"]) for s in plan["steps"] if s["action"] == "key"]
+        self.assertEqual(keys_pressed[:2], [["down"], ["ret"]])      # «SOS (safe graphics)», then Enter
+        shots = [s["name"] for s in plan["steps"] if s["action"] == "screenshot"]
+        self.assertIn("03-live-desktop", shots)
+        grub = (HERE.parents[1] / "image/boot/grub.cfg").read_text()
+        entries = re.findall(r'^    menuentry "([^"]+)"', grub, re.M)
+        self.assertIn("safe graphics", entries[1])                    # what "down" lands on
+        self.assertIn("nomodeset", grub.split("--id sos-safe", 1)[1].split("}", 1)[0])
 
     def test_invalid_plans_are_rejected(self):
         bad = [

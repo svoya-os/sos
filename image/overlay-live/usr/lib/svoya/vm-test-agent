@@ -35,8 +35,15 @@ diag() {
         echo "## failed system units"
         systemctl --failed --no-legend --plain 2>&1
         echo "## drm"
+        cat /proc/cmdline
         ls -la /dev/dri 2>&1
         for d in /sys/class/drm/card*; do [ -e "$d/status" ] && echo "$d: $(cat "$d/status")"; done
+        for d in /sys/class/drm/card[0-9]*/device/driver; do [ -e "$d" ] && echo "${d%/device/driver}: $(basename "$(readlink -f "$d")")"; done
+        # software rendering chosen by /usr/lib/svoya/gpu-env (VirtualBox, VMware, nomodeset), or the GPU
+        pid=$(pgrep -u "$user" -x Hyprland | head -n 1)
+        if [ -n "$pid" ]; then
+            echo "## Hyprland rendering: $(tr '\0' '\n' <"/proc/$pid/environ" | grep -E '^(MESA_LOADER_DRIVER_OVERRIDE|LIBGL_ALWAYS_SOFTWARE|SVOYA_RENDERER)=' | tr '\n' ' ')"
+        fi
         echo "## greetd"
         journalctl -b -u greetd --no-pager -o short-monotonic 2>&1 | tail -n 30
         echo "## user $user: warnings and errors"
@@ -47,7 +54,7 @@ diag() {
         done
         # Hyprland's own log: only what matters (the full file is thousands of lines of DRM detail)
         for f in /run/user/"$uid"/hypr/*/hyprland.log; do
-            [ -f "$f" ] && { echo "## $f (errors, config, exec)"; grep -aE 'ERR|CRIT|WARN|[Cc]onfig|[Ee]xec' "$f" | grep -av 'aquamarine' | tail -n 60; }
+            [ -f "$f" ] && { echo "## $f (renderer, errors, config, exec)"; grep -aE 'Renderer: |Vendor: |ERR|CRIT|WARN|[Cc]onfig|[Ee]xec' "$f" | grep -av 'aquamarine' | tail -n 60; }
         done
         # No shell? Run it once in the foreground for 8 s and keep what it says.
         if ! pgrep -u "$user" -x quickshell >/dev/null; then

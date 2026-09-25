@@ -1,0 +1,32 @@
+# shellcheck shell=bash
+# SPDX-License-Identifier: Apache-2.0
+# Sourced by /usr/bin/svoya-session and /usr/lib/svoya/greeter-session before Hyprland starts:
+# software rendering where the GPU path is known not to start.
+#
+# Hyprland 0.53 opens the GPU through EGL's device platform, and there Mesa falls back to software
+# only for virtio-gpu and vgem; any other GPU without a working 3D driver makes the compositor
+# abort at start (a black screen, then "Hyprland has crashed" on the console):
+#   - vmwgfx: VirtualBox (VMSVGA, VBoxSVGA) and VMware. Without working 3D acceleration EGL
+#     cannot start; with it, apps' GPU buffers are refused (vmwgfx prime handles);
+#   - no render node at all: `nomodeset` (the «safe graphics» boot entry: simpledrm), QEMU's
+#     standard VGA (bochs), VirtualBox's VBoxVGA (vboxvideo).
+# There SOS draws on the CPU, as a VM without 3D does anyway: Mesa's kms_swrast for the compositor,
+# llvmpipe for the apps. SVOYA_GPU=hardware (e.g. in /etc/environment) keeps the GPU path.
+svoya_gpu_software() {
+    [ "${SVOYA_GPU:-}" = hardware ] && return 1
+    local root=${SVOYA_GPU_ROOT:-} link cards=0 renders=0     # (SVOYA_GPU_ROOT: tests only)
+    for link in "$root"/sys/class/drm/card[0-9]*/device/driver; do
+        [ -e "$link" ] || continue
+        cards=$((cards + 1))
+        [ "$(basename "$(readlink -f "$link")")" = vmwgfx ] && return 0
+    done
+    for link in "$root"/dev/dri/renderD*; do
+        [ -e "$link" ] && renders=$((renders + 1))
+    done
+    [ "$cards" -gt 0 ] && [ "$renders" -eq 0 ]
+}
+
+if svoya_gpu_software; then
+    export MESA_LOADER_DRIVER_OVERRIDE=kms_swrast LIBGL_ALWAYS_SOFTWARE=1 SVOYA_RENDERER=software
+fi
+unset -f svoya_gpu_software

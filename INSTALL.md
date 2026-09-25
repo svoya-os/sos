@@ -21,7 +21,7 @@ from `main` is boot-tested in CI and can be tried.
 
 3. **VirtualBox:** Создать → ISO, *Linux / Ubuntu (64-bit)*, «Пропустить автоматическую
    установку»; 8 ГБ памяти, 4 ядра, «Включить EFI»; диск 64 ГБ. Потом Настроить → Дисплей:
-   *VMSVGA*, 3D-ускорение. Запусти.
+   *VMSVGA*, 128 МБ, 3D-ускорение **выключено** (в VirtualBox СОС рисует процессором). Запусти.
 4. **Живая сессия** откроется сама. Пробуй что угодно — после перезагрузки всё сбросится.
    Джексон предложит кнопку **«Установить СОС»**, когда захочешь поставить систему на диск.
 
@@ -42,7 +42,7 @@ from `main` is boot-tested in CI and can be tried.
 
 3. **VirtualBox:** New → the ISO, *Linux / Ubuntu (64-bit)*, *Skip Unattended Installation*;
    8 GB of memory, 4 CPUs, *Enable EFI*; a 64 GB disk. Then Settings → Display: *VMSVGA*,
-   3D acceleration. Start it.
+   128 MB, 3D acceleration **off** (in VirtualBox SOS draws on the CPU). Start it.
 4. **The live session** opens by itself. Try anything: a reboot resets it. Jackson offers an
    **«Install SOS»** button when you want it on a disk.
 

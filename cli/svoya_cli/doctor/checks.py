@@ -109,6 +109,10 @@ def check_detect(f: Facts) -> Check:
         kind = " (iGPU)" if g.integrated else ""
         parts.append(f"{g.name}{kind}" + (f" · {arch}" if arch else "") + f" · {g.pci.vendor_id:04x}:{g.pci.device_id:04x}")
     txt = "; ".join(parts)
+    if f.renderer == "software":
+        # /usr/lib/svoya/gpu-env: VirtualBox, VMware or «safe graphics», where Hyprland cannot use the GPU
+        return Check("gpu.detect", t, "ok", (txt + " · the desktop is drawn on the CPU (virtual machine or safe graphics)",
+                                             txt + " · стол рисует процессор (виртуальная машина или безопасная графика)"))
     return Check("gpu.detect", t, "ok", (txt, txt))
 
 

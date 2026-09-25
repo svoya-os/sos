@@ -54,7 +54,7 @@ sys.exit(1 if bad else 0)
 PY
 
 echo "== JSON"
-python3 -c 'import json,sys; [json.load(open(p)) for p in sys.argv[1:]]; print(len(sys.argv)-1, "JSON files ok")' tests/vm/plan.json tests/vm/journeys.json || rc=1
+python3 -c 'import json,sys; [json.load(open(p)) for p in sys.argv[1:]]; print(len(sys.argv)-1, "JSON files ok")' tests/vm/*.json || rc=1
 
 echo "== QML (shell/tools/qmlcheck.py: syntax, imports, API, names QML refuses)"
 python3 shell/tools/qmlcheck.py || rc=1

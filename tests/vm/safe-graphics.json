@@ -1,0 +1,33 @@
+{
+  "name": "live-iso-safe-graphics",
+  "description": "Boot the «safe graphics» entry (nomodeset: no GPU driver, the firmware framebuffer through simpledrm) and reach the desktop drawn on the CPU: the fallback the docs give for a black screen, and the software path VirtualBox and VMware take (packages/svoya-session/files/usr/lib/svoya/gpu-env).",
+  "vm": {
+    "memory_mib": 6144,
+    "smp": 4,
+    "resolution": [1440, 900],
+    "smbios_product": "sos-vm-test"
+  },
+  "steps": [
+    {"id": "boot-menu", "action": "wait_serial", "pattern": "SOS 26\\.10", "timeout_s": 60, "optional": true},
+    {"id": "boot-menu", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
+    {"id": "boot-menu", "action": "screenshot", "name": "01-boot-menu", "assert": "not_blank"},
+    {"id": "boot", "action": "key", "keys": ["down"]},
+    {"id": "boot", "action": "sleep", "seconds": 1},
+    {"id": "boot", "action": "screenshot", "name": "01b-safe-graphics-entry"},
+    {"id": "boot", "action": "key", "keys": ["ret"]},
+    {"id": "plymouth", "action": "sleep", "seconds": 10},
+    {"id": "plymouth", "action": "screenshot", "name": "02-plymouth"},
+    {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
+    {"id": "desktop", "action": "sleep", "seconds": 8},
+    {"id": "desktop", "action": "screenshot", "name": "03-live-desktop", "assert": "not_blank"},
+    {"id": "launcher", "action": "key", "keys": ["meta_l", "spc"], "hold_ms": 120},
+    {"id": "launcher", "action": "sleep", "seconds": 3},
+    {"id": "launcher", "action": "screenshot", "name": "04-launcher", "expect_change_from": "03-live-desktop"},
+    {"id": "launcher", "action": "key", "keys": ["esc"]},
+    {"id": "launcher", "action": "sleep", "seconds": 2},
+    {"id": "jackson", "action": "key", "keys": ["meta_l", "j"], "hold_ms": 150},
+    {"id": "jackson", "action": "sleep", "seconds": 3},
+    {"id": "jackson", "action": "screenshot", "name": "05-jackson", "expect_change_from": "03-live-desktop"},
+    {"id": "jackson", "action": "key", "keys": ["esc"]}
+  ]
+}

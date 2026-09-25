@@ -209,6 +209,39 @@ class ListsAndBootTests(unittest.TestCase):
         for name in everything:
             self.assertRegex(name, r"^\??[a-z0-9][a-z0-9.+-]+$")
 
+    def gpu_env(self, driver: str | None, render: bool, **env) -> dict:
+        """Source packages/svoya-session/.../gpu-env against a fake /sys and /dev."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            if driver:
+                (root / "sys/bus/pci/drivers" / driver).mkdir(parents=True)
+                dev = root / "sys/class/drm/card0/device"
+                dev.mkdir(parents=True)
+                (dev / "driver").symlink_to(root / "sys/bus/pci/drivers" / driver)
+                (root / "sys/class/drm/card0-Virtual-1").mkdir()          # a connector: no driver
+            if render:
+                (root / "dev/dri").mkdir(parents=True)
+                (root / "dev/dri/renderD128").touch()
+            script = (f'set -u; . "{ROOT}/packages/svoya-session/files/usr/lib/svoya/gpu-env"; '
+                      'printf "%s|%s|%s" "${MESA_LOADER_DRIVER_OVERRIDE:-}" "${LIBGL_ALWAYS_SOFTWARE:-}" '
+                      '"$(type svoya_gpu_software >/dev/null 2>&1 && echo leaked)"')
+            clean = {"PATH": "/usr/bin:/bin", "SVOYA_GPU_ROOT": str(root), **env}
+            out = subprocess.run(["bash", "-c", script], check=True, capture_output=True, text=True, env=clean).stdout
+        override, soft, leaked = out.split("|")
+        self.assertEqual(leaked, "")                 # the helper function does not stay in the session
+        return {"override": override, "software": soft}
+
+    def test_gpu_env_software_where_hyprland_cannot_start(self):
+        sw = {"override": "kms_swrast", "software": "1"}
+        hw = {"override": "", "software": ""}
+        self.assertEqual(self.gpu_env("vmwgfx", True), sw)                  # VirtualBox VMSVGA, VMware
+        self.assertEqual(self.gpu_env("simple-framebuffer", False), sw)     # nomodeset («safe graphics»)
+        self.assertEqual(self.gpu_env("bochs-drm", False), sw)              # QEMU standard VGA
+        self.assertEqual(self.gpu_env("virtio_gpu", True), hw)              # Mesa falls back by itself
+        self.assertEqual(self.gpu_env("i915", True), hw)
+        self.assertEqual(self.gpu_env(None, False), hw)                     # no display at all
+        self.assertEqual(self.gpu_env("vmwgfx", True, SVOYA_GPU="hardware"), hw)
+
     def test_grub_menu_entries(self):
         cfg = (ROOT / "image/boot/grub.cfg").read_text()
         self.assertIn('menuentry "SOS @VERSION@"', cfg)

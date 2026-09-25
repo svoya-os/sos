@@ -141,7 +141,7 @@ Tried SOS on your machine? A
    `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
    Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Check it against `SHA256SUMS`.
 3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB of memory, 4 CPUs, *Enable EFI*, graphics *VMSVGA*
-   with 3D on, start it with the ISO.
+   with 3D off, start it with the ISO.
 4. You are on the desktop of the live session. Look around (`Super+K` shows every shortcut), then
    press **«Install SOS»** in Jackson's greeting to put it on a disk.
 
@@ -336,7 +336,7 @@ Svoya Shell, Джексон и команда `sos`.
    `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
    Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Сверь с `SHA256SUMS`.
 3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 ГБ памяти, 4 ядра, «Включить EFI», графика *VMSVGA*
-   с 3D, запусти с этим ISO.
+   без 3D, запусти с этим ISO.
 4. Ты на рабочем столе живой сессии. Осмотрись (`Super+K` покажет все сочетания клавиш), а потом
    нажми **«Установить СОС»** в приветствии Джексона, чтобы поставить систему на диск.
 

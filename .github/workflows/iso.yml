@@ -155,3 +155,18 @@ jobs:
       plan: tests/vm/journeys.json
       firmwares: '["uefi"]'
       label: journeys
+
+  # «Safe graphics» (nomodeset: no GPU driver, simpledrm): the entry the docs give for a black
+  # screen, and the software rendering VirtualBox and VMware get (packages/svoya-session gpu-env).
+  safe-graphics:
+    needs: iso
+    if: ${{ !inputs.release && (github.event_name != 'workflow_dispatch' || inputs.vm_test) }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
+      actions: read
+    with:
+      artifact: sos-iso
+      plan: tests/vm/safe-graphics.json
+      firmwares: '["uefi"]'
+      label: safe-graphics

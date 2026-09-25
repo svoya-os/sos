@@ -91,11 +91,13 @@ Without 3D, a VM draws the desktop on the CPU, so give it 4 cores.
 2. **Hardware:** 8192 MB of memory (at least 6144), 4 processors, check **Enable EFI**.
 3. **Hard disk:** 64 GB if you want to try installing. The live session needs no disk.
 4. Once the machine exists: **Settings → Display**: 128 MB of video memory, graphics controller
-   **VMSVGA**, **3D acceleration** on.
+   **VMSVGA**, **3D acceleration** off. In VirtualBox SOS draws on the CPU anyway: with 3D the
+   Hyprland compositor does not start there, so the system switches to software rendering by
+   itself.
 5. **Start.** Press Enter in the boot menu. The desktop appears in 20–60 seconds.
 
-Screen stays black? Restart the VM and pick **SOS (safe graphics)** in the menu. If that does
-not help, turn 3D acceleration off.
+Screen stays black (or shows "Hyprland has crashed" instead of a desktop)? Restart the VM and pick
+**SOS (safe graphics)** in the menu.
 
 ### Hyper-V (Windows 10/11 Pro)
 
@@ -219,7 +221,8 @@ Next: [first steps](first-steps.md) · [FAQ](faq.md).
 - **"Secure Boot violation" at start:** some computers trust only Windows by default. In the
   firmware settings, allow the *Microsoft third-party UEFI CA* (the exact name varies by
   manufacturer), then try again.
-- **The VM is slow:** give it 4 cores and 8 GB of memory, and turn 3D acceleration on.
+- **The VM is slow:** give it 4 cores and 8 GB of memory. In VirtualBox and VMware the desktop is
+  drawn on the CPU (3D acceleration does not help there), so SOS is much faster on real hardware.
 - **The installer does not see the SSD:** if the firmware settings show the storage controller in
   Intel RST or RAID mode, switch it to AHCI. Windows needs preparation first, so look up how to do
   it for your machine.
