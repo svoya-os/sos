@@ -299,28 +299,38 @@ Singleton {
     function moreUsers(n) {
         return root.t("ещё " + n, n + " more");
     }
-    function jHello(name) {
-        return name.length > 0 ? root.t("Йо, " + name + ". Пароль?", "Yo, " + name + ". Password?") : root.t("Йо. Пароль?", "Yo. Password?");
+    // Jackson's voice on these fixed lines: «Кентафурик», the default persona (DESIGN §13) — «здарова»,
+    // «кентафурик», «базару нет», one stretched word when he is glad — or plain for the other personas
+    // and humor 0. The session binds it to Jackson's persona, the greeter to the exported look
+    // (Avatar.voice); a fresh system talks like a кентафурик.
+    property bool kentVoice: true
+    function kv(kentRu, kentEn, plainRu, plainEn) {
+        return root.kentVoice ? root.t(kentRu, kentEn) : root.t(plainRu, plainEn);
     }
-    readonly property string jWaiting: root.t("жду", "waiting")
+    function jHello(name) {
+        // the name is already big on the left: the кентафурик greets, the plain voice names
+        const who = name.length > 0 ? ", " + name : "";
+        return root.kv("Здарова, кентафурик! Пароль — и погнали.", "Yo, buddy! Password, and let's roll.", "Привет" + who + ". Пароль?", "Hi" + who + ". Password?");
+    }
+    readonly property string jWaiting: root.kv("на связи", "here", "жду", "waiting")
     readonly property string jListening: root.t("слушаю", "listening")
-    readonly property string jChecking: root.t("Сверяю…", "Checking…")
+    readonly property string jChecking: root.kv("Щас гляну…", "Checking, hang on…", "Сверяю…", "Checking…")
     readonly property string jSecond: root.t("секунду", "one sec")
     function jWrong(caps, layout) {
         if (caps)
-            return root.t("Не то. Caps Lock включён.", "Nope. Caps Lock is on.");
+            return root.kv("Не, чувак, не то. Caps Lock врублен.", "Nah, dude, not it. Caps Lock is on.", "Не то. Caps Lock включён.", "Nope. Caps Lock is on.");
         if (layout.length > 0)
-            return root.t("Не то. Раскладка сейчас " + layout + ".", "Nope. The layout is " + layout + " right now.");
-        return root.t("Не то. Давай ещё раз.", "Nope. Try again.");
+            return root.kv("Не, чувак, не то. Раскладка — " + layout + ".", "Nah, dude, not it. The layout is " + layout + ".", "Не то. Раскладка сейчас " + layout + ".", "Nope. The layout is " + layout + " right now.");
+        return root.kv("Не то, кентафурик. Давай ещё разок.", "Not it, buddy. One more time.", "Не то. Давай ещё раз.", "Nope. Try again.");
     }
     readonly property string jAgain: root.t("ещё раз", "again")
-    readonly property string jWelcome: root.t("Есть контакт. Поехали!", "Connected. Let's go!")
+    readonly property string jWelcome: root.kv("Базару нет — заходим!", "No doubt — we're in!", "Есть контакт. Поехали!", "Connected. Let's go!")
     readonly property string jLoadingDesk: root.t("загружаю стол", "loading your desk")
-    readonly property string jWho: root.t("Кто там? Имя пользователя.", "Who's there? Your user name.")
+    readonly property string jWho: root.kv("Кто там? Назовись, кентафурик.", "Who's there? Name, buddy.", "Кто там? Имя пользователя.", "Who's there? Your user name.")
     readonly property string jOneMoreStep: root.t("ещё шаг", "one more step")
-    readonly property string jLocked: root.t("Отошёл? Я покараулю.", "Stepped away? I'll keep watch.")
+    readonly property string jLocked: root.kv("Отошёл, кентафурик? Я присмотрю.", "Stepped away, bro? I'll keep watch.", "Отошёл? Я покараулю.", "Stepped away? I'll keep watch.")
     readonly property string jLockedMeta: root.t("заблокировано", "locked")
-    readonly property string jWelcomeBack: root.t("С возвращением!", "Welcome back!")
+    readonly property string jWelcomeBack: root.kv("Чуваааак, с возвращением!", "Duuude, welcome back!", "С возвращением!", "Welcome back!")
     readonly property string jWorking: root.t("работаю", "working")
     function left(sec) {
         return root.ru ? "ещё " + Fmt.duration(sec) : Fmt.duration(sec) + " left";
@@ -614,7 +624,7 @@ Singleton {
     readonly property string cuHood: root.t("Капюшон", "Hood")
     readonly property string cuName: root.t("Имя", "Name")
     readonly property string cuPersona: root.t("Характер", "Persona")
-    readonly property var cuPersonas: ({ kent: root.t("Кент из нулевых", "2000s buddy"), sysop: "SYSOP", dispatcher: root.t("Диспетчер", "Dispatcher"), pirate: root.t("Пиратское радио", "Pirate radio") })
+    readonly property var cuPersonas: ({ kent: root.t("Кентафурик", "Buddy"), sysop: "SYSOP", dispatcher: root.t("Диспетчер", "Dispatcher"), pirate: root.t("Пиратское радио", "Pirate radio") })
     readonly property string cuHumor: root.t("Юмор", "Humor")
     readonly property var cuHumorLevels: [root.t("без шуток", "no jokes"), root.t("изредка", "now and then"), root.t("почаще", "more often")]
     readonly property string cuReset: root.t("По умолчанию", "Defaults")
@@ -678,9 +688,10 @@ Singleton {
     readonly property string wzHowHeAnswers: root.t("Так он ответит", "How he answers")
     readonly property string wzHowHeAnswersNote: root.t("меняется вместе с юмором", "changes with the humor")
     readonly property string wzSampleQ: root.t("Сколько места осталось на диске?", "How much disk space is left?")
-    readonly property var wzSampleA: root.ru ? ["Свободно 1,4 ТБ из 2 ТБ.", "1,4 ТБ свободно — влезет ещё пара десятков моделей.", "1,4 ТБ свободно — влезет ещё пара десятков моделей. Можешь не экономить)"] : ["1.4 TB free of 2 TB.", "1.4 TB free — room for a couple dozen more models.", "1.4 TB free — room for a couple dozen more models. No need to be stingy)"]
+    // by humor 0–2, in the default persona's voice (the wizard runs before anyone picks another one)
+    readonly property var wzSampleA: root.ru ? ["Свободно 1,4 ТБ из 2 ТБ.", "Лови, кентафурик: 1,4 ТБ свободно — влезет ещё пара десятков моделей.", "Чуваааак, 1,4 ТБ свободно — влезет ещё пара десятков моделей. Это база: можешь не экономить)"] : ["1.4 TB free of 2 TB.", "Here you go, buddy: 1.4 TB free — room for a couple dozen more models.", "Duuude, 1.4 TB free — room for a couple dozen more models. No need to be stingy)"]
     function wzHello(name) {
-        return root.t("Йо! Я " + name + ". Если что — жми <b>Super+J</b>, я рядом)", "Yo! I'm " + name + ". Need anything — press <b>Super+J</b>, I'm around)");
+        return root.kv("Здарова, кентафурик! Я " + name + ". Если что — жми <b>Super+J</b>, я на связи)", "Yo, buddy! I'm " + name + ". Need anything — press <b>Super+J</b>, I'm around)", "Привет! Я " + name + ". Если что — жми <b>Super+J</b>, я рядом)", "Hi! I'm " + name + ". Need anything — press <b>Super+J</b>, I'm around)");
     }
     readonly property string wzCall: root.t("позвать", "call")
     readonly property string wzHoldVoice: root.t("держи — говори голосом", "hold — talk")

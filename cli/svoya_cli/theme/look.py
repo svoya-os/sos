@@ -124,7 +124,7 @@ def undo(ctx: Ctx, cfg: dict, entry_id: str | None = None) -> dict | None:
 def system_write(ctx: Ctx, theme_id: str, accent: str | None) -> dict:
     """Write the login screen's theme.json: directly as root, else ``pkexec sos theme system-write``."""
     acc_arg = accent or "default"
-    avatar_spec = avatar_export.encode(avatar_export.user_look(ctx))
+    avatar_spec = avatar_export.export_spec(ctx)
     if ctx.is_root:
         try:
             path = write_system_theme(ctx, theme_id, acc_arg)

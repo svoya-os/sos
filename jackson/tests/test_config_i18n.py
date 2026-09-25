@@ -147,12 +147,16 @@ class PersonaTest(unittest.TestCase):
 
     def test_humor_levels_and_fast_style(self) -> None:
         self.assertIn("без шуток", persona_text("kent", "ru", 0))
-        self.assertIn("изредка", persona_text("kent", "ru", 1))
+        self.assertIn("кентафурик", persona_text("kent", "ru", 1))
+        self.assertIn("чуваааак", persona_text("kent", "ru", 1))
+        self.assertIn("в большинстве ответов", persona_text("kent", "ru", 1))
         self.assertEqual(style_fast("kent", "ru", "Громкость 50%.", ok=False, humor=2), "Громкость 50%.")
         self.assertEqual(style_fast("kent", "ru", "Громкость 50%.", ok=True, humor=0), "Громкость 50%.")
         flavored = [style_fast("kent", "ru", "ok", True, 2, seed=str(i)) for i in range(60)]
         self.assertTrue(any(f != "ok" for f in flavored))
-        self.assertTrue(sum(f != "ok" for f in flavored) < 40)  # sparingly
+        self.assertEqual(sum(f != "ok" for f in flavored), 60)   # humor 2: every reply gets a word
+        some = [style_fast("kent", "ru", "ok", True, 1, seed=str(i)) for i in range(60)]
+        self.assertTrue(15 < sum(f != "ok" for f in some) < 45)    # humor 1 (default): about half
         self.assertTrue(style_fast("dispatcher", "ru", "Готово", True).startswith("✓"))
 
 

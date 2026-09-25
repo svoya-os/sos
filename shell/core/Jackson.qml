@@ -72,14 +72,20 @@ Singleton {
     readonly property string personaId: root.persona && typeof root.persona.id === "string" ? root.persona.id : "kent"
     readonly property int humor: root.persona && root.persona.humor !== undefined ? Number(root.persona.humor) : 1
 
+    // Both change how Jackson sounds on the login screen too («кент» or plain): the exported copy follows.
     function setPersona(id) {
         root.persona = Object.assign({}, root.persona || {}, { id: id });
-        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona set "$1"', [id]);
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona set "$1"', [id], root.syncLoginVoice);
     }
 
     function setHumor(level) {
         root.persona = Object.assign({}, root.persona || {}, { humor: level });
-        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona humor "$1"', [String(level)]);
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona humor "$1"', [String(level)], root.syncLoginVoice);
+    }
+
+    function syncLoginVoice(code) {
+        if (code === 0)
+            Theme.queueSystemSync();
     }
 
     // Current turn (the panel shows one turn at a time, like a command palette).

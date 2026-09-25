@@ -56,6 +56,13 @@ ShellRoot {
 
     Post {}
 
+    // Jackson's fixed lines (lock screen, Strings.jLocked…) speak in his persona's voice
+    Binding {
+        target: Strings
+        property: "kentVoice"
+        value: Jackson.personaId === "kent" && Jackson.humor > 0
+    }
+
     // ---- Super+J: tap toggles the panel, hold talks (when Jackson has a voice) ----------------
     Scope {
         id: ptt

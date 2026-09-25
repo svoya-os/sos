@@ -40,6 +40,9 @@ Singleton {
     readonly property var look: root.resolve(root.stored)
     readonly property string character: root.look.character
     readonly property string name: root.look.name === root.defaultName && !Strings.ru ? "Jackson" : root.look.name
+    // The greeter only: how Jackson's fixed lines sound — «kent» (default persona) or «plain» (another
+    // persona, humor 0). `sos theme … --system` exports it with the look (avatar_export.user_voice).
+    readonly property string voice: root.stored && root.stored.voice === "plain" ? "plain" : "kent"
 
     // sprite data for a character (null until loaded / when the file is missing)
     readonly property var impData: root.parseData(impFile.text())

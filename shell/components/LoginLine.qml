@@ -485,17 +485,24 @@ Item {
             })[root.phase]
     }
 
-    // what he says: one short line in a bubble above-right of him
+    // what he says: a short line in a bubble above-right of him. It grows upward and never reaches the
+    // right column (burstX): a long line moves the meta («ещё раз») below, a longer one wraps.
     Rectangle {
         id: bubble
 
         readonly property string line: root.say
+        readonly property real padX: 12 * root.s
+        readonly property real padY: 8 * root.s
+        readonly property real gap: 8 * root.s
+        readonly property real innerMax: Math.max(120 * root.s, root.burstX - x - 20 * root.s - 2 * padX)
+        readonly property real metaW: sayMeta.visible ? sayMeta.implicitWidth : 0
+        readonly property bool oneRow: sayText.implicitWidth + (metaW > 0 ? gap + metaW : 0) <= innerMax
 
         visible: root.showJackson && root.say.length > 0
         x: root.jacksonX + root.jSize * 0.83
         y: root.lineY - root.jSize - height + 4 * root.s + bubbleShift
-        width: bubbleRow.implicitWidth + 24 * root.s
-        height: 32 * root.s
+        width: 2 * padX + (oneRow ? sayText.width + (metaW > 0 ? gap + metaW : 0) : Math.max(sayText.width, metaW))
+        height: oneRow ? 32 * root.s : 2 * padY + sayText.height + (metaW > 0 ? 3 * root.s + sayMeta.height : 0)
         color: Theme.surface2
         border.width: 1
         border.color: Theme.lineStrong
@@ -530,25 +537,26 @@ Item {
             }
         }
 
-        Row {
-            id: bubbleRow
+        SText {
+            id: sayText
 
-            x: 12 * root.s
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 8 * root.s
+            x: bubble.padX
+            y: bubble.oneRow ? (bubble.height - height) / 2 : bubble.padY
+            width: Math.min(implicitWidth, bubble.innerMax)
+            wrapMode: Text.Wrap
+            text: root.say
+            size: 13.5 * root.s
+        }
 
-            SText {
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.say
-                size: 13.5 * root.s
-            }
-            MText {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: root.sayMeta.length > 0
-                text: root.sayMeta
-                size: 10.5 * root.s
-                color: Theme.textFaint
-            }
+        MText {
+            id: sayMeta
+
+            visible: root.sayMeta.length > 0
+            x: bubble.oneRow ? sayText.x + sayText.width + bubble.gap : bubble.padX
+            y: bubble.oneRow ? (bubble.height - height) / 2 : sayText.y + sayText.height + 3 * root.s
+            text: root.sayMeta
+            size: 10.5 * root.s
+            color: Theme.textFaint
         }
     }
 }

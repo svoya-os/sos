@@ -46,10 +46,14 @@
 
   .jk { position: absolute; left: 632px; top: 354px; width: 96px; height: 96px; }
   .jk canvas { image-rendering: pixelated; display: block; }
-  .say { position: absolute; left: 712px; top: 312px; padding: 8px 12px 9px; border-radius: 12px 12px 12px 3px;
+  /* the bubble sits on his head and grows upward; it never reaches the right column (1000 − 20 = 268 px wide at
+     most): a long line moves «ещё раз» below (.stack), a longer one wraps — like LoginLine.qml */
+  .say { position: absolute; left: 712px; bottom: 553px; padding: 8px 12px 9px; border-radius: 12px 12px 12px 3px;
     background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong), 0 18px 40px -20px rgba(0,0,0,.8);
     font: 400 13.5px/1.35 "Plex Sans"; color: var(--text); white-space: nowrap; }
   .say small { color: var(--text-faint); font: 400 10.5px/1 "Plex Mono"; margin-left: 8px; letter-spacing: 0.03em; }
+  .say.stack { max-width: 268px; box-sizing: border-box; white-space: normal; }
+  .say.stack small { display: block; margin: 3px 0 0; white-space: nowrap; }
 
   .when { position: absolute; left: 1000px; top: 334px; }
   .when .big { margin-top: 18px; font-feature-settings: "tnum"; }
@@ -91,7 +95,7 @@
   </div>
 
   <div class="jk"><canvas id="jack" data-jackson="imp" data-state="listening" data-px="96"></canvas></div>
-  <div class="say" id="say">Йо, Максим. Пароль?<small>слушаю</small></div>
+  <div class="say" id="say"><span>Здоров, кент! Пароль — и погнали.</span><small>слушаю</small></div>
 
   <div class="when">
     <div class="eyebrow">Сейчас</div>
@@ -189,17 +193,17 @@
 
   const jack = document.getElementById('jack'), say = document.getElementById('say');
   const lines = lock ? {
-    idle: ['idle', 'Отошёл? Я покараулю.', 'заблокировано'],
-    typing: ['listening', 'Отошёл? Я покараулю.', 'слушаю'],
-    checking: ['thinking', 'Сверяю…', 'секунду'],
-    error: ['error', 'Не то. Раскладка сейчас EN.', 'ещё раз'],
-    welcome: ['happy', 'С возвращением!', ''],
+    idle: ['idle', 'Отошёл, кент? Я присмотрю.', 'заблокировано'],
+    typing: ['listening', 'Отошёл, кент? Я присмотрю.', 'слушаю'],
+    checking: ['thinking', 'Сверяю, кент…', 'секунду'],
+    error: ['error', 'Не то, кент. Раскладка сейчас EN.', 'ещё раз'],
+    welcome: ['happy', 'С возвращением, кент!', ''],
   }[state] : {
-    idle: ['listening', 'Йо, Максим. Пароль?', 'жду'],
-    typing: ['listening', 'Йо, Максим. Пароль?', 'слушаю'],
-    checking: ['thinking', 'Сверяю…', 'секунду'],
-    error: ['error', 'Не то. Раскладка сейчас EN.', 'ещё раз'],
-    welcome: ['happy', 'Есть контакт. Поехали!', 'загружаю стол'],
+    idle: ['listening', 'Здоров, кент! Пароль — и погнали.', 'на связи'],
+    typing: ['listening', 'Здоров, кент! Пароль — и погнали.', 'слушаю'],
+    checking: ['thinking', 'Сверяю, кент…', 'секунду'],
+    error: ['error', 'Не то, кент. Раскладка сейчас EN.', 'ещё раз'],
+    welcome: ['happy', 'Базару нет — заходим!', 'загружаю стол'],
   }[state];
   if (lock) {
     document.querySelector('.who .eyebrow').innerHTML = 'Заблокировано <span>·</span> maxim-4090';
@@ -207,7 +211,10 @@
     document.getElementById('msg').innerHTML = 'раскладка RU';
   }
   jack.dataset.state = lines[0];
-  say.innerHTML = `${lines[1]}<small>${lines[2]}</small>`;
+  say.innerHTML = `<span>${lines[1]}</span>` + (lines[2] ? `<small>${lines[2]}</small>` : '');
+  const fit = () => { say.classList.remove('stack'); if (say.offsetWidth > 268) say.classList.add('stack'); };
+  fit();
+  document.fonts.ready.then(fit);
   if (state === 'idle') document.getElementById('hint').innerHTML = 'введите пароль <span>·</span> <b>Enter</b> — войти';
   if (err) document.getElementById('msg').innerHTML = '<span style="color:var(--bad)">не тот пароль</span> <span>·</span> раскладка EN <span>·</span> Caps Lock выкл.';
   if (state === 'checking') document.getElementById('hint').innerHTML = 'проверка…';

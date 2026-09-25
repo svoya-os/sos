@@ -45,7 +45,7 @@ FALLBACK_PRICE = [2.0, 10.0]
 DEFAULTS: dict[str, Any] = {
     "language": "ru",
     "address": "ty",            # ty | vy — informal «ты» by default (DESIGN.md §8)
-    "persona": "kent",          # kent («Кент из нулевых») | sysop | dispatcher | pirate
+    "persona": "kent",          # kent («Кентафурик») | sysop | dispatcher | pirate
     "humor": 1,                 # 0 none · 1 occasional (default) · 2 more
     # Jackson's look and name live in ~/.config/svoya/avatar.json (shared with the shell), not here.
     "allowed_roots": ["~"],

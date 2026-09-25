@@ -85,9 +85,19 @@ ShellRoot {
     // Jackson's humor (0–2) goes through his own CLI; the wizard does not talk to jacksond.
     property int humor: 1
 
+    // his greeting follows the humor slider, like the sample answer (0 = no «кент»)
+    Binding {
+        target: Strings
+        property: "kentVoice"
+        value: root.humor > 0
+    }
+
     function setHumor(level) {
         root.humor = level;
-        Sys.sh('c=$(command -v jackson || command -v j) || exit 0; exec "$c" persona humor "$1"', [String(level)]);
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 0; exec "$c" persona humor "$1"', [String(level)], function (code) {
+            if (code === 0)
+                Theme.queueSystemSync();        // the greeter's «кент» follows humor 0
+        });
     }
 
     function setKeyboard(layouts, option) {

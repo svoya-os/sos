@@ -1,7 +1,7 @@
 # Джексон / Jackson
 
 The assistant of **СОС / SOS — «Своя Операционная Система»**. Jackson is a character — by default
-«Кент из нулевых» / "2000s buddy" — and the OS layer that controls agents: it routes each request to a
+«Кентафурик» / "Buddy" — and the OS layer that controls agents: it routes each request to a
 local or cloud model, runs tools inside a sandbox, asks before anything risky with the exact preview,
 keeps a tamper-evident log and can undo what it did.
 
@@ -109,7 +109,7 @@ Example session:
 
 ```json
 → {"type":"hello","client":"svoya-shell","version":"0.1","lang":"ru"}
-← {"type":"welcome","version":"0.1.0","models":[…],"route":{"mode":"auto","policy":"local-only","model":"qwen3.5-4b","local":true,…},"persona":{"id":"kent","name":"Кент из нулевых","humor":1},"avatar":"auto"}
+← {"type":"welcome","version":"0.1.0","models":[…],"route":{"mode":"auto","policy":"local-only","model":"qwen3.5-4b","local":true,…},"persona":{"id":"kent","name":"Кентафурик","humor":1},"avatar":"auto"}
 → {"type":"ask","id":"t1","text":"запиши план в ~/plan.md","context":{"cwd":"/home/u"}}
 ← {"type":"state","id":"t1","state":"thinking","persona":"kent","avatar":"auto","mood":"thinking"}
 ← {"type":"route","id":"t1","model":"qwen3.5-4b","provider":"local","local":true,"reason":"локально: политика «только локально», данные не покидают компьютер"}
@@ -127,7 +127,7 @@ Everything is optional; defaults are in `jackson/config.py`. `jackson route set 
 ```toml
 language = "ru"          # ru | en
 address  = "ty"          # «ты» (default) | "vy"
-persona  = "kent"        # kent («Кент из нулевых») | sysop | dispatcher («Диспетчер») | pirate («Пиратское радио»)
+persona  = "kent"        # kent («Кентафурик») | sysop | dispatcher («Диспетчер») | pirate («Пиратское радио»)
 humor    = 1             # 0 none · 1 occasional · 2 more (never on errors or when you're stressed)
 avatar   = "auto"        # mascot hint for the shell: auto | imp | cat | none
 allowed_roots = ["~"]    # file tools work only here
@@ -301,9 +301,15 @@ on. While off, no model servers are probed and no MCP servers start.
 
 ## Personas
 
-«Кент из нулевых» (default): a warm, slightly cheeky guy from the ICQ-and-forums internet, straight
-to the point, period slang only occasionally (`humor` 0–2), no jokes when something broke or you are
-stressed. Alternatives: SYSOP (log-line terse), «Диспетчер» (checklists, GO/NO-GO), «Пиратское радио»
+«Кентафурик» (default, id `kent`): a laid-back dude who grew up on the ICQ-and-forums internet and
+knows today's memes too, warm and a little goofy, straight to the point. He calls you «кентафурик»
+(also «кент», «чувак», «братишка»), says «здарова», «базар» / «базару нет» to agree, «это база» for
+the obviously right thing, «имба», «пушка», «жиза», «чётко», «лови», «погнали», and stretches one word
+when happy («чуваааак», «красаааава») — in most answers at `humor` 1, almost every answer at 2, never
+at 0. No swearing or prison slang, and no jokes when something broke, you are stressed, or it is about
+security or money. The shell's fixed lines (greeter, lock screen, setup) use the same voice, or a plain
+one for the other personas and humor 0 (`Strings.kentVoice`; the greeter gets it with the exported
+look). Alternatives: SYSOP (log-line terse), «Диспетчер» (checklists, GO/NO-GO), «Пиратское радио»
 (late-night 90s DJ, drops the act on errors). The safety rules are identical for every persona and
 come after it in the prompt. `welcome`/`state` carry `persona`, `avatar` and `mood` for the mascot.
 

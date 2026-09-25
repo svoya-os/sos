@@ -29,6 +29,13 @@ ShellRoot {
 
     settings.watchFiles: false
 
+    // Jackson talks like on the desktop: «кент», or plain for another persona (exported with the look)
+    Binding {
+        target: Strings
+        property: "kentVoice"
+        value: Avatar.voice === "kent"
+    }
+
     // ---- data ---------------------------------------------------------------------------------
     property var users: []       // [{name, display, avatar}]
     property var sessions: []    // [{id, name, nameRu, exec, desktopNames, glyph}]

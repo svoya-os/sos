@@ -250,6 +250,48 @@ class AvatarExportTest(SandboxTest):
                 self.assertEqual(theme_cli.main(args, ctx), 2, spec)
         self.assertFalse(self.sb.path("/etc/svoya/avatar.json").exists())
 
+    def test_voice_follows_jacksons_persona(self):
+        ctx = self.sb.ctx()
+        cfg = ctx.paths.user_config_dir / "jackson.toml"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        self.assertEqual(avatar_export.user_voice(ctx), "kent")             # nothing set: the default persona
+        for text, voice in (('persona = "kent"\nhumor = 2\n', "kent"), ('persona = "sysop"\n', "plain"),
+                            ('humor = 0\n', "plain"), ('persona = "kent"\nhumor = "lots"\n', "kent"),
+                            ("persona = [broken", "kent")):
+            cfg.write_text(text)
+            self.assertEqual(avatar_export.user_voice(ctx), voice, text)
+        # the system file counts too, the user's wins
+        cfg.write_text('humor = 1\n')
+        system = self.sb.path("/etc/svoya/jackson.toml")
+        system.parent.mkdir(parents=True, exist_ok=True)
+        system.write_text('persona = "pirate"\nhumor = 0\n')
+        self.assertEqual(avatar_export.user_voice(ctx), "plain")
+        cfg.write_text('persona = "kent"\nhumor = 1\n')
+        self.assertEqual(avatar_export.user_voice(ctx), "kent")
+
+    def test_plain_voice_crosses_with_the_look(self):
+        r = FakeRunner({"pkexec": Result(0)}, available={"pkexec"})
+        ctx = self.sb.ctx(r)
+        (ctx.paths.user_config_dir).mkdir(parents=True, exist_ok=True)
+        (ctx.paths.user_config_dir / "jackson.toml").write_text('persona = "dispatcher"\n')
+        self.write_avatar(ctx, {"character": "cat"})
+        theme_cli.main(accent_args("ice", system=True), ctx)
+        call = next(c for c in r.calls if c[0] == "pkexec")
+        spec = call[call.index("--avatar") + 1]
+        self.assertEqual(spec, "character=cat;voice=plain")
+        self.assertEqual(avatar_export.decode(spec), {"character": "cat", "voice": "plain"})
+        # «кент» is the greeter's default: not worth a key
+        self.assertEqual(avatar_export.encode({"character": "cat", "voice": "kent"}), "character=cat")
+        self.assertEqual(avatar_export.decode("voice=kent"), {"voice": "kent"})
+        with self.assertRaises(ValueError):
+            avatar_export.decode("voice=pirate")
+        # the root side writes a voice-only copy too (the default look, a plain voice)
+        root = self.sb.ctx(uid=0)
+        args = argparse.Namespace(theme_cmd="system-write", theme_id="graphite", accent="lilac", dry_run=False,
+                                  quiet=True, avatar="voice=plain")
+        self.assertEqual(theme_cli.main(args, root), 0)
+        self.assertEqual(json.loads(self.sb.path("/etc/svoya/avatar.json").read_text()), {"voice": "plain"})
+
     def test_same_rules_as_jackson(self):
         import ast
         src = pathlib.Path(__file__).resolve().parents[2] / "jackson" / "jackson" / "avatar.py"
