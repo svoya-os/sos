@@ -56,6 +56,8 @@ class DoctorBase(SandboxTest):
     def run_checks(self, runner, **env):
         ctx = self.sb.ctx(runner, **env)
         facts = gather(ctx)
+        if facts.srv_ai and facts.srv_ai.get("group") not in (None, "root"):
+            facts.srv_ai["group"] = "ai"   # the sandbox dir belongs to the CI user; on SOS /srv/ai is group "ai"
         return {c.id: c for c in C.run_all(facts, hook_source="#!/bin/sh\n", user_env_path="/u/env.conf")}, facts, ctx
 
 

@@ -57,8 +57,9 @@ def walk(roots: list[Path], min_size: int = MIN_SIZE) -> list[tuple[Path, os.sta
         if not root.exists():
             continue
         for dirpath, dirs, files in os.walk(root, followlinks=False):
-            dirs[:] = [d for d in dirs if d not in (".locks", "views", ".snapshots")]
-            for fn in files:
+            # sorted: filesystem order differs between machines; with hardlinks the first path wins
+            dirs[:] = sorted(d for d in dirs if d not in (".locks", "views", ".snapshots"))
+            for fn in sorted(files):
                 p = Path(dirpath) / fn
                 try:
                     st = p.lstat()
