@@ -56,6 +56,20 @@ jobs:
         if: hashFiles('cli/tests/**/*.py') != ''
         working-directory: cli
         run: python3 -m unittest discover -s tests -t . -v
+      - name: UpsiL template and sos run against the pinned UpsiL
+        # the upsil package is optional: until github.com/svoya-os/upsil serves the pinned commit, skip
+        run: |
+          set -euo pipefail
+          . packages/versions.env
+          if ! git ls-remote --exit-code "$UPSIL_REPO" HEAD >/dev/null 2>&1; then
+            echo "::notice::$UPSIL_REPO is not reachable yet; the UpsiL checks are skipped"
+            exit 0
+          fi
+          . packages/lib/common.sh
+          dir="$RUNNER_TEMP/upsil"
+          git_fetch_commit "$UPSIL_REPO" "$UPSIL_COMMIT" "$dir"
+          cd cli
+          PYTHONPATH="$dir" python3 -m unittest -v tests.test_new_run
 
   plan:
     name: Packaging and image plan (dry runs)
