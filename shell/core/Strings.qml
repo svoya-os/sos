@@ -310,7 +310,7 @@ Singleton {
     function jHello(name) {
         // the name is already big on the left: the кентафурик greets, the plain voice names
         const who = name.length > 0 ? ", " + name : "";
-        return root.kv("Здарова, кентафурик! Пароль — и погнали.", "Yo, buddy! Password, and let's roll.", "Привет" + who + ". Пароль?", "Hi" + who + ". Password?");
+        return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Привет" + who + ". Пароль?", "Hi" + who + ". Password?");
     }
     readonly property string jWaiting: root.kv("на связи", "here", "жду", "waiting")
     readonly property string jListening: root.t("слушаю", "listening")

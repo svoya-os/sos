@@ -95,7 +95,7 @@
   </div>
 
   <div class="jk"><canvas id="jack" data-jackson="imp" data-state="listening" data-px="96"></canvas></div>
-  <div class="say" id="say"><span>Здоров, кент! Пароль — и погнали.</span><small>слушаю</small></div>
+  <div class="say" id="say"><span>Здарова, кентафурик! Пароль?</span><small>слушаю</small></div>
 
   <div class="when">
     <div class="eyebrow">Сейчас</div>
@@ -193,16 +193,16 @@
 
   const jack = document.getElementById('jack'), say = document.getElementById('say');
   const lines = lock ? {
-    idle: ['idle', 'Отошёл, кент? Я присмотрю.', 'заблокировано'],
-    typing: ['listening', 'Отошёл, кент? Я присмотрю.', 'слушаю'],
-    checking: ['thinking', 'Сверяю, кент…', 'секунду'],
-    error: ['error', 'Не то, кент. Раскладка сейчас EN.', 'ещё раз'],
-    welcome: ['happy', 'С возвращением, кент!', ''],
+    idle: ['idle', 'Отошёл, кентафурик? Я присмотрю.', 'заблокировано'],
+    typing: ['listening', 'Отошёл, кентафурик? Я присмотрю.', 'слушаю'],
+    checking: ['thinking', 'Щас гляну…', 'секунду'],
+    error: ['error', 'Не, чувак, не то. Раскладка — EN.', 'ещё раз'],
+    welcome: ['happy', 'Чуваааак, с возвращением!', ''],
   }[state] : {
-    idle: ['listening', 'Здоров, кент! Пароль — и погнали.', 'на связи'],
-    typing: ['listening', 'Здоров, кент! Пароль — и погнали.', 'слушаю'],
-    checking: ['thinking', 'Сверяю, кент…', 'секунду'],
-    error: ['error', 'Не то, кент. Раскладка сейчас EN.', 'ещё раз'],
+    idle: ['listening', 'Здарова, кентафурик! Пароль?', 'на связи'],
+    typing: ['listening', 'Здарова, кентафурик! Пароль?', 'слушаю'],
+    checking: ['thinking', 'Щас гляну…', 'секунду'],
+    error: ['error', 'Не, чувак, не то. Раскладка — EN.', 'ещё раз'],
     welcome: ['happy', 'Базару нет — заходим!', 'загружаю стол'],
   }[state];
   if (lock) {
