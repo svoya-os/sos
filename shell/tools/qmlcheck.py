@@ -288,6 +288,86 @@ def check_reserved_names(text: str, rel: str, errors: list[str]) -> None:
             errors.append(f"{rel}:{line}: {what} `{name}` is a JavaScript global — QML refuses to load the file")
 
 
+def blank_code(text: str) -> str:
+    """Strings, template literals and comments replaced by spaces (offsets and newlines kept)."""
+    out = list(text)
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in "'\"`":
+            j = i + 1
+            while j < n and text[j] != c:
+                if text[j] == "\\":
+                    j += 1
+                elif text[j] == "\n" and c != "`":
+                    break
+                j += 1
+            for k in range(i + 1, min(j, n)):
+                if out[k] != "\n":
+                    out[k] = " "
+            i = j + 1
+            continue
+        if text.startswith("//", i):
+            j = text.find("\n", i)
+            j = n if j < 0 else j
+            out[i:j] = " " * (j - i)
+            i = j
+            continue
+        if text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            j = n if j < 0 else j + 2
+            for k in range(i, j):
+                if out[k] != "\n":
+                    out[k] = " "
+            i = j
+            continue
+        i += 1
+    return "".join(out)
+
+
+def check_member_clashes(text: str, rel: str, errors: list[str]) -> None:
+    """Two members of one object with the same name — including a function or signal named like a
+    property's change signal (`voice` → `voiceChanged`) — make QML refuse the whole file."""
+    code = blank_code(text)
+    decls = []
+    for m in RESERVED_DECL_RE.finditer(code):
+        kind, name = next((k, v) for k, v in m.groupdict().items() if v)
+        if kind != "id":
+            decls.append((m.start(), kind, name))
+    if not decls:
+        return
+    owner: dict[int, int] = {}
+    stack: list[int] = []
+    di = 0
+    for pos, ch in enumerate(code):
+        while di < len(decls) and decls[di][0] == pos:
+            owner[pos] = stack[-1] if stack else -1
+            di += 1
+        if ch == "{":
+            stack.append(pos)
+        elif ch == "}" and stack:
+            stack.pop()
+    while di < len(decls):
+        owner[decls[di][0]] = stack[-1] if stack else -1
+        di += 1
+    groups: dict[int, list[tuple[int, str, str]]] = {}
+    for d in decls:
+        groups.setdefault(owner[d[0]], []).append(d)
+    what = {"prop": "property", "sig": "signal", "fn": "function"}
+    for items in groups.values():
+        seen: dict[str, str] = {}
+        props = {name for _, kind, name in items if kind == "prop"}
+        for pos, kind, name in items:
+            line = code.count("\n", 0, pos) + 1
+            if name in seen:
+                errors.append(f"{rel}:{line}: {what[kind]} `{name}` is declared twice in one object "
+                              f"(also a {seen[name]}) — QML refuses to load the file")
+            seen.setdefault(name, what[kind])
+            if kind != "prop" and name.endswith("Changed") and name[:-7] in props:
+                errors.append(f"{rel}:{line}: {what[kind]} `{name}` clashes with the change signal of property "
+                              f"`{name[:-7]}` — QML refuses to load the file")
+
+
 def check_file(path: pathlib.Path, rel: str, ctx: dict, errors: list[str]) -> None:
     text = path.read_text(encoding="utf-8")
     toks = tokenize(text, rel, errors)
@@ -295,6 +375,7 @@ def check_file(path: pathlib.Path, rel: str, ctx: dict, errors: list[str]) -> No
     if path.suffix == ".js":
         return
     check_reserved_names(text, rel, errors)
+    check_member_clashes(text, rel, errors)
 
     # imports
     modules, qualifiers = set(), set()
