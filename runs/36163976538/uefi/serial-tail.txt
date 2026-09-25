@@ -1,0 +1,200 @@
+SOS-MARK 8.41 greetd-active
+SOS-MARK 8.42 hyprland-running
+[    9.061417] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='ca.desrt.dconf' unit='dconf.service' requested by ':1.13' (uid=1000 pid=1269 comm="Hyprland --watchdog-fd 4 --config /usr/share/svoya" label="unconfined")
+[    9.063769] systemd[1191]: Starting dconf.service - User preferences database...
+[    9.078333] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'ca.desrt.dconf'
+[    9.078480] systemd[1191]: Started dconf.service - User preferences database.
+[    9.122175] systemd[1191]: Started hyprpolkitagent.service - Hyprland Polkit Authentication Agent.
+[    9.181841] hyprpolkitagent[1321]: New PolkitAgentListener  0x63f186071f50
+[    9.181841] hyprpolkitagent[1321]: Adding new listener  PolkitQt1::Agent::Listener(0x63f1860bd7e0) for  0x63f186071f50
+[    9.201771] systemd[1191]: Starting jacksond.service - Jackson, the SOS assistant...
+[    9.207822] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='org.freedesktop.portal.Desktop' unit='xdg-desktop-portal.service' requested by ':1.17' (uid=1000 pid=1321 comm="/usr/libexec/hyprpolkitagent" label="unconfined")
+[    9.209573] systemd[1191]: Starting xdg-desktop-portal.service - Portal service...
+[    9.289119] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='org.freedesktop.impl.portal.PermissionStore' unit='xdg-permission-store.service' requested by ':1.18' (uid=1000 pid=1329 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[    9.296099] systemd[1191]: Starting xdg-permission-store.service - sandboxed app permission store...
+[    9.318274] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+[    9.319555] systemd[1191]: Started xdg-permission-store.service - sandboxed app permission store.
+[    9.324630] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='org.freedesktop.portal.Documents' unit='xdg-document-portal.service' requested by ':1.18' (uid=1000 pid=1329 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[    9.348575] systemd[1191]: Starting xdg-document-portal.service - flatpak document portal service...
+[    9.370454] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'org.freedesktop.portal.Documents'
+[    9.370598] systemd[1191]: Started xdg-document-portal.service - flatpak document portal service.
+[    9.394114] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='org.freedesktop.impl.portal.desktop.gtk' unit='xdg-desktop-portal-gtk.service' requested by ':1.18' (uid=1000 pid=1329 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[    9.397406] systemd[1191]: Starting xdg-desktop-portal-gtk.service - Portal service (GTK/GNOME implementation)...
+[    9.532417] xdg-desktop-portal-gtk[1368]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[    9.542597] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='org.gtk.vfs.Daemon' unit='gvfs-daemon.service' requested by ':1.24' (uid=1000 pid=1368 comm="/usr/libexec/xdg-desktop-portal-gtk" label="unconfined")
+[    9.547136] systemd[1191]: Starting gvfs-daemon.service - Virtual filesystem service...
+[    9.586075] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'org.gtk.vfs.Daemon'
+[    9.588234] systemd[1191]: Started gvfs-daemon.service - Virtual filesystem service.
+[    9.649767] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+[    9.649960] systemd[1191]: Started xdg-desktop-portal-gtk.service - Portal service (GTK/GNOME implementation).
+[    9.668367] /usr/libexec/xdg-desktop-portal[1329]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[    9.668583] /usr/libexec/xdg-desktop-portal[1329]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[    9.668747] /usr/libexec/xdg-desktop-portal[1329]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[    9.679726] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Activating via systemd: service name='org.freedesktop.impl.portal.desktop.hyprland' unit='xdg-desktop-portal-hyprland.service' requested by ':1.18' (uid=1000 pid=1329 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[    9.687109] systemd[1191]: Starting xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation)...
+[    9.706158] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.hyprland'
+[    9.706348] systemd[1191]: Started xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation).
+[    9.745524] dbus-daemon[1212]: [session uid=1000 pid=1212 pidfd=5] Successfully activated service 'org.freedesktop.portal.Desktop'
+[    9.745659] systemd[1191]: Started xdg-desktop-portal.service - Portal service.
+[    9.754471] systemd[1191]: Started jacksond.service - Jackson, the SOS assistant.
+[    9.755156] jacksond[1327]: INFO jackson.service: listening on /run/user/1000/svoya/jackson.sock
+[    9.756513] hyprpolkitagent[1321]: qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for ''")
+[    9.915780] dbus-daemon[1010]: [system] Activating via systemd: service name='org.freedesktop.UPower' unit='upower.service' requested by ':1.31' (uid=1000 pid=1335 comm="quickshell -p /usr/share/svoya/shell" label="unconfined")
+[    9.955903] systemd[1]: Starting upower.service - Daemon for power management...
+[   10.009286] dbus-daemon[1010]: [system] Successfully activated service 'org.freedesktop.UPower'
+[   10.009806] systemd[1]: Started upower.service - Daemon for power management.
+[   10.760086] kernel: audit: type=1400 audit(1790357360.457:2): apparmor="DENIED" operation="userns_create" class="namespace" info="Userns create restricted - failed to find unprivileged_userns profile" error=-13 profile="unconfined" pid=1534 comm="bwrap" requested="userns_create" denied="userns_create" target="unprivileged_userns" execpath="/usr/bin/bwrap"
+SOS-MARK 14.47 desktop-ready
+SOS-DIAG begin ready
+## processes
+    PID USER     ELAPSED COMMAND
+      1 root          14 /sbin/init noprompt splash ---
+    647 root           9 /usr/lib/systemd/systemd-journald
+    695 systemd+       9 /usr/lib/systemd/systemd-resolved
+    701 root           9 /usr/lib/systemd/systemd-udevd
+    746 systemd+       9 /usr/lib/systemd/systemd-oomd
+   1008 root           7 /usr/libexec/accounts-daemon
+   1009 root           7 /bin/sh /usr/lib/systemd/scripts/chronyd-starter.sh -n -F 1
+   1010 message+       7 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1016 root           7 /usr/lib/podman/netavark dhcp-proxy -a 30
+   1018 root           7 /usr/sbin/snapperd
+   1025 root           7 /usr/lib/systemd/systemd-logind
+   1026 root           7 /usr/libexec/udisks2/udisksd
+   1051 _chrony        7 /usr/sbin/chronyd -n -F 1
+   1062 _chrony        7 /usr/sbin/chronyd -n -F 1
+   1075 root           7 /usr/sbin/NetworkManager --no-daemon
+   1076 root           7 /usr/sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+   1078 polkitd        7 /usr/lib/polkit-1/polkitd --no-debug --log-level=notice
+   1093 root           7 /usr/lib/systemd/systemd-hostnamed
+   1116 root           7 /usr/libexec/nm-dispatcher
+   1128 root           7 /bin/bash /usr/lib/svoya/vm-test-agent
+   1145 root           7 /bin/bash /usr/lib/svoya/vm-test-agent
+   1149 root           7 journalctl -b -f -o short-monotonic --no-hostname --cursor-file=/run/sos-vm-test.journal-cursor
+   1163 root           7 /usr/sbin/greetd --config /etc/svoya/greetd-live.toml
+   1165 root           7 /usr/sbin/greetd --session-worker 11
+   1167 root           7 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d - linux
+   1168 root           7 /usr/libexec/power-profiles-daemon
+   1191 svoya          6 /usr/lib/systemd/systemd --user
+   1194 svoya          6 (sd-pam)
+   1212 svoya          6 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1213 svoya          6 /usr/bin/pipewire
+   1215 svoya          6 /usr/bin/gnome-keyring-daemon --foreground --components=pkcs11,secrets --control-directory=/run/user/1000/keyring
+   1221 svoya          6 /usr/bin/mpris-proxy
+   1222 svoya          6 /usr/bin/wireplumber
+   1223 svoya          6 /usr/bin/pipewire -c filter-chain.conf
+   1224 svoya          6 start-hyprland -- --config /usr/share/svoya/hypr/hyprland.conf
+   1225 svoya          6 /usr/bin/pipewire-pulse
+   1269 svoya          6 Hyprland --watchdog-fd 4 --config /usr/share/svoya/hypr/hyprland.conf
+   1306 svoya          5 /usr/libexec/dconf-service
+   1313 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type text --watch cliphist store'
+   1315 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type image --watch cliphist store'
+   1316 svoya          5 wl-paste --type text --watch cliphist store
+   1317 svoya          5 wl-paste --type image --watch cliphist store
+   1321 svoya          5 /usr/libexec/hyprpolkitagent
+   1327 svoya          5 /usr/bin/python3 /usr/lib/svoya/jacksond
+   1329 svoya          5 /usr/libexec/xdg-desktop-portal
+   1330 svoya          5 /bin/bash /usr/lib/svoya/shell-run /usr/share/svoya/shell
+   1333 svoya          5 sh -c  for _ in $(seq 1 30); do     busctl --user status org.freedesktop.Notifications >/dev/null 2>&1 && break     sleep 1 done a=$(notify-send -a "$1" -i sos -t 20000 -A install="$4" "$2" "$3") || exit 0 [ "$a" = install ] && exec "$5" exit 0  sh Jackson Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk. Install SOS /usr/bin/sos-install
+   1335 svoya          5 quickshell -p /usr/share/svoya/shell
+   1343 svoya          5 /usr/libexec/xdg-permission-store
+   1351 svoya          5 /usr/libexec/xdg-document-portal
+   1364 root           5 fusermount3 -o rw,nosuid,nodev,fsname=portal,auto_unmount,subtype=portal -- /run/user/1000/doc
+   1368 svoya          5 /usr/libexec/xdg-desktop-portal-gtk
+   1372 svoya          5 Xwayland :0 -rootless -core -listenfd 57 -listenfd 58 -displayfd 85 -wm 82
+   1409 svoya          4 /usr/libexec/gvfsd
+   1421 svoya          4 /usr/libexec/xdg-desktop-portal-hyprland
+   1435 root           4 /usr/libexec/upowerd
+   1444 svoya          4 /usr/bin/python3 -I /usr/bin/sos status --json --watch 2
+   1465 svoya          4 notify-send -a Jackson -i sos -t 20000 -A install=Install SOS Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk.
+   1470 svoya          3 /usr/bin/systemd-inhibit --what=sleep --mode=delay --who=SOS Shell --why=Lock the screen before sleep sleep infinity
+   1472 svoya          3 /usr/bin/sh -c bluetoothctl show 2>/dev/null; echo @connected; bluetoothctl devices Connected 2>/dev/null sh
+   1473 svoya          3 bluetoothctl show
+   1476 svoya          3 /usr/bin/nmcli monitor
+   1493 svoya          3 sleep infinity
+   1566 root           0 tail -n 70
+## sessions
+1 1000 svoya seat0 1165 user    tty7 no -
+2 1000 svoya -     1191 manager -    no -
+## failed system units
+## drm
+total 0
+drwxr-xr-x  3 root root        100 Sep 25 17:29 .
+drwxr-xr-x 19 root root       4060 Sep 25 17:29 ..
+drwxr-xr-x  2 root root         80 Sep 25 17:29 by-path
+crw-rw----+ 1 root video  226,   1 Sep 25 17:29 card1
+crw-rw----+ 1 root render 226, 128 Sep 25 17:29 renderD128
+/sys/class/drm/card1-Virtual-1: connected
+## greetd
+[    7.404040] sos systemd[1]: Started greetd.service - Greeter daemon.
+[    7.454661] sos greetd[1165]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[    7.631386] sos greetd[1165]: gkr-pam: couldn't unlock the login keyring.
+## user svoya: warnings and errors
+[    7.625367] sos pipewire[1213]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.625376] sos pipewire[1213]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    7.625489] sos pipewire[1213]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.625493] sos pipewire[1213]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    7.625591] sos pipewire[1213]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.625594] sos pipewire[1213]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    7.655945] sos wireplumber[1222]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.655952] sos wireplumber[1222]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    7.656136] sos wireplumber[1222]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.656141] sos wireplumber[1222]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    7.656278] sos wireplumber[1222]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.656283] sos wireplumber[1222]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    7.661461] sos pipewire-pulse[1225]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.661737] sos pipewire-pulse[1225]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    7.661936] sos pipewire-pulse[1225]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.661971] sos pipewire-pulse[1225]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    7.662134] sos pipewire-pulse[1225]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    7.662186] sos pipewire-pulse[1225]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    7.673693] sos wireplumber[1222]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x5a110f6ac950> Failed to connect to snapd: No such file or directory
+[    7.781707] sos wireplumber[1222]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[    7.782533] sos wireplumber[1222]: spa.bluez5: BlueZ system service is not available
+[    9.532417] sos xdg-desktop-portal-gtk[1368]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[    9.668367] sos /usr/libexec/xdg-desktop-portal[1329]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[    9.668583] sos /usr/libexec/xdg-desktop-portal[1329]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[    9.668747] sos /usr/libexec/xdg-desktop-portal[1329]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+## /home/svoya/.local/state/svoya/session.log (tail)
+2026-09-25T17:29:18Z theme: ok graphite (sun)
+2026-09-25T17:29:18Z environment: ok WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP DISPLAY LANG
+2026-09-25T17:29:18Z jacksond: ok 
+2026-09-25T17:29:18Z shell: ok /usr/share/svoya/shell
+2026-09-25T17:29:18Z first-run: ok skipped (live session)
+## /run/user/1000/sos-shell.log (tail)
+== 2026-09-25T17:29:18+00:00 quickshell -p /usr/share/svoya/shell
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/311ukkxlt/log.qslog"
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: egl: failed to create dri2 screen
+  INFO: Configuration Loaded
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+## /run/user/1000/sos-session.log (tail)
+== SOS session 2026-09-25T17:29:17+00:00 (config /usr/share/svoya/hypr/hyprland.conf)
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: NEEDS EXTENSION: falling back to kms_swrast
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: NEEDS EXTENSION: falling back to kms_swrast
+Refusing to try glamor on llvmpipe
+XWAYLAND: Disabling GLAMOR support
+EGL setup failed, disabling glamor
+Failed to initialize glamor, falling back to sw
+The XKEYBOARD keymap compiler (xkbcomp) reports:
+> Warning:          Unsupported maximum keycode 708, clipping.
+>                   X11 cannot support keycodes above 255.
+> Warning:          Virtual modifier Hyper multiply defined
+>                   Using 0, ignoring 0
+> Warning:          Virtual modifier ScrollLock multiply defined
+>                   Using 0, ignoring 0
+Errors from xkbcomp are not fatal to the X server
+## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790357357_2136993743/hyprland.log (errors, config, exec)
+DEBUG ]: Creating the ConfigManager!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: !!!!HEY YOU, YES YOU!!!!: further logs to stdout / logfile are disabled by default. BEFORE SENDING THIS LOG, ENABLE THEM. Use debug:disable_logs = false to do so: https://wiki.hypr.land/Configuring/Variables/#debug
+DEBUG ]: [hookSystem] New hook event registered: preConfigReload
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+SOS-DIAG end ready
+[   17.350703] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
