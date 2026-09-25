@@ -9,7 +9,7 @@ from ..i18n import lang, tr
 from ..runner import svoya_argv
 from ..snapshots import Guard
 from ..util import atomic_write, iso, write_json
-from .checks import Check, recommendation, run_all
+from .checks import Check, recommendation, run_all, write_line
 from .facts import SLEEP_HOOK, gather
 
 ORDER = {"fail": 0, "warn": 1, "ok": 2, "skip": 3}
@@ -58,7 +58,7 @@ def apply_fixes(ctx: Ctx, checks: list[Check], *, root: bool) -> list[str]:
             continue
         for path, content in (fx.files if root else fx.user_files).items():
             target = ctx.sys(path) if root else __import__("pathlib").Path(os.path.expanduser(path))
-            log.append(f"write {path}")
+            log.append(("· " if ctx.dry_run else "✓ ") + write_line(path))
             if not ctx.dry_run:
                 atomic_write(target, content, mode=fx.modes.get(path, 0o644))
         for argv in fx.commands:

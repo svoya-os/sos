@@ -134,7 +134,8 @@ class Engine:
             return
         path = self.app.paths.runtime_dir / "ai.json"
         try:
-            path.parent.mkdir(parents=True, exist_ok=True)
+            # private like the daemon makes it (doctor flags a 0755 runtime folder), also when the CLI is first
+            self.app.paths.ensure_private_dir(path.parent)
             tmp = path.with_name(".ai.json.tmp")
             tmp.write_text(json.dumps(data), encoding="utf-8")
             os.replace(tmp, path)

@@ -142,7 +142,9 @@ def main(args, ctx: Ctx | None = None) -> int:
     lock_dir = ctx.paths.runtime_svoya
     lock = None
     try:
-        lock_dir.mkdir(parents=True, exist_ok=True)
+        # $XDG_RUNTIME_DIR/svoya is shared with Jackson, which insists on 0700 (its socket lives there)
+        lock_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        os.chmod(lock_dir, 0o700)
         lock = open(lock_dir / "session.lock", "w")
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:

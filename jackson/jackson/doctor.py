@@ -70,6 +70,8 @@ def run_doctor(lang: str = "ru", online: bool = False, start_mcp: bool = False,
         (ok if mode & 0o077 == 0 else bad)(f"{rd} {mode:04o}")
 
     sb_ok, sb_why = app.sandbox.probe()
+    if ru:   # the probe speaks English (it also goes to logs); the two common answers read in Russian here
+        sb_why = {"ok": "работает", "bwrap is not installed": "bwrap не установлен"}.get(sb_why, sb_why)
     (ok if sb_ok else bad)(("песочница bwrap: " if ru else "bwrap sandbox: ") + sb_why
                            + ("" if sb_ok else (" — команды будут требовать подтверждения" if ru
                                                 else " — commands will need confirmation")))
@@ -99,7 +101,10 @@ def run_doctor(lang: str = "ru", online: bool = False, start_mcp: bool = False,
                 ok(f"{pc.display} ({pc.base_url}): {'загружается' if h.loading and ru else 'loading' if h.loading else models}"
                    f" · {fmt_number(h.latency_ms, lang)} ms")
             else:
-                warn(f"{pc.display} ({pc.base_url}): {h.detail}")
+                detail = h.detail
+                if ru and "Connection refused" in detail:     # nothing listens there: say it plainly
+                    detail = "не запущен (соединение отклонено)"
+                warn(f"{pc.display} ({pc.base_url}): {detail}")
         else:
             has = app.key_check(name)
             if not has:

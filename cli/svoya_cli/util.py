@@ -55,6 +55,15 @@ def atomic_write(path: str | os.PathLike, data: str | bytes, mode: int | None = 
         raise
 
 
+def tilde(path: str | os.PathLike, home: str | None = None) -> str:
+    """``/home/max/.config/x`` → ``~/.config/x`` for display (anything outside the home is unchanged)."""
+    path = str(path)
+    home = (home if home is not None else os.path.expanduser("~")).rstrip("/")
+    if home and (path == home or path.startswith(home + "/")):
+        return "~" + path[len(home):]
+    return path
+
+
 def read_json(path: str | os.PathLike, default: Any = None) -> Any:
     try:
         with open(path, encoding="utf-8") as f:

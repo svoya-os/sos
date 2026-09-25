@@ -243,6 +243,31 @@ class SuggestTest(SandboxTest):
         self.assertEqual(len(d["files"]), 3)                  # split GGUF
         self.assertIn(d["speed"], ("fast", "good", "slow", "very-slow"))
 
+    def test_suggest_yes_downloads_the_default_in_one_step(self):
+        ctx = self.sb.ctx(FakeRunner(), dry_run=True)
+        self.sb.write("/proc/meminfo", "MemTotal: 33554432 kB\nMemAvailable: 30000000 kB\n")
+        self.sb.mkdir("/srv/ai")
+        from unittest import mock
+        def run(**kw):
+            self.buf.seek(0)
+            self.buf.truncate()
+            rc, _ = capture(mcli.cmd_suggest, argparse.Namespace(json=False, **kw), ctx)
+            return rc, self.output()
+
+        with mock.patch.object(suggest, "hardware", return_value=self.hw(None)):
+            rc, out = run(yes=True)
+            self.assertEqual(rc, 0, out)
+            self.assertIn("unsloth/Qwen3.5-4B-GGUF", out)          # the pull ran (as a dry run here)
+            self.assertIn("dry run: nothing downloaded", out)
+            # without --yes and without a terminal it only lists
+            rc, out = run(yes=False)
+            self.assertNotIn("nothing downloaded", out)
+            # a live session never downloads into RAM from here
+            self.sb.write("/etc/svoya/live", "")
+            rc, out = run(yes=True)
+            self.assertIn("install SOS first", out)
+            self.assertNotIn("nothing downloaded", out)
+
     def test_pull_alias_dry_run_emits_json_events(self):
         ctx = self.sb.ctx(FakeRunner(), dry_run=True)
         self.sb.write("/proc/meminfo", "MemTotal: 33554432 kB\nMemAvailable: 30000000 kB\n")

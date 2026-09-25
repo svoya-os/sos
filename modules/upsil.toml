@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "upsil"
+name = { en = "UpsiL language", ru = "Язык UpsiL" }
+summary = { en = "UpsiL, the SOS language for AI scripts: questions to a model, JSON answers of a given shape, search over notes and PyTorch networks in a few lines. Start with `sos new NAME --template upsil`.", ru = "UpsiL — язык СОС для ИИ-скриптов: вопросы к модели, ответы в JSON по форме, поиск по заметкам и нейросети на PyTorch в несколько строк. Начать: `sos new имя --template upsil`." }
+category = "dev"
+profiles = []
+requires = []
+apt = ["upsil"]
+flatpak = []
+scripts = {}
+disk_gb = 0.001
+vram_gb_min = 0
+# the desktop image ships it: then it lists as installed without having been added through sos
+detect = "/usr/bin/upsil"
+aliases = ["упсиль", "упсил", "upsil-lang"]
+license_note = { en = "Apache-2.0, part of SOS (github.com/svoya-os/upsil).", ru = "Apache-2.0, часть СОС (github.com/svoya-os/upsil)." }

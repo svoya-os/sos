@@ -11,7 +11,7 @@ from .helpers import FakeRunner, SandboxTest, capture, fixture
 
 MODDIR = REPO_ROOT / "modules"
 EXPECTED = {"base-ai", "nvidia", "cuda-devel", "rocm", "llm-local", "studio", "voice", "ml-lab", "agents", "dev",
-            "cloud-burst", "codecs", "gaming", "notes"}
+            "cloud-burst", "codecs", "gaming", "notes", "upsil"}
 NV_FACTS = {"vendors": ["nvidia"], "vendor": "nvidia", "kernel.flavor": "generic", "torch": "cu130",
             "nvidia.arch": "ada", "nvidia.branch": "595", "nvidia.open": "-open"}
 
@@ -56,6 +56,23 @@ class CatalogTest(SandboxTest):
         self.assertTrue(n["proprietary"])
         self.assertEqual(n["profiles"], [])
         self.assertIn("proprietary", n["license_note"]["en"])
+
+    def test_upsil_module_counts_the_image_copy(self):
+        cat = M.load_catalog(MODDIR)
+        self.assertEqual(M.find(cat, "упсиль")["id"], "upsil")
+        ctx = self.sb.ctx(FakeRunner())
+        state = M.with_shipped(ctx, cat, M.load_state(ctx))
+        self.assertNotIn("upsil", state["modules"])
+        bin_ = ctx.sys("/usr/bin/upsil")
+        bin_.parent.mkdir(parents=True, exist_ok=True)
+        bin_.write_text("#!/usr/bin/python3\n")
+        state = M.with_shipped(ctx, cat, M.load_state(ctx))
+        self.assertTrue(state["modules"]["upsil"]["shipped"])
+        plan = M.plan_remove(cat, ["upsil"], state)                 # removable like any module
+        self.assertEqual(plan.apt, ["upsil"])
+        plan = M.plan_add(cat, ["upsil"], state, {})                # and re-adding is harmless
+        self.assertEqual(plan.apt, ["upsil"])
+        self.assertTrue(any("upsil" in n for n in plan.notes))
 
     def test_profiles(self):
         prof = M.load_profiles(MODDIR)

@@ -432,29 +432,35 @@ def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool,
     ran: list[str] = []
     changed = {r.target.reload for r in results if r.changed and r.target.reload}
     r = ctx.runner
+
+    def do(argv: list[str]) -> None:
+        # a dry run only lists the reloads (the report shows them after the files), running nothing
+        if not ctx.dry_run:
+            r.run(argv, timeout=5, mutating=True)
+
     if "hyprland" in changed and ctx.env.get("HYPRLAND_INSTANCE_SIGNATURE") and r.which("hyprctl"):
-        r.run(["hyprctl", "reload"], timeout=5, mutating=True)
+        do(["hyprctl", "reload"])
         ran.append("hyprctl reload")
     if "kitty" in changed and r.which("pkill"):
         user = ctx.env.get("USER")
         argv = ["pkill", "-USR1", "-x", "kitty"] + (["-u", user] if user else [])
-        r.run(argv, timeout=5, mutating=True)
+        do(argv)
         ran.append("kitty reload")
     if mode_changed and r.which("gsettings") and (ctx.env.get("DBUS_SESSION_BUS_ADDRESS") or ctx.env.get("WAYLAND_DISPLAY")):
         scheme = "prefer-dark" if theme.mode == "dark" else "prefer-light"
-        r.run(["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", scheme], timeout=5, mutating=True)
+        do(["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", scheme])
         ran.append(f"gsettings color-scheme {scheme}")
         gtk3 = "adw-gtk3-dark" if theme.mode == "dark" else "adw-gtk3"
         if ctx.exists(f"/usr/share/themes/{gtk3}"):
-            r.run(["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtk3], timeout=5, mutating=True)
+            do(["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtk3])
             ran.append(f"gsettings gtk-theme {gtk3}")
         icons = "Papirus-Dark" if theme.mode == "dark" else "Papirus-Light"
         if ctx.exists(f"/usr/share/icons/{icons}"):
-            r.run(["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", icons], timeout=5, mutating=True)
+            do(["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", icons])
             ran.append(f"gsettings icon-theme {icons}")
     if accent is not None and r.which("gsettings") and (ctx.env.get("DBUS_SESSION_BUS_ADDRESS") or ctx.env.get("WAYLAND_DISPLAY")):
         # libadwaita ≥ 1.6 / GNOME ≥ 47 (also what the portal tells Flatpak apps): closest named accent
         if r.run(["gsettings", "writable", "org.gnome.desktop.interface", "accent-color"], timeout=5).out.strip() == "true":
-            r.run(["gsettings", "set", "org.gnome.desktop.interface", "accent-color", accent.gnome], timeout=5, mutating=True)
+            do(["gsettings", "set", "org.gnome.desktop.interface", "accent-color", accent.gnome])
             ran.append(f"gsettings accent-color {accent.gnome}")
     return ran

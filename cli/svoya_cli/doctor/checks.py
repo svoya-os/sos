@@ -20,6 +20,13 @@ HOOK_PATH = f"/usr/lib/systemd/system-sleep/{SLEEP_HOOK}"
 ZRAM_CONF = "/etc/systemd/zram-generator.conf"
 
 
+def write_line(path: str) -> str:
+    """«write ~/.config/…» / «записать ~/.config/…»: the home folder shortened, in the user's language."""
+    from ..i18n import tr
+    from ..util import tilde
+    return tr(f"write {tilde(path)}", f"записать {tilde(path)}")
+
+
 @dataclass
 class Fix:
     safe: bool
@@ -31,7 +38,7 @@ class Fix:
     note: T | None = None
 
     def lines(self) -> list[str]:
-        out = [f"write {p}" for p in self.files] + [f"write {p}" for p in self.user_files]
+        out = [write_line(p) for p in self.files] + [write_line(p) for p in self.user_files]
         prefix = "sudo " if self.root else ""
         out += [prefix + shlex.join(c) if c[0] != "sos" else shlex.join(c) for c in self.commands]
         return out

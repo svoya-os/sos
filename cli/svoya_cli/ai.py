@@ -246,11 +246,16 @@ def main(args, ctx: Ctx | None = None) -> int:
 
     user = result.get("user") or {}
     where = st.faint(tr(" · for everyone", " · для всех")) if system and sys_ok else ""
+    if ctx.dry_run:   # nothing was switched: say what would happen
+        where += st.faint(tr(" · dry run, nothing changed", " · пробный запуск, ничего не изменено"))
     if cmd == "off":
         stopped = [u.removesuffix(".service") for u in user.get("stopped", [])] + \
                   [str(p) for p in user.get("killed", [])]
         detail = tr("stopped: ", "остановлено: ") + ", ".join(stopped) if stopped else tr("nothing was running", "ничего не работало")
-        ui.head(tr("AI off", "ИИ выключен") + where + st.faint(f" · {detail} · " + tr("turn on: sos ai on", "включить: sos ai on")))
+        if ctx.dry_run:
+            ui.head(tr("AI would be turned off", "ИИ будет выключен") + where)
+        else:
+            ui.head(tr("AI off", "ИИ выключен") + where + st.faint(f" · {detail} · " + tr("turn on: sos ai on", "включить: sos ai on")))
     else:
         if user.get("blocked") == "system":
             ui.head(tr("AI stays off for everyone on this computer", "ИИ выключен для всех на этом компьютере")
@@ -258,7 +263,10 @@ def main(args, ctx: Ctx | None = None) -> int:
             return 1
         started = [u.removesuffix(".service") for u in user.get("started", [])]
         detail = tr("started: ", "запущено: ") + ", ".join(started) if started else tr("nothing to start", "запускать нечего")
-        ui.head(tr("AI on", "ИИ включён") + where + st.faint(f" · {detail}"))
+        if ctx.dry_run:
+            ui.head(tr("AI would be turned on", "ИИ будет включён") + where)
+        else:
+            ui.head(tr("AI on", "ИИ включён") + where + st.faint(f" · {detail}"))
     if not sys_ok:
         ui.err(tr(f"sos: the system-wide switch was not changed: {result['system'].get('error', '')}",
                   f"sos: общий выключатель не изменён: {result['system'].get('error', '')}"))

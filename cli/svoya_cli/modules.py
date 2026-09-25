@@ -128,6 +128,28 @@ def load_state(ctx: Ctx) -> dict:
     return s
 
 
+def size_label(gb: float) -> str:
+    """«1,2 ГБ»; below 0.1 GB in megabytes («1 МБ»), so a small package does not read as «0 ГБ»."""
+    if 0 < gb < 0.1:
+        return f"{max(1, round(gb * 1024))} {tr('MB', 'МБ')}"
+    return f"{i18n.smart(gb)} {tr('GB', 'ГБ')}"
+
+
+def shipped(ctx: Ctx, m: dict) -> bool:
+    """Part of the image rather than added through sos: ``detect`` names a file that proves it."""
+    d = m.get("detect")
+    return bool(d) and ctx.sys(d).exists()
+
+
+def with_shipped(ctx: Ctx, cat: dict, state: dict) -> dict:
+    """The state plus modules that came with the image, so they list as installed and can be removed."""
+    for m in cat.values():
+        if m["id"] not in state["modules"] and shipped(ctx, m):
+            state["modules"][m["id"]] = {"apt": list(m["apt"]), "aptNew": list(m["apt"]), "flatpak": [],
+                                         "options": [], "shipped": True}
+    return state
+
+
 def save_state(ctx: Ctx, state: dict) -> None:
     state["history"] = state["history"][-200:]
     write_json(ctx.paths.modules_state, state)
@@ -151,7 +173,7 @@ class Plan:
     def as_json(self) -> dict:
         return {"action": self.action, "modules": [m["id"] for m in self.modules], "apt": self.apt,
                 "flatpak": self.flatpak, "scripts": [{"module": a, "path": b, "as": c} for a, b, c in self.scripts],
-                "options": self.options, "diskGb": round(self.disk_gb, 1), "vramGbMin": self.vram_gb_min,
+                "options": self.options, "diskGb": round(self.disk_gb, 3), "vramGbMin": self.vram_gb_min,
                 "notes": self.notes, "skipped": self.skipped}
 
 
@@ -387,7 +409,7 @@ def render_plan(plan: Plan, facts: dict) -> None:
     for mid, opts in plan.options.items():
         ui.kv(tr("options", "опции"), f"{mid}: {', '.join(opts)}", width=11)
     if plan.action == "add":
-        ui.kv(tr("disk", "диск"), f"≈ {i18n.smart(plan.disk_gb)} {tr('GB', 'ГБ')}", width=11)
+        ui.kv(tr("disk", "диск"), f"≈ {size_label(plan.disk_gb)}", width=11)
         if plan.vram_gb_min:
             ui.kv(tr("VRAM", "видеопамять"), tr(f"from {i18n.smart(plan.vram_gb_min)} GB", f"от {i18n.smart(plan.vram_gb_min)} ГБ"), width=11)
     for n in plan.notes:
@@ -397,7 +419,7 @@ def render_plan(plan: Plan, facts: dict) -> None:
 
 
 def cmd_list(args, ctx: Ctx, cat: dict) -> int:
-    state = load_state(ctx)
+    state = with_shipped(ctx, cat, load_state(ctx))
     facts = gpu_facts(ctx)
     rows = []
     for m in sorted(cat.values(), key=lambda m: (CATEGORIES.index(m["category"]) if m["category"] in CATEGORIES else 99, m["id"])):
@@ -412,11 +434,12 @@ def cmd_list(args, ctx: Ctx, cat: dict) -> int:
         return 0
     st = ui.style()
     ui.head(tr("modules", "модули") + st.faint(tr(" · nothing is installed unless you ask", " · ставится только то, что попросите")))
+    name_w = max([24] + [len(pick(r["name"])) for r in rows])   # «Студия (картинки и видео)» is 25
     for r in rows:
         mark = st.ok("✓") if r["installed"] else (st.faint("·") if r["applicable"] else st.faint("×"))
         name = pick(r["name"])
-        extra = st.faint(f"{i18n.smart(r['diskGb'])} {tr('GB', 'ГБ')}") if r["diskGb"] else ""
-        ui.out(f"  {mark} {r['id'].ljust(12)} {name.ljust(24)} {extra}")
+        extra = st.faint(size_label(r["diskGb"])) if r["diskGb"] else ""
+        ui.out(f"  {mark} {r['id'].ljust(12)} {name.ljust(name_w)}  {extra}")
         ui.note(pick(r["summary"]) + (f" — {r['reason']}" if not r["applicable"] else ""), indent=17)
     ui.note(tr("sos install <id> · sos remove <id> · sos modules info <id>",
                "sos установить <id> · sos удалить <id> · sos modules info <id>"))
@@ -427,7 +450,7 @@ def cmd_info(args, ctx: Ctx, cat: dict) -> int:
     m = find(cat, args.module)
     if m is None:
         return _unknown(args.module, cat)
-    state = load_state(ctx)
+    state = with_shipped(ctx, cat, load_state(ctx))
     if args.json:
         ui.print_json({k: v for k, v in m.items() if not k.startswith("_")} | {"installed": m["id"] in state["modules"],
                                                                                 "state": state["modules"].get(m["id"])})
@@ -437,8 +460,9 @@ def cmd_info(args, ctx: Ctx, cat: dict) -> int:
     ui.out("  " + pick(m["summary"]))
     for label, val in ((tr("requires", "требует"), ", ".join(m["requires"]) or "—"),
                        ("apt", " ".join(m["apt"]) or "—"), ("flatpak", " ".join(m["flatpak"]) or "—"),
-                       (tr("disk", "диск"), f"≈ {i18n.smart(float(m.get('disk_gb', 0)))} {tr('GB', 'ГБ')}"),
-                       (tr("VRAM", "видеопамять"), f"{i18n.smart(float(m.get('vram_gb_min', 0)))} {tr('GB', 'ГБ')}+"),
+                       (tr("disk", "диск"), f"≈ {size_label(float(m.get('disk_gb', 0)))}"),
+                       (tr("VRAM", "видеопамять"), f"{i18n.smart(float(m['vram_gb_min']))} {tr('GB', 'ГБ')}+"
+                        if float(m.get("vram_gb_min", 0)) > 0 else "—"),
                        (tr("profiles", "профили"), ", ".join(m["profiles"]) or "—")):
         ui.kv(label, val, width=12)
     for o, d in (m.get("options") or {}).items():
@@ -505,7 +529,7 @@ def resolve_profile_modules(p: dict, facts: dict, prof: dict, offline: bool = Fa
 
 def cmd_change(args, ctx: Ctx, cat: dict, action: str) -> int:
     facts = gpu_facts(ctx)
-    state = load_state(ctx)
+    state = with_shipped(ctx, cat, load_state(ctx))
     names = list(args.modules)
     options = list(getattr(args, "options", []) or [])
     if action == "add" and getattr(args, "profile", None):

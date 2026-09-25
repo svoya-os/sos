@@ -67,12 +67,29 @@ PanelFrame {
     ]
 
     // ---- results ------------------------------------------------------------------------------
+    // With an empty query and no launch history yet, the first eight rows are what a new user
+    // needs, not the alphabet («Advanced Network Configuration», «Bulk Rename»…). The installer
+    // exists only in the live session (finalize.sh purges it) and is always on top there.
+    readonly property var featuredApps: ["sos-install", "firefox", "kitty", "thunar", "org.xfce.mousepad", "mousepad",
+        "org.gnome.Papers", "org.gnome.Calculator", "org.xfce.ristretto", "btop"]
+    readonly property var tuckedApps: ["nm-connection-editor", "thunar-bulk-rename", "thunar-settings", "qt6ct",
+        "pavucontrol", "org.pulseaudio.pavucontrol", "kitty-open", "fastfetch"]
+
+    function appRank(id) {
+        const i = root.featuredApps.indexOf(id);
+        return i >= 0 ? i : (root.tuckedApps.indexOf(id) >= 0 ? 2000 : 1000);
+    }
+
     function appRows(q) {
         const apps = DesktopEntries.applications.values;
         const out = [];
         if (q.length === 0) {
             const counts = ShellState.launchCounts || {};
-            const list = apps.slice().sort((a, b) => ((counts[b.id] || 0) - (counts[a.id] || 0)) || a.name.localeCompare(b.name));
+            const pinned = e => e.id === "sos-install" ? 1 : 0;
+            const list = apps.slice().sort((a, b) => (pinned(b) - pinned(a))
+                || ((counts[b.id] || 0) - (counts[a.id] || 0))
+                || (root.appRank(a.id) - root.appRank(b.id))
+                || a.name.localeCompare(b.name));
             for (let i = 0; i < Math.min(8, list.length); i++)
                 out.push({ group: "apps", title: list[i].name, secondary: list[i].genericName || list[i].comment || "", icon: list[i].icon, entry: list[i], score: 0 });
             return out;

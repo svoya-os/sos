@@ -7,7 +7,7 @@ from .. import config as config_mod
 from .. import i18n, ui
 from ..context import Ctx
 from ..i18n import tr
-from ..util import read_json
+from ..util import read_json, tilde
 from . import accents, avatar_export
 from . import look
 from .apply import ThemeError, list_themes, load_theme, next_switch, resolve, resolve_accent
@@ -288,8 +288,8 @@ def cmd_apply(args, ctx: Ctx, cfg: dict) -> int:
         if t["skipped"]:
             ui.kv(t["id"], st.faint(tr("skipped (config)", "пропущено (настройки)")), width=14)
         elif t["changed"]:
-            extra = st.faint(tr(" · your original kept: ", " · ваш файл сохранён: ") + t["backup"]) if t["backup"] else ""
-            ui.kv(t["id"], t["path"] + extra, width=14)
+            extra = st.faint(tr(" · your original kept: ", " · ваш файл сохранён: ") + tilde(t["backup"])) if t["backup"] else ""
+            ui.kv(t["id"], tilde(t["path"]) + extra, width=14)
     if not changed:
         ui.note(tr("everything already up to date", "всё уже применено"))
     for h in report["hooks"]:

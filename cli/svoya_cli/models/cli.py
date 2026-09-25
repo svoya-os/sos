@@ -1,9 +1,11 @@
 """``sos models list | pull | fit | rm | dedup | views``."""
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import shutil
+import sys
 from pathlib import Path
 
 from .. import config as config_mod
@@ -593,6 +595,21 @@ def cmd_suggest(args, ctx: Ctx) -> int:
                f"{st.faint(suggest_mod.describe(a))}")
         if a["verdict"] != "no":              # no ready-made command for a download that cannot run here
             ui.note(a["pull"], indent=4)
+    # one step from «which model?» to having it: --yes, or a question in a terminal
+    if d["verdict"] == "no" or not d.get("diskOk", True):
+        return 0
+    if live.is_live(ctx):                     # the files would go to RAM (see pull); install SOS first
+        if getattr(args, "yes", False) or sys.stdin.isatty():
+            ui.note(tr("live session: install SOS first, then download the model",
+                       "живая сессия: сначала установи СОС, потом скачивай модель"))
+        return 0
+    size = i18n.gib(d["sizeBytes"])
+    if getattr(args, "yes", False) or (sys.stdin.isatty() and ui.confirm(
+            tr(f"Download {d['name']} ({size})?", f"Скачать {d['name']} ({size})?"), default=True)):
+        ns = argparse.Namespace(models_cmd="pull", repo=d["id"], files=[], revision="main", include=[],
+                                ctx=res.get("ctx") or 8192, yes=True, accept_license=False,
+                                dry_run=ctx.dry_run, json=False)
+        return main(ns, ctx)
     return 0
 
 

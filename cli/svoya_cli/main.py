@@ -136,9 +136,11 @@ def _parser() -> argparse.ArgumentParser:
     mo = cmd("models", "shared model store /srv/ai: fit, licenses, dedup, views",
              "общее хранилище моделей /srv/ai: влезет ли, лицензии, дубликаты, представления")
     mosub = mo.add_subparsers(dest="models_cmd", metavar="<list|suggest|pull|fit|serve|rm|dedup|views>")
-    mos = mosub.add_parser("suggest", help=tr("best local model for this machine (+2 alternatives)",
-                                              "лучшая локальная модель для этой машины (+2 варианта)"))
+    mos = mosub.add_parser("suggest", help=tr("best local model for this machine (+2 alternatives); offers to download it",
+                                              "лучшая локальная модель для этой машины (+2 варианта); предложит скачать"))
     mos.add_argument("--json", action="store_true")
+    mos.add_argument("--yes", "-y", action="store_true",
+                     help=tr("download the suggested model without asking", "скачать предложенную модель без вопроса"))
     mol = mosub.add_parser("list", help=tr("installed models (or --catalog)", "установленные модели (или --catalog)"))
     mol.add_argument("--catalog", action="store_true")
     mol.add_argument("--all", action="store_true", help=tr("include models your region/use may not allow",

@@ -3,6 +3,7 @@
 
 import asyncio
 import json
+import os
 import time
 import unittest
 
@@ -229,6 +230,8 @@ class EngineTest(unittest.TestCase):
         self.assertRegex(during["cloudActiveSince"], r"^\d{4}-\d{2}-\d{2}T")
         app.engine._cloud(turn, False)
         self.assertEqual(json.loads(path.read_text()), {"local": True, "cloudActiveSince": None})
+        # the folder is created private (the daemon and `jackson doctor` insist on 0700)
+        self.assertEqual(os.stat(path.parent).st_mode & 0o777, 0o700)
 
     def test_cancel_mid_stream(self):
         def slow(body):
