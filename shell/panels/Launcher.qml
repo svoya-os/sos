@@ -28,10 +28,12 @@ PanelFrame {
         { key: "bt", title: Strings.bluetooth, secondary: "", glyph: "bluetooth", run: () => Ui.show("cc") },
         { key: "sound", title: Strings.sound, secondary: Strings.volume, glyph: "svoya-volume", run: () => Ui.show("cc") },
         { key: "brightness", title: Strings.brightness, secondary: "", glyph: "sun", run: () => Ui.show("cc") },
-        { key: "graphite", title: Strings.theme + ": " + Strings.graphite, secondary: "sos theme apply graphite", glyph: "moon", run: () => Sys.sos(["theme", "apply", "graphite", "--quiet"]) },
-        { key: "paper", title: Strings.theme + ": " + Strings.paper, secondary: "sos theme apply paper", glyph: "sun", run: () => Sys.sos(["theme", "apply", "paper", "--quiet"]) },
-        { key: "auto", title: Strings.theme + ": " + Strings.auto, secondary: "sos theme apply auto", glyph: "sun-dim", run: () => Sys.sos(["theme", "apply", "auto", "--quiet"]) },
-        { key: "phosphor", title: Strings.theme + ": " + Strings.phosphor, secondary: "sos theme apply phosphor", glyph: "terminal", run: () => Sys.sos(["theme", "apply", "phosphor", "--quiet"]) },
+        { key: "look", title: Strings.appearance, secondary: Strings.theme + " · " + Strings.accentLabel + " · sos theme", glyph: "svoya-aperture", run: () => Actions.openLook() },
+        { key: "graphite", title: Strings.theme + ": " + Strings.graphite, secondary: "sos theme apply graphite", glyph: "moon", run: () => Theme.setBase("graphite") },
+        { key: "paper", title: Strings.theme + ": " + Strings.paper, secondary: "sos theme apply paper", glyph: "sun", run: () => Theme.setBase("paper") },
+        { key: "auto", title: Strings.theme + ": " + Strings.auto, secondary: "sos theme apply auto", glyph: "sun-dim", run: () => Theme.setBase("auto") },
+        { key: "phosphor", title: Strings.theme + ": " + Strings.phosphor, secondary: "sos theme apply phosphor", glyph: "terminal", run: () => Theme.setBase("phosphor") },
+        { key: "jackson-look", title: Strings.customizeJackson, secondary: "j avatar", glyph: "user", run: () => Actions.customizeJackson() },
         { key: "focus", title: Strings.focusMode, secondary: Strings.focusWork + " · " + Strings.focusStudy + " · " + Strings.focusPresentation, glyph: "eye", run: () => Ui.show("cc") },
         { key: "privacy", title: Strings.aiPrivacy, secondary: "", glyph: "shield-check", run: () => Ui.show("cc") },
         { key: "a11y", title: Strings.accessibility, secondary: "Super Alt A", glyph: "user", run: () => Actions.openSetup("accessibility") },
@@ -41,6 +43,14 @@ PanelFrame {
         { key: "layout-classic", title: Strings.layoutPreset + ": " + Strings.wizClassic, secondary: "", glyph: "panel-bottom", run: () => Actions.setLayout("classic") },
         { key: "layout-hacker", title: Strings.layoutPreset + ": " + Strings.wizHacker, secondary: "", glyph: "layout-grid", run: () => Actions.setLayout("hacker") }
     ]
+    // «Акцент: Сирень» → sos theme accent lilac (one row per accent)
+    readonly property var accentEntries: Theme.accentList.map(a => ({
+                key: "accent-" + a.id,
+                title: Strings.accentLabel + ": " + a.name,
+                secondary: "sos theme accent " + a.id,
+                glyph: "sparkles",
+                run: () => Theme.setAccent(a.id)
+            }))
     readonly property var actionEntries: [
         { key: "lock", title: Strings.lock, secondary: "Super L", glyph: "lock", run: () => Actions.lock() },
         { key: "logout", title: Strings.logout, secondary: "", glyph: "log-out", run: () => Ui.show("session") },
@@ -129,7 +139,7 @@ PanelFrame {
         if (m === "all")
             out = out.concat(root.fileRows(q));
         if (m === "all" || m === "settings")
-            out = out.concat(root.staticRows("settings", root.settingsEntries, q, m === "settings" ? 20 : (q.length ? 4 : 0)));
+            out = out.concat(root.staticRows("settings", q.length > 0 ? root.settingsEntries.concat(root.accentEntries) : root.settingsEntries, q, m === "settings" ? 20 : (q.length ? 4 : 0)));
         if (m === "all" || m === "modules")
             out = out.concat(root.moduleRows(q, m === "modules" ? 30 : (q.length ? 4 : 0)));
         if (m === "all" || m === "actions")

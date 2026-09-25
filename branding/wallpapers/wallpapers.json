@@ -12,12 +12,14 @@
     "phosphor": "signal-phosphor-lock"
   },
   "pick": "choose the size whose aspect ratio matches the output, then the smallest size ≥ the output resolution; scale to cover",
+  "accent": "desktop files carry the theme's default accent; lock files are neutral (the theme's text color). Re-render in a user accent: generate.py --accent <id|#rrggbb> --out <dir> [--variant desktop|lock|both]",
   "wallpapers": [
     {
       "id": "signal-graphite",
       "theme": "graphite",
       "mode": "dark",
       "variant": "desktop",
+      "accent": "theme",
       "name": {
         "en": "Signal · Graphite",
         "ru": "Сигнал · Графит"
@@ -41,6 +43,7 @@
       "theme": "graphite",
       "mode": "dark",
       "variant": "lock",
+      "accent": "neutral",
       "name": {
         "en": "Signal · Graphite",
         "ru": "Сигнал · Графит"
@@ -64,6 +67,7 @@
       "theme": "paper",
       "mode": "light",
       "variant": "desktop",
+      "accent": "theme",
       "name": {
         "en": "Signal · Paper",
         "ru": "Сигнал · Бумага"
@@ -87,6 +91,7 @@
       "theme": "paper",
       "mode": "light",
       "variant": "lock",
+      "accent": "neutral",
       "name": {
         "en": "Signal · Paper",
         "ru": "Сигнал · Бумага"
@@ -110,6 +115,7 @@
       "theme": "phosphor",
       "mode": "dark",
       "variant": "desktop",
+      "accent": "theme",
       "name": {
         "en": "Signal · Phosphor",
         "ru": "Сигнал · Фосфор"
@@ -133,6 +139,7 @@
       "theme": "phosphor",
       "mode": "dark",
       "variant": "lock",
+      "accent": "neutral",
       "name": {
         "en": "Signal · Phosphor",
         "ru": "Сигнал · Фосфор"

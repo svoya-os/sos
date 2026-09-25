@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<policyconfig>
+  <vendor>SOS</vendor>
+  <vendor_url>https://github.com/svoya-os/sos</vendor_url>
+  <action id="org.svoya.theme.system-write">
+    <description>Use this look on the login screen</description>
+    <description xml:lang="ru">Использовать это оформление на экране входа</description>
+    <message>Apply your theme and accent to the login screen</message>
+    <message xml:lang="ru">Применить твою тему и акцент к экрану входа</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/svoya/theme-system-write</annotate>
+  </action>
+</policyconfig>

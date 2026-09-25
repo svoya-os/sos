@@ -84,7 +84,7 @@ PanelWindow {
                     radius: Theme.radiusToast
                     color: Theme.surface2
                     border.width: 1
-                    border.color: toast.critical ? Theme.bad : Theme.line
+                    border.color: toast.critical ? Theme.bad : (card.jackson ? Theme.lineStrong : Theme.line)
                 }
 
                 NotificationCard {

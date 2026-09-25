@@ -4,7 +4,8 @@ import qs.components
 
 // 32×32 power button of the greeter (greeter.html .pwr span): radius 9,
 // surface2 with a 1px lineStrong inset, 15px icon (stroke 1.7) in textDim.
-// Needs two presses: the first arms it (accent) for 3 s, the second acts.
+// Needs two presses: the first arms it (a `text` edge — neutral, DESIGN §11–§12) for 3 s,
+// the second acts.
 Item {
     id: root
 
@@ -21,9 +22,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 9
-        color: root.armed ? Theme.accentSoft : Theme.surface2
-        border.width: 1
-        border.color: root.armed ? Theme.accent : (mouse.containsMouse ? Theme.textFaint : Theme.lineStrong)
+        color: root.armed ? Theme.surface3 : Theme.surface2
+        border.width: root.armed ? 1.5 : 1
+        border.color: root.armed ? Theme.selected : (mouse.containsMouse ? Theme.textFaint : Theme.lineStrong)
         antialiasing: true
     }
 
@@ -32,7 +33,7 @@ Item {
         glyph: root.glyph
         size: 15
         stroke: 1.7
-        color: root.armed ? Theme.accent : (mouse.containsMouse ? Theme.text : Theme.textDim)
+        color: root.armed || mouse.containsMouse ? Theme.text : Theme.textDim
     }
 
     // label above the button while hovered or armed

@@ -3,13 +3,15 @@ import qs.core
 
 // The mark: Morse «СОС» ··· ——— ··· (same in Russian and international Morse).
 // Geometry from design/mockups/desktop.html: dots 3.2×3.2, dashes 8×3.2,
-// radius 1.6, 2.4 between symbols, +3.2 between letters; the ——— in accent.
+// radius 1.6, 2.4 between symbols, +3.2 between letters. Neutral by default (DESIGN §11–§12):
+// the ——— light up in the accent only when `lit` (the bar, while Jackson listens or works).
 Item {
     id: root
 
     property real unit: 1            // scale (1 = bar size, 3.2 px high)
     property color color: Theme.text
     property color accent: Theme.accent
+    property bool lit: false
 
     readonly property real h: 3.2 * root.unit
     // x positions of the 9 symbols and whether each is a dash
@@ -42,7 +44,14 @@ Item {
             width: modelData.w * root.unit
             height: root.h
             radius: root.h / 2
-            color: modelData.letter === 1 ? root.accent : root.color
+            color: modelData.letter === 1 && root.lit ? root.accent : root.color
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.slow
+                    easing.type: Theme.easing
+                }
+            }
             antialiasing: true
         }
     }

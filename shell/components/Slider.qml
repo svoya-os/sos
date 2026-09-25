@@ -1,7 +1,7 @@
 import QtQuick
 import qs.core
 
-// Horizontal slider: 4px track (surface3), accent fill, 12px knob.
+// Horizontal slider: 4px track (surface3), `textDim` fill (a level, not a signal: DESIGN §11), 12px knob.
 // Arrow keys step by 5%; drag or click to set. Emits moved(value) (0..1).
 Item {
     id: root
@@ -33,7 +33,7 @@ Item {
             width: Math.max(0, Math.min(1, root.value)) * parent.width
             height: parent.height
             radius: 2
-            color: Theme.accent
+            color: Theme.textDim
         }
     }
 

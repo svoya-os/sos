@@ -35,7 +35,7 @@ class StatusTest(SandboxTest):
         self.assertEqual(job["label"], "обучение")
         self.assertAlmostEqual(job["progress"], 0.62)
         self.assertTrue(120 < job["etaSec"] < 150)   # 20 min for 62 % → 735 s left at that update, 600 s ago
-        self.assertEqual(s["ai"], {"local": True, "cloudActiveSince": None})
+        self.assertEqual(s["ai"], {"local": True, "cloudActiveSince": None, "enabled": True})
         self.assertEqual((s["updates"]["available"], s["updates"]["security"]), (3, 1))
         self.assertEqual(s["snapshots"]["last"], "2026-09-24T18:02:11Z")
         json.dumps(s)   # serialisable

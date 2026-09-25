@@ -2,12 +2,13 @@ import QtQuick
 import qs.core
 import qs.components
 
-// Step 6 · AI (design/mockups/setup-ai.html, owner decision: ONE suggested
-// model). Left: the detected GPU (or CPU) with RAM and GPU Doctor's verdict,
-// then the model from `sos models suggest --json` with its fit bar and
-// «Установить» → `sos models pull <id> --yes --json` (progress here and in the
-// footer; the download keeps going when you move on). Right: optional cloud
-// keys stored with `secret-tool` (never in files) and the cloud promise.
+// Step 6, page 2 of 2 · what Jackson thinks with (design/mockups/setup-ai.html, owner
+// decision: ONE suggested model). Left: the detected GPU (or CPU) with RAM and GPU Doctor's
+// verdict, then the model from `sos models suggest --json` with its fit bar and «Установить»
+// → `sos models pull <id> --yes --json` (progress here and in the footer; the download keeps
+// going when you move on). Right: optional cloud keys stored with `secret-tool` (never in
+// files) and the cloud promise. Accent budget (DESIGN §11): the footer's «Дальше» is the one
+// primary action; «Установить» is an outline button; only the running download is accent.
 Item {
     id: root
 
@@ -231,7 +232,7 @@ Item {
                         width: mrow.width - x - 14 - 62 - 14 - 172 - 18
                         anchors.verticalCenter: parent.verticalCenter
                         value: root.d && root.capacity > 0 ? root.d.memoryBytes8k / root.capacity : 0
-                        fill: root.verdict === "fits" ? Theme.accent : root.verdictColor
+                        fill: root.verdict === "fits" ? Theme.textDim : root.verdictColor
                     }
                     MText {
                         x: mrow.width - 18 - 172 - 14 - 62
@@ -305,7 +306,6 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: root.wizard.pullState === "idle" || root.wizard.pullState === "error"
                         small: true
-                        primary: true
                         glyph: "download"
                         text: root.wizard.pullState === "error" ? Strings.wzRetry : Strings.wzInstallModel
                         enabledState: root.d !== null && root.d.diskOk
@@ -322,6 +322,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 220
                             cap: false
+                            fill: Theme.accent // a running job: the live signal
                             value: root.wizard.pullFraction
                         }
                         MText {
@@ -515,7 +516,7 @@ Item {
                                     radius: 7
                                     color: Theme.surface2
                                     border.width: 1
-                                    border.color: keyField.input.activeFocus ? Theme.accent : Theme.lineStrong
+                                    border.color: keyField.input.activeFocus ? Theme.text : Theme.lineStrong
 
                                     TextField {
                                         id: keyField
@@ -535,7 +536,6 @@ Item {
 
                                     anchors.verticalCenter: parent.verticalCenter
                                     small: true
-                                    primary: true
                                     text: Strings.wzSave
                                     enabledState: keyField.text.trim().length > 8
                                     onClicked: {
@@ -587,7 +587,7 @@ Item {
                     glyph: "svoya-shield"
                     size: 18
                     stroke: 1.6
-                    color: Theme.accent
+                    color: Theme.textDim
                 }
                 Column {
                     id: noteCol

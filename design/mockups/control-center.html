@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="desktop.css">
 <link rel="stylesheet" href="components.css">
 <script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 <style>
   .cc { right: 14px; top: 38px; width: 380px; padding: 14px 14px 6px; }
 
@@ -29,7 +31,7 @@
     height: 52px; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); min-width: 0;
     display: flex; align-items: center; gap: 10px; padding: 0 10px 0 11px;
   }
-  .ct .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--accent); color: var(--accent-ink); }
+  .ct .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--text); color: var(--surface); }
   .ct .ic svg.i { width: 15px; height: 15px; stroke-width: 1.9; }
   .ct .tx { min-width: 0; }
   .ct .tx b { display: block; font: 500 13px/16px "Plex Sans"; color: var(--text); }
@@ -48,6 +50,11 @@
   .cc-sec > .caps { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 9px; }
   .cc-sec > .caps a { text-transform: none; letter-spacing: 0.02em; font-weight: 400; color: var(--text-dim); }
 
+  .look { display: flex; gap: 8px; align-items: center; }
+  .look .segm { flex: 1; }
+  .more { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 8px 0 10px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); color: var(--text-dim); }
+  .more svg.i { width: 14px; height: 14px; stroke-width: 1.8; }
+  .acc-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px var(--line-strong); }
   .sw { width: 12px; height: 12px; border-radius: 50%; position: relative; flex: none; }
   .sw::after { content: ""; position: absolute; left: 4px; top: 4px; width: 4px; height: 4px; border-radius: 50%; }
   .sw.g { background: #141518; box-shadow: inset 0 0 0 1px #4a4f57; }
@@ -64,8 +71,7 @@
     font: 500 12px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap;
   }
   .fm > div svg.i { width: 14px; height: 14px; stroke-width: 1.8; }
-  .fm > div.on { background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent); color: var(--text); }
-  .fm > div.on svg.i { color: var(--accent); }
+  .fm > div.on { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--text); }
   .fm-note { margin: 8px 2px 0; }
 
   /* AI & privacy */
@@ -89,7 +95,7 @@
   .nt + .nt { border-top: 1px solid var(--line); }
   .nt .ico { width: 24px; height: 24px; border-radius: 7px; flex: none; display: grid; place-items: center; background: var(--surface-3); color: var(--text-dim); }
   .nt .ico svg.i { width: 13px; height: 13px; stroke-width: 1.9; }
-  .nt .ico.jk { background: var(--accent-soft); }
+  .nt .ico.jk { background: var(--surface-3); }
   .nt .ico.jk svg.scope { width: 16px; height: 8px; }
   .nt .h { display: flex; align-items: center; gap: 8px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); height: 16px; }
   .nt .h b { color: var(--text-dim); font-weight: 500; }
@@ -154,12 +160,13 @@
       <div class="sl"><svg data-i="sun"></svg><span class="slider"><i style="width:80%"></i><b style="left:80%"></b></span><span class="v">80</span></div>
     </div>
 
-    <div class="cc-sec">
+    <div class="cc-sec look">
       <div class="segm">
         <span class="t-g"><i class="sw g"></i>Графит</span>
         <span class="t-p"><i class="sw p"></i>Бумага</span>
         <span class="t-a"><i class="sw a"></i>Авто</span>
       </div>
+      <span class="more" title="Оформление: акцент, Джексон"><i class="acc-dot"></i><svg data-i="chevronRight"></svg></span>
     </div>
 
     <div class="cc-sec">
@@ -187,7 +194,7 @@
     <div class="cc-sec">
       <div class="caps">Уведомления · 3<a>очистить</a></div>
       <div class="nt">
-        <span class="ico jk"><svg class="scope" data-kind="answer" data-amp="3.4" data-freq="1.4" data-seed="0.3" width="16" height="8"></svg></span>
+        <span class="ico jk"><svg class="scope" data-tone="n" data-kind="answer" data-amp="3.4" data-freq="1.4" data-seed="0.3" width="16" height="8"></svg></span>
         <div><div class="h"><b>Джексон</b>18:31</div><div class="b">Чекпойнт step-1800 сохранён. <span>Loss 0.412</span></div></div>
       </div>
       <div class="nt">

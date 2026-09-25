@@ -10,8 +10,9 @@ Usage:
     python3 design/render_all.py --sheet             # only rebuild the contact sheet from existing PNGs
     python3 design/render_all.py --scale 1 launcher  # quick 1x preview
 
-Output: design/out/<page>[-<variant>]-<theme>.png, design/out/contact-sheet-screens.png and the
-Jackson mascot sheets design/out/jackson-concepts.png, jackson-in-panel.png (run design/mascot/build.py first).
+Output: design/out/<page>[-<variant>]-<theme>.png, design/out/contact-sheet-screens.png and the sheets
+design/out/accents.png, jackson-customize-sheet.png, jackson-concepts.png, jackson-in-panel.png
+(mascot pages read design/mascot/out/jackson-data.js: run design/mascot/build.py first).
 """
 from __future__ import annotations
 
@@ -42,16 +43,19 @@ SCREENS: list[Screen] = [
     Screen("jackson-approval", ["graphite", "paper"], "Джексон · разрешение T2"),
     Screen("jackson-voice", ["graphite", "paper"], "Джексон · голос"),
     Screen("control-center", ["graphite", "paper"], "Центр управления"),
+    Screen("control-center-look", ["graphite", "paper"], "Центр управления · оформление, свой акцент"),
     Screen("notifications", ["graphite", "paper"], "Уведомления"),
-    Screen("greeter", ["graphite", "paper"], "Экран входа"),
+    Screen("greeter", ["graphite", "paper"], "Экран входа · акцент «Сирень»", {"": "accent=lilac"}),
     Screen("lock", ["graphite", "paper", "phosphor"], "Экран блокировки"),
     Screen("post", ["graphite"], "POST после входа"),
     Screen("setup-look", ["graphite", "paper"], "Первый запуск · 3/7 оформление"),
     Screen("setup-profile", ["graphite", "paper"], "Первый запуск · 5/7 профиль"),
-    Screen("setup-ai", ["graphite", "paper"], "Первый запуск · 6/7 ИИ"),
+    Screen("setup-jackson", ["graphite", "paper"], "Первый запуск · 6/7 знакомство с Джексоном"),
+    Screen("setup-ai", ["graphite", "paper"], "Первый запуск · 6/7 чем думает Джексон"),
     Screen("desktop-classic", ["graphite", "paper"], "Раскладка «Классика»"),
     Screen("desktop-hacker", ["graphite", "paper"], "Раскладка «Хакер»"),
     Screen("settings-models", ["graphite", "paper"], "Модели · хранилище /srv/ai"),
+    Screen("jackson-customize", ["graphite", "paper"], "Настройки · Джексон, внешность и характер"),
     Screen("boot", ["graphite"], "Загрузка", {"": "", "grub": "frame=grub", "sequence": "frame=seq"}),
 ]
 
@@ -60,6 +64,8 @@ THEME_RU = {"graphite": "Графит", "paper": "Бумага", "phosphor": "Ф
 # Concept sheets with fixed output names (not part of the screens contact sheet).
 # page, output file, viewport height (None = 900), full page?
 EXTRAS = [
+    ("jackson-customize-sheet", "jackson-customize-sheet.png", 900, True),
+    ("accents", "accents.png", 900, True),
     ("jackson-concepts", "jackson-concepts.png", 900, True),
     ("jackson-in-panel", "jackson-in-panel.png", 900, False),
 ]

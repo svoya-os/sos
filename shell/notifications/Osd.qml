@@ -89,6 +89,7 @@ PanelWindow {
                 width: 96
                 height: 4
                 value: win.muted ? 0 : win.value
+                fill: Theme.text
             }
 
             MText {

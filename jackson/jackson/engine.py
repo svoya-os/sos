@@ -10,7 +10,9 @@ from __future__ import annotations
 import asyncio
 import base64
 import datetime as dt
+import json
 import logging
+import os
 import secrets
 import threading
 import time
@@ -18,7 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
-from . import fastpath
+from . import aiswitch, fastpath
 from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
@@ -109,7 +111,36 @@ class Engine:
     def __init__(self, app: "Jackson") -> None:
         self.app = app
         self._approvals: dict[str, tuple[Turn, asyncio.Future[str], list[str], dict[str, Any]]] = {}
+        self._cloud_turns: set[str] = set()
+        self._cloud_since: str | None = None
+        self._ai_published: dict[str, Any] | None = None
         self._register_undo_handlers()
+
+    # ------------------------------------------------------------------
+    # $XDG_RUNTIME_DIR/svoya/ai.json {local, cloudActiveSince} — read by `sos status` (ARCHITECTURE §8)
+
+    def _cloud(self, turn: Turn, active: bool) -> None:
+        if active and turn.id not in self._cloud_turns:
+            if not self._cloud_turns:
+                self._cloud_since = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+            self._cloud_turns.add(turn.id)
+        elif not active:
+            self._cloud_turns.discard(turn.id)
+        self.publish_ai_state()
+
+    def publish_ai_state(self, force: bool = False) -> None:
+        data = {"local": not self._cloud_turns, "cloudActiveSince": self._cloud_since if self._cloud_turns else None}
+        if data == self._ai_published and not force:
+            return
+        path = self.app.paths.runtime_dir / "ai.json"
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_name(".ai.json.tmp")
+            tmp.write_text(json.dumps(data), encoding="utf-8")
+            os.replace(tmp, path)
+            self._ai_published = data
+        except OSError:
+            log.debug("cannot write %s", path, exc_info=True)
 
     # ------------------------------------------------------------------
     @property
@@ -146,9 +177,8 @@ class Engine:
             return
         turn.state = state
         # persona/avatar/mood let the shell animate the mascot (additive fields).
-        await self._emit(turn, {"type": "state", "state": state, "persona": self.config.persona,
-                                "avatar": self.config.avatar, "mood": mood_for(state, extra.get("detail")),
-                                **extra})
+        await self._emit(turn, {"type": "state", "state": state, **self.app.state_extra(),
+                                "mood": mood_for(state, extra.get("detail")), **extra})
 
     # ------------------------------------------------------------------
     async def run_turn(self, turn: Turn) -> None:
@@ -160,6 +190,12 @@ class Engine:
                 if cwd.is_dir():
                     turn.session.cwd = cwd
             if not turn.context.get("noFastpath") and await self._fastpath(turn):
+                return
+            off = aiswitch.off_reason(self.app.paths)
+            if off:  # the AI switch (sos ai off): only deterministic commands, no model at all
+                self.app.audit.append("ask.refused", turn=turn.id, reason=f"ai-off:{off}")
+                await self._error(turn, t("ai.off." + ("system" if off == "system" else "user"), lang,
+                                          name=self.app.name(lang)), False, aiOff=True, off=off)
                 return
             await self._model_turn(turn)
         except asyncio.CancelledError:
@@ -183,16 +219,18 @@ class Engine:
             await self._error(turn, t("err.internal", lang, why=f"{exc.__class__.__name__}: {exc}"), False)
         finally:
             self.deny_all(turn)
+            if turn.id in self._cloud_turns:
+                self._cloud(turn, False)
             await self._state(turn, "idle")
 
-    async def _error(self, turn: Turn, message: str, retryable: bool) -> None:
+    async def _error(self, turn: Turn, message: str, retryable: bool, **extra: Any) -> None:
         if turn.finished:
             return
         turn.finished = True
         if turn.cost > 0 or turn.left_to:
             self.app.spend.add(turn.cost, bool(turn.left_to))
         await self._emit(turn, {"type": "error", "message": message, "retryable": bool(retryable),
-                                "costEur": round(turn.cost, 6), "leftMachine": bool(turn.left_to)})
+                                "costEur": round(turn.cost, 6), "leftMachine": bool(turn.left_to), **extra})
         await self._state(turn, "idle", detail="error")
 
     async def _done(self, turn: Turn, cancelled: bool = False, route_model: str | None = None) -> None:
@@ -244,10 +282,13 @@ class Engine:
 
         return fastpath.FastCtx(self.app.osc, lang, self.config.persona, humor=self.config.humor, seed=turn.id,
                                 undo_last=undo_last, new_chat=turn.session.reset, set_policy=set_policy,
-                                models=self.app.router.model_table, route_info=route_info)
+                                models=self.app.router.model_table, route_info=route_info,
+                                avatar_path=self.app.paths.avatar_file,
+                                on_avatar_change=self.app.reload_avatar,
+                                ai_off_reason=lambda: aiswitch.off_reason(self.app.paths))
 
     async def _fastpath(self, turn: Turn) -> bool:
-        match = await asyncio.to_thread(fastpath.match, turn.text, self.app.osc)
+        match = await asyncio.to_thread(fastpath.match, turn.text, self.app.osc, (self.app.avatar.name,))
         if match is None:
             return False
         lang = turn.session.lang
@@ -272,7 +313,20 @@ class Engine:
         await self._state(turn, "speaking")
         await self._emit(turn, {"type": "token", "text": result.text})
         await self._done(turn)
+        if result.after is not None:  # e.g. `sos ai off`, which stops Jackson himself: answer first
+            self._after(result.after, match.name)
         return True
+
+    def _after(self, fn: Callable[[], Any], what: str, delay: float = 0.3) -> None:
+        """Run *fn* shortly after the answer went out (in a thread, never blocking the loop)."""
+        def run() -> None:
+            time.sleep(delay)
+            try:
+                fn()
+            except Exception:
+                log.warning("post-answer action %s failed", what, exc_info=True)
+        self.app.audit.append("fastpath.after", action=what)
+        threading.Thread(target=run, name=f"after-{what}", daemon=True).start()
 
     # ------------------------------------------------------------------
     # model turn
@@ -319,6 +373,7 @@ class Engine:
         if reason:
             ev["reason"] = reason
         turn.model, turn.provider = decision.chosen.model, decision.chosen.provider
+        self._cloud(turn, not decision.chosen.local)
         self.app.audit.append("route", turn=turn.id, client=turn.session.client, model=decision.chosen.id,
                               local=decision.chosen.local, task=decision.task, reason=ev["reason"],
                               explicit=decision.explicit)
@@ -357,7 +412,7 @@ class Engine:
             system = system_prompt(lang=lang, persona=self.config.persona, address=self.config.address,
                                    route=self._route_text(chosen, lang), cwd=cwd_text, memory=memory_block,
                                    skills=skills_block, taint=session.taint.label() if session.taint else "",
-                                   humor=self.config.humor)
+                                   humor=self.config.humor, name=self.app.name(lang))
             provider = app.providers[chosen.provider]
             app.key_check(chosen.provider)
             req = ChatRequest(model=chosen.model, system=system, messages=messages, tools=[t_.spec() for t_ in tools])
@@ -687,7 +742,32 @@ class Engine:
                 setattr(app.config.route, key, prev)
             return f"route.{key} = {prev}"
 
+        def accent(a: Any) -> str:
+            res = app.svoya.accent_set(str(a.data.get("prev") or "default"))
+            need(bool(res.get("ok")), str(res.get("error") or "sos theme accent"))
+            return str((res.get("accent") or {}).get("id"))
+
+        def look(a: Any) -> str:
+            from . import avatar as avatar_mod
+            prev = a.data.get("prev")
+            path = app.paths.avatar_file
+            if prev is None:
+                if path.exists():
+                    app.trash.put(path)  # the file did not exist before; never hard-delete
+            else:
+                avatar_mod.write(path, prev)
+            app.reload_avatar()
+            return app.avatar.name
+
+        def ai(a: Any) -> str:
+            ok, out = app.svoya.ai_on()
+            need(ok, out)
+            return out
+
         undo.register_handler("theme", theme)
+        undo.register_handler("accent", accent)
+        undo.register_handler("avatar", look)
+        undo.register_handler("ai", ai)
         undo.register_handler("config", config)
         if app.memory is not None:
             undo.register_handler("memory", app.memory.undo_handler)

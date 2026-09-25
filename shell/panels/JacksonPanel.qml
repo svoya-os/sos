@@ -5,7 +5,8 @@ import "Markdown.js" as Md
 
 // Jackson panel (Super+J; DESIGN.md §5, design/mockups/desktop.html):
 // width 704, top 118, centered, radius 16, surface2, lineStrong border, accent
-// top highlight. Head: avatar/scope · name · route chip · keycaps Super J.
+// top highlight (the panel is `live`). Head: the 32px mascot · name · route chip ·
+// scope (92×22) · keycaps Super J.
 // Input: Plex Sans 20 with the 2px accent caret. Answer: streamed Markdown
 // (14.2/1.6), tables in a bordered mono block, approvals inline, actions.
 // Footer 40px: latency · tokens · cost € · local/cloud statement | Tab, Esc.
@@ -66,12 +67,15 @@ PanelFrame {
 
     width: 704
     implicitHeight: col.implicitHeight
+    live: true
 
     onShownChanged: {
         if (root.shown) {
             if (!Jackson.busy && Jackson.question.length > 0 && input.text.length === 0)
                 input.text = Jackson.question;
             avatar.warmUp();
+            if (headScope.visible)
+                headScope.warmUp();
             Qt.callLater(root.focusInput);
             if (Jackson.connected)
                 Jackson.requestStatus();
@@ -124,22 +128,23 @@ PanelFrame {
 
         width: parent.width
 
-        // ---- head -----------------------------------------------------------------------------
+        // ---- head: mascot · name · route chip ……… scope · Super J --------------------------------
         Item {
             width: parent.width
-            height: 16 + 22
+            height: 14 + 32
+            z: 2 // the mascot's right-click menu opens over the input below
 
             Row {
-                x: 18
-                y: 16
-                height: 22
+                x: 16
+                y: 14
+                height: 32
                 spacing: 12
 
                 JacksonAvatar {
                     id: avatar
 
                     anchors.verticalCenter: parent.verticalCenter
-                    size: 22
+                    size: 32
                     live: root.shown
                 }
 
@@ -180,17 +185,35 @@ PanelFrame {
             Row {
                 anchors.right: parent.right
                 anchors.rightMargin: 18
-                y: 16
-                height: 22
-                spacing: 4
+                y: 14
+                height: 32
+                spacing: 12
 
-                Keycap {
+                // the scope: Jackson's live signal (the mascot's stand-in when there is no sprite)
+                Oscilloscope {
+                    id: headScope
+
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Super"
+                    visible: avatar.hasSprite
+                    width: 92
+                    height: 22
+                    mode: Jackson.mode === "off" || Jackson.mode === "offline" ? "idle" : Jackson.mode
+                    live: root.shown
+                    opacity: Jackson.mode === "offline" || Jackson.mode === "off" ? 0.5 : 1
                 }
-                Keycap {
+
+                Row {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "J"
+                    spacing: 4
+
+                    Keycap {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Super"
+                    }
+                    Keycap {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "J"
+                    }
                 }
             }
         }

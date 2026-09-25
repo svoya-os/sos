@@ -61,9 +61,9 @@
   .app .t b { display: block; font: 500 13.5px/18px "Plex Sans"; color: var(--text); }
   .app .t span { display: block; font: 400 12px/18px "Plex Sans"; color: var(--text-dim); }
   .app .t small { display: block; margin-top: 2px; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
-  .cb { margin-left: auto; flex: none; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
-  .cb svg.i { width: 12px; height: 12px; stroke-width: 2.8; }
 
+  .route { padding: 12px 18px 16px; }
+  .route p { margin-top: 10px; font: 400 12.5px/19px "Plex Sans"; color: var(--text-dim); }
   /* cloud */
   .prow { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 18px; }
   .prow + .prow { border-top: 1px solid var(--line); }
@@ -75,7 +75,7 @@
   .prow .saved svg.i { width: 12px; height: 12px; stroke-width: 2.2; }
 
   .note { display: flex; gap: 12px; padding: 14px 18px 15px; border-radius: 14px; border: 1px solid var(--line); }
-  .note svg.i { width: 17px; height: 17px; color: var(--accent); margin-top: 1px; stroke-width: 1.6; flex: none; }
+  .note svg.i { width: 17px; height: 17px; color: var(--text-dim); margin-top: 1px; stroke-width: 1.6; flex: none; }
   .note p { font: 400 12.5px/19px "Plex Sans"; color: var(--text-dim); }
   .note p b { font-weight: 500; color: var(--text); }
 </style>
@@ -99,8 +99,8 @@
     </div>
 
     <div class="wz-body">
-      <div class="wz-eyebrow">ИИ</div>
-      <h1 class="wz-h">Модель для Джексона</h1>
+      <div class="wz-eyebrow">Джексон · 2 из 2</div>
+      <h1 class="wz-h">Чем Джексон будет думать</h1>
       <p class="wz-sub">Посмотрели железо и&nbsp;подобрали модель, которая в&nbsp;него влезет. Всё работает на&nbsp;этом компьютере; облако — по&nbsp;желанию.</p>
 
       <div class="cols">
@@ -128,7 +128,7 @@
                   <div class="vram"><i style="width:42.5%"></i><span class="cap"></span></div>
                   <div class="lbls"><span><b>влезет</b> · 10,2 из 24 ГБ</span><em>останется 13,8 ГБ для Студии</em></div>
                 </div>
-                <div class="act"><span class="sz">10,2 ГБ</span><button class="btn primary"><svg data-i="download"></svg>Установить</button></div>
+                <div class="act"><span class="sz">10,2 ГБ</span><button class="btn"><svg data-i="download"></svg>Установить</button></div>
               </div>
               <div class="alts">
                 <svg data-i="chevronRight"></svg>Ещё 2 варианта
@@ -145,11 +145,10 @@
 
         <div class="col">
           <div class="card">
-            <div class="hd"><h3>В один клик</h3><span class="r meta">Flathub</span></div>
-            <div class="app">
-              <span class="tile lg"><svg data-i="book"></svg></span>
-              <div class="t"><b>Obsidian</b><span>Заметки в&nbsp;Markdown. Память Джексона — тоже там.</span><small>~/Заметки · 240 МБ · бесплатно</small></div>
-              <span class="cb"><svg data-i="check"></svg></span>
+            <div class="hd"><h3>Куда идут вопросы</h3><span class="r meta">из профиля</span></div>
+            <div class="route">
+              <div class="segm"><span class="on">Локально</span><span>Авто</span><span>Облако</span></div>
+              <p>Отвечает модель на&nbsp;этом компьютере. «Авто» зовёт облако, только если задача не&nbsp;по&nbsp;силам, и&nbsp;говорит об&nbsp;этом.</p>
             </div>
           </div>
 

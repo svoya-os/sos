@@ -8,6 +8,8 @@ Assumed contract (see README "Contract notes"):
 * ``sos snapshot create --reason TEXT --json`` → ``{"id": "<snapshot id>", ...}``
 * ``sos undo [<snapshot id>]``                 — revert to before that snapshot (default: last change)
 * ``sos theme apply <id|auto>``                — ARCHITECTURE §4.1
+* ``sos theme accent <id|word|#hex> --json``   — DESIGN §10 (``{"ok", "accent", "previous", …}``)
+* ``sos ai off`` / ``sos ai on``               — the AI switch (WORKFLOWS §8)
 
 Fallback for snapshots when neither command exists: ``snapper -c <snapshots.snapper_config>``.
 """
@@ -120,6 +122,43 @@ class SvoyaCli:
         if exe is None:
             return False, "the sos command is not installed"
         res = self.runner.run([exe, "theme", "apply", theme], timeout=20.0)
+        return res.ok, res.out.strip() if res.ok else res.why()
+
+    # ------------------------------------------------------------------ accent (DESIGN.md §10)
+    def accent_current(self) -> str | None:
+        """The accent in effect: ``accentId`` from theme.json (``custom`` for a hex), if known."""
+        value = self.theme_state().get("accentId")
+        return str(value) if value else None
+
+    def accent_set(self, choice: str) -> dict[str, Any]:
+        """``sos theme accent <choice> --json`` — sos understands ids, RU/EN names and color words
+        («фиолетовым» → lilac) and hex. Returns its JSON (``ok``, ``accent``, ``previous``, ``error``,
+        ``hint``) or ``{"ok": False, "error": …}``."""
+        exe = self.binary
+        if exe is None:
+            return {"ok": False, "error": "the sos command is not installed", "missing": True}
+        res = self.runner.run([exe, "theme", "accent", *choice.split(), "--json"], timeout=30.0)
+        try:
+            data = json.loads(res.out) if res.out.strip() else {}
+        except ValueError:
+            data = {}
+        if not isinstance(data, dict) or "ok" not in data:
+            return {"ok": False, "error": res.why() if not res.ok else "unexpected output from sos theme accent"}
+        return data
+
+    # ------------------------------------------------------------------ the AI switch (WORKFLOWS.md §8)
+    def ai_off_later(self) -> bool:
+        """Run ``sos ai off`` detached: it stops jacksond itself, so it must outlive this process's turn."""
+        exe = self.binary
+        if exe is None:
+            return False
+        return self.runner.spawn([exe, "ai", "off"]) is not None
+
+    def ai_on(self) -> tuple[bool, str]:
+        exe = self.binary
+        if exe is None:
+            return False, "the sos command is not installed"
+        res = self.runner.run([exe, "ai", "on"], timeout=60.0)
         return res.ok, res.out.strip() if res.ok else res.why()
 
 

@@ -27,6 +27,7 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
         visible: root.progress >= 0
         value: Math.max(0, root.progress)
+        fill: Theme.accent // a running job is the live signal
     }
 
     BarText {

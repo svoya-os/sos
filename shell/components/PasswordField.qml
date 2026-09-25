@@ -3,8 +3,9 @@ import qs.core
 
 // The 320×40 password field of the lock screen and greeter
 // (components.css .field / .pw): surface2, 1px lineStrong, radius 9; focused =
-// accent border + a 3px accentSoft ring. Typed characters are 7px dots (gap 6)
-// followed by the 2px accent caret; a 30×30 "go" button sits on the right.
+// 1px `text` border + a 3px `line` halo (DESIGN §9 — the accent is only the caret, §11–§12).
+// Typed characters are 7px dots (gap 6) followed by the 2px accent caret; a 30×30 "go"
+// button sits on the right.
 // The TextInput itself stays invisible; it only holds the text and the focus.
 FocusScope {
     id: root
@@ -35,14 +36,14 @@ FocusScope {
     }
 
     readonly property bool focused: input.activeFocus
-    readonly property color ringColor: root.error ? Theme.bad : Theme.accent
+    readonly property color ringColor: root.error ? Theme.bad : Theme.text
 
     Rectangle {
         anchors.fill: frame
         anchors.margins: -3
         radius: 12
         visible: root.focused || root.error
-        color: root.error ? Theme.alpha(Theme.bad, 0.16) : Theme.accentSoft
+        color: root.error ? Theme.alpha(Theme.bad, 0.16) : Theme.line
         antialiasing: true
     }
 

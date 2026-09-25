@@ -140,40 +140,96 @@ def undo_targets(sn: Snapper) -> list[dict]:
     return sorted(out, key=lambda t: t["n"])
 
 
+def _snapshot_number(ident) -> int | None:
+    """``7``, ``"7"``, ``"#7"``, ``"snap-7"`` → 7; anything else → None."""
+    if ident is None or isinstance(ident, bool):
+        return None
+    if isinstance(ident, int):
+        return ident
+    t = str(ident).strip().lstrip("#")
+    t = t[5:] if t.startswith("snap-") else t
+    return int(t) if t.isdigit() else None
+
+
+def _look_rows(ctx: Ctx) -> list[dict]:
+    """Look changes (theme, accent) from the user's undo journal, in the ``--list`` row shape."""
+    from . import journal
+    return [{"id": e["id"], "n": None, "pre": None, "post": None, "to": None, "date": e.get("at"),
+             "description": i18n.pick(e.get("description"), e["id"]), "kind": e.get("kind", "look")}
+            for e in journal.entries(ctx.paths)]
+
+
+def _undo_look(args, ctx: Ctx, entry_id: str) -> int:
+    from . import config as config_mod
+    from .theme import cli as theme_cli
+    from .theme import look
+    from .theme.apply import ThemeError
+    try:
+        res = look.undo(ctx, config_mod.load(ctx.paths), entry_id)
+    except ThemeError as e:
+        ui.err(f"sos: {e}")
+        return 2
+    if res is None:
+        ui.err(tr(f"sos: no change {entry_id} — see `sos undo --list`", f"sos: нет изменения {entry_id} — см. `sos undo --list`"))
+        return 2
+    return theme_cli.print_undone(res, as_json=bool(getattr(args, "json", False)))
+
+
 def main_undo(args, ctx: Ctx | None = None) -> int:
+    """``sos undo``: the newest change — a look change from the journal (no snapshot, no password) or an
+    sos snapshot pair (``snapper undochange``). ``sos undo <n>`` / ``sos undo look-3`` pick one."""
     import sys
+    from . import journal
     ctx = ctx or Ctx()
+    ident = getattr(args, "n", None)
+    num = _snapshot_number(ident)
+    if ident is not None and num is None:
+        if journal.is_id(str(ident)) and journal.find(ctx.paths, str(ident)):
+            return _undo_look(args, ctx, str(ident))
+        ui.err(tr(f"sos: no change {ident} — see `sos undo --list`", f"sos: нет изменения {ident} — см. `sos undo --list`"))
+        return 2
     sn = Snapper(ctx, getattr(args, "config", None) or "root")
     st = ui.style()
-    if not sn.available():
-        ui.err(tr(f"sos: undo needs btrfs snapshots — {sn.why_unavailable()}", f"sos: для отката нужны снимки btrfs — {sn.why_unavailable()}"))
-        return 2
-    targets = undo_targets(sn)
-    if args.list or (args.json and args.n is None and not args.yes):
+    available = sn.available()
+    looks = _look_rows(ctx) if num is None else []
+    targets = undo_targets(sn) if available else []
+    for t in targets:
+        t.setdefault("id", str(t["n"]))
+    if args.list or (args.json and ident is None and not args.yes):
+        rows = sorted(targets + looks, key=lambda t: t.get("date") or "")
         if args.json:
-            ui.print_json(targets)
+            ui.print_json(rows)
             return 0
         ui.head(tr("changes you can undo", "изменения, которые можно отменить"))
-        if not targets:
+        if not rows:
             ui.note(tr("none yet", "пока нет"))
-        for t in reversed(targets[-20:]):
+        for t in reversed(rows[-20:]):
             when = t["date"][5:16].replace("T", " ") if t["date"] else "—"
             state = st.warn(tr("  (incomplete)", "  (не завершено)")) if t["kind"] == "pair" and t["post"] is None else ""
-            ui.out(f"  {st.accent(str(t['n']).rjust(4))}  {st.dim(when)}  {t['description']}{state}")
-        ui.note(tr("sos undo <n>", "sos undo <номер>"))
+            ui.out(f"  {st.accent(str(t['id']).rjust(7))}  {st.dim(when)}  {t['description']}{state}")
+        if not available:
+            ui.note(tr(f"system changes: {sn.why_unavailable()}", f"системные изменения: {sn.why_unavailable()}"))
+        ui.note(tr("sos undo <id>", "sos undo <id>"))
         return 0
-    if not targets:
+    if num is None and looks:
+        newest_snap = targets[-1]["date"] if targets else None
+        if not newest_snap or (looks[-1]["date"] or "") >= newest_snap:
+            return _undo_look(args, ctx, looks[-1]["id"])
+    if not available:
+        ui.err(tr(f"sos: undo needs btrfs snapshots — {sn.why_unavailable()}", f"sos: для отката нужны снимки btrfs — {sn.why_unavailable()}"))
+        return 2
+    if not targets and num is None:
         ui.head(tr("nothing to undo", "отменять нечего"))
         return 0
-    if args.n is None:
+    if num is None:
         chosen = targets[-1]
     else:
-        chosen = next((t for t in targets if args.n in (t["pre"], t["post"])), None)
+        chosen = next((t for t in targets if num in (t["pre"], t["post"])), None)
         if chosen is None:          # any snapshot id (e.g. one Jackson created with another tool)
-            snap = next((x for x in sn.list() if x.number == args.n), None)
-            chosen = {"n": args.n, "pre": args.n, "to": 0, "description": snap.description if snap else "", "kind": "single"} if snap else None
+            snap = next((x for x in sn.list() if x.number == num), None)
+            chosen = {"n": num, "pre": num, "to": 0, "description": snap.description if snap else "", "kind": "single"} if snap else None
     if chosen is None:
-        ui.err(tr(f"sos: no change #{args.n} — see `sos undo --list`", f"sos: нет изменения №{args.n} — см. `sos undo --list`"))
+        ui.err(tr(f"sos: no change #{num} — see `sos undo --list`", f"sos: нет изменения №{num} — см. `sos undo --list`"))
         return 2
     pre, to = chosen["pre"], chosen["to"]
     changes = sn.status(pre, to)

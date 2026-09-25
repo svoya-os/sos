@@ -33,8 +33,11 @@ HERE = pathlib.Path(__file__).resolve().parent
 THEME_DIR = HERE / "svoya-signal"
 FRAMES_DIR = HERE / "frames"
 C = brand.theme("graphite")["color"]
-ACCENT = brand.rgb(C["accent"])
-HOT = brand.rgb(brand.mix(C["accent"], "#ffffff", 0.5))
+# Pre-login surfaces are neutral (design/DESIGN.md §12): no accent anywhere, only Graphite text tones,
+# so the boot screen can never clash with the accent the user picks later.
+SIGNAL = brand.rgb(C["text"])                         # the lit line, the burst, glows
+HOT = (255, 255, 255)                                  # the white-hot core of the spot and of keyed pulses
+BASE = brand.rgb(C["textFaint"])                      # the unlit line
 TEXT = brand.rgb(C["text"])
 DIM = brand.rgb(C["textDim"])
 FAINT = brand.rgb(C["textFaint"])
@@ -76,7 +79,7 @@ GEOMETRY = {
     "FLARE_PAD": PAD, "FLARE_BASE": BURST_BASE,
     "N_SYMBOLS": len(KEY_ON),
     "KEY_UNIT": 0.1, "KEY_PERIOD": KEY_PERIOD,
-    "BASE_OPACITY": 0.34, "BURST_REST": 0.72,
+    "BASE_OPACITY": 0.8, "BURST_REST": 0.78,
     "T_SPOT": 0.18, "T_HOLD": 0.16, "T_STRETCH": 0.42, "T_SETTLE": 0.3, "T_BURST": 0.26, "T_WORD": 0.4,
     "WORD_GAP": 58, "CAPTION_GAP": 14, "PROMPT_GAP": 54, "FIELD_W": 380, "BULLET_PITCH": 11,
     "MSG_BOTTOM": 64, "MSG_LINE": 22,
@@ -161,13 +164,13 @@ def make_line_sprites():
     f = GEOMETRY["FADE_FRAC"]
     ramp = np.minimum(smoothstep(x / f), smoothstep((1 - x) / f))
     prof = vertical_profile(LINE_H, LINE_CORE, 0.22, 1.5)
-    rgba_image(prof[:, None] * ramp[None, :], ACCENT).save(THEME_DIR / "line.png", optimize=True)
+    rgba_image(prof[:, None] * ramp[None, :], BASE).save(THEME_DIR / "line.png", optimize=True)
     # lit segment (one column, scaled by the script) and its fade-in
     lit = vertical_profile(LINE_H, LINE_CORE, 0.42, 2.0)
-    rgba_image(lit[:, None], ACCENT).save(THEME_DIR / "lit.png", optimize=True)
+    rgba_image(lit[:, None], SIGNAL).save(THEME_DIR / "lit.png", optimize=True)
     w2 = 256
     ramp2 = smoothstep((np.arange(w2) + 0.5) / w2)
-    rgba_image(lit[:, None] * ramp2[None, :], ACCENT).save(THEME_DIR / "lit-fade.png", optimize=True)
+    rgba_image(lit[:, None] * ramp2[None, :], SIGNAL).save(THEME_DIR / "lit-fade.png", optimize=True)
     # streak: the spot being pulled into a line — hot core, wide glow, soft ends
     w3, h3 = 256, 31
     xs = (np.arange(w3) + 0.5) / w3 * 2 - 1
@@ -177,7 +180,7 @@ def make_line_sprites():
     glow = 0.55 * np.exp(-(ys ** 2) / (2 * 4.0 ** 2))
     a = np.maximum(core, glow)[:, None] * ends[None, :]
     t = (core / (core + glow + 1e-6))[:, None, None]
-    col = np.asarray(HOT, np.float32) * t + np.asarray(ACCENT, np.float32) * (1 - t)
+    col = np.asarray(HOT, np.float32) * t + np.asarray(SIGNAL, np.float32) * (1 - t)
     col = np.broadcast_to(col, (h3, w3, 3))
     rgba_image(a, col).save(THEME_DIR / "streak.png", optimize=True)
 
@@ -191,7 +194,7 @@ def make_spot():
     glow = 0.62 * np.exp(-(r ** 2) / (2 * 7.5 ** 2)) + 0.12 * np.exp(-(r ** 2) / (2 * 16 ** 2))
     a = np.maximum(core, glow)
     t = (core / (core + glow + 1e-6))[..., None]
-    col = np.asarray(HOT, np.float32) * t + np.asarray(ACCENT, np.float32) * (1 - t)
+    col = np.asarray(HOT, np.float32) * t + np.asarray(SIGNAL, np.float32) * (1 - t)
     rgba_image(dither(a), col).save(THEME_DIR / "spot.png", optimize=True)
 
 
@@ -202,7 +205,7 @@ def make_haze():
     dy = (yy + 0.5 - h / 2) / (h / 2)
     r2 = dx ** 2 + dy ** 2
     a = 0.085 * np.exp(-r2 * 3.2) * np.clip(1 - r2, 0, 1)
-    rgba_image(dither(a, 3), ACCENT).save(THEME_DIR / "haze.png", optimize=True)
+    rgba_image(dither(a * 0.7, 3), SIGNAL).save(THEME_DIR / "haze.png", optimize=True)
 
 
 def make_small():
@@ -216,8 +219,8 @@ def make_small():
             r = np.hypot(xx + (sx + 0.5) / ss - n / 2, yy + (sy + 0.5) / ss - n / 2)
             acc += (r <= n / 2)
     rgba_image(acc / ss ** 2, TEXT).save(THEME_DIR / "bullet.png", optimize=True)
-    # cursor: an amber block, terminal style
-    rgba_image(np.ones((16, 8)), ACCENT).save(THEME_DIR / "cursor.png", optimize=True)
+    # cursor: a block in the text color, terminal style
+    rgba_image(np.ones((16, 8)), SIGNAL).save(THEME_DIR / "cursor.png", optimize=True)
     # rule under the input line: one pixel of lineStrong, scaled by the script
     rgba_image(np.ones((1, 1)), brand.rgb(C["lineStrong"])).save(THEME_DIR / "rule.png", optimize=True)
 
@@ -226,7 +229,7 @@ def make_small():
 
 def burst_svg(flare_index: int | None = None) -> tuple[str, int, int]:
     """The square-wave «СОС» as on the wallpaper; or one pulse of it, hotter, for keying flares."""
-    acc = C["accent"]
+    acc = C["text"]
     base = BURST_BASE + 0.5
     top = base - PULSE_H
     if flare_index is None:
@@ -272,7 +275,7 @@ def text_svg(text: str, kind: str, weight: int, size: float, color, tracking: fl
 def chevron_svg() -> tuple[str, int, int]:
     w, h = 10, 18
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">'
-            f'<path d="M 2.5 4.5 L 7 9 L 2.5 13.5" fill="none" stroke="{C["accent"]}" stroke-width="1.6" '
+            f'<path d="M 2.5 4.5 L 7 9 L 2.5 13.5" fill="none" stroke="{C["textDim"]}" stroke-width="1.6" '
             f'stroke-linecap="round" stroke-linejoin="round"/></svg>', w, h)
 
 
@@ -287,7 +290,7 @@ def render_vectors(r: brand.Renderer):
     for name, (ru, en, col) in CAPTIONS.items():
         jobs[f"caption-{name}-ru.png"] = text_svg(ru, "mono", 400, 10.5, col, 0.16)
         jobs[f"caption-{name}-en.png"] = text_svg(en, "mono", 400, 10.5, col, 0.16)
-    jobs["caps-ru.png"] = text_svg("CAPS LOCK", "mono", 500, 10, brand.rgb(C["accent"]), 0.14)
+    jobs["caps-ru.png"] = text_svg("CAPS LOCK", "mono", 500, 10, TEXT, 0.14)
     jobs["caps-en.png"] = jobs["caps-ru.png"]
     for fn, (svg, w, h) in jobs.items():
         r.svg(svg, w, h, THEME_DIR / fn)

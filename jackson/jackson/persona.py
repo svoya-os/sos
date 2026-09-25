@@ -129,10 +129,11 @@ def mood_for(state: str, detail: str | None = None) -> str:
 
 
 def system_prompt(*, lang: str, persona: str, address: str = "ty", route: str = "", cwd: str = "~",
-                  memory: str = "", skills: str = "", taint: str = "", humor: int = 1,
+                  memory: str = "", skills: str = "", taint: str = "", humor: int = 1, name: str = "",
                   now: dt.datetime | None = None) -> str:
     lang = norm_lang(lang)
     values = {
+        "name": name or ("Джексон" if lang == "ru" else "Jackson"),
         "now": _now_text(lang, now or dt.datetime.now()),
         "route": route or "—",
         "cwd": cwd,

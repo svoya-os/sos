@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — Jackson customizer</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
+<style>
+  .set .content { display: grid; grid-template-columns: 224px 1fr; }
+  .side { background: var(--bar-bg); border-right: 1px solid var(--line); padding: 12px 10px; display: flex; flex-direction: column; }
+  .side .caps { padding: 10px 10px 8px; }
+  .side .it { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border-radius: 7px; font: 400 13px/1 "Plex Sans"; color: var(--text-dim); }
+  .side .it svg.i { width: 15px; height: 15px; color: var(--text-faint); stroke-width: 1.6; }
+  .side .it.on { background: var(--surface-3); color: var(--text); }
+  .side .it.on svg.i { color: var(--text); }
+  .side .ver { margin: auto 10px 6px; }
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .mh { display: flex; align-items: flex-end; gap: 20px; padding: 22px 28px 0; }
+  .mh h1 { font: 500 22px/28px "Plex Sans"; letter-spacing: -0.005em; color: var(--text); }
+  .mh p { margin-top: 4px; font: 400 13px/20px "Plex Sans"; color: var(--text-dim); }
+  .mh .cmd { margin-left: auto; text-align: right; }
+  .mh .cmd code { color: var(--text-dim); }
+
+  .cols { display: grid; grid-template-columns: 404px 1fr; gap: 36px; padding: 20px 28px 0; }
+
+  /* stage */
+  .stage {
+    position: relative; height: 318px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line);
+    background: radial-gradient(circle, var(--canvas-dot) 0.9px, transparent 1.3px) 0 0 / 16px 16px, var(--canvas);
+  }
+  .stage .caps { position: absolute; left: 16px; top: 16px; }
+  .stage .bgsw { position: absolute; right: 12px; top: 10px; }
+  .stage .bgsw span { height: 24px; padding: 0 9px; font-size: 11.5px; }
+  .stage canvas.hero { position: absolute; left: 34px; top: 52px; }
+  .bubble {
+    position: absolute; left: 222px; top: 64px; max-width: 166px; padding: 9px 12px 10px; border-radius: 12px 12px 12px 4px;
+    background: var(--surface-2); border: 1px solid var(--line-strong); font: 400 13.5px/19px "Plex Sans"; color: var(--text);
+    box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.5);
+  }
+  .bubble small { display: block; margin-top: 3px; font: 400 11px/14px "Plex Mono"; color: var(--text-faint); }
+  .stage .sc { position: absolute; left: 236px; top: 150px; }
+  .stage .fr { position: absolute; left: 16px; bottom: 14px; }
+  .stage .play { position: absolute; right: 12px; bottom: 10px; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--text-dim); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .stage .play svg.i { width: 13px; height: 13px; stroke-width: 2; }
+
+  .states { display: flex; justify-content: space-between; margin-top: 12px; }
+  .states .st { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 62px; }
+  .states .st .b { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); }
+  .states .st.on .b { box-shadow: 0 0 0 1.5px var(--text); background: var(--surface-2); }
+  .states .st em { font: 400 11px/1 "Plex Mono"; font-style: normal; color: var(--text-faint); }
+  .states .st.on em { color: var(--text); }
+
+  .ctx { margin-top: 18px; }
+  .ctx .caps { margin: 0 2px 8px; }
+  .ctx .hd { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 12px 0 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line-strong); }
+  .ctx .hd .nm { font: 500 13px/1 "Plex Sans"; color: var(--text); }
+  .ctx .hd .chip { height: 20px; }
+  .ctx .tt { margin-top: 8px; display: flex; gap: 12px; padding: 12px 14px 13px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+  .ctx .tt > div { flex: 1; min-width: 0; }
+  .ctx .tt .h { display: flex; align-items: center; gap: 8px; height: 16px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .ctx .tt .h b { font-weight: 500; color: var(--text-dim); }
+  .ctx .tt .b { margin-top: 4px; font: 400 13px/19px "Plex Sans"; color: var(--text); }
+  .ctx .tt .b span { color: var(--text-dim); }
+
+  /* controls */
+  .opt { display: grid; grid-template-columns: 104px 1fr; align-items: center; min-height: 50px; border-top: 1px solid var(--line); }
+  .opt.first { border-top: 0; }
+  .opt > label { font: 500 13px/18px "Plex Sans"; color: var(--text-dim); }
+  .opt .v { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .sub { margin-top: 18px; padding: 0 0 8px; display: flex; justify-content: space-between; align-items: center; }
+
+  .chars { display: flex; gap: 8px; }
+  .chars span { display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px 0 5px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); font: 500 13px/1 "Plex Sans"; color: var(--text-dim); }
+  .chars span small { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); margin-left: 2px; }
+  .chars span.on { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--text); }
+  .chars canvas { width: 32px; height: 32px; }
+
+  .skins { display: flex; gap: 4px; padding: 10px 0 8px; }
+  .skins .s { width: 62px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .skins .s i { width: 26px; height: 26px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3); }
+  .skins .s.on i { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--text); }
+  .skins .s em { font: 400 11px/1 "Plex Mono"; font-style: normal; color: var(--text-faint); white-space: nowrap; }
+  .skins .s.on em { color: var(--text); }
+
+  .outfit .auto { display: flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px 0 7px; border-radius: 999px; font: 500 12px/1 "Plex Sans"; color: var(--text); background: var(--surface-3); box-shadow: inset 0 0 0 1.5px var(--text); white-space: nowrap; }
+  .outfit .auto i { width: 16px; height: 16px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); }
+  .outfit .sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 4px; }
+  .outfit .o { width: 22px; height: 22px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); flex: none; }
+  .outfit .o.plus { background: none; box-shadow: inset 0 0 0 1.5px var(--line-strong); display: grid; place-items: center; color: var(--text-faint); font: 400 14px/1 "Plex Sans"; }
+
+  .segm.w { width: 318px; }
+  .segm.w > span { font-size: 12.5px; }
+  .tg { display: flex; align-items: center; gap: 10px; margin-right: 22px; font: 400 13px/1 "Plex Sans"; color: var(--text); }
+  .opt .field { width: 250px; height: 34px; font-size: 13.5px; }
+  .opt .meta { margin-left: 6px; }
+  .hum { flex: 1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); padding-right: 2px; }
+  .tone { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 0; flex: 1; }
+  .tone > div { position: relative; padding: 10px 12px 11px 36px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); }
+  .tone > div.on { box-shadow: inset 0 0 0 1.5px var(--text); }
+  .tone .radio { position: absolute; left: 11px; top: 11px; width: 16px; height: 16px; }
+  .tone .radio.on { box-shadow: inset 0 0 0 4.5px var(--text); }
+  .tone b { display: block; font: 500 12.5px/17px "Plex Sans"; color: var(--text); }
+  .tone span { display: block; margin-top: 2px; font: 400 11.5px/16px "Plex Sans"; color: var(--text-dim); }
+
+  .foot { margin-top: auto; display: flex; align-items: center; gap: 10px; height: 60px; padding: 0 28px; border-top: 1px solid var(--line); }
+  .foot .meta { display: flex; align-items: center; gap: 8px; }
+  .foot .spacer { flex: 1; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>SOS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <section class="window active set" style="left:96px; top:56px; width:1248px; height:788px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="sliders"></svg><b>Настройки</b>Джексон</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content">
+      <aside class="side">
+        <div class="caps">Настройки</div>
+        <div class="it"><svg data-i="aperture"></svg>Оформление</div>
+        <div class="it on"><svg data-i="wave"></svg>Джексон</div>
+        <div class="it"><svg data-i="box"></svg>Модели</div>
+        <div class="it"><svg data-i="mic"></svg>Голос</div>
+        <div class="it"><svg data-i="shield"></svg>Приватность</div>
+        <div class="it"><svg data-i="keyboard"></svg>Клавиатура</div>
+        <div class="it"><svg data-i="monitor"></svg>Экран и звук</div>
+        <div class="it"><svg data-i="snapshot"></svg>Снимки</div>
+        <div class="it"><svg data-i="cpu"></svg>Система</div>
+        <div class="ver meta">SOS 26.10 · <b>sos settings</b></div>
+      </aside>
+
+      <div class="main">
+        <div class="mh">
+          <div>
+            <h1>Джексон</h1>
+            <p>Как он выглядит и как разговаривает. Всё меняется сразу — в панели, уведомлениях и на экране входа.</p>
+          </div>
+          <div class="cmd meta"><code>j avatar skin mint</code><br>или просто «Джексон, стань котом»</div>
+        </div>
+
+        <div class="cols">
+          <div>
+            <div class="stage">
+              <div class="caps">Предпросмотр</div>
+              <div class="segm bgsw" id="bgsw"><span data-t="graphite">Графит</span><span data-t="paper">Бумага</span></div>
+              <canvas class="px hero" data-jackson="imp" data-state="talk1" data-px="192"></canvas>
+              <div class="bubble">Ну как, мне идёт?)<small>худи в цвет акцента</small></div>
+              <svg class="scope glow sc" data-kind="answer" data-freq="2.4" data-seed="1.1" width="132" height="24"></svg>
+              <div class="fr meta">говорит · кадр 1 из 2 · 140 мс</div>
+              <span class="play"><svg data-i="pause"></svg></span>
+            </div>
+            <div class="states" id="states"></div>
+            <div class="ctx">
+              <div class="caps">Так он выглядит в панели и в уведомлениях</div>
+              <div class="hd">
+                <span class="ava"><canvas data-jackson="imp" data-state="idle"></canvas></span>
+                <span class="nm">Джексон</span>
+                <span class="chip"><span class="dot ok"></span>локально · qwen3.5-14b</span>
+                <span class="spacer"></span>
+                <span class="keys"><kbd>Super</kbd><kbd>J</kbd></span>
+              </div>
+              <div class="tt">
+                <span class="ava"><canvas data-jackson="imp" data-state="happy"></canvas></span>
+                <div><div class="h"><b>Джексон</b>сейчас</div><div class="b">Обучение завершено — loss 0.298. <span>Позвать на оценку?</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="opt first"><label>Персонаж</label>
+              <div class="v chars">
+                <span class="on"><canvas data-jackson="imp" data-state="happy"></canvas>Чёрт<small>в худи</small></span>
+                <span><canvas data-jackson="cat" data-state="idle"></canvas>Кот<small>из нулевых</small></span>
+              </div>
+            </div>
+            <div class="opt"><label>Кожа</label><div class="v skins" id="skins"></div></div>
+            <div class="opt"><label>Одежда</label><div class="v outfit" id="outfit"></div></div>
+            <div class="opt"><label>Стиль</label>
+              <div class="v"><div class="segm w"><span class="on">Худи</span><span>Куртка</span><span>Футболка</span></div></div>
+            </div>
+            <div class="opt"><label>Очки</label>
+              <div class="v"><div class="segm w"><span class="on">Без очков</span><span>Тёмные</span><span>Круглые</span></div></div>
+            </div>
+            <div class="opt"><label>Детали</label>
+              <div class="v"><span class="tg"><span class="switch on"></span>Капюшон</span><span class="tg"><span class="switch on"></span>Наушники</span></div>
+            </div>
+
+            <div class="sub"><span class="caps">Характер</span><span class="meta">голос и память — в разделах «Голос» и «Приватность»</span></div>
+            <div class="opt first"><label>Имя</label>
+              <div class="v"><div class="field">Джексон</div><span class="meta">так он подписывается</span></div>
+            </div>
+            <div class="opt"><label>Юмор</label>
+              <div class="v hum"><span>по делу</span><span class="slider"><i style="width:62%"></i><b style="left:62%"></b></span><span>шутит почаще</span></div>
+            </div>
+            <div class="opt"><label>Тон</label>
+              <div class="v tone">
+                <div class="on"><span class="radio on"></span><b>Свой парень</b><span>на «ты», сленг нулевых</span></div>
+                <div><span class="radio"></span><b>Коротко</b><span>без шуток и лишних слов</span></div>
+                <div><span class="radio"></span><b>Наставник</b><span>объясняет с примерами</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="foot">
+          <span class="meta"><svg class="i" data-i="undo" style="width:13px;height:13px"></svg>вернуть как было — <b>Super+Z</b> или <b>j avatar reset</b></span>
+          <span class="spacer"></span>
+          <button class="btn ghost">Сбросить</button>
+          <button class="btn primary">Готово</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+  const theme = document.documentElement.dataset.theme;
+  const mode = theme === 'paper' ? 'light' : 'dark';
+  const imp = window.JACKSON.imp;
+  const acc = document.documentElement.dataset.accent;
+  document.querySelector(`#bgsw [data-t="${theme === 'paper' ? 'paper' : 'graphite'}"]`).classList.add('on');
+
+  const STATES = [['idle', 'покой'], ['listening', 'слушает'], ['thinking', 'думает'], ['talk1', 'говорит'], ['happy', 'рад'], ['error', 'ошибка']];
+  document.getElementById('states').innerHTML = STATES.map(([s, ru]) =>
+    `<div class="st ${s === 'talk1' ? 'on' : ''}"><span class="b"><canvas class="px" data-jackson="imp" data-state="${s}"></canvas></span><em>${ru}</em></div>`).join('');
+
+  document.getElementById('skins').innerHTML = Object.entries(imp.skins).map(([id, s]) =>
+    `<span class="s ${id === imp.defaults.skin ? 'on' : ''}" style="--c:${s.colors.skin}"><i></i><em>${s.name.ru}</em></span>`).join('');
+
+  // outfit: «как акцент» (selected) · or pin one of the accents (Signal = Amber by night, Ink by day, so it's the «как акцент» chip) (the swatch shows the garment colour, not the accent) · or «+» any colour
+  const cur = imp.accents[acc] || imp.accents.signal;
+  document.getElementById('outfit').innerHTML =
+    `<span class="auto"><i style="--c:${cur[mode].outfit}"></i>как акцент</span><span class="sep"></span>` +
+    Object.entries(imp.accents).filter(([id]) => id !== 'signal').map(([id, a]) => `<span class="o" title="${a.name.ru}" style="--c:${a[mode].outfit}"></span>`).join('') +
+    '<span class="o plus">+</span>';
+
+  SOS.init({ bar: { jackson: 'idle', title: ['Настройки', 'Джексон'], job: null } });
+</script>
+</body>
+</html>

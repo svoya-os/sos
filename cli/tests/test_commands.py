@@ -46,10 +46,10 @@ class NormalizeTest(unittest.TestCase):
         self.assertTrue(any("update" in s for s in commands.suggest("updaet")))
 
     def test_unknown_command_exit_code(self):
-        i18n.set_lang("en")
+        from unittest import mock
         err = io.StringIO()
-        with contextlib.redirect_stderr(err):
-            self.assertEqual(sos_main(["modles"]), 2)
+        with contextlib.redirect_stderr(err), mock.patch.dict("os.environ", {"SVOYA_LANG": "en"}):
+            self.assertEqual(sos_main(["modles"]), 2)       # main() picks the language from the environment
         self.assertIn("Did you mean", err.getvalue())
 
     def test_completion(self):
@@ -113,6 +113,19 @@ class MenuTest(SandboxTest):
         menu.action("undo", fake_run, ask=lambda _p: "41")
         self.assertIsNone(menu.action("exit", fake_run))
         self.assertEqual(ran, [["doctor", "--fix"], ["doctor", "--gpu"], ["update"], ["undo", "--list"], ["undo", "41"]])
+
+    def test_theme_menu_offers_accents(self):
+        from unittest import mock
+        ran = []
+        fake_run = lambda argv: ran.append(argv) or 0  # noqa: E731
+        with mock.patch.object(menu, "select", side_effect=["__accent", "lilac", "__accent", "__custom", "paper"]):
+            menu.action("theme", fake_run)
+            menu.action("theme", fake_run, ask=lambda _p: "#7f5af0")
+            menu.action("theme", fake_run)
+        self.assertEqual(ran, [["theme", "accent", "lilac"], ["theme", "accent", "#7f5af0"], ["theme", "apply", "paper"]])
+        ids = [i[0] for i in menu._accent_items()]
+        self.assertEqual(ids[0], "signal")
+        self.assertEqual(ids[-1], "__custom")
 
     def test_menu_entries_bilingual(self):
         keys = [m[0] for m in menu.MAIN]

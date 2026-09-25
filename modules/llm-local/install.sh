@@ -31,6 +31,8 @@ if [[ "${SVOYA_OPT_OLLAMA:-}" == 1 ]]; then
 [Unit]
 Description=Ollama (SOS: localhost only, models in $AI/ollama)
 After=network-online.target
+# The AI switch (`sos ai off --system`)
+ConditionPathExists=!/etc/svoya/ai.off
 
 [Service]
 User=ollama

@@ -8,16 +8,15 @@
 <link rel="stylesheet" href="desktop.css">
 <link rel="stylesheet" href="components.css">
 <script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 <style>
   .grid { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
   .cell { position: relative; overflow: hidden; background: var(--wall); color: var(--text); }
   .cell + .cell { box-shadow: inset 1px 0 0 var(--line); }
   .lbl { position: absolute; left: 40px; top: 24px; z-index: 3; display: flex; gap: 10px; align-items: center; }
   .lbl b { font: 500 13px/1 "Plex Sans"; letter-spacing: 0; text-transform: none; color: var(--text); }
-  img.px { display: block; image-rendering: pixelated; }
 
-  .ava { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex: none; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); }
-  .ava img { width: 32px; height: 32px; }
 
   .jp { left: 40px; top: 60px; width: 560px; }
   .jh { display: flex; align-items: center; gap: 12px; padding: 14px 16px 0; }
@@ -44,10 +43,10 @@
 </div>
 <script>
   const CELLS = [
-    { theme: 'graphite', kind: 'imp', name: 'А · «Чёрт»', panel: 'talk1', toast: 'happy' },
-    { theme: 'graphite', kind: 'cat', name: 'Б · «Кот»', panel: 'talk1', toast: 'happy' },
-    { theme: 'paper', kind: 'imp', name: 'А · «Чёрт»', panel: 'listening', toast: 'happy' },
-    { theme: 'paper', kind: 'cat', name: 'Б · «Кот»', panel: 'listening', toast: 'happy' },
+    { theme: 'graphite', kind: 'imp', name: '«Чёрт»', panel: 'talk1', toast: 'happy' },
+    { theme: 'graphite', kind: 'cat', name: '«Кот»', panel: 'talk1', toast: 'happy' },
+    { theme: 'paper', kind: 'imp', name: '«Чёрт»', panel: 'listening', toast: 'happy' },
+    { theme: 'paper', kind: 'cat', name: '«Кот»', panel: 'listening', toast: 'happy' },
   ];
   const THEME_RU = { graphite: 'Графит', paper: 'Бумага' };
   document.getElementById('grid').innerHTML = CELLS.map((c) => {
@@ -56,9 +55,9 @@
     <div class="cell" data-theme="${c.theme}">
       <div class="wallpaper"><div class="grain"></div></div>
       <div class="lbl caps"><b>${c.name}</b>${THEME_RU[c.theme]}</div>
-      <section class="panel jp">
+      <section class="panel jp live">
         <div class="jh">
-          <span class="ava"><img class="px" src="../mascot/out/${c.kind}-${c.panel}.png" alt=""></span>
+          <span class="ava"><canvas data-jackson="${c.kind}" data-state="${c.panel}"></canvas></span>
           <div class="nm"><b>Джексон</b><span><i class="dot ${talking ? 'ok' : ''}"></i>${talking ? 'в сети · локально' : 'слушаю тебя'}</span></div>
           <span class="spacer"></span>
           <svg class="scope" data-kind="${talking ? 'answer' : 'voice'}" ${talking ? '' : 'data-period="4"'} width="72" height="18"></svg>
@@ -71,7 +70,7 @@
              <div class="ja"><p><span class="dim">Слушаю · русский · звук не&nbsp;покидает компьютер</span></p></div>`}
       </section>
       <div class="toast tt">
-        <span class="ava"><img class="px" src="../mascot/out/${c.kind}-${c.toast}.png" alt=""></span>
+        <span class="ava"><canvas data-jackson="${c.kind}" data-state="${c.toast}"></canvas></span>
         <div>
           <div class="h"><b>Джексон</b>сейчас<span class="spacer"></span><svg class="x" data-i="x"></svg></div>
           <div class="b">Обучение завершено — loss <b>0.298</b>.<br>Запустить оценку?</div>
@@ -80,8 +79,8 @@
       </div>
     </div>`;
   }).join('');
-  Promise.all([...document.images].map((im) => (im.complete ? 0 : new Promise((r) => { im.onload = im.onerror = r; }))))
-    .then(() => SOS.init({ bar: false }));
+  document.querySelectorAll('.cell').forEach((c) => window.SOS_applyAccent(c, 'signal'));
+  SOS.init({ bar: false });
 </script>
 </body>
 </html>

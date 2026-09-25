@@ -338,6 +338,7 @@ ShellRoot {
                 anchors.fill: parent
                 visible: !win.main
                 colophon: true
+                ambient: false
             }
 
             Loader {

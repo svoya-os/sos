@@ -3,9 +3,9 @@ import QtQuick.Effects
 import qs.core
 
 // Floating panel shell (Jackson, launcher, control center…): matte surface2,
-// 1px lineStrong border, radius 16, thin accent highlight on the top edge
-// (transparent -> accent -> transparent, 55%, inset 88px) and one soft, large
-// shadow. Opens with opacity 0->1, scale 0.985->1, y -6->0 in 180 ms; closes
+// 1px lineStrong border, radius 16, a thin edge light on the top edge (inset 88px:
+// neutral `text` at 16 %; `live` panels — Jackson — get the accent at 55 %, DESIGN §11)
+// and one soft, large shadow. Opens with opacity 0->1, scale 0.985->1, y -6->0 in 180 ms; closes
 // in 120 ms (DESIGN.md §4). Children go into the panel body.
 Item {
     id: root
@@ -15,6 +15,7 @@ Item {
     property color fill: Theme.surface2
     property color edge: Theme.lineStrong
     property bool highlight: true
+    property bool live: false           // Jackson's panel: the edge light is the live signal
     property bool softShadow: false
     default property alias content: body.data
 
@@ -93,28 +94,32 @@ Item {
         anchors.fill: parent
     }
 
-    // thin signal highlight on the top edge
+    // thin edge light on the top edge
     Rectangle {
+        id: edgeLight
+
+        readonly property color tint: root.live ? Theme.accent : Theme.text
+
         visible: root.highlight
         x: 88
         y: 0
         width: Math.max(0, parent.width - 176)
         height: 1
-        opacity: 0.55
+        opacity: root.live ? 0.55 : 0.16
         gradient: Gradient {
             orientation: Gradient.Horizontal
 
             GradientStop {
                 position: 0
-                color: Theme.alpha(Theme.accent, 0)
+                color: Theme.alpha(edgeLight.tint, 0)
             }
             GradientStop {
                 position: 0.5
-                color: Theme.accent
+                color: edgeLight.tint
             }
             GradientStop {
                 position: 1
-                color: Theme.alpha(Theme.accent, 0)
+                color: Theme.alpha(edgeLight.tint, 0)
             }
         }
     }

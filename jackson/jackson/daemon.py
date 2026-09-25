@@ -35,6 +35,9 @@ log = logging.getLogger("jackson.service")
 
 LINE_LIMIT = 4 * 1024 * 1024
 DECISIONS = ("once", "always-project", "deny")
+# What this build supports (ARCHITECTURE §8: `voice` appears here once push-to-talk ships in v0.2).
+CAPABILITIES = ("fastpath", "approvals", "undo", "refines", "mcp", "notes", "avatar")
+MAX_REMEMBERED_TURNS = 200
 
 
 def sd_notify(message: str) -> None:
@@ -85,14 +88,17 @@ class Client:
 
 
 class JacksonService:
-    def __init__(self, app: Jackson, socket_path: Path | None = None, health_interval: float = 15.0) -> None:
+    def __init__(self, app: Jackson, socket_path: Path | None = None, health_interval: float = 15.0,
+                 look_interval: float = 2.0) -> None:
         self.app = app
         self.socket_path = Path(socket_path) if socket_path else app.paths.socket
         self.health_interval = health_interval
+        self.look_interval = look_interval
         self.clients: dict[str, Client] = {}
         self.server: asyncio.AbstractServer | None = None
         self._stop = asyncio.Event()
         self._background: list[asyncio.Task[Any]] = []
+        self._sessions_by_turn: dict[str, Session] = {}   # for `ask.refines`
         self.started = time.monotonic()
         self.stopping = False
 
@@ -110,8 +116,10 @@ class JacksonService:
         self.server = await asyncio.start_unix_server(self._handle, path=str(path), limit=LINE_LIMIT)
         os.chmod(path, 0o600)
         self.app.audit.append("service", event="start", version=__version__, socket=str(path))
+        self.app.engine.publish_ai_state(force=True)
         loop = asyncio.get_running_loop()
         self._background.append(loop.create_task(self._health_loop()))
+        self._background.append(loop.create_task(self._look_loop()))
         self._background.append(loop.create_task(self._start_background()))
         sd_notify("READY=1\nSTATUS=Jackson is listening")
         log.info("listening on %s", path)
@@ -139,14 +147,35 @@ class JacksonService:
                 if self.app.config_changed():
                     changed = await asyncio.to_thread(self.app.reload_config)
                     log.info("settings reloaded: %s", ", ".join(changed) or "no changes")
-                await asyncio.to_thread(self.app.refresh_health)
-                self.app.mcp.refresh_changed()
+                    if "persona" in changed or "humor" in changed:
+                        self.broadcast_look("persona")
+                if self.app.ai_state()["enabled"]:  # no probing of model servers while AI is off
+                    await asyncio.to_thread(self.app.refresh_health)
+                    self.app.mcp.refresh_changed()
             except Exception:  # pragma: no cover - defensive
                 log.debug("health refresh failed", exc_info=True)
             try:
                 await asyncio.wait_for(self._stop.wait(), timeout=self.health_interval)
             except asyncio.TimeoutError:
                 pass
+
+    async def _look_loop(self) -> None:
+        """avatar.json is shared with the shell's customizer: when it changes, every client gets a
+        fresh `state` with the new look (one stat() every couple of seconds, only while someone listens)."""
+        while not self._stop.is_set():
+            try:
+                await asyncio.wait_for(self._stop.wait(), timeout=self.look_interval)
+                return
+            except asyncio.TimeoutError:
+                pass
+            if self.clients and self.app.avatar_changed() and self.app.reload_avatar():
+                self.broadcast_look("avatar")
+
+    def broadcast_look(self, detail: str) -> None:
+        event = {"type": "state", "state": self.aggregate_state(), **self.app.state_extra(), "mood": "calm",
+                 "detail": detail}
+        for client in list(self.clients.values()):
+            client.send(dict(event))
 
     async def serve_forever(self, handle_signals: bool = True) -> None:
         loop = asyncio.get_running_loop()
@@ -174,10 +203,11 @@ class JacksonService:
             turn = client.turn
             if turn is not None and not turn.finished:
                 turn.finished = True  # our own error below is the terminal event
-                client.send({"type": "error", "id": turn.id, "message": t("err.shutdown", client.session.lang),
-                             "retryable": True})
-                client.send({"type": "state", "id": turn.id, "state": "idle",
-                             "persona": self.app.config.persona, "avatar": self.app.config.avatar, "mood": "calm"})
+                lang = client.session.lang
+                client.send({"type": "error", "id": turn.id, "retryable": True,
+                             "message": t("err.shutdown", lang, name=self.app.name(lang))})
+                client.send({"type": "state", "id": turn.id, "state": "idle", **self.app.state_extra(),
+                             "mood": "calm"})
             if client.task is not None:
                 client.task.cancel()
         tasks = [c.task for c in self.clients.values() if c.task is not None]
@@ -286,15 +316,14 @@ class JacksonService:
             self._cancel(str(msg.get("id") or ""), client)
         elif mtype == "status":
             client.send(await self._status(client, msg))
-            client.send({"type": "state", "state": self.aggregate_state(), "persona": self.app.config.persona,
-                         "avatar": self.app.config.avatar, "mood": "calm"})
+            client.send({"type": "state", "state": self.aggregate_state(), **self.app.state_extra(),
+                         "mood": "calm"})
         elif mtype == "undo":
             await self._undo(client, msg)
         elif mtype == "ping":
             client.send({"type": "pong", "id": msg.get("id")})
-        else:
-            client.send({"type": "error", "id": msg.get("id"), "retryable": False,
-                         "message": t("err.bad_message", lang, why=f"unknown type {mtype!r}")})
+        else:  # ARCHITECTURE §8: unknown message types are ignored (newer shells may send more)
+            log.debug("ignoring message type %r from %s", mtype, client.name)
 
     async def _welcome(self, client: Client) -> dict[str, Any]:
         app = self.app
@@ -303,7 +332,8 @@ class JacksonService:
         route = await asyncio.to_thread(app.route_preview, lang)
         return {"type": "welcome", "version": __version__, "protocol": PROTOCOL_VERSION, "models": models,
                 "route": route, "client": client.id, "lang": lang, "persona": app.persona(lang),
-                "avatar": app.config.avatar, "name": "Джексон" if lang == "ru" else "Jackson"}
+                "avatar": app.avatar.to_event(), "name": app.name(lang), "ai": app.ai_state(),
+                "capabilities": list(CAPABILITIES)}
 
     async def _status(self, client: Client, msg: dict[str, Any]) -> dict[str, Any]:
         info = self.app.engine.status()
@@ -313,7 +343,8 @@ class JacksonService:
                 "protocol": PROTOCOL_VERSION, "state": self.aggregate_state(), "clients": len(self.clients),
                 "turns": turns, "uptimeSec": round(time.monotonic() - self.started, 1),
                 "models": await asyncio.to_thread(self.app.router.model_table),
-                "persona": self.app.persona(client.session.lang), "avatar": self.app.config.avatar}
+                "persona": self.app.persona(client.session.lang), "avatar": self.app.avatar.to_event(),
+                "name": self.app.name(client.session.lang), "ai": self.app.ai_state()}
 
     def aggregate_state(self) -> str:
         order = ["speaking", "working", "thinking", "listening"]
@@ -346,8 +377,14 @@ class JacksonService:
             return
         context = msg.get("context") if isinstance(msg.get("context"), dict) else {}
         route = msg.get("route") if isinstance(msg.get("route"), str) else None
-        if msg.get("new"):
+        refines = msg.get("refines") if isinstance(msg.get("refines"), str) else None
+        if refines and refines in self._sessions_by_turn:
+            client.session = self._sessions_by_turn[refines]  # keep that turn's context (Tab = refine)
+        elif msg.get("new"):
             client.session.reset()
+        self._sessions_by_turn[turn_id] = client.session
+        while len(self._sessions_by_turn) > MAX_REMEMBERED_TURNS:
+            self._sessions_by_turn.pop(next(iter(self._sessions_by_turn)))
         turn = Turn(id=turn_id, session=client.session, text=text.strip(), emit=self._emitter(client),
                     context=dict(context), route=route)
         client.turn = turn
@@ -372,9 +409,7 @@ class JacksonService:
         action_id = msg.get("actionId") if isinstance(msg.get("actionId"), str) else None
         t0 = time.monotonic()
         emit = self._emitter(client)
-        persona, avatar = self.app.config.persona, self.app.config.avatar
-        await emit({"type": "state", "id": uid, "state": "working", "persona": persona, "avatar": avatar,
-                    "mood": "busy"})
+        await emit({"type": "state", "id": uid, "state": "working", **self.app.state_extra(), "mood": "busy"})
         call_id = new_id("call")
         await emit({"type": "tool", "id": uid, "callId": call_id, "name": "undo", "args": {"actionId": action_id},
                     "tier": 1, "state": "running", "summary": ""})
@@ -388,7 +423,7 @@ class JacksonService:
                         "undone": [outcome.action.id] if outcome.action else []})
         else:
             await emit({"type": "error", "id": uid, "message": outcome.message, "retryable": False})
-        await emit({"type": "state", "id": uid, "state": "idle", "persona": persona, "avatar": avatar,
+        await emit({"type": "state", "id": uid, "state": "idle", **self.app.state_extra(),
                     "mood": "calm" if outcome.ok else "sorry"})
 
 

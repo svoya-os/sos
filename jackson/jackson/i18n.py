@@ -213,15 +213,27 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Still answering the previous request. Wait for it or cancel it.",
     },
     "err.cancelled": {"ru": "Остановлено.", "en": "Stopped."},
-    "err.shutdown": {"ru": "Джексон перезапускается — повтори запрос.", "en": "Jackson is restarting — please retry."},
+    "err.shutdown": {"ru": "{name} перезапускается — повтори запрос.", "en": "{name} is restarting — please retry."},
     "err.bad_message": {"ru": "Не понял сообщение клиента: {why}", "en": "Malformed client message: {why}"},
     "err.provider": {"ru": "Модель не ответила: {why}", "en": "The model failed: {why}"},
-    "err.internal": {"ru": "Внутренняя ошибка Джексона: {why}", "en": "Jackson internal error: {why}"},
+    "err.internal": {"ru": "Внутренняя ошибка: {why}", "en": "Internal error: {why}"},
     "err.max_steps": {
         "ru": "Остановился: слишком много шагов с инструментами ({n}). Уточни задачу.",
         "en": "Stopped: too many tool steps ({n}). Please narrow the task.",
     },
     "err.no_undo": {"ru": "Нечего отменять.", "en": "Nothing to undo."},
+    "ai.off.user": {
+        "ru": "ИИ сейчас выключен — я отвечаю только на быстрые команды (звук, тема, таймер…). "
+              "Включить обратно: `sos ai on` или «ИИ и приватность» в центре управления.",
+        "en": "AI is switched off — I only answer quick commands (sound, theme, timers…). "
+              "Turn it back on: `sos ai on` or the control center → AI & privacy.",
+    },
+    "ai.off.system": {
+        "ru": "ИИ выключен для всего компьютера — я отвечаю только на быстрые команды. "
+              "Включить обратно: `sos ai on --system` (нужен пароль администратора).",
+        "en": "AI is switched off for this whole computer — I only answer quick commands. "
+              "Turn it back on: `sos ai on --system` (admin password).",
+    },
     # tools / approvals
     "tool.denied": {
         "ru": "Пользователь отклонил действие. Не повторяй его и не ищи обходных путей.",

@@ -5,26 +5,23 @@ import qs.core
 import qs.components
 
 // Step 3 · look (design/mockups/setup-look.html). Four theme cards with the
-// mockup's mini desktops (assets/setup/theme-*.png), the «Auto» day strip
-// (07:00–20:00, a marker for now) and three option rows. Picking a card runs
-// `sos theme apply <id>`: the whole screen, this wizard included, recolors.
+// mockup's mini desktops (assets/setup/theme-*.png), the accent (eight swatches
+// + «Свой…», hover previews, a click applies: `sos theme accent <id>`) with
+// «На экране входа» (on for the first user of the machine; the login screen
+// gets the look after the wizard, `sos theme apply --system`), then three option
+// rows. Picking a card runs `sos theme apply <id>`: the whole screen, this wizard
+// included, recolors in 260 ms.
 Item {
     id: root
 
     required property var wizard
 
     readonly property var themes: [
-        { id: "graphite", name: Strings.themeGraphite, sub: Strings.wzGraphiteSub, a: "0c0d0f", b: "ffb547" },
-        { id: "paper", name: Strings.themePaper, sub: Strings.wzPaperSub, a: "e9e6de", b: "2b3af7" },
+        { id: "graphite", name: Strings.themeGraphite, sub: Strings.wzGraphiteSub, a: "0c0d0f", b: "ebe8e1" },
+        { id: "paper", name: Strings.themePaper, sub: Strings.wzPaperSub, a: "e9e6de", b: "151515" },
         { id: "auto", name: Strings.themeAuto, sub: Strings.wzAutoSub, a: "", b: "" },
         { id: "phosphor", name: Strings.themePhosphor, sub: Strings.wzPhosphorSub, a: "050806", b: "5cf08f" }
     ]
-
-    SystemClock {
-        id: now
-
-        precision: SystemClock.Minutes
-    }
 
     Row {
         id: cards
@@ -42,7 +39,7 @@ Item {
                 width: 248
                 height: 241
                 selected: root.wizard.themeChoice === modelData.id
-                onPicked: root.wizard.applyTheme(modelData.id)
+                onPicked: root.wizard.applyTheme(card.modelData.id)
 
                 ClippingRectangle {
                     x: 8
@@ -157,115 +154,78 @@ Item {
         }
     }
 
-    // ---- how «Auto» works: a 24-hour strip ------------------------------------------------------------
+    // ---- accent + the login screen ----------------------------------------------------------------------
     Rectangle {
-        id: auto
+        id: accentCard
 
         y: cards.height + 20
         width: parent.width
-        height: 32 + Math.max(autoText.height, 44)
+        height: Math.max(accentText.height, picker.height, 56) + 36
         radius: 14
         color: Theme.isDark ? Theme.surface : Theme.surface2
         border.width: 1
         border.color: Theme.line
 
         Column {
-            id: autoText
+            id: accentText
 
             x: 18
-            anchors.verticalCenter: parent.verticalCenter
-            width: 372
-            spacing: 3
+            y: 18
+            width: 236
+            spacing: 4
 
             SText {
                 height: 18
-                text: Strings.wzAutoTitle
+                text: Strings.accentLabel
                 size: 13
                 font.weight: Font.Medium
             }
-            SText {
+            MText {
                 width: parent.width
-                text: Strings.wzAutoBody
-                size: 12.5
-                lineHeight: 19
+                text: Strings.wzAccentSub
+                size: 11
+                lineHeight: 16
                 lineHeightMode: Text.FixedHeight
                 wrapMode: Text.WordWrap
-                color: Theme.textDim
+                color: Theme.textFaint
             }
         }
 
-        Item {
-            id: day
+        AccentPicker {
+            id: picker
 
-            readonly property real dawn: 7 / 24
-            readonly property real dusk: 20 / 24
-            readonly property real nowPos: (now.date.getHours() * 60 + now.date.getMinutes()) / 1440
-            readonly property color night: Theme.isDark ? "#2a2d33" : "#3a3d44"
-            readonly property color light: Theme.isDark ? "#d9d5cb" : "#cdc8bc"
+            x: 18 + 236 + 16
+            y: 14
+            width: parent.width - x - loginSwitch.width - 36
+            labels: true
+            swatch: 30
+        }
 
-            x: 18 + 372 + 40
-            width: parent.width - x - 18
-            height: 44
-            anchors.verticalCenter: parent.verticalCenter
+        Row {
+            id: loginSwitch
 
-            Row {
-                y: 11
-                width: parent.width
-                height: 6
+            anchors.right: parent.right
+            anchors.rightMargin: 18
+            y: 22
+            spacing: 12
+
+            Toggle {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: Settings.themeOnLogin
+                Accessible.name: Strings.useOnLogin
+                onToggled: value => Settings.themeOnLogin = value
+            }
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
                 spacing: 2
 
-                Rectangle {
-                    width: day.width * day.dawn - 2
-                    height: 6
-                    radius: 3
-                    color: day.night
+                SText {
+                    text: Strings.wzOnLogin
+                    size: 13
+                    font.weight: Font.Medium
                 }
-                Rectangle {
-                    width: day.width * (day.dusk - day.dawn) - 2
-                    height: 6
-                    radius: 3
-                    color: day.light
-                }
-                Rectangle {
-                    width: day.width * (1 - day.dusk)
-                    height: 6
-                    radius: 3
-                    color: day.night
-                }
-            }
-
-            Rectangle {
-                x: day.width * day.nowPos - 1
-                y: 6
-                width: 2
-                height: 16
-                radius: 1
-                color: Theme.accent
-            }
-
-            MText {
-                x: Math.min(day.width - width, Math.max(0, day.width * day.nowPos - width / 2))
-                y: -14
-                text: Strings.wzNow + " " + Fmt.clock(now.date)
-                size: 11
-                font.weight: Font.Medium
-                color: Theme.accent
-            }
-
-            Repeater {
-                model: [
-                    { at: 0, text: "00:00", edge: -1 },
-                    { at: day.dawn, text: "07:00 · " + Strings.themePaper, edge: 0 },
-                    { at: day.dusk, text: "20:00 · " + Strings.themeGraphite, edge: 0 },
-                    { at: 1, text: "24:00", edge: 1 }
-                ]
-
                 MText {
-                    required property var modelData
-
-                    x: modelData.edge < 0 ? 0 : (modelData.edge > 0 ? day.width - width : day.width * modelData.at - width / 2)
-                    y: 28
-                    text: modelData.text
+                    text: Strings.wzOnLoginSub
                     size: 11
                     color: Theme.textFaint
                 }
@@ -275,7 +235,7 @@ Item {
 
     // ---- options ------------------------------------------------------------------------------------------
     Row {
-        y: auto.y + auto.height + 16
+        y: accentCard.y + accentCard.height + 16
         width: parent.width
         spacing: 16
 

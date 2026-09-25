@@ -1,40 +1,40 @@
 import QtQuick
 import qs.core
+import "Sprite.js" as Sprite
 
-// Jackson's face: a pixel-art mascot (ICQ/QIP/MSN-era avatar) when sprites are
-// installed, otherwise the oscilloscope trace.
+// Jackson's face (DESIGN §13): the pixel mascot from assets/jackson/<character>.json, drawn by
+// PixelSprite at an integer scale (32 · 64 · 128 · 192 px) on a surface3 rounded square.
+// The look comes from ~/.config/svoya/avatar.json (Avatar); the outfit follows the accent
+// unless pinned, the detail (horns, LEDs, drawstrings) is the accent itself.
 //
-// Sprites: shell/assets/jackson/<avatar>/<state>.png, one horizontal strip per
-// state with square frames (frame size = image height):
-//   idle (blinks), listening, thinking, talking, happy, error
-// <avatar> comes from the service (`avatar`: auto | imp | cat | none); "auto"
-// uses the first set that exists (imp, then cat). Pixel art is scaled with
-// nearest-neighbour filtering; `size` should be a multiple of the frame size.
+// State: Jackson's scope state and mood → idle (blinks every ~4–6 s) · listening · thinking
+// (thinking/working) · talking (speaking; two frames at 140 ms) · happy (the beat after an
+// answer) · error. `forceAnim` pins one (customizer preview); reduce motion shows frame 0 only.
+// Without sprite data the oscilloscope trace stands in. Right-click → «Настроить Джексона».
 Item {
     id: root
 
-    property real size: 22                 // sprite box (square)
-    property bool mini: false              // bar/toast size: mini scope fallback
-    property string mode: Jackson.mode     // override for previews
-    property bool live: true
-    property real scopeWidth: root.mini ? 22 : 92
-    property real scopeHeight: root.mini ? 10 : 22
+    property int size: 32                  // box, px; the sprite scale is floor(size / 32)
+    property bool backing: true            // surface3 rounded square behind the sprite
+    // scope state (override for previews). With `forceAnim` set, Jackson is never touched (the
+    // wizard shows the mascot without starting a second connection to jacksond).
+    property string mode: root.forceAnim.length > 0 ? "idle" : Jackson.mode
+    property bool live: true               // animate (blink, talk)
+    property string forceAnim: ""          // idle | listening | thinking | talking | happy | error
+    property var look: Avatar.look         // a pending look (customizer, wizard)
+    property bool menu: true               // right-click menu
+    property real scopeWidth: 92           // fallback trace size
+    property real scopeHeight: 22
 
-    readonly property var candidates: {
-        const a = Jackson.avatar;
-        if (a === "none")
-            return [];
-        if (a === "auto" || a.length === 0)
-            return ["imp", "cat"];
-        return [a];
-    }
-    property int candidate: 0
-    readonly property string avatarName: root.candidate < root.candidates.length ? root.candidates[root.candidate] : ""
-    readonly property bool hasSprite: root.avatarName.length > 0 && probe.status === Image.Ready
+    readonly property var spriteData: Avatar.dataFor(root.look ? root.look.character : "imp")
+    readonly property bool hasSprite: root.spriteData !== null
+    readonly property int pixelScale: Math.max(1, Math.floor(root.size / (root.spriteData && root.spriteData.size ? root.spriteData.size : 32)))
 
-    // mood -> sprite state
+    // the animation for the current state
     property real now: Date.now()
-    readonly property string spriteState: {
+    readonly property string anim: {
+        if (root.forceAnim.length > 0)
+            return root.forceAnim;
         const m = root.mode;
         const mood = Jackson.mood;
         if (Jackson.happyUntil > root.now)
@@ -49,9 +49,12 @@ Item {
             return "thinking";
         return "idle";
     }
-
-    function spriteUrl(name, state) {
-        return name.length > 0 ? Theme.asset("jackson/" + name + "/" + state + ".png") : "";
+    readonly property var animation: root.hasSprite ? Sprite.animation(root.spriteData, root.anim) : ({ frames: ["idle"], ms: [0], jitter: [] })
+    property int frame: 0
+    readonly property string spriteState: {
+        const f = root.animation.frames;
+        const name = f[Math.min(root.frame, f.length - 1)];
+        return Sprite.hasState(root.spriteData, name) ? name : "idle";
     }
 
     function warmUp() {
@@ -59,87 +62,65 @@ Item {
             scope.warmUp();
     }
 
-    // Probe only once shown: every notification card carries a hidden avatar, and each
-    // probe of a missing set logs "Cannot open …" (no sprites ship yet).
-    property bool probed: false
-
     implicitWidth: root.hasSprite ? root.size : root.scopeWidth
     implicitHeight: root.hasSprite ? root.size : root.scopeHeight
 
-    onCandidatesChanged: root.candidate = 0
-    onVisibleChanged: if (visible) root.probed = true
-    Component.onCompleted: if (visible) root.probed = true
-
-    // Existence probe for the chosen set (idle.png must exist).
-    Image {
-        id: probe
-
-        visible: false
-        asynchronous: true
-        source: root.probed ? root.spriteUrl(root.avatarName, "idle") : ""
-        onStatusChanged: {
-            if (status === Image.Error && root.candidate < root.candidates.length)
-                root.candidate += 1;
-        }
+    onAnimChanged: {
+        root.frame = 0;
+        frameTimer.schedule();
     }
 
-    // The strip is shown through a square viewport; frames are offsets.
-    Item {
-        id: viewport
+    Rectangle {
+        anchors.fill: parent
+        visible: root.hasSprite && root.backing
+        radius: root.size / 4
+        color: Theme.surface3
+    }
 
-        property int frame: 0
+    PixelSprite {
+        id: sprite
 
         anchors.centerIn: parent
-        width: root.size
-        height: root.size
-        clip: true
         visible: root.hasSprite
-
-        Image {
-            id: strip
-
-            readonly property real frameSize: strip.sourceSize.height > 0 ? strip.sourceSize.height : 1
-            readonly property int frames: Math.max(1, Math.round(strip.sourceSize.width / strip.frameSize))
-
-            x: -viewport.frame * root.size
-            width: root.size * strip.frames
-            height: root.size
-            source: root.hasSprite ? root.spriteUrl(root.avatarName, root.spriteState) : ""
-            smooth: false
-            mipmap: false
-            onSourceChanged: viewport.frame = 0
-        }
+        pixel: root.pixelScale
+        // asleep when the AI switch is off or jacksond is not running
+        opacity: root.forceAnim.length === 0 && (root.mode === "off" || root.mode === "offline") ? 0.55 : 1
+        grid: root.hasSprite ? Sprite.compose(root.spriteData, root.look, root.spriteState) : null
+        colors: root.hasSprite ? Sprite.colors(root.spriteData, root.look, root.spriteState, Avatar.mode, Avatar.spriteAccent) : ({})
     }
 
-    // Frame clock, 8 fps. Idle holds the open-eyes frame 2.5-5 s, then blinks.
+    // Frames of the current animation (blink: 3.6 s + up to 2.4 s, then 120 ms; talk: 140 ms).
     Timer {
         id: frameTimer
 
-        running: root.hasSprite && root.visible && root.live && !Theme.reduceMotion && strip.frames > 1
-        repeat: true
-        interval: 125
-        onTriggered: {
-            root.now = Date.now();
-            if (root.spriteState === "idle") {
-                if (viewport.frame === 0 && frameTimer.interval > 125) {
-                    frameTimer.interval = 125;
-                    viewport.frame = 1;
-                } else if (viewport.frame + 1 < strip.frames) {
-                    viewport.frame += 1;
-                } else {
-                    viewport.frame = 0;
-                    frameTimer.interval = 2500 + Math.floor(Math.random() * 2500);
-                }
-            } else {
-                frameTimer.interval = 125;
-                viewport.frame = (viewport.frame + 1) % strip.frames;
+        readonly property bool active: root.hasSprite && root.visible && root.live && !Theme.reduceMotion && root.animation.frames.length > 1
+
+        function schedule() {
+            if (!frameTimer.active) {
+                frameTimer.stop();
+                return;
             }
+            const i = Math.min(root.frame, root.animation.frames.length - 1);
+            const base = root.animation.ms[i] || 140;
+            const jitter = root.animation.jitter[i] || 0;
+            frameTimer.interval = Math.max(60, base + Math.floor(Math.random() * jitter));
+            frameTimer.restart();
+        }
+
+        onActiveChanged: {
+            if (!frameTimer.active)
+                root.frame = 0;
+            frameTimer.schedule();
+        }
+        onTriggered: {
+            root.frame = (root.frame + 1) % root.animation.frames.length;
+            frameTimer.schedule();
         }
     }
 
-    // Keeps `now` fresh for the happy beat even without sprite frames.
+    // keeps `now` fresh for the happy beat
     Timer {
-        running: Jackson.happyUntil > root.now
+        running: root.forceAnim.length === 0 && root.visible && Jackson.happyUntil > root.now
         interval: 200
         repeat: true
         onTriggered: root.now = Date.now()
@@ -153,14 +134,80 @@ Item {
         height: root.scopeHeight
         visible: !root.hasSprite
         mode: root.mode === "off" || root.mode === "offline" ? "idle" : root.mode
-        level: Jackson.listening ? micLevel : 0
         live: root.live
         opacity: root.mode === "offline" || root.mode === "off" ? 0.5 : 1
-        amp: root.mini ? 4 : 9.5
-        freq: root.mini ? 1.6 : 3.2
-        seed: root.mini ? 0.2 : 0.7
-        breathe: !root.mini
+    }
 
-        property real micLevel: 0
+    // ---- right-click: «Настроить Джексона» ------------------------------------------------------------
+    MouseArea {
+        anchors.fill: parent
+        enabled: root.menu
+        acceptedButtons: Qt.RightButton
+        onClicked: popup.visible = !popup.visible
+    }
+
+    Rectangle {
+        id: popup
+
+        visible: false
+        x: 0
+        y: root.height + 6
+        z: 100
+        width: menuRow.implicitWidth + 24
+        height: 32
+        radius: 8
+        color: Theme.surface2
+        border.width: 1
+        border.color: Theme.lineStrong
+
+        Row {
+            id: menuRow
+
+            x: 12
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 8
+
+            Icon {
+                anchors.verticalCenter: parent.verticalCenter
+                glyph: "settings"
+                size: 14
+                color: menuMouse.containsMouse ? Theme.text : Theme.textDim
+            }
+            SText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Strings.customizeJackson
+                size: 13
+            }
+        }
+
+        MouseArea {
+            id: menuMouse
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                popup.visible = false;
+                Actions.customizeJackson();
+            }
+            onContainsMouseChanged: {
+                if (menuMouse.containsMouse)
+                    popupHide.stop();
+                else
+                    popupHide.restart();
+            }
+        }
+
+        onVisibleChanged: {
+            if (popup.visible)
+                popupHide.restart();
+        }
+
+        Timer {
+            id: popupHide
+
+            interval: 3000
+            onTriggered: popup.visible = false
+        }
     }
 }

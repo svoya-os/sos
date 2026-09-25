@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import qs.core
 import qs.components
 
@@ -15,6 +14,11 @@ FocusScope {
 
     readonly property int step: root.wizard.step
     readonly property bool single: root.wizard.single
+    // step 6 (Jackson) has two pages: meet him, then what he thinks with
+    readonly property bool jackson: root.step === root.wizard.jacksonStep
+    readonly property int page: root.jackson ? root.wizard.jacksonPage : 0
+
+    onPageChanged: enter.restart()
 
     Keys.onReturnPressed: root.wizard.next()
     Keys.onEnterPressed: root.wizard.next()
@@ -77,20 +81,13 @@ FocusScope {
                         width: 26
                         height: 3
 
-                        RectangularShadow {
-                            anchors.fill: seg
-                            visible: index === root.step && Theme.isDark
-                            radius: 2
-                            blur: 8
-                            color: Theme.alpha(Theme.accent, 0.4)
-                        }
-
                         Rectangle {
                             id: seg
 
                             anchors.fill: parent
                             radius: 2
-                            color: index === root.step ? Theme.accent : (index < root.step ? Theme.mix(Theme.lineStrong, Theme.accent, 0.55) : Theme.lineStrong)
+                            // neutral progress (DESIGN §11): now = text, done = textDim, ahead = lineStrong
+                            color: index === root.step ? Theme.selected : (index < root.step ? Theme.textFaint : Theme.lineStrong)
                         }
 
                         MouseArea {
@@ -184,17 +181,17 @@ FocusScope {
         MText {
             y: 0
             height: 11
-            text: Strings.wzEyebrows[root.step]
+            text: root.jackson ? Strings.wzJacksonEyebrow(root.page) : Strings.wzEyebrows[root.step]
             size: 11
             font.weight: Font.Medium
             caps: true
-            color: Theme.accent
+            color: Theme.textFaint
         }
 
         SText {
             y: 25
             height: 34
-            text: Strings.wzTitles[root.step]
+            text: root.jackson ? Strings.wzJacksonTitle(root.page, Avatar.name) : Strings.wzTitles[root.step]
             size: 28
             font.weight: Font.Medium
         }
@@ -204,7 +201,7 @@ FocusScope {
 
             y: 69
             width: 660
-            text: Strings.wzSubs[root.step]
+            text: root.jackson ? Strings.wzJacksonSubs[root.page] : Strings.wzSubs[root.step]
         }
 
         Loader {
@@ -214,7 +211,7 @@ FocusScope {
             width: body.width
             height: body.height - y
             focus: true
-            sourceComponent: [a11y, language, look, layout, profile, ai, privacy][root.step]
+            sourceComponent: [a11y, language, look, layout, profile, root.page === 0 ? meet : ai, privacy][root.step]
         }
 
         // step change: 180 ms fade and 6px rise (DESIGN §4), none with reduce motion
@@ -284,6 +281,13 @@ FocusScope {
         }
     }
     Component {
+        id: meet
+
+        StepJackson {
+            wizard: root.wizard
+        }
+    }
+    Component {
         id: ai
 
         StepAi {
@@ -339,6 +343,11 @@ FocusScope {
         const w = root.wizard;
         if (w.pullState === "running" && w.pullTotal > 0)
             return Strings.wzDownloading(Fmt.bytes(w.pullBytes), Fmt.bytes(w.pullTotal)) + " · " + Math.round(w.pullFraction * 100) + "%";
-        return Strings.wzFootNote.replace("<b>", "<font color=\"" + Theme.textDim + "\">").replace("</b>", "</font>");
+        const bold = t => t.replace("<b>", "<font color=\"" + Theme.textDim + "\">").replace("</b>", "</font>");
+        if (root.jackson && root.page === 0) {
+            const hw = w.suggest && w.suggest.hardware ? w.suggest.hardware : null;
+            return bold(Strings.wzJacksonNext(hw && hw.backend !== "cpu" && hw.gpu ? String(hw.gpu) : ""));
+        }
+        return bold(Strings.wzFootNote);
     }
 }

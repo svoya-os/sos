@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — Jackson customization sheet</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1440px; background: var(--wall); color: var(--text); font-family: "Plex Sans"; -webkit-font-smoothing: antialiased; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; padding: 52px 64px 32px; }
+  .eyebrow { font: 500 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+  h1 { margin-top: 14px; font: 500 28px/34px "Plex Sans"; letter-spacing: -0.005em; }
+  header p { margin-top: 10px; max-width: 820px; font: 400 14px/22px "Plex Sans"; color: var(--text-dim); }
+  header .r { text-align: right; font: 400 11px/18px "Plex Mono"; color: var(--text-faint); }
+  header .r code { color: var(--text-dim); }
+  .char { margin: 0 64px 28px; padding: 24px 28px 26px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+  .char h2 { font: 500 17px/22px "Plex Sans"; }
+  .char h2 span { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); margin-left: 10px; letter-spacing: 0.02em; }
+  .blocks { display: grid; grid-template-columns: auto 1fr; gap: 40px; margin-top: 18px; }
+  .caps { margin-bottom: 12px; }
+  table { border-collapse: separate; border-spacing: 8px 8px; margin: -8px; }
+  th { font: 400 11px/14px "Plex Mono"; color: var(--text-faint); text-align: center; font-weight: 400; padding-bottom: 2px; }
+  th:not(.row) { width: 88px; max-width: 88px; vertical-align: bottom; }
+  th.row { text-align: right; padding-right: 6px; white-space: nowrap; vertical-align: middle; }
+  th.row b { display: block; font: 500 12px/16px "Plex Sans"; color: var(--text-dim); }
+  td .cell { width: 88px; height: 88px; border-radius: 10px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line); }
+  td .cell canvas { width: 64px; height: 64px; }
+  .acc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 10px; }
+  .acc .it { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .acc .cell { width: 100%; height: 108px; border-radius: 10px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line); }
+  .acc .cell canvas { width: 96px; height: 96px; }
+  .acc span { font: 400 11px/14px "Plex Mono"; color: var(--text-dim); text-align: center; }
+  .g { background: #191b1f; } .p { background: #fdfcfa; }
+  .sw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); }
+  footer { display: flex; justify-content: space-between; padding: 4px 64px 44px; font: 400 11px/18px "Plex Mono"; color: var(--text-faint); }
+  footer b { font-weight: 400; color: var(--text-dim); }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="eyebrow">Джексон · внешность</div>
+      <h1>Любая комбинация — из одного файла</h1>
+      <p>Два персонажа, по пять расцветок, одежда цвета акцента, стиль и аксессуары. Каждый вариант собирается из слоёв 32 × 32 и перекрашивается мгновенно — отдельных картинок нет.</p>
+    </div>
+    <div class="r">shell/assets/jackson/imp.json · cat.json<br><code>j avatar skin mint · j avatar glasses round</code></div>
+  </header>
+  <section class="char" data-kind="imp"></section>
+  <section class="char" data-kind="cat"></section>
+  <footer><span>одежда = акцент: светлота OKLCH 0,32 / 0,25 / 0,40 ночью, 0,45 / 0,36 / 0,56 днём · детали (рога, огоньки, шнурки) = сам акцент</span><span><b>design/mascot/FORMAT.md</b></span></footer>
+<script>
+  const ACC = [['signal', 'Сигнал'], ['lilac', 'Сирень'], ['ice', 'Лёд'], ['rose', 'Роза'], ['mono', 'Моно']];
+  const LOOKS = {
+    imp: [
+      [{}, 'худи, капюшон'], [{ hood: false }, 'капюшон снят'], [{ style: 'jacket' }, 'куртка'], [{ style: 'tee', headphones: false }, 'футболка, без наушников'],
+      [{ glasses: 'shades' }, 'тёмные очки'], [{ glasses: 'round', style: 'tee' }, 'круглые очки'], [{ hood: false, glasses: 'shades', style: 'jacket' }, 'куртка + очки'], [{ skin: 'mint', glasses: 'round', hood: false }, 'мята, круглые'],
+    ],
+    cat: [
+      [{}, 'куртка, тёмные очки'], [{ glasses: 'none' }, 'без очков'], [{ glasses: 'round' }, 'круглые очки'], [{ style: 'hoodie', headphones: false }, 'худи, без наушников'],
+      [{ style: 'tee', glasses: 'none' }, 'футболка'], [{ skin: 'ginger', glasses: 'none', style: 'hoodie' }, 'рыжий в худи'], [{ skin: 'siamese', glasses: 'round' }, 'сиамский'], [{ skin: 'black', style: 'tee' }, 'чёрный, футболка'],
+    ],
+  };
+  const MODE = { g: 'dark', p: 'light' };
+  for (const kind of ['imp', 'cat']) {
+    const d = window.JACKSON[kind], sec = document.querySelector(`[data-kind="${kind}"]`);
+    const skins = Object.entries(d.skins);
+    const head = `<h2>${kind === 'imp' ? '«Чёрт»' : '«Кот»'}<span>${kind === 'imp' ? 'кожа' : 'шерсть'} × акцент · по умолчанию ${kind === 'imp' ? 'худи, наушники, без очков' : 'куртка, наушники, тёмные очки'}</span></h2>`;
+    let t = '<table><tr><th></th>' + skins.map(([id, s]) => `<th>${s.name.ru}</th>`).join('') + '</tr>';
+    ACC.forEach(([aid, ru], i) => {
+      const bg = i === 4 ? 'p' : 'g';
+      const hex = d.accents[aid][MODE[bg]].detail;
+      t += `<tr><th class="row"><b><i class="sw" style="background:${hex}"></i>${ru}</b>${bg === 'g' ? 'Графит' : 'Бумага'}</th>` +
+        skins.map(([id]) => `<td><div class="cell ${bg}" data-theme="${bg === 'g' ? 'graphite' : 'paper'}" data-accent="${aid}"><canvas class="px" data-jackson="${kind}" data-state="${['idle', 'talk1', 'happy', 'listening', 'idle'][i]}" data-px="64" data-opts='${JSON.stringify({ skin: id })}'></canvas></div></td>`).join('') + '</tr>';
+    });
+    t += '</table>';
+    const acc = '<div class="acc">' + LOOKS[kind].map(([o, label], i) => {
+      const bg = i % 4 === 3 ? 'p' : 'g';
+      return `<div class="it"><div class="cell ${bg}" data-theme="${bg === 'g' ? 'graphite' : 'paper'}" data-accent="${['signal', 'ice', 'lilac', 'rose', 'phosphor', 'amber', 'ink', 'signal'][i]}"><canvas class="px" data-jackson="${kind}" data-px="96" data-opts='${JSON.stringify(o)}'></canvas></div><span>${label}</span></div>`;
+    }).join('') + '</div>';
+    sec.innerHTML = head + `<div class="blocks"><div><div class="caps">Расцветки и акценты</div>${t}</div><div><div class="caps">Стиль и аксессуары</div>${acc}</div></div>`;
+  }
+  SOS.init({ bar: false });
+</script>
+</body>
+</html>

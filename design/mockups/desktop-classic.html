@@ -37,7 +37,7 @@
   .task svg.i { width: 15px; height: 15px; stroke-width: 1.7; flex: none; }
   .task span { overflow: hidden; text-overflow: ellipsis; }
   .task.on { background: var(--surface-3); color: var(--text); }
-  .task.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 1px; background: var(--accent); }
+  .task.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 1px; background: var(--text); }
   .task.run::after { content: ""; position: absolute; left: 50%; bottom: 1px; width: 4px; height: 2px; margin-left: -2px; border-radius: 1px; background: var(--text-faint); }
   .tray { margin-left: auto; display: flex; align-items: center; gap: 16px; height: 100%; flex: none; }
   .tray .ico { display: flex; gap: 12px; }
@@ -55,7 +55,7 @@
   .side .it { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border-radius: 7px; font: 400 13px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap; }
   .side .it svg.i { width: 15px; height: 15px; stroke-width: 1.6; color: var(--text-faint); }
   .side .it.on { background: var(--surface-3); color: var(--text); }
-  .side .it.on svg.i { color: var(--accent); }
+  .side .it.on svg.i { color: var(--text); }
   .side .it small { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
   .main { display: flex; flex-direction: column; min-width: 0; }
   .ftb { height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 10px; border-bottom: 1px solid var(--line); }
@@ -76,12 +76,12 @@
   .fl .r { height: 32px; border-radius: 7px; font: 400 13px/1 "Plex Sans"; color: var(--text); }
   .fl .r .n { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
   .fl .r .n svg.i { width: 16px; height: 16px; stroke-width: 1.5; color: var(--text-dim); }
-  .fl .r .n svg.i.dir { color: var(--accent); }
+  .fl .r .n svg.i.dir { color: var(--text-dim); }
   .fl .r .n small { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); margin-left: 4px; }
   .fl .r .s, .fl .r .d { font: 400 11.5px/1 "Plex Mono"; color: var(--text-dim); }
   .fl .r .s { text-align: right; }
-  .fl .r.on { background: var(--accent-soft); }
-  .fl .r.on .n svg.i { color: var(--accent); }
+  .fl .r.on { background: var(--surface-3); }
+  .fl .r.on .n svg.i { color: var(--text); }
   .fst { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-top: 1px solid var(--line); font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
   .fst b { font-weight: 400; color: var(--text-dim); }
   .fst span.snap { display: flex; align-items: center; gap: 7px; }
@@ -103,7 +103,7 @@
       <div class="t"><span class="glyph"></span><b>Терминал</b>~ · sos doctor</div>
       <i data-ctl></i>
     </div>
-<pre class="term-body"><span class="a">›</span> sos doctor
+<pre class="term-body"><span class="p">›</span> sos doctor
 <span class="m">  драйвер     </span>595.58 <span class="d">·</span> подписан <span class="d">·</span> Secure Boot  <span class="ok2">ок</span>
 <span class="m">  CUDA        </span>13.0 <span class="d">·</span> в проектах: 12.8, 13.0    <span class="ok2">ок</span>
 <span class="m">  PyTorch     </span>2.13 видит RTX 4090 <span class="d">·</span> 24 ГБ      <span class="ok2">ок</span>
@@ -112,7 +112,7 @@
 <span class="m">  /srv/ai     </span>412 ГБ <span class="d">·</span> общие файлы −38 ГБ      <span class="ok2">ок</span>
 
 <span class="d">всё в порядке за 1,2 с · чинить нечего:</span> sos fix
-<span class="a">›</span> <span class="cur"></span></pre>
+<span class="p">›</span> <span class="cur"></span></pre>
   </section>
 
   <!-- files (active) -->
@@ -169,7 +169,7 @@
       <div class="seg"><span class="dot"></span><span>обучение</span><span class="meter acc"><i style="width:62%"></i></span><span>62%</span></div>
       <div class="ico" id="trayico"></div>
       <div class="seg">RU</div>
-      <div class="jack-mini"><svg class="scope" data-kind="answer" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg></div>
+      <div class="jack-mini idle"><svg class="scope" data-tone="n" data-kind="idle" width="22" height="10"></svg></div>
       <div class="clock2"><b>18:42</b><span>Чт, 24 сен</span></div>
     </div>
   </footer>

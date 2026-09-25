@@ -8,7 +8,7 @@ Item {
     id: root
 
     property real value: 0
-    property color fill: Theme.accent
+    property color fill: Theme.textDim  // download progress passes the accent (a running job)
     property bool cap: true
 
     implicitHeight: 6

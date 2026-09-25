@@ -1,0 +1,8 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Root half of `sos theme accent|apply --system`: writes the login screen's /etc/svoya/theme.json.
+# Run through pkexec with the polkit action org.svoya.theme.system-write (no password for the active
+# local session: it only changes the login screen's colors). Arguments are validated by
+# `sos theme system-write`, which accepts theme and accent ids or a #rrggbb color and nothing else.
+set -eu
+exec /usr/bin/sos theme system-write "$@"

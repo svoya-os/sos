@@ -9,14 +9,17 @@ sos                          interactive menu (arrows + Enter, digits, q) — nu
 sos install obsidian         a module, an app (Flathub) or a model — one verb for everything
 sos remove obsidian          …and back
 sos fix · sos gpu            GPU Doctor: repair safely (snapshot first) · check the graphics card
-sos update · sos undo        update with a snapshot pair · roll a change back
+sos update · sos undo        update with a snapshot pair · undo the latest change (look or system)
 sos theme night|day|auto     Graphite · Paper · by sunrise/sunset (also: phosphor, graphite, paper)
+sos accent lilac             accent color: signal amber ink phosphor ice lilac rose mono · '#hex' · сирень, лёд…
+sos ai off · sos ai on       the AI switch: Jackson and local model servers stop and stay off
 sos models suggest           the best local model for this machine (+2 alternatives)
 sos status · sos new · sos run
 ```
 
 Russian verbs work everywhere: `sos установить`, `удалить`, `починить`, `видеокарта`, `обновить`,
-`откатить`/`отменить`, `тема ночь|день|авто`, `модели [подобрать]`, `модули`, `статус`. Typos get
+`откатить`/`отменить`, `тема ночь|день|авто`, `акцент сирень` (also `тема сирень`, `акцент фиолетовым`),
+`ии выкл|вкл`, `модели [подобрать]`, `модули`, `статус`. Typos get
 "did you mean …?" (`sos modles` → `models`). Output language follows `$LANG` (override: `SVOYA_LANG=ru|en`);
 colors follow the applied theme, truecolor when `COLORTERM=truecolor`, none with `NO_COLOR` or `--json`.
 
@@ -34,10 +37,12 @@ colors follow the applied theme, truecolor when `COLORTERM=truecolor`, none with
 | `sos models pull <org/repo[/file]|ladder-id> [--yes] [--json]` | License + fit + disk check first, then download into the HF cache layout (`hf download` if present, else resumable urllib with sha256 verification). `--json` streams progress events. |
 | `sos models serve [--stop|--status] [--foreground]` | Start the local OpenAI/Anthropic-compatible server Jackson uses: user unit `svoya-llm.service` (llama.cpp router over `/srv/ai/views/llama.cpp`, 127.0.0.1:8080), else `llama-server` directly. |
 | `sos models rm <repo|path|sha256>` · `dedup [--apply]` · `views` | Remove · find duplicates, reflink them on btrfs · per-tool views (llama.cpp dir, ComfyUI yaml, Ollama imports). |
-| `sos theme list|current|apply [<id>|auto]` | Render every template, write `theme.json`, reload Hyprland/kitty, set GTK color scheme. An explicit choice is remembered in `~/.config/svoya/svoya.toml`. |
+| `sos theme list|current|apply [<id>|auto] [--system]` | Render every template, write `theme.json`, reload Hyprland/kitty, set GTK color scheme and accent. An explicit choice is remembered in `~/.config/svoya/svoya.toml` and is undoable (`sos undo`). |
+| `sos theme accent [<id|name|#hex>] [--undo] [--system] [--dry-run] [--json]` · `sos theme accents [--json]` | The accent color (below). One calm line: `› accent Lilac · undo: sos undo`. `--dry-run --json` previews (the swatch hover); `--system` also writes `/etc/svoya/theme.json` for the login screen (pkexec). `sos accent …` is short for it. |
+| `sos ai off|on|status [--system] [--json]` | The AI switch (WORKFLOWS §8, below). |
 | `sos new <name> [--template torch|llm-finetune|comfy-node|agent]` | uv project wired to the store, PyTorch index chosen by GPU Doctor. |
 | `sos run <script> [args]` · `sos job progress|done|start|list` | Environment header (as in the design mockup) + a job the bar shows. |
-| `sos update [--dry-run]` · `sos undo [--list|<n>] [--yes]` · `sos snapshot create|list [--config root|home]` | snapper pre/post pairs (`--cleanup-algorithm number`, userdata `svoya=1`). `undo <n>` reverts a pair (`pre..post`) or everything since a single snapshot (`n..0`); without a TTY it needs `--yes`. |
+| `sos update [--dry-run]` · `sos undo [--list|<id>] [--yes]` · `sos snapshot create|list [--config root|home]` | snapper pre/post pairs (`--cleanup-algorithm number`, userdata `svoya=1`). `sos undo` takes the **newest change**: a look change (theme/accent, from the journal — instant, no password) or an sos snapshot pair. `undo <n>` reverts a pair (`pre..post`) or everything since a single snapshot (`n..0`; `7`, `#7`, `snap-7`); `undo look-3` a look change. Snapshot undos without a TTY need `--yes`. |
 | `sos session-start` | Hyprland `exec-once` (§5): theme → export `WAYLAND_DISPLAY`/`HYPRLAND_INSTANCE_SIGNATURE` to systemd/D-Bus → jacksond → shell → first-run wizard. Idempotent, never blocks; log in `~/.local/state/svoya/session.log`. |
 
 Privileged work re-executes **the same program** through `pkexec` (`pkexec /usr/bin/sos modules add … --yes`);
@@ -52,10 +57,10 @@ All `--json` outputs are UTF-8 JSON on stdout; human text goes to stdout only wi
 `ts` (ISO time), `updates.checkedAt`, and for AMD APUs `gpu[].integrated`, `gpu[].gttUsedMiB`, `gpu[].gttTotalMiB`.
 `gpu[]` lists NVIDIA GPUs (nvidia-smi order) then AMD (card order); `index` is the position in that list.
 `gpu[].ok` is false when the GPU is ≥ 90 °C or the last `sos doctor` found a GPU failure.
-`ai` merges three sources, each optional: jacksond's runtime state `$XDG_RUNTIME_DIR/svoya/ai.json`
-(`local`, `cloudActiveSince`, anything else it adds), the AI switch `[ai] enabled` from `svoya.toml` → `ai.enabled`,
-and today's totals from Jackson's ledger `~/.local/share/svoya/jackson/spend.json` → `ai.todayCostEur`,
-`ai.todayCloudRequests` (the keys the shell already reads).
+`ai` merges three sources: jacksond's runtime state `$XDG_RUNTIME_DIR/svoya/ai.json`
+(`local`, `cloudActiveSince`, anything else it adds), the AI switch → `ai.enabled` (always present) and `ai.off`
+(`user` | `system` | `config`, only while off), and today's totals from Jackson's ledger
+`~/.local/share/svoya/jackson/spend.json` → `ai.todayCostEur`, `ai.todayCloudRequests`.
 
 **Job files** — `~/.local/state/svoya/jobs/<id>.json`, written atomically; anyone may create one:
 
@@ -72,8 +77,20 @@ and today's totals from Jackson's ledger `~/.local/share/svoya/jackson/spend.jso
 
 **`~/.local/state/svoya/theme.json`** — flat: `id`, `mode`, `pair`, `nameEn`, `nameRu`, `choice`
 (`auto` or an id), every `[color]` token as `#AARRGGBB` (alpha first, QML-ready: `accent` `#ffffb547`,
-`accentSoft` `#24ffb547`), every key of `[font]`, `[shape]`, `[motion]`, `[effects]` with its TOML type,
-and `appliedAt`.
+`accentSoft` `#24ffb547`) — the four accent tokens `accent`, `accentSoft`, `accentStrong`, `accentInk` come from the
+accent system — plus `accentId` (accent id, `custom`, or `theme` without accents.toml), `accentNameEn`, `accentNameRu`,
+`accentCustom` (the user's `#rrggbb` or null), `accentAdjusted` (lightness moved for contrast), `accentContrast`
+(vs `surface`), every key of `[font]`, `[shape]`, `[motion]`, `[effects]` with its TOML type, and `appliedAt`.
+`/etc/svoya/theme.json` (login screen, `--system`) has the same keys with `choice` = `system`, always on a dark base.
+
+**`sos theme accents --json`** — `[{id, name{en,ru}, note, dark, light, ink{dark,light}, gnome{dark,light}, default,
+current}]`, last entry `id: "custom"` (with `custom`, the user's hex). **`sos theme accent X --json`** →
+`{ok, accent{id, name, mode, color, soft, strong, ink, requested, adjusted, custom, contrast, inkContrast, gnome, clash,
+fallback, note}, changed, visible, previous{theme, accent}, undo (journal id | null), system, theme, dryRun}`;
+errors → `{ok: false, error, hint}` (exit 2).
+
+**`sos ai status --json`** — `{enabled, off (user|system|config|null), since, services[{unit, scope, active}],
+processes[{pid, name}]}`.
 
 **`sos doctor --json`** — `{"checks":[{id,title{en,ru},status,message{en,ru},gpu,fix|null}], "summary":{ok,warn,fail,skip},
 "gpu":{vendor,name,arch,archName,cuda,branch,openModules,packages,torchBackend,gfx}, "torchBackend", "gpuOk", "at"}`;
@@ -90,8 +107,10 @@ the module list resolved for *this* machine (`@gpu` → `nvidia` | `rocm` | noth
 `vision`, `note`, `pull` (the one-click command). **`sos models pull <id> --yes --json`** prints one JSON object
 per line: `plan`, `file`, `progress` (`bytes`, `totalBytes`, `fraction`, ≤ 2/s), `file-done`, `done`, or `error`.
 
-**`sos undo --list --json`** — `[{n, pre, post, to, date, description, kind}]` (`kind`: pair | single; sos snapshots only;
-`sos undo <n> --yes` applies one). **`sos snapshot create --reason TEXT [--config home] --json`** →
+**`sos undo --list --json`** — `[{id, n, pre, post, to, date, description, kind}]`, oldest first (`kind`: pair | single
+for sos snapshots, `look` for journal entries, where `n`/`pre`/`post`/`to` are null; `sos undo <id> --yes` applies one).
+The look journal is `~/.local/state/svoya/undo.json` (`{seq, entries[{id, kind, at, description{en,ru}, before{theme,
+accent}, after{theme, accent}, system}]}`, 50 newest). **`sos snapshot create --reason TEXT [--config home] --json`** →
 `{"id": "77", "number": 77, "config", "description", "dryRun"}` or `{"id": null, "error": …}` — no password prompt when
 snapperd allows the user (ALLOW_USERS/ALLOW_GROUPS), which is what Jackson's T1 "snapshot first" path needs.
 
@@ -138,6 +157,23 @@ Chatterbox (MIT) · Qwen3-TTS (Apache-2.0) · Llama 4 multimodal (excludes EU us
 
 ## Themes
 
+### Accent
+
+`themes/accents.toml` (installed as `/usr/share/svoya/themes/accents.toml`) defines 8 accents with a dark-base and a
+light-base variant; the choice is `[theme] accent = "<id>|#rrggbb"` in `~/.config/svoya/svoya.toml` (default: the base
+theme's `accentDefault`; `signal` = amber on dark bases, ink blue on light ones). For the base theme in use sos derives
+`accent` (a custom hex keeps its OKLCH hue and chroma; lightness moves just far enough for 4.5:1 against `surface`, and the
+confirmation says so), `accentSoft` (14 % / 9 % alpha), `accentStrong` (OKLCH L +6 % dark, −6 % light) and `accentInk`
+(`#141518` or `#ffffff`, whichever contrasts more). Names: ids, English and Russian names (`сирень`, `лёд`/`лед`), color
+words with Russian inflections (`фиолетовым` → lilac, `голубой` → ice, `белый` → mono …); `red`/`красный` is refused
+(red means errors). A custom color close to ok/warn/bad/cloud gets a note. Where it goes: the Hyprland active border
+and hyprbars button glyphs (shown on hover), terminal cursor/selection/links (kitty, foot), GTK/libadwaita accent
+(`@accent_color`, CSS variables) and GNOME `accent-color` (closest of blue, teal, green, yellow, orange, red, pink,
+purple, slate), qt6ct Highlight/Link/Accent, btop meters, fuzzel prompt/matches, the ——— of the fastfetch mark.
+Never: the 16 ANSI colors, warn/bad/ok/cloud, borders other than the focused window, headings.
+
+### Templates
+
 `themes/templates/manifest.toml` lists the targets: Hyprland colors (`~/.config/hypr/svoya-colors.conf`,
 to be `source`d), kitty, foot, GTK 3/4 (`@define-color` + libadwaita CSS variables), qt6ct color scheme and
 `qt6ct.conf` (merged), btop theme and `btop.conf` (merged), fastfetch, fuzzel. A pre-existing user file is kept
@@ -146,11 +182,23 @@ Opt out per target: `[theme] skip = ["kitty"]`.
 
 Template language (no code execution): `{{ color.accent }}` and filters `hex` (#rrggbb), `hexa` (#aarrggbb),
 `rgb` ("r,g,b"), `rgba(0.5)`, `strip` (rrggbb), `stripa` (rrggbbaa), `ansi` (38;2;r;g;b), `mix(other, t)`,
-`over(bg)`, `lighten(x)`, `darken(x)`, `opacity(a)`, `alpha`, `json`, `upper`, `lower`, `round(n)`. Variables:
-`color.*`, `font.*`, `shape.*`, `motion.*`, `effects.*`, `name.en|ru`, `id`, `mode`, `pair`, `term.*` (16 ANSI colors
-derived from the semantic tokens), `icons`, `colorScheme`, `path.home|config|state`. Unknown names are errors.
+`over(bg)`, `lighten(x)`, `darken(x)`, `opacity(a)`, `ink` (text color for that fill), `alpha`, `json`, `upper`,
+`lower`, `round(n)`. Variables: `color.*` (incl. `accentStrong`), `accent.id|custom|adjusted|gnome|name.en|name.ru`,
+`font.*`, `shape.*`, `motion.*`, `effects.*`, `name.en|ru`, `id`, `mode`, `pair`, `term.*` (16 ANSI colors derived from
+the base theme's semantic tokens — never the accent), `icons`, `colorScheme`, `path.home|config|state`. Unknown names
+are errors.
 `auto`: NOAA sunrise/sunset for `[location] latitude/longitude` (default Tallinn 59.437 N 24.745 E); polar
 day/night or a bad location → 07:00–20:00. `cli/systemd/sos-theme-auto.{service,timer}` re-checks every 15 min.
+
+## The AI switch
+
+`sos ai off` writes `~/.config/svoya/ai.off`, stops the user units `jacksond`, `svoya-llm`, `llama-swap`,
+`llama-server`, `ollama` that are running and this user's stray `llama-server`/`llama-swap` processes, and remembers
+what it stopped; `sos ai on` removes the file and starts jacksond plus exactly those again. `--system` does the same
+for the machine through pkexec: `/etc/svoya/ai.off`, system units `svoya-ollama`, `ollama`, `llama-swap` — and a user
+cannot switch that back on alone. While off: `sos status` reports `ai.enabled = false`, `sos session-start` skips
+jacksond, `sos models serve` refuses, and `svoya-llm.service`/`svoya-ollama.service` have
+`ConditionPathExists=!…/ai.off`. `[ai] enabled = false` in `svoya.toml` still works as a third way to say off.
 
 ## Modules
 
@@ -172,7 +220,7 @@ AI services are installed, never auto-started.
 ## Development
 
 ```
-python3 -m unittest discover -s cli/tests -t cli      # 171 tests, ~2 s, no network, no root
+python3 -m unittest discover -s cli/tests -t cli      # 211 tests, ~3 s, no network, no root (also run as non-root)
 cli/bin/sos …                                         # runs from the checkout (uses ./themes, ./modules)
 SVOYA_ROOT=/tmp/fake SVOYA_AI_ROOT=… SVOYA_VAR_LIB=…  # fake system root for experiments
 ```

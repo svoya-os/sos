@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="desktop.css">
 <link rel="stylesheet" href="components.css">
 <script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 <style>
   .launcher { left: 50%; top: 118px; width: 640px; transform: translateX(-50%); }
 
@@ -35,7 +37,8 @@
   .row .s .dot { width: 5px; height: 5px; margin: 0 6px 1px 0; vertical-align: middle; }
 
   .ask { margin: 8px -8px 0; padding: 8px 8px 0; border-top: 1px solid var(--line); }
-  .ask .tile svg.scope { width: 14px; height: 8px; }
+  .ask .row { height: 44px; padding-left: 6px; }
+  .ask .row .ava { width: 32px; height: 32px; }
   .ask .q-quote { color: var(--text-dim); }
 
   .l-foot {
@@ -75,7 +78,7 @@
     <div class="l-list">
       <div class="grp caps">Приложения</div>
       <div class="row sel">
-        <span class="tile acc"><svg data-i="workflow"></svg></span>
+        <span class="tile on"><svg data-i="workflow"></svg></span>
         <span class="n"><b>Comf</b>yUI</span>
         <span class="s"><span class="dot ok"></span>работает · localhost:8188</span>
         <span class="r"><kbd>Enter</kbd></span>
@@ -115,7 +118,7 @@
 
       <div class="ask">
         <div class="row">
-          <span class="tile acc"><svg class="scope" data-kind="answer" data-amp="3.2" data-freq="1.4" data-seed="0.3" width="14" height="8"></svg></span>
+          <span class="ava"><canvas data-jackson="imp" data-state="idle"></canvas></span>
           <span class="n">Спросить Джексона <span class="q-quote">«comf»</span></span>
           <span class="s">локально · qwen3.5-14b</span>
           <span class="r"><span class="hint"><kbd>?</kbd>или<kbd>Tab</kbd></span></span>

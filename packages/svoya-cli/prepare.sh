@@ -73,3 +73,7 @@ if [ -d "$SVOYA_SRC/cli/completions" ]; then
         install -D -m 0644 "$c/sos.fish" "$files/usr/share/fish/vendor_completions.d/sos.fish"
     fi
 fi
+
+# Login-screen color helper + its polkit action (DESIGN §10, ARCHITECTURE §8).
+install -D -m 0755 "$SVOYA_SRC/cli/libexec/theme-system-write" "$files/usr/lib/svoya/theme-system-write"
+install -D -m 0644 "$SVOYA_SRC/cli/polkit/org.svoya.theme.policy" "$files/usr/share/polkit-1/actions/org.svoya.theme.policy"

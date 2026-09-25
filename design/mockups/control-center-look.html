@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — control center · look</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
+<style>
+  .cc { right: 14px; top: 38px; width: 380px; padding: 12px 14px 0; }
+
+  /* sub-page header */
+  .sub { display: flex; align-items: center; gap: 10px; height: 30px; }
+  .sub .back { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--text-dim); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .sub .back svg.i { width: 15px; height: 15px; stroke-width: 1.8; transform: scaleX(-1); }
+  .sub h2 { font: 500 14px/1 "Plex Sans"; color: var(--text); }
+  .sub .cmd { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+
+  .sec { margin-top: 16px; }
+  .sec > .caps { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 9px; }
+  .sec > .caps span { text-transform: none; letter-spacing: 0.02em; font-weight: 400; color: var(--text-dim); }
+
+  /* base theme */
+  .segm > span { gap: 6px; font-size: 12px; }
+  .sw { width: 12px; height: 12px; border-radius: 50%; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; left: 4px; top: 4px; width: 4px; height: 4px; border-radius: 50%; }
+  .sw.g { background: #141518; box-shadow: inset 0 0 0 1px #4a4f57; }
+  .sw.p { background: #f8f7f3; box-shadow: inset 0 0 0 1px #bfbab0; }
+  .sw.f { background: #050806; box-shadow: inset 0 0 0 1px #2b3d31; }
+  .sw.f::after { background: #5cf08f; }
+  .sw.a { background: linear-gradient(90deg, #141518 50%, #f8f7f3 50%); box-shadow: inset 0 0 0 1px #8e8a81; }
+  .sw.g::after, .sw.p::after, .sw.a::after { display: none; }
+  .auto { margin: 8px 2px 0; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .auto svg.i { width: 12px; height: 12px; stroke-width: 1.8; color: var(--text-faint); }
+
+  /* accent swatches */
+  .sws { display: flex; justify-content: space-between; padding: 0 1px; }
+  .sws .s { width: 28px; height: 28px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.25); position: relative; }
+  .sws .s.on { box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 3.5px var(--text); }
+  .sws .s.custom { background: conic-gradient(from 200deg, #ff82b2, #bba4ff, #62d4f2, #5cf08f, #ffb547, #ff82b2); }
+  .sws .s.custom::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1.5px var(--surface-2); }
+
+  .hexrow { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+  .hexrow .field { flex: 1; height: 36px; gap: 8px; padding: 0 5px 0 10px; font: 400 13px/1 "Plex Mono"; }
+  .hexrow .field .h { color: var(--text-faint); margin-right: -6px; }
+  .hexrow .field i.c { width: 14px; height: 14px; border-radius: 4px; background: var(--typed); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3); flex: none; }
+  .hexrow .field .caret { height: 16px; margin-left: -7px; }
+  .hexrow .tag { height: 24px; border-radius: 7px; }
+  .hexrow .tag svg.i { width: 12px; height: 12px; stroke-width: 2.4; }
+  .hexnote { margin: 8px 2px 0; }
+  .hexnote i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; vertical-align: -1px; margin: 0 4px 0 2px; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3); }
+
+  /* rows */
+  .rowbox { border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); }
+  .row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row .t b { display: block; font: 500 13px/17px "Plex Sans"; color: var(--text); }
+  .row .t span { display: block; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .row .switch { margin-left: auto; }
+
+  /* Jackson */
+  .jk { display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 12px; }
+  .jk .big { width: 64px; height: 64px; border-radius: 12px; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); display: grid; place-items: center; flex: none; }
+  .jk .big canvas { width: 64px; height: 64px; }
+  .jk .t { min-width: 0; }
+  .jk .t b { display: block; font: 500 14px/18px "Plex Sans"; color: var(--text); }
+  .jk .t span { display: block; margin-top: 2px; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+  .jk .t span b { display: inline; font: 400 11px/16px "Plex Mono"; color: var(--text-dim); }
+  .jk .btn { margin-left: auto; }
+  .jk-alt { display: flex; gap: 8px; padding: 0 14px 12px 90px; margin-top: -4px; }
+  .jk-alt span { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 4px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); font: 500 12px/1 "Plex Sans"; color: var(--text-dim); }
+  .jk-alt span.on { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--text); }
+  .jk-alt canvas { width: 32px; height: 32px; image-rendering: pixelated; }
+
+  .foot { display: flex; align-items: center; justify-content: space-between; height: 42px; margin: 14px -14px 0; padding: 0 14px; border-top: 1px solid var(--line); }
+  .foot .l { display: flex; align-items: center; gap: 5px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; letter-spacing: -0.01em; }
+  .foot .l kbd { margin-left: 2px; }
+  .foot .r { display: flex; align-items: center; gap: 3px; font: 500 12.5px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap; }
+  .foot .r svg.i { width: 13px; height: 13px; stroke-width: 2; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>SOS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <section class="window active" style="left:48px; top:392px; width:640px; height:456px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="activity"></svg><b>Trackio</b>tts-finetune · localhost:7860</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content" data-trackio="running" data-w="578" data-h="236"></div>
+  </section>
+
+  <section class="window" style="left:720px; top:572px; width:600px; height:276px;">
+    <div class="titlebar">
+      <div class="t"><span class="glyph"></span><b>Терминал</b>~/ai/projects/tts-finetune</div>
+      <i data-ctl></i>
+    </div>
+    <pre class="term-body" data-training="running"></pre>
+  </section>
+
+  <!-- control center → «Оформление» -->
+  <section class="panel cc">
+    <div class="sub">
+      <span class="back"><svg data-i="chevronRight"></svg></span>
+      <h2>Оформление</h2>
+      <span class="cmd">sos theme</span>
+    </div>
+
+    <div class="sec">
+      <div class="caps">Тема<span>применяется сразу</span></div>
+      <div class="segm" id="themes">
+        <span data-t="graphite"><i class="sw g"></i>Графит</span>
+        <span data-t="paper"><i class="sw p"></i>Бумага</span>
+        <span data-t="auto"><i class="sw a"></i>Авто</span>
+        <span data-t="phosphor"><i class="sw f"></i>Фосфор</span>
+      </div>
+      <div class="auto meta">Авто:<svg data-i="sun"></svg>Бумага с 07:12<span>·</span><svg data-i="moon"></svg>Графит с 19:04</div>
+    </div>
+
+    <div class="sec">
+      <div class="caps">Акцент<span id="accname">Свой</span></div>
+      <div class="sws" id="sws"></div>
+      <div class="hexrow">
+        <div class="field focus"><i class="c"></i><span class="h">#</span><span id="typed"></span><span class="caret"></span><span class="spacer"></span><span id="badge"></span></div>
+      </div>
+      <div class="hexnote meta" id="hexnote"></div>
+    </div>
+
+    <div class="sec">
+      <div class="rowbox">
+        <div class="row">
+          <div class="t"><b>Использовать на экране входа</b><span>один раз спросит пароль администратора</span></div>
+          <span class="switch on"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="caps">Джексон<span>одежда — как акцент</span></div>
+      <div class="rowbox">
+        <div class="jk">
+          <span class="big"><canvas class="px" data-jackson="imp" data-state="happy" data-px="64"></canvas></span>
+          <div class="t"><b>Джексон</b><span>огонь · худи</span></div>
+          <button class="btn sm">Настроить<svg data-i="chevronRight"></svg></button>
+        </div>
+        <div class="jk-alt">
+          <span class="on"><canvas data-jackson="imp" data-state="idle"></canvas>Чёрт</span>
+          <span><canvas data-jackson="cat" data-state="idle"></canvas>Кот</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="l">отменить<kbd>Super</kbd><kbd>Z</kbd></span>
+      <span class="r">Все настройки<svg data-i="chevronRight"></svg></span>
+    </div>
+  </section>
+
+</div>
+<script>
+  /* «Свой…»: the user typed #d64fd8. Lightness is adjusted in OKLCH (hue and chroma kept) only if the colour
+     would not read at AA on this base (DESIGN §10): Graphite keeps it, Paper gets a darker version. */
+  const TYPED = '#d64fd8';
+  const theme = document.documentElement.dataset.theme;
+  const lum = (h) => { const v = [1, 3, 5].map((i) => { const x = parseInt(h.slice(i, i + 2), 16) / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const fmt = (r) => r.toFixed(1).replace('.', ',');
+  const bg = theme === 'paper' ? '#fdfcfa' : '#191b1f';
+  let [L, C, H] = JacksonSprite.hexToOklch(TYPED), hex = TYPED, r = ratio(hex, bg);
+  while (r < 4.5 && L > 0.02 && L < 0.98) { L += theme === 'paper' ? -0.005 : 0.005; hex = JacksonSprite.oklchToHex(L, C, H); r = ratio(hex, bg); }
+  window.SOS_applyAccent(document.documentElement, hex);
+
+  const mode = theme === 'paper' ? 'light' : 'dark';
+  document.getElementById('sws').innerHTML = Object.entries(window.SOS_ACCENTS).map(([id, a]) =>
+    `<span class="s" title="${a.ru}" style="--c:${id === 'signal' ? `linear-gradient(135deg, ${a.dark} 50%, ${a.light} 50%)` : a[mode]}"></span>`).join('') +
+    `<span class="s custom on" title="Свой…" style="--c:${hex}"></span>`;
+  document.querySelector('.hexrow .field').style.setProperty('--typed', TYPED);
+  document.getElementById('typed').textContent = TYPED.slice(1);
+  const adjusted = hex !== TYPED;
+  document.getElementById('badge').outerHTML = adjusted
+    ? `<span class="tag line">поправили · ${fmt(r)} : 1</span>`
+    : `<span class="tag ok"><svg data-i="check"></svg>AA · ${fmt(r)} : 1</span>`;
+  document.getElementById('hexnote').innerHTML = adjusted
+    ? `на Бумаге чуть темнее<i style="background:${hex}"></i><b>${hex}</b> — иначе текст на кнопке не читается`
+    : 'читается и на кнопке, и в тексте · для Бумаги подберём темнее сами';
+  document.querySelector(`#themes [data-t="${theme}"]`)?.classList.add('on');
+  SOS.init({ bar: { pressed: true, jackson: 'idle' } });
+</script>
+</body>
+</html>

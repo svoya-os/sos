@@ -2,7 +2,8 @@ import QtQuick
 import qs.core
 import qs.components
 
-// The Morse mark (··· ——— ···, the ——— in accent); opens the СОС menu.
+// The Morse mark (··· ——— ···); the ——— light up in accent while Jackson listens, thinks,
+// works or speaks (DESIGN §5). Opens the СОС menu.
 // Box: 22px high, padding 0 8, radius 6, hover surface3; the mark's advance
 // is 75px as in the mockup's SVG (last symbol + trailing letter space).
 Rectangle {
@@ -22,6 +23,7 @@ Rectangle {
         x: 8
         anchors.verticalCenter: parent.verticalCenter
         color: Theme.text
+        lit: Jackson.signalLive
     }
 
     MouseArea {

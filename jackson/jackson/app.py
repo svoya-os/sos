@@ -7,6 +7,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Mapping
 
+from . import aiswitch
+from . import avatar as avatar_mod
 from .audit import AuditLog
 from .config import Config, load_config
 from .engine import Engine
@@ -63,6 +65,8 @@ class Jackson:
         self.osc = OsControl(self.runner, self.paths, self.svoya)
         self.mcp = McpManager(self.config, self.paths, self.sandbox, self.registry, self.audit,
                               key_lookup_from(self.keys))
+        self.avatar = avatar_mod.load(self.paths.avatar_file)
+        self._avatar_stamp = avatar_mod.stamp(self.paths.avatar_file)
         self.engine = Engine(self)
         self._stamp = self._config_stamp()
 
@@ -101,9 +105,34 @@ class Jackson:
     def persona(self, lang: str | None = None) -> dict[str, Any]:
         return persona_info(self.config, lang or self.config.language)
 
+    # --- look and name (~/.config/svoya/avatar.json) -------------------------------------------
+    def name(self, lang: str | None = None) -> str:
+        return self.avatar.display_name(lang or self.config.language)
+
+    def avatar_changed(self) -> bool:
+        return avatar_mod.stamp(self.paths.avatar_file) != self._avatar_stamp
+
+    def reload_avatar(self) -> bool:
+        """Re-read avatar.json; True when the look or name actually changed."""
+        self._avatar_stamp = avatar_mod.stamp(self.paths.avatar_file)
+        new = avatar_mod.load(self.paths.avatar_file)
+        changed = new.data != self.avatar.data
+        self.avatar = new
+        return changed
+
+    def state_extra(self) -> dict[str, Any]:
+        """Fields every `state` event carries for the shell's mascot."""
+        return {"persona": self.config.persona, "avatar": self.avatar.to_event()}
+
+    # --- the AI switch -------------------------------------------------------------------------
+    def ai_state(self) -> dict[str, Any]:
+        return aiswitch.state(self.paths)
+
     def start_background(self) -> list[str]:
         """Things the long-running service does once at start (MCP servers, index)."""
         warnings = list(self.config.warnings)
+        if aiswitch.off_reason(self.paths):
+            return warnings + ["AI is switched off (sos ai off): not starting MCP servers"]
         if self.memory is not None:
             try:
                 self.memory.ensure()
@@ -139,7 +168,7 @@ class Jackson:
         self._stamp = self._config_stamp()
         new = load_config(self.paths)
         changed = []
-        for attr in ("language", "address", "persona", "humor", "avatar", "max_steps", "route", "pricing",
+        for attr in ("language", "address", "persona", "humor", "max_steps", "route", "pricing",
                      "tools", "snapshots", "skills_enabled", "skills_max_active", "mcp_on_change"):
             if getattr(self.config, attr) != getattr(new, attr):
                 setattr(self.config, attr, getattr(new, attr))

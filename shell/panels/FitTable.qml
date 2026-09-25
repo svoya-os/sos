@@ -91,7 +91,7 @@ Rectangle {
                         width: Math.min(1, row.fraction) * parent.width
                         height: parent.height
                         radius: 3
-                        color: Theme.accent
+                        color: Theme.textDim // a measurement, not a signal (DESIGN §11)
                     }
 
                     // over capacity: warn stripes with a warn border

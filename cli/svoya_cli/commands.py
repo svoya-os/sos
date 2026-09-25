@@ -7,6 +7,8 @@
     sos установить obsidian      → install obsidian
     sos тема ночь                → theme apply graphite
     sos theme auto               → theme apply auto
+    sos акцент сирень            → theme accent сирень      (also: sos theme lilac, sos тема сирень)
+    sos ии выкл                  → ai off
     sos модели                   → models list
 """
 from __future__ import annotations
@@ -14,8 +16,8 @@ from __future__ import annotations
 import difflib
 
 # canonical commands (argparse sub-parsers)
-COMMANDS = ("status", "doctor", "fix", "gpu", "install", "remove", "modules", "models", "theme", "new",
-            "update", "undo", "snapshot", "run", "job", "session-start", "menu", "help", "version")
+COMMANDS = ("status", "doctor", "fix", "gpu", "install", "remove", "modules", "models", "theme", "accent", "accents",
+            "ai", "new", "update", "undo", "snapshot", "run", "job", "session-start", "menu", "help", "version")
 
 ALIASES = {
     # English short forms
@@ -30,7 +32,8 @@ ALIASES = {
     "установить": "install", "поставить": "install", "добавить": "install",
     "удалить": "remove", "убрать": "remove",
     "модули": "modules", "модели": "models", "модель": "models",
-    "тема": "theme", "темы": "theme",
+    "тема": "theme", "темы": "theme", "акцент": "accent", "акценты": "accents", "colour": "accent",
+    "ии": "ai", "иии": "ai",
     "новый": "new", "проект": "new",
     "обновить": "update", "обновление": "update",
     "откатить": "undo", "отменить": "undo", "откат": "undo",
@@ -46,7 +49,12 @@ THEME_WORDS = {
     "auto": "auto", "авто": "auto", "автоматически": "auto",
     "фосфор": "phosphor", "retro": "phosphor", "ретро": "phosphor",
 }
-THEME_SUBCOMMANDS = ("list", "current", "apply")
+THEME_SUBCOMMANDS = ("list", "current", "apply", "accent", "accents")
+THEME_SUB_RU = {"список": "list", "текущая": "current", "сейчас": "current", "применить": "apply",
+                "акцент": "accent", "акценты": "accents"}
+AI_SUB = {"off": "off", "выкл": "off", "выключить": "off", "выключи": "off", "стоп": "off",
+          "on": "on", "вкл": "on", "включить": "on", "включи": "on",
+          "status": "status", "статус": "status", "состояние": "status"}
 MODELS_SUB_RU = {"список": "list", "скачать": "pull", "влезет": "fit", "подобрать": "suggest", "совет": "suggest",
                  "удалить": "rm", "дубликаты": "dedup", "представления": "views"}
 MODULES_SUB_RU = {"список": "list", "инфо": "info", "добавить": "add", "установить": "add", "удалить": "remove",
@@ -81,24 +89,33 @@ def normalize(argv: list[str]) -> list[str]:
         return ["--help"] if not rest else [ALIASES.get(rest[0].lower(), rest[0]), "--help"]
     if cmd == "version":
         return ["--version"]
+    if rest[:1] in (["-h"], ["--help"]) and cmd in COMMANDS and cmd not in ("fix", "gpu", "accent", "accents"):
+        return [cmd, *rest]                             # `sos theme --help` is the group's help, not `current`'s
     if cmd == "fix":
         return ["doctor", "--fix", *rest]
     if cmd == "gpu":
         return ["doctor", "--gpu", *rest]
+    if cmd == "accent":
+        return ["theme", "accent", *rest]
+    if cmd == "accents":
+        return ["theme", "accents", *rest]
+    if cmd == "ai":
+        if not rest or rest[0].startswith("-"):
+            return ["ai", "status", *rest]
+        return ["ai", AI_SUB.get(rest[0].lower(), rest[0]), *rest[1:]]
     if cmd == "theme":
         if not rest:
             return ["theme", "current"]
         w = rest[0].lower()
-        if w in THEME_SUBCOMMANDS:
-            if w == "apply" and len(rest) > 1 and rest[1].lower() in THEME_WORDS:
+        sub = THEME_SUB_RU.get(w, w)
+        if sub in THEME_SUBCOMMANDS:
+            if sub == "apply" and len(rest) > 1 and rest[1].lower() in THEME_WORDS:
                 rest[1] = THEME_WORDS[rest[1].lower()]
-            return ["theme", *rest]
-        if w in ("список",):
-            return ["theme", "list", *rest[1:]]
-        if w in ("текущая", "сейчас"):
-            return ["theme", "current", *rest[1:]]
+            return ["theme", sub, *rest[1:]]
         if w.startswith("-"):
             return ["theme", "current", *rest]
+        if w not in THEME_WORDS and w not in _theme_ids() and is_accent_word(rest[0]):
+            return ["theme", "accent", *rest]           # sos theme lilac · sos тема сирень · sos theme '#7f5af0'
         return ["theme", "apply", THEME_WORDS.get(w, rest[0]), *rest[1:]]
     if cmd == "models":
         if not rest or rest[0].startswith("-"):
@@ -115,6 +132,29 @@ def normalize(argv: list[str]) -> list[str]:
     return [cmd, *rest]
 
 
+def _theme_ids() -> set[str]:
+    """Base theme ids win over accent names (`sos theme phosphor` is the theme, not the accent)."""
+    ids = {"graphite", "paper", "phosphor"}
+    try:
+        from .paths import Paths
+        from .theme.apply import theme_dirs
+        for d in theme_dirs(Paths()):
+            if d.is_dir():
+                ids.update(f.stem for f in d.glob("*.toml") if f.stem != "accents")
+    except Exception:
+        pass
+    return ids
+
+
+def is_accent_word(word: str) -> bool:
+    """An accent name, color word or #hex (not a reset word, not a theme)."""
+    from .theme.accents import AccentError, parse_choice
+    try:
+        return parse_choice(word) is not None
+    except AccentError:
+        return False
+
+
 # ---------------------------------------------------------------- shell completion backend
 
 def complete(words: list[str]) -> list[str]:
@@ -125,8 +165,12 @@ def complete(words: list[str]) -> list[str]:
         return [w for w in known_words() if w.startswith(cur)]
     cmd = ALIASES.get(prev[0].lower(), prev[0])
     pool: list[str] = []
-    if cmd == "theme":
+    if cmd == "accent" or (cmd == "theme" and len(prev) > 1 and prev[1].lower() in ("accent", "акцент")):
+        pool = _accent_words()
+    elif cmd == "theme":
         pool = list(THEME_SUBCOMMANDS) + ["night", "day", "auto", "phosphor", "graphite", "paper"]
+    elif cmd == "ai":
+        pool = ["off", "on", "status", "--system", "--json"]
     elif cmd == "models":
         pool = ["list", "pull", "fit", "suggest", "rm", "dedup", "views"] if len(prev) == 1 else _ladder_ids()
     elif cmd == "modules":
@@ -142,6 +186,17 @@ def complete(words: list[str]) -> list[str]:
     elif cmd == "doctor":
         pool = ["--fix", "--gpu", "--json", "--dry-run"]
     return [w for w in pool if w.startswith(cur)]
+
+
+def _accent_words() -> list[str]:
+    try:
+        from .paths import Paths
+        from .theme.accents import load_catalog
+        cat = load_catalog(Paths())
+        words = list(cat.accents) + [str(a.name.get("ru", "")).lower() for a in cat.accents.values()]
+        return [w for w in words if w] + ["default", "--undo", "--system"]
+    except Exception:
+        return []
 
 
 def _module_ids() -> list[str]:

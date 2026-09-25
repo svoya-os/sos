@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="desktop.css">
 <link rel="stylesheet" href="components.css">
 <script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 <style>
   .j-head .chip.warn { color: var(--warn); }
   .j-head .chip svg.i { width: 12px; height: 12px; }
@@ -24,11 +26,11 @@
     border-bottom: 1px solid var(--line);
   }
   .tier {
-    font: 600 11px/1 "Plex Mono"; letter-spacing: 0.04em; color: var(--accent-ink); background: var(--accent);
+    font: 600 11px/1 "Plex Mono"; letter-spacing: 0.04em; color: var(--surface); background: var(--text);
     height: 20px; padding: 0 6px; border-radius: 5px; display: inline-flex; align-items: center;
   }
   .ap-head .wait { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 400 11px/1 "Plex Mono"; color: var(--text-dim); }
-  .ap-head .wait .dot { box-shadow: 0 0 0 3px var(--accent-soft); }
+  .ap-head .wait .dot { background: var(--text); }
 
   .ap-body { padding: 14px 14px 14px; }
   .ap-title { display: flex; align-items: baseline; gap: 12px; }
@@ -40,7 +42,7 @@
     margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--inset); border: 1px solid var(--line);
     font: 400 12px/19px "Plex Mono"; color: var(--text); white-space: pre; overflow: hidden;
   }
-  .code .p { color: var(--accent); }
+  .code .p { color: var(--text-dim); }
   .code .c { color: var(--text-faint); }
   .code .add { color: var(--ok); }
   .code .chg { color: var(--warn); }
@@ -101,10 +103,11 @@
   <!-- Jackson asks for approval -->
   <section class="jackson">
     <div class="j-head">
-      <svg class="scope" data-kind="waiting" width="92" height="22"></svg>
+      <span class="ava"><canvas data-jackson="imp" data-state="idle"></canvas></span>
       <span class="name">Джексон</span>
       <span class="chip"><span class="dot ok"></span>локально · qwen3.5-14b</span>
       <span class="spacer"></span>
+      <svg class="scope" data-kind="waiting" width="92" height="22"></svg>
       <span class="keys"><kbd>Super</kbd><kbd>J</kbd></span>
     </div>
     <div class="j-input">Поставь ноду для LoRA в Wan — в воркфлоу её не хватает</div>

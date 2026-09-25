@@ -4,9 +4,9 @@ import qs.core
 import qs.components
 
 // Choice card of the first-run wizard (setup.css .card): radius 14, surface
-// (surface2 on light themes), 1px line border. Selected: accent border plus
-// `0 0 0 1px accent, 0 0 0 5px accentSoft` rings. `dashed` draws the modifier
-// card's dashed lineStrong border. Children go into the card's area; the whole
+// (surface2 on light themes), 1px line border. Selected: a 2px `text` edge (1px border +
+// 1px ring) — neutral, never the accent (DESIGN §11). `dashed` draws the modifier card's
+// dashed lineStrong border. Children go into the card's area; the whole
 // card is clickable and keyboard-focusable (Enter/Space = pick).
 Item {
     id: root
@@ -25,19 +25,10 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        anchors.margins: -5
-        radius: root.radius + 5
-        visible: root.selected
-        color: Theme.accentSoft
-        antialiasing: true
-    }
-
-    Rectangle {
-        anchors.fill: parent
         anchors.margins: -1
         radius: root.radius + 1
         visible: root.selected
-        color: Theme.accent
+        color: Theme.selected
         antialiasing: true
     }
 
@@ -46,7 +37,7 @@ Item {
         radius: root.radius
         color: Theme.isDark ? Theme.surface : Theme.surface2
         border.width: root.dashed ? 0 : 1
-        border.color: root.selected ? Theme.accent : Theme.line
+        border.color: root.selected ? Theme.selected : Theme.line
         antialiasing: true
     }
 

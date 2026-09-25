@@ -41,6 +41,7 @@ Item {
     Wallpaper {
         anchors.fill: parent
         colophon: false
+        ambient: false
     }
 
     // ---- top-left: host · system ------------------------------------------------------

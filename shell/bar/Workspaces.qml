@@ -4,7 +4,8 @@ import qs.core
 import qs.components
 
 // Workspaces 1…N (N = max(4, highest used), ≤ 10) as 19×19 squares, radius 5:
-// active = accent fill + accentInk, occupied = textDim, empty = textFaint.
+// active = `text` fill + `surface` number (neutral, DESIGN §5/§11), occupied = textDim,
+// empty = textFaint.
 Row {
     id: root
 
@@ -45,7 +46,7 @@ Row {
             width: 19
             height: 19
             radius: 5
-            color: active ? Theme.accent : (cell.containsMouse ? Theme.surface3 : "transparent")
+            color: active ? Theme.selected : (cell.containsMouse ? Theme.surface3 : "transparent")
 
             Behavior on color {
                 ColorAnimation {
@@ -58,7 +59,7 @@ Row {
                 text: wsId
                 size: 10.5
                 font.weight: Font.Medium
-                color: active ? Theme.accentInk : (occupied ? Theme.textDim : Theme.textFaint)
+                color: active ? Theme.surface : (occupied ? Theme.textDim : Theme.textFaint)
             }
 
             MouseArea {

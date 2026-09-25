@@ -26,7 +26,7 @@ Rectangle {
     implicitWidth: row.implicitWidth + (root.small ? 20 : (root.large ? 36 : 28))
     implicitHeight: root.small ? 26 : (root.large ? 40 : 34)
     radius: root.small ? 7 : Theme.radiusButton
-    color: root.primary ? (mouse.containsMouse ? Qt.lighter(Theme.accent, 1.06) : Theme.accent) : (mouse.containsMouse ? Theme.surface3 : root.fill)
+    color: root.primary ? (mouse.containsMouse || mouse.pressed ? Theme.accentStrong : Theme.accent) : (mouse.containsMouse ? Theme.surface3 : root.fill)
     border.width: root.primary ? 0 : 1
     border.color: Theme.lineStrong
     opacity: root.enabledState ? 1 : 0.45

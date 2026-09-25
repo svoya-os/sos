@@ -6,10 +6,9 @@
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="desktop.css">
-<script>
-  const params = new URLSearchParams(location.search);
-  document.documentElement.dataset.theme = params.get('theme') || 'graphite';
-</script>
+<script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 </head>
 <body>
 <div class="screen">
@@ -52,7 +51,7 @@
         <span><svg viewBox="0 0 8 8"><path d="M1.8 1.8l4.4 4.4M6.2 1.8L1.8 6.2"/></svg></span>
       </div>
     </div>
-<pre class="term-body"><span class="a">›</span> sos run train.py
+<pre class="term-body"><span class="p">›</span> sos run train.py
 <span class="m">  среда    </span>torch 2.13 · CUDA 13.0 · RTX 4090 <span class="d">24 ГБ</span>
 <span class="m">  модель   </span>qwen3-tts-0.6b <span class="d">+</span> LoRA r16
 <span class="m">  данные   </span>ru-voice <span class="d">·</span> 48 213 примеров
@@ -67,10 +66,11 @@
   <!-- Jackson -->
   <section class="jackson">
     <div class="j-head">
-      <svg class="scope" id="scope" width="92" height="22"></svg>
+      <span class="ava"><canvas data-jackson="imp" data-state="talk1"></canvas></span>
       <span class="name">Джексон</span>
       <span class="chip"><span class="dot ok"></span>локально · qwen3.5-14b</span>
       <span class="spacer"></span>
+      <svg class="scope" id="scope" width="92" height="22"></svg>
       <span class="keys"><kbd>Super</kbd><kbd>J</kbd></span>
     </div>
     <div class="j-input">Хочу короткое видео для канала. Какая модель влезет в мою видеокарту?<span class="caret"></span></div>
@@ -171,6 +171,7 @@
   }
   scope('scope', 92, 22, 9.5, 3.2, 0.7);
   scope('mini', 22, 10, 4, 1.6, 0.2);
+  SOS.mascots();
 </script>
 </body>
 </html>

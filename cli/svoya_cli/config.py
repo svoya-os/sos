@@ -8,7 +8,11 @@ Keys svoya reads (all optional)::
 
     [theme]
     id = "auto"           # auto | graphite | paper | phosphor | <user theme>
+    accent = "lilac"      # accent id from themes/accents.toml or "#rrggbb" (default: the theme's accentDefault)
     skip = ["kitty"]      # template targets svoya must not touch
+
+    [ai]
+    enabled = true        # false = AI off (same as `sos ai off`, which uses ~/.config/svoya/ai.off)
 
     [models]
     region = "EU"         # license checks: EU | UK | US | KR | ... (ISO-ish region code)
@@ -64,8 +68,49 @@ def load(paths: Paths | None = None) -> dict[str, Any]:
     return cfg
 
 
-def set_user_value(paths: Paths, section: str, key: str, value: str) -> None:
-    """Set ``[section] key = "value"`` in ~/.config/svoya/svoya.toml, keeping comments and order."""
+def system_value(paths: Paths, section: str, key: str, default: Any = None) -> Any:
+    """``[section] key`` from /etc/svoya/svoya.toml only."""
+    return (_load(paths.system_config).get(section) or {}).get(key, default)
+
+
+def user_value(paths: Paths, section: str, key: str, default: Any = None) -> Any:
+    """``[section] key`` from the user's own file only (not merged with /etc) — for undo journals."""
+    return (_load(paths.user_config).get(section) or {}).get(key, default)
+
+
+def unset_user_value(paths: Paths, section: str, key: str) -> bool:
+    """Remove ``[section] key`` from ~/.config/svoya/svoya.toml (comments and other keys stay)."""
+    import re
+    from .util import atomic_write
+    path = paths.user_config
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    cur, out, removed = "", [], False
+    for ln in lines:
+        m = re.match(r"^\s*\[([^\]]+)\]\s*$", ln)
+        if m:
+            cur = m.group(1).strip()
+        elif cur == section and re.match(rf"^\s*{re.escape(key)}\s*=", ln):
+            removed = True
+            continue
+        out.append(ln)
+    if not removed:
+        return False
+    # drop the section header if nothing is left under it
+    hdr = next((i for i, ln in enumerate(out) if re.match(rf"^\s*\[{re.escape(section)}\]\s*$", ln)), None)
+    if hdr is not None:
+        rest = out[hdr + 1:]
+        nxt = next((j for j, ln in enumerate(rest) if re.match(r"^\s*\[", ln)), len(rest))
+        if not any(ln.strip() and not ln.lstrip().startswith("#") for ln in rest[:nxt]):
+            del out[hdr:hdr + 1 + nxt]
+    atomic_write(path, "\n".join(out).strip("\n") + "\n")
+    return True
+
+
+def set_user_value(paths: Paths, section: str, key: str, value: Any) -> None:
+    """Set ``[section] key = value`` in ~/.config/svoya/svoya.toml, keeping comments and order."""
     import json
     import re
     from .util import atomic_write

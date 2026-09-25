@@ -26,7 +26,8 @@ def _parser() -> argparse.ArgumentParser:
             "  sos remove <thing>                            remove it again\n"
             "  sos fix · sos gpu                             repair · check the graphics card\n"
             "  sos update · sos undo                         update (with a snapshot) · roll back\n"
-            "  sos theme night|day|auto                      switch the theme\n"
+            "  sos theme night|day|auto · sos accent lilac   theme · accent color (undo: sos undo)\n"
+            "  sos ai off | on                               the AI switch\n"
             "  sos models suggest                            the best local model for this machine\n"
             "Russian works too: sos установить, удалить, починить, видеокарта, обновить, откатить, тема, модели.",
             "каждый день:\n"
@@ -34,7 +35,8 @@ def _parser() -> argparse.ArgumentParser:
             "  sos удалить <что>                                 удалить обратно\n"
             "  sos починить · sos видеокарта                     починить · проверить видеокарту\n"
             "  sos обновить · sos откатить                       обновить (со снимком) · откатить\n"
-            "  sos тема ночь|день|авто                           сменить тему\n"
+            "  sos тема ночь|день|авто · sos акцент сирень       тема · цвет акцента (отменить: sos откатить)\n"
+            "  sos ии выкл | вкл                                 выключатель ИИ\n"
             "  sos модели подобрать                              лучшая локальная модель для этой машины\n"
             "По-английски тоже можно: sos install, remove, fix, gpu, update, undo, theme, models."))
     p.add_argument("--version", action="version", version=f"sos {__version__}")
@@ -161,19 +163,52 @@ def _parser() -> argparse.ArgumentParser:
     mse.add_argument("--dry-run", action="store_true")
 
     # theme
-    t = cmd("theme", "themes: graphite, paper, phosphor, auto", "темы: графит, бумага, фосфор, авто")
-    tsub = t.add_subparsers(dest="theme_cmd", metavar="<list|current|apply>")
-    tl = tsub.add_parser("list")
+    t = cmd("theme", "themes (graphite, paper, phosphor, auto) and the accent color",
+            "темы (графит, бумага, фосфор, авто) и цвет акцента")
+    tsub = t.add_subparsers(dest="theme_cmd", metavar="<list|current|apply|accent|accents>")
+    tl = tsub.add_parser("list", help=tr("base themes", "базовые темы"))
     tl.add_argument("--json", action="store_true")
-    tc = tsub.add_parser("current")
+    tc = tsub.add_parser("current", help=tr("what is applied now", "что применено сейчас"))
     tc.add_argument("--json", action="store_true")
-    ta = tsub.add_parser("apply")
+    ta = tsub.add_parser("apply", help=tr("switch the base theme (or re-apply)", "сменить базовую тему (или применить снова)"))
     ta.add_argument("theme", nargs="?", help="graphite | paper | phosphor | auto")
     ta.add_argument("--dry-run", action="store_true")
     ta.add_argument("--force", action="store_true")
     ta.add_argument("--only", action="append", default=[], metavar="TARGET")
+    ta.add_argument("--system", action="store_true", help=tr("also the login screen (asks for the admin password)",
+                                                             "и на экране входа (спросит пароль администратора)"))
     ta.add_argument("--json", action="store_true")
     ta.add_argument("--quiet", "-q", action="store_true")
+    tac = tsub.add_parser("accent", help=tr("accent color: signal amber ink phosphor ice lilac rose mono or #hex",
+                                            "цвет акцента: сигнал янтарь чернила фосфор лёд сирень роза моно или #hex"))
+    tac.add_argument("value", nargs="*", help=tr("id, name (RU/EN), color word or #rrggbb; `default` resets",
+                                                 "id, имя, цвет словом или #rrggbb; `default` — по умолчанию"))
+    tac.add_argument("--undo", action="store_true", help=tr("back to the previous look", "вернуть предыдущий вид"))
+    tac.add_argument("--system", action="store_true", help=tr("also the login screen (asks for the admin password)",
+                                                              "и на экране входа (спросит пароль администратора)"))
+    tac.add_argument("--dry-run", action="store_true")
+    tac.add_argument("--json", action="store_true")
+    tas = tsub.add_parser("accents", help=tr("all accent colors", "все цвета акцента"))
+    tas.add_argument("--json", action="store_true")
+    tsw = tsub.add_parser("system-write")                  # root half of --system (pkexec); ids only
+    tsw.add_argument("--theme", dest="theme_id", required=True)
+    tsw.add_argument("--accent", required=True)
+    tsw.add_argument("--dry-run", action="store_true")
+    tsw.add_argument("--quiet", "-q", action="store_true")
+
+    # ai
+    ai = cmd("ai", "the AI switch: Jackson, local model servers, agents", "выключатель ИИ: Джексон, локальные модели, агенты")
+    aisub = ai.add_subparsers(dest="ai_cmd", metavar="<off|on|status>")
+    for name, en, ru in (("off", "stop Jackson and local model servers; keep them off", "остановить Джексона и локальные модели"),
+                         ("on", "allow AI again and start Jackson", "снова разрешить ИИ и запустить Джексона"),
+                         ("status", "is AI on? what is running?", "включён ли ИИ и что запущено")):
+        ap = aisub.add_parser(name, help=tr(en, ru))
+        ap.add_argument("--json", action="store_true")
+        if name != "status":
+            ap.add_argument("--system", action="store_true", help=tr("for every user of this computer (admin password)",
+                                                                     "для всех пользователей (пароль администратора)"))
+            ap.add_argument("--dry-run", action="store_true")
+            ap.add_argument("--root-only", action="store_true", help=argparse.SUPPRESS)
 
     # new
     n = cmd("new", "new AI project (uv) wired to the model store", "новый ИИ-проект (uv), связанный с хранилищем моделей")
@@ -190,9 +225,10 @@ def _parser() -> argparse.ArgumentParser:
     u.add_argument("--yes", "-y", action="store_true")
     u.add_argument("--json", action="store_true")
     u.add_argument("--no-flatpak", action="store_true")
-    un = cmd("undo", "undo a change sos made (snapshot pair)", "отменить изменение sos (пара снимков)")
-    un.add_argument("n", nargs="?", type=int, help=tr("pair number from --list (default: latest)",
-                                                     "номер пары из --list (по умолчанию последняя)"))
+    un = cmd("undo", "undo the latest change (look, or a system change via its snapshot pair)",
+             "отменить последнее изменение (вид или системное — по паре снимков)")
+    un.add_argument("n", nargs="?", metavar="id", help=tr("id from --list: a snapshot number or look-N (default: the latest change)",
+                                                         "id из --list: номер снимка или look-N (по умолчанию последнее изменение)"))
     un.add_argument("--list", action="store_true")
     un.add_argument("--dry-run", action="store_true")
     un.add_argument("--yes", "-y", action="store_true")
@@ -296,6 +332,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "theme":
             from .theme import cli as theme_cli
             return theme_cli.main(args, ctx)
+        if args.cmd == "ai":
+            from . import ai
+            return ai.main(args, ctx)
         if args.cmd == "new":
             from . import new
             return new.main(args, ctx)

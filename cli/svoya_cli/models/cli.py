@@ -536,6 +536,10 @@ def cmd_serve(args, ctx: Ctx) -> int:
     if running:
         ui.head(tr(f"already running · {url}/v1", f"уже работает · {url}/v1"))
         return 0
+    from .. import ai
+    if not ai.enabled(ctx):
+        ui.err(tr("sos: AI is switched off — sos ai on", "sos: ИИ выключен — sos ai on"))
+        return 3
     views_dir = ctx.paths.ai_root / "views" / "llama.cpp"
     if has_unit and not args.foreground:
         res = r.run(["systemctl", "--user", "start", SERVE_UNIT], timeout=60, mutating=True)

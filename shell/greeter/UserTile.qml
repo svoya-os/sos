@@ -5,7 +5,7 @@ import qs.components
 
 // One user on the greeter (design/mockups/greeter.html .user): 176px wide,
 // 56px avatar circle (surface3, 1px lineStrong; the selected one gets a 3px gap
-// in the wall color and a 2px accent ring), name Plex Sans 14/18 (500 when
+// in the wall color and a 1.5px `text` ring — neutral, DESIGN §11–§12), name Plex Sans 14/18 (500 when
 // selected, textDim 400 otherwise), a mono 11/16 meta line in textFaint.
 // Unselected avatars are drawn at 72% opacity.
 Item {
@@ -21,15 +21,15 @@ Item {
     width: 176
     height: 56 + 14 + 18 + 3 + 16
 
-    // ring: 0 0 0 3px wall, 0 0 0 5px accent
+    // ring: 0 0 0 3px wall, 0 0 0 4.5px text
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
-        y: -5
-        width: 66
-        height: 66
-        radius: 33
+        y: -4.5
+        width: 65
+        height: 65
+        radius: 32.5
         visible: root.selected
-        color: Theme.accent
+        color: Theme.selected
         antialiasing: true
 
         Rectangle {

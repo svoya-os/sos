@@ -337,3 +337,10 @@ def write(path: pathlib.Path | str, text: str) -> pathlib.Path:
 
 def rel(path: pathlib.Path) -> str:
     return str(pathlib.Path(path).resolve().relative_to(ROOT))
+
+
+@functools.cache
+def accents() -> dict:
+    """themes/accents.toml — the user-selectable accents (design/DESIGN.md §10)."""
+    with open(THEMES_DIR / "accents.toml", "rb") as fh:
+        return tomllib.load(fh)

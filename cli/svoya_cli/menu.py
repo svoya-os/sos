@@ -29,7 +29,20 @@ THEMES = [
     ("paper", "Paper — day", "Бумага — день", "", ""),
     ("auto", "Auto", "Авто", "by sunrise and sunset", "по восходу и закату"),
     ("phosphor", "Phosphor", "Фосфор", "green CRT", "зелёный ЭЛТ"),
+    ("__accent", "Accent color…", "Цвет акцента…", "8 colors or your own", "8 цветов или свой"),
 ]
+
+
+def _accent_items() -> list:
+    from .paths import Paths
+    from .theme.accents import load_catalog
+    items = []
+    for a in load_catalog(Paths()).accents.values():
+        n = a.name
+        items.append((a.id, n.get("en", a.id), n.get("ru", n.get("en", a.id)),
+                      f"{a.dark.hex} · {a.light.hex}", f"{a.dark.hex} · {a.light.hex}"))
+    items.append(("__custom", "Your own…", "Свой…", "#rrggbb", "#rrggbb"))
+    return items
 ACCENT_256 = 215   # amber, close to Graphite's accent
 
 
@@ -157,10 +170,15 @@ def action(key: str, run: Callable[[list[str]], int] = _run, ask: Callable[[str]
         return run(["update"])
     if key == "undo":
         run(["undo", "--list"])
-        n = ask(tr("number to undo (Enter to cancel): ", "номер для отката (Enter — отмена): ")).strip()
-        return run(["undo", n]) if n.isdigit() else 0
+        n = ask(tr("id to undo (Enter to cancel): ", "id для отмены (Enter — отмена): ")).strip()
+        return run(["undo", n]) if n and n.replace("-", "").isalnum() else 0
     if key == "theme":
         t = select(tr("Theme", "Тема"), THEMES)
+        if t == "__accent":
+            a = select(tr("Accent color", "Цвет акцента"), _accent_items())
+            if a == "__custom":
+                a = ask(tr("color as #rrggbb: ", "цвет в виде #rrggbb: ")).strip()
+            return run(["theme", "accent", a]) if a else 0
         return run(["theme", "apply", t]) if t else 0
     if key == "jackson":
         import shutil

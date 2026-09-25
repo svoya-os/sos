@@ -1,23 +1,30 @@
 pragma Singleton
 
-// Svoya Shell design tokens (design/DESIGN.md, themes/*.toml).
+// SOS Shell design tokens (design/DESIGN.md, themes/*.toml, themes/accents.toml).
 //
-// Source of truth at runtime: ~/.local/state/svoya/theme.json, written by
-// `sos theme apply` (docs/ARCHITECTURE.md §4.1, cli/svoya_cli/theme/apply.py)
-// and hot-reloaded here. The CLI writes flat JSON ({"id", "mode", "pair",
-// "nameEn", "nameRu", "choice", "wall": "#AARRGGBB", …, "sans", "radius",
-// "fast", "grain", …}); a nested layout ({"color": {...}}) is accepted too.
-// Missing keys fall back to the built-in Graphite defaults below
-// (themes/graphite.toml). QML parses #AARRGGBB (alpha first) natively.
+// Source of truth at runtime: ~/.local/state/svoya/theme.json, written by `sos theme apply` and
+// `sos theme accent` (docs/ARCHITECTURE.md §4.1, cli/svoya_cli/theme/apply.py) and hot-reloaded
+// here. The greeter reads the system copy, /etc/svoya/theme.json (`sos theme apply --system`);
+// SVOYA_THEME_FILE overrides both. Flat JSON ({"id", "mode", "choice", "wall": "#AARRGGBB", …,
+// "accentId", "accentStrong", …}); a nested layout ({"color": {...}}) is accepted too. Missing
+// keys fall back to Graphite + the «Сигнал» accent below.
+//
+// Accent (DESIGN §10–§11): accent, accentSoft, accentStrong (hover/pressed), accentInk (text on
+// the accent) plus the choice (accentId, accentCustom). `previewAccent` shows another accent
+// without applying it (control center swatches on hover); `setAccent()` applies through the CLI.
+//
+// Colors cross-fade for 260 ms when the theme or the accent changes (instant with reduce motion
+// and while the first theme.json is loading, so a login never fades from the defaults).
 
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "Color.js" as Color
 
 Singleton {
     id: root
 
-    // ---- built-in defaults: Graphite (themes/graphite.toml) -------------------
+    // ---- built-in defaults: Graphite + «Сигнал» (themes/graphite.toml, accents.toml) ---------
     readonly property var defaults: ({
         id: "graphite",
         mode: "dark",
@@ -27,8 +34,8 @@ Singleton {
             wall: "#0c0d0f", bar: "#0e0f11", surface: "#141518", surface2: "#191b1f",
             surface3: "#22252a", line: "#25282d", lineStrong: "#363a41", text: "#ebe8e1",
             textDim: "#9d9a92", textFaint: "#67655f", accent: "#ffb547", accentSoft: "#24ffb547",
-            accentInk: "#1b1204", ok: "#8fd48a", warn: "#ffb547", bad: "#ff7a6b",
-            cloud: "#7ad3e6", shadow: "#b3000000"
+            accentStrong: "#ffd093", accentInk: "#141518", ok: "#8fd48a", warn: "#f5cf52",
+            bad: "#ff6b6b", cloud: "#7ad3e6", shadow: "#b3000000"
         },
         font: { sans: "IBM Plex Sans", mono: "IBM Plex Mono", pixel: "Departure Mono" },
         shape: { radius: 11, radiusSmall: 6, radiusLarge: 16, border: 1 },
@@ -36,7 +43,14 @@ Singleton {
         effects: { grain: 0.07, glow: true, scanlines: false }
     })
 
+    // The greeter (a config root named "greeter") shows the system theme.
+    readonly property bool systemTheme: /\/greeter\/?$/.test(Quickshell.shellDir)
     readonly property string path: {
+        const forced = Quickshell.env("SVOYA_THEME_FILE");
+        if (forced && forced.length > 0)
+            return forced;
+        if (root.systemTheme)
+            return "/etc/svoya/theme.json";
         const state = Quickshell.env("XDG_STATE_HOME");
         const base = state && state.length > 0 ? state : Quickshell.env("HOME") + "/.local/state";
         return base + "/svoya/theme.json";
@@ -64,6 +78,9 @@ Singleton {
         return v === true || v === "true" || v === 1;
     }
 
+    // true once the first theme.json read finished (or failed): from then on colors fade
+    property bool settled: false
+
     FileView {
         id: file
 
@@ -71,6 +88,8 @@ Singleton {
         watchChanges: true
         printErrors: false // a missing theme.json on first boot is normal
         onFileChanged: reload()
+        onLoaded: Qt.callLater(() => root.settled = true)
+        onLoadFailed: root.settled = true
 
         JsonAdapter {
             id: adapter
@@ -81,6 +100,12 @@ Singleton {
             property string choice    // "auto" when the day/night switch is on
             property string nameEn
             property string nameRu
+            property string accentId      // an accents.toml id, "custom" or "theme"
+            property string accentNameEn
+            property string accentNameRu
+            property var accentCustom     // the user's own "#rrggbb" (or null)
+            property bool accentAdjusted  // lightness was moved for contrast
+            property var accentContrast
             // nested sections (themes/*.toml layout, accepted as well)
             property var name
             property var color
@@ -102,6 +127,7 @@ Singleton {
             property var textFaint
             property var accent
             property var accentSoft
+            property var accentStrong
             property var accentInk
             property var ok
             property var warn
@@ -124,6 +150,13 @@ Singleton {
         }
     }
 
+    Timer {
+        // no theme file and no answer yet: stop waiting
+        running: !root.settled
+        interval: 1500
+        onTriggered: root.settled = true
+    }
+
     // `id` cannot be a QML property name, so it is read from the raw text.
     readonly property string themeId: {
         const txt = file.text();
@@ -142,6 +175,8 @@ Singleton {
     readonly property bool isDark: root.mode !== "light"
     readonly property string pair: adapter.pair.length > 0 ? adapter.pair : root.defaults.pair
     readonly property bool autoMode: adapter.choice === "auto"
+    // what the base-theme switch shows: graphite | paper | phosphor | auto
+    readonly property string baseChoice: root.autoMode ? "auto" : root.themeId
     readonly property string displayName: {
         if (adapter.nameEn.length > 0 || adapter.nameRu.length > 0)
             return (Strings.ru ? adapter.nameRu : adapter.nameEn) || adapter.nameEn || root.themeId;
@@ -154,25 +189,292 @@ Singleton {
     readonly property bool highContrast: Settings.highContrast
     readonly property real textScale: Settings.largeText ? 1.15 : 1.0
 
-    // ---- colors ---------------------------------------------------------------
-    readonly property color wall: root.tok("color", "wall")
-    readonly property color bar: root.tok("color", "bar")
-    readonly property color surface: root.tok("color", "surface")
-    readonly property color surface2: root.tok("color", "surface2")
-    readonly property color surface3: root.tok("color", "surface3")
-    readonly property color line: root.highContrast ? root.tok("color", "lineStrong") : root.tok("color", "line")
-    readonly property color lineStrong: root.highContrast ? root.tok("color", "textFaint") : root.tok("color", "lineStrong")
-    readonly property color text: root.tok("color", "text")
-    readonly property color textDim: root.highContrast ? root.tok("color", "text") : root.tok("color", "textDim")
-    readonly property color textFaint: root.highContrast ? root.tok("color", "textDim") : root.tok("color", "textFaint")
-    readonly property color accent: root.tok("color", "accent")
-    readonly property color accentSoft: root.tok("color", "accentSoft")
-    readonly property color accentInk: root.tok("color", "accentInk")
-    readonly property color ok: root.tok("color", "ok")
-    readonly property color warn: root.tok("color", "warn")
-    readonly property color bad: root.tok("color", "bad")
-    readonly property color cloud: root.tok("color", "cloud")
-    readonly property color shadow: root.tok("color", "shadow")
+    // ---- the accent choice (DESIGN §10) ------------------------------------------------------------
+    readonly property string accentId: adapter.accentId.length > 0 ? adapter.accentId : "signal"
+    readonly property string accentCustom: typeof adapter.accentCustom === "string" ? adapter.accentCustom : ""
+    // what the user picked: an accent id or their own "#rrggbb"
+    readonly property string accentChoice: root.accentId === "custom" && root.accentCustom.length > 0 ? root.accentCustom : root.accentId
+    readonly property bool accentAdjusted: adapter.accentAdjusted
+    readonly property string accentName: {
+        if (root.accentId === "custom")
+            return Strings.t("Свой", "Custom");
+        const n = Strings.ru ? adapter.accentNameRu : adapter.accentNameEn;
+        if (n.length > 0)
+            return n;
+        const a = Color.accentById(root.accentId);
+        return a ? (Strings.ru ? a.ru : a.en) : root.accentId;
+    }
+    // the eight accents for swatches, in this theme's mode
+    readonly property var accentList: Color.ACCENTS.map(a => ({
+                id: a.id,
+                name: Strings.ru ? a.ru : a.en,
+                color: root.isDark ? a.dark : a.light
+            }))
+
+    // An accent id or "#hex" shown instead of the applied one (hover preview), "" = none.
+    property string previewAccent: ""
+    // a click keeps its choice previewed until theme.json reports it (no flash back)
+    property string pendingAccent: ""
+    readonly property string shownAccent: root.previewAccent.length > 0 ? root.previewAccent : root.pendingAccent
+    readonly property var previewTokens: root.shownAccent.length > 0 ? Color.resolveAccent(root.shownAccent, root.mode, String(root.tok("color", "surface"))) : null
+
+    function accentTokens(choice) {
+        return Color.resolveAccent(choice, root.mode, String(root.tok("color", "surface")));
+    }
+
+    // {id, en, ru, dark, light} of an accents.toml id (null for anything else)
+    function accentById(id) {
+        return Color.accentById(id);
+    }
+
+    function contrastWith(a, b) {
+        return Color.contrast(String(a), String(b));
+    }
+
+    // ---- applying (the CLI renders every template: Hyprland, GTK/Qt, terminals; `sos undo`) ----------
+    // The login screen follows when Settings.themeOnLogin is on: one `sos theme apply --system`
+    // (polkit asks for the admin password) once the user has finished choosing — when the open panel
+    // closes, or 20 s after the last change with no panel open — instead of a prompt per click, and
+    // never while an overlay holds the keyboard (the password dialog would sit under it).
+    // The wizard turns `autoSystemSync` off and applies it after it hides.
+    property bool systemSyncPending: false
+    property bool autoSystemSync: true
+    signal systemSyncDone(bool ok)
+
+    function setAccent(choice) {
+        if (!choice || choice.length === 0)
+            return;
+        root.pendingAccent = choice;
+        pendingClear.restart();
+        Sys.sos(["theme", "accent", choice, "--json"], function (code) {
+            if (code !== 0) {
+                root.pendingAccent = "";
+                return;
+            }
+            root.queueSystemSync();
+        });
+    }
+
+    // graphite | paper | phosphor | auto
+    function setBase(themeId) {
+        Sys.sos(["theme", "apply", themeId, "--quiet"], function (code) {
+            if (code === 0)
+                root.queueSystemSync();
+        });
+    }
+
+    function queueSystemSync() {
+        if (!Settings.themeOnLogin)
+            return;
+        root.systemSyncPending = true;
+        if (root.autoSystemSync)
+            systemSync.restart();
+    }
+
+    function flushSystemSync() {
+        if (!root.systemSyncPending)
+            return;
+        root.systemSyncPending = false;
+        systemSync.stop();
+        root.applySystemTheme(function (code) {
+            root.systemSyncDone(code === 0);
+        });
+    }
+
+    // the current look → /etc/svoya/theme.json (cb(exitCode): 0 = done, else not changed)
+    function applySystemTheme(cb) {
+        Sys.sos(["theme", "apply", "--system", "--quiet"], cb || null);
+    }
+
+    Timer {
+        id: systemSync
+
+        interval: 20000
+        onTriggered: {
+            if (Ui.open)
+                systemSync.restart();
+            else
+                root.flushSystemSync();
+        }
+    }
+
+    Connections {
+        target: Ui
+
+        function onModalChanged() {
+            if (!Ui.open && root.autoSystemSync)
+                root.flushSystemSync();
+        }
+    }
+
+    onAccentChoiceChanged: {
+        if (root.pendingAccent.length > 0 && root.pendingAccent.toLowerCase() === root.accentChoice.toLowerCase())
+            root.pendingAccent = "";
+    }
+
+    Timer {
+        id: pendingClear
+
+        interval: 6000
+        onTriggered: root.pendingAccent = ""
+    }
+
+    // ---- colors: targets (instant) ---------------------------------------------------------------
+    readonly property color targetLine: root.highContrast ? root.tok("color", "lineStrong") : root.tok("color", "line")
+    readonly property color targetLineStrong: root.highContrast ? root.tok("color", "textFaint") : root.tok("color", "lineStrong")
+    readonly property color targetTextDim: root.highContrast ? root.tok("color", "text") : root.tok("color", "textDim")
+    readonly property color targetTextFaint: root.highContrast ? root.tok("color", "textDim") : root.tok("color", "textFaint")
+    readonly property color targetAccent: root.previewTokens ? root.previewTokens.color : root.tok("color", "accent")
+    readonly property color targetAccentSoft: root.previewTokens ? root.previewTokens.soft : root.tok("color", "accentSoft")
+    readonly property color targetAccentInk: root.previewTokens ? root.previewTokens.ink : root.tok("color", "accentInk")
+    readonly property color targetAccentStrong: {
+        if (root.previewTokens)
+            return root.previewTokens.strong;
+        const s = root.tok("color", "accentStrong");
+        return s ? s : Color.strong(String(root.tok("color", "accent")), root.mode);
+    }
+
+    // ---- colors: what everything binds to (cross-fade 260 ms) --------------------------------------
+    readonly property int colorMs: root.reduceMotion || !root.settled ? 0 : 260
+
+    property color wall: root.tok("color", "wall")
+    property color bar: root.tok("color", "bar")
+    property color surface: root.tok("color", "surface")
+    property color surface2: root.tok("color", "surface2")
+    property color surface3: root.tok("color", "surface3")
+    property color line: root.targetLine
+    property color lineStrong: root.targetLineStrong
+    property color text: root.tok("color", "text")
+    property color textDim: root.targetTextDim
+    property color textFaint: root.targetTextFaint
+    property color accent: root.targetAccent
+    property color accentSoft: root.targetAccentSoft
+    property color accentStrong: root.targetAccentStrong
+    property color accentInk: root.targetAccentInk
+    property color ok: root.tok("color", "ok")
+    property color warn: root.tok("color", "warn")
+    property color bad: root.tok("color", "bad")
+    property color cloud: root.tok("color", "cloud")
+    property color shadow: root.tok("color", "shadow")
+
+    Behavior on wall {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on bar {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on surface {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on surface2 {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on surface3 {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on line {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on lineStrong {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on text {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on textDim {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on textFaint {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on accent {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on accentSoft {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on accentStrong {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on accentInk {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on ok {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on warn {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on bad {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on cloud {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on shadow {
+        ColorAnimation {
+            duration: root.colorMs
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    // Neutral selection and focus colors (DESIGN §9, §11: the accent never marks a selection).
+    readonly property color selected: root.text                        // on / selected / checked
+    readonly property color focusRing: root.alpha(root.text, 0.7)       // 2px outline, 2px offset
 
     // ---- typography (DESIGN.md §2) -------------------------------------------
     readonly property string sans: root.tok("font", "sans")

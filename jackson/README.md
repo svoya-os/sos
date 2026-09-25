@@ -12,6 +12,7 @@ j -                                  # the question itself comes from stdin
 j                                    # chat until Ctrl+D
 jackson status | models | doctor     # what is going on
 jackson undo                         # revert the last thing Jackson did (Super+Z does the same)
+j avatar set персонаж кот            # his look and name (~/.config/svoya/avatar.json)
 ```
 
 Stdlib-only Python (≥ 3.11; target 3.13 on Ubuntu 26.04). No LiteLLM, no pip dependencies.
@@ -32,7 +33,8 @@ Stdlib-only Python (≥ 3.11; target 3.13 on Ubuntu 26.04). No LiteLLM, no pip d
 | `jackson/audit.py` | hash-chained `audit.jsonl` + `audit.head` |
 | `jackson/undo.py`, `trash.py` | undo registry, freedesktop Trash, `sos undo` / snapper |
 | `jackson/memory.py`, `skills.py` | Markdown memory + FTS5 index; Agent Skills (`SKILL.md`) |
-| `jackson/fastpath.py`, `osctl.py` | ~30 RU/EN commands without a model, each verified |
+| `jackson/fastpath.py`, `osctl.py` | ~40 RU/EN commands without a model, each verified |
+| `jackson/avatar.py`, `aiswitch.py` | look and name (`avatar.json`, DESIGN §13); the AI switch (`sos ai off`) |
 | `jackson/persona.py`, `prompts/` | system prompts (RU/EN), personas, humor level |
 | `jackson/voice.py`, `acp.py` | documented interfaces only (v0.2 voice, v0.3 external agents) |
 | `tests/` | `python3 -m unittest discover -s jackson/tests -t jackson` (from the repo root) |
@@ -74,25 +76,29 @@ JSON Lines over `$XDG_RUNTIME_DIR/svoya/jackson.sock`. Implemented exactly as sp
 are additive and clients must ignore what they do not know.
 
 Client → Jackson: `hello {client, version, lang?}` · `ask {id, text, context?{selection, clipboard,
-screenshot, cwd}, route?, new?}` · `approve {id, callId, decision}` · `cancel {id}` · `status` ·
-`undo {actionId?, id?}` · `ping`.
+screenshot, cwd}, route?, new?, refines?}` · `approve {id, callId, decision}` · `cancel {id}` · `status` ·
+`undo {actionId?, id?}` · `ping`. Unknown message types are ignored.
 
 Jackson → client:
 
 | type | fields (additive ones in *italics*) |
 |---|---|
-| `welcome` | `version`, `models`, `route` (*mode, policy, offline, model, provider, local, reason*), *`protocol`, `persona` {id, name, humor}, `avatar`, `client`, `lang`* |
+| `welcome` | `version`, `models`, `route` (*mode, policy, offline, model, provider, local, reason*), *`protocol`, `persona` {id, name, humor}, `avatar` (full avatar.json object), `name`, `ai` {enabled, off}, `capabilities`, `client`, `lang`* |
 | `route` | `model`, `provider`, `local`, `reason`, *`task`, `label`* |
 | `token` | `text` |
 | `tool` | `callId`, `name`, `args`, `tier`, `state`, `summary`, *`verified`, `actions`* |
 | `approval` | `callId`, `name`, `preview`, `tier`, *`decisions` (allowed answers), `reasons`, `args`* |
 | `done` | `usage`, `costEur`, `latencyMs`, `leftMachine`, `actions`, *`leftTo`, `costEstimated`, `model`, `provider`, `meta` (ready-made footer), `cancelled`, `undone`* |
-| `error` | `message`, `retryable`, *`costEur`, `leftMachine`* |
-| `state` | `state`, *`persona`, `avatar`, `mood` (calm/thinking/busy/talking/asking/sorry), `detail`, `client`* |
+| `error` | `message`, `retryable`, *`costEur`, `leftMachine`, `aiOff` + `off` (user/system/config) when the AI switch refused the turn* |
+| `state` | `state`, *`persona`, `avatar` (full object), `mood` (calm/thinking/busy/talking/asking/sorry), `detail` (`approval`, `error`, `avatar`, `persona`), `client`* |
 | *`status`* | *answer to `status`: route, spend today, requests that left today, pending approvals, turns, models, sandbox/sos availability, MCP servers* |
 | *`pong`* | *answer to `ping`* |
 
-Rules: every turn ends with exactly one `done` or `error`, then `state: idle`. `state` events are
+Rules: every turn ends with exactly one `done` or `error`, then `state: idle`. When
+`avatar.json` changes (the shell's customizer, `j avatar`, «стань котом»), every client gets a fresh
+`state {detail: "avatar"}` within 2 s (one `stat()` per 2 s while clients are connected). `ask.refines`
+continues the conversation of that turn, even from a new connection. Jackson keeps
+`$XDG_RUNTIME_DIR/svoya/ai.json` = `{local, cloudActiveSince}` current for `sos status`. `state` events are
 broadcast to all clients (the bar's mini-scope follows any turn); other events go to the client that
 asked. An approval can be answered from any client (`jackson approve <callId> once`). A second
 `ask` while a turn is running gets `error {retryable: true}`. A disconnect cancels the client's turn.
@@ -264,6 +270,35 @@ Wi-Fi on/off, Bluetooth on/off, «что ты умеешь», «отмени», 
 в VS Code?» goes to a model. Measured 110–140 ms wall (CLI start included) with the background
 service running, 3–8 ms inside Jackson.
 
+## Look, name and the AI switch
+
+`~/.config/svoya/avatar.json` (DESIGN §13, shared with the shell): `character` imp|cat, `skin`,
+`outfit`, `style`, `headphones`, `glasses`, `hood`, `name`. The file may be sparse; missing keys follow
+the character's defaults, unknown keys are kept, writes are atomic, every change is undoable. `name`
+(default «Джексон» / "Jackson") is used everywhere he talks about himself — the system prompt, CLI
+texts, `welcome.name` — and also works as a wake word («Макс, громче»).
+
+```
+j avatar                                  # show
+j avatar set персонаж кот                 # keys and values in Russian or English:
+j avatar set окрас рыжий                  #   персонаж/character кот|чёрт · окрас/skin · одежда/outfit
+j avatar set очки круглые                 #   стиль/style худи|куртка|футболка · наушники да|нет
+j avatar set имя Макс                     #   очки нет|круглые|тёмные · капюшон да|нет · имя/name
+j avatar reset
+```
+
+Or ask: «стань котом» / «стань рыжим котом», «надень очки», «сними наушники», «капюшон долой»,
+«надень худи», «тебя теперь зовут Макс» (he confirms with the new name). Accent: «сделай акцент
+фиолетовым», «акцент сирень», «верни оранжевый», «без цвета» → `sos theme accent … --json` (sos
+resolves the color words), verified against `theme.json.accentId`, undoable; red is refused (errors
+own it). Base theme: «тёмная/светлая/авто тема», «включи бумагу/графит/фосфор».
+
+**AI switch** (WORKFLOWS §8): with `~/.config/svoya/ai.off`, `/etc/svoya/ai.off` or
+`[ai] enabled = false` in `svoya.toml`, Jackson answers only fast-path commands; everything else gets a
+calm `error {aiOff: true}` explaining `sos ai on` (and `j` prints it without alarm). «выключи ИИ»
+answers first and then runs `sos ai off` detached (it stops Jackson too); `jackson undo` turns it back
+on. While off, no model servers are probed and no MCP servers start.
+
 ## Personas
 
 «Кент из нулевых» (default): a warm, slightly cheeky guy from the ICQ-and-forums internet, straight
@@ -281,19 +316,23 @@ v5_cis_base (MIT) or Piper (GPL-3.0, dmitri/denis), Qwen3-TTS (Apache-2.0) on GP
 with `level`. External agents (Claude Code, Codex CLI, OpenCode, goose) will run over ACP inside the
 same sandbox/tier/audit/undo machinery — interface in `jackson/acp.py`.
 
-## Contract notes (proposed ARCHITECTURE changes)
+## Contract notes
 
-1. §4.3 — add: *"Clients must ignore unknown event types and fields. `status` is answered with a
-   `status` event (route, spend, pending approvals, turns, models) followed by a `state` event.
-   `undo` may carry an `id`; it is answered with `tool`, `token`, `done {undone}` or `error`.
-   `ask` may carry `new: true` (fresh conversation); `route` also accepts `provider/model`.
-   `approval` carries `decisions` (the allowed answers: T3/T4 and tainted turns offer only `once`/`deny`).
-   `state` carries `persona`, `avatar`, `mood`."*
-2. §3 — keyring attributes: *"Keys are stored as `secret-tool store --label='SOS: <name>' service svoya
-   provider <name>`"* (`secret-tool lookup svoya provider <name>` is not a valid attribute list).
-3. `sos` CLI (cli/ owners): Jackson calls `sos status --json`, `sos snapshot create --reason TEXT --json`
-   → `{"id": …}`, `sos undo [<id>]`, `sos theme apply <id|auto>`, falling back to `svoya …`.
-   `~/.local/state/svoya/theme.json` should contain top-level `id` and `mode`.
+Implemented as agreed in ARCHITECTURE §8 (unknown types ignored, `status`/`undo` answers, `new`,
+`refines`, `provider/model` routes, `decisions`, `capabilities`, `ai.json`, `sos undo … --yes`).
+Proposed addition to §8 (look, name, AI switch):
+
+> **Jackson's look and name (DESIGN §13).** `~/.config/svoya/avatar.json` is shared by the shell and
+> Jackson: `character` (imp|cat), `skin`, `outfit`, `style`, `headphones`, `glasses`, `hood`, `name`.
+> It may be sparse (missing keys follow the character's defaults); writers keep unknown keys and replace
+> the file atomically. `welcome` carries `name`, `avatar` (the full resolved object), `ai {enabled, off}`
+> and `capabilities`; every `state` carries the full `avatar`; when the file changes, Jackson re-sends
+> `state {detail: "avatar"}` to every client within 2 s.
+> **AI switch.** With `/etc/svoya/ai.off`, `~/.config/svoya/ai.off` or `[ai] enabled = false`, Jackson
+> answers only fast-path commands; other turns end with `error {aiOff: true, off: system|user|config}`
+> whose message explains `sos ai on`. Jackson runs `sos ai off` only after its answer has been sent.
+> **Accent.** Jackson changes the accent only via `sos theme accent <word|#hex> --json` and verifies
+> `theme.json` `accentId`.
 
 ## Tests
 

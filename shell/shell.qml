@@ -143,6 +143,9 @@ ShellRoot {
         function cancel(): void {
             Jackson.cancel();
         }
+        function customize(): void {
+            Actions.customizeJackson();
+        }
         // for people who bind push-to-talk to another key in user.conf (bind + bindr)
         function press(): void {
             ptt.press();
@@ -173,6 +176,9 @@ ShellRoot {
 
         function toggle(): void {
             Ui.toggle("cc");
+        }
+        function look(): void {
+            Actions.openLook();
         }
     }
 

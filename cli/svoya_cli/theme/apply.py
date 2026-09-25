@@ -5,6 +5,7 @@ and live-reload hooks (hyprctl, kitty, gsettings) only run for targets that actu
 """
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 import shutil
 import tomllib
@@ -15,7 +16,7 @@ from .. import config as config_mod
 from ..context import Ctx
 from ..paths import Paths
 from ..util import atomic_write, iso, read_json, read_text, write_json
-from . import engine, solar
+from . import accents, engine, solar
 from .colors import Color, terminal_palette
 
 MARKER = "svoya:generated"
@@ -128,35 +129,74 @@ def next_switch(now: dt.datetime, cfg: dict) -> dt.datetime | None:
     return None
 
 
+# ---------------------------------------------------------------- accent
+
+_FROM_CONFIG = object()
+
+
+def resolve_accent(theme: Theme, cfg: dict, paths: Paths, choice=_FROM_CONFIG) -> accents.Resolved:
+    """The accent for this base theme: ``[theme] accent`` (or ``choice``), else the theme's ``accentDefault``."""
+    if choice is _FROM_CONFIG:
+        choice = (cfg.get("theme") or {}).get("accent")
+    return accents.resolve(str(choice) if choice else None, mode=theme.mode, colors=theme.colors,
+                           catalog=accents.load_catalog(paths), theme_default=theme.data.get("accentDefault"))
+
+
+def with_accent(theme: Theme, acc: accents.Resolved) -> Theme:
+    """The theme with its four accent tokens replaced by the accent system's."""
+    colors = dict(theme.colors)
+    colors.update(accent=acc.color, accentSoft=acc.soft, accentStrong=acc.strong, accentInk=acc.ink)
+    return dataclasses.replace(theme, colors=colors)
+
+
 # ---------------------------------------------------------------- rendering
 
-def template_context(theme: Theme, paths: Paths) -> dict:
+def template_context(theme: Theme, paths: Paths, accent: accents.Resolved | None = None) -> dict:
     d = theme.data
+    colors = with_accent(theme, accent).colors if accent is not None else dict(theme.colors)
+    colors.setdefault("accentStrong", accents.strong_variant(colors["accent"].with_alpha(1.0), theme.mode))
+    acc = accent
+    acc_vars = {"id": acc.id, "name": dict(acc.name), "custom": acc.custom or "", "adjusted": acc.adjusted,
+                "gnome": acc.gnome} if acc else {"id": "theme", "name": {"en": "Theme", "ru": "Тема"}, "custom": "",
+                                                 "adjusted": False, "gnome": accents.gnome_accent(colors["accent"])}
     return {
         "id": theme.id,
         "mode": theme.mode,
         "pair": theme.pair or "",
         "dark": theme.mode == "dark",
         "name": {"en": theme.name.get("en", theme.id), "ru": theme.name.get("ru", theme.name.get("en", theme.id))},
-        "color": dict(theme.colors),
+        "color": colors,
+        "accent": acc_vars,
         "font": dict(d.get("font") or {"sans": "IBM Plex Sans", "mono": "IBM Plex Mono", "pixel": "Departure Mono"}),
         "shape": dict(d.get("shape") or {}),
         "motion": dict(d.get("motion") or {}),
         "effects": dict(d.get("effects") or {}),
-        "term": terminal_palette(theme.colors, theme.mode),
+        "term": terminal_palette(colors, theme.mode),
         "icons": "Papirus-Dark" if theme.mode == "dark" else "Papirus-Light",
         "colorScheme": "prefer-dark" if theme.mode == "dark" else "prefer-light",
         "path": {"home": str(paths.home), "config": str(paths.config_home), "state": str(paths.state_home)},
     }
 
 
-def theme_json(theme: Theme, choice: str, now: dt.datetime) -> dict:
-    """Flat JSON of the token keys (ARCHITECTURE §4.1); colors as #AARRGGBB for QML."""
+def theme_json(theme: Theme, choice: str, now: dt.datetime, accent: accents.Resolved | None = None) -> dict:
+    """Flat JSON of the token keys (ARCHITECTURE §4.1, §8); colors as #AARRGGBB for QML.
+
+    With the accent system: ``accent accentSoft accentStrong accentInk`` come from the resolved accent and
+    ``accentId accentNameEn accentNameRu accentCustom accentAdjusted accentContrast`` describe it."""
+    if accent is not None:
+        theme = with_accent(theme, accent)
     out: dict = {"id": theme.id, "mode": theme.mode, "pair": theme.pair,
                  "nameEn": theme.name.get("en", theme.id), "nameRu": theme.name.get("ru", theme.name.get("en", theme.id)),
                  "choice": choice}
     for k, c in theme.colors.items():
         out[k] = c.hexa
+    if "accentStrong" not in out:
+        out["accentStrong"] = accents.strong_variant(theme.colors["accent"].with_alpha(1.0), theme.mode).hexa
+    if accent is not None:
+        out.update({"accentId": accent.id, "accentNameEn": accent.name.get("en", accent.id),
+                    "accentNameRu": accent.name.get("ru", accent.name.get("en", accent.id)),
+                    "accentCustom": accent.custom, "accentAdjusted": accent.adjusted,
+                    "accentContrast": round(accent.contrast, 2)})
     for section in ("font", "shape", "motion", "effects"):
         for k, v in (theme.data.get(section) or {}).items():
             out.setdefault(k, v)
@@ -341,7 +381,8 @@ def apply_theme(ctx: Ctx, choice: str, *, force: bool = False, only: list[str] |
     now = ctx.now()
     theme_id, reason = resolve(choice, cfg, now, ctx.paths)
     theme = load_theme(ctx.paths, theme_id)
-    ctx_vars = template_context(theme, ctx.paths)
+    acc = resolve_accent(theme, cfg, ctx.paths)
+    ctx_vars = template_context(theme, ctx.paths, acc)
     skip = set(cfg.get("theme", {}).get("skip", []) or [])
     created_path = ctx.paths.state_dir / "theme-files.json"
     created = set((read_json(created_path) or {}).get("created", []))
@@ -369,21 +410,25 @@ def apply_theme(ctx: Ctx, choice: str, *, force: bool = False, only: list[str] |
 
     tj_path = ctx.paths.theme_json
     old = read_json(tj_path) or {}
-    new = theme_json(theme, choice, now)
+    new = theme_json(theme, choice, now, acc)
     mode_changed = old.get("mode") != theme.mode
+    accent_changed = (old.get("accent"), old.get("accentId")) != (new["accent"], new["accentId"])
     tj_changed = {k: v for k, v in old.items() if k != "appliedAt"} != {k: v for k, v in new.items() if k != "appliedAt"}
     if (tj_changed or force) and not ctx.dry_run:
         write_json(tj_path, new)
 
-    hooks = run_hooks(ctx, theme, results, mode_changed or force)
+    hooks = run_hooks(ctx, theme, results, mode_changed or force, acc if (accent_changed or force) else None)
     return {"theme": theme.id, "name": dict(theme.name), "choice": choice, "reason": reason, "mode": theme.mode,
+            "accent": acc.as_json(), "accentChanged": accent_changed,
             "themeJson": str(tj_path), "themeJsonChanged": tj_changed,
             "targets": [{"id": r.target.id, "path": str(r.target.path), "changed": r.changed,
                          "backup": str(r.backup) if r.backup else None, "skipped": r.skipped} for r in results],
             "hooks": hooks, "dryRun": ctx.dry_run}
 
 
-def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool) -> list[str]:
+def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool,
+              accent: accents.Resolved | None = None) -> list[str]:
+    """Live reloads for what changed. ``accent`` is given when the accent changed (→ GNOME accent-color)."""
     ran: list[str] = []
     changed = {r.target.reload for r in results if r.changed and r.target.reload}
     r = ctx.runner
@@ -407,4 +452,9 @@ def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool)
         if ctx.exists(f"/usr/share/icons/{icons}"):
             r.run(["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", icons], timeout=5, mutating=True)
             ran.append(f"gsettings icon-theme {icons}")
+    if accent is not None and r.which("gsettings") and (ctx.env.get("DBUS_SESSION_BUS_ADDRESS") or ctx.env.get("WAYLAND_DISPLAY")):
+        # libadwaita ≥ 1.6 / GNOME ≥ 47 (also what the portal tells Flatpak apps): closest named accent
+        if r.run(["gsettings", "writable", "org.gnome.desktop.interface", "accent-color"], timeout=5).out.strip() == "true":
+            r.run(["gsettings", "set", "org.gnome.desktop.interface", "accent-color", accent.gnome], timeout=5, mutating=True)
+            ran.append(f"gsettings accent-color {accent.gnome}")
     return ran

@@ -11,11 +11,11 @@
 <script src="shell.js"></script>
 <style>
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
-  .pf { padding: 18px 18px 16px; height: 186px; display: flex; flex-direction: column; }
+  .pf { padding: 16px 18px 14px; height: 176px; display: flex; flex-direction: column; }
   .pf .top { display: flex; align-items: center; gap: 12px; }
   .pf .top h3 { font: 500 15px/20px "Plex Sans"; color: var(--text); }
   .pf .sel { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); display: grid; place-items: center; }
-  .pf.on .sel { background: var(--accent); box-shadow: none; color: var(--accent-ink); }
+  .pf.on .sel { background: var(--text); box-shadow: none; color: var(--surface); }
   .pf:not(.on) .sel svg { display: none; }
   .pf .sel svg.i { width: 11px; height: 11px; stroke-width: 2.8; }
   .pf p { margin-top: 12px; font: 400 13px/20px "Plex Sans"; color: var(--text-dim); }
@@ -24,11 +24,18 @@
   .pf .foot b { font-weight: 400; color: var(--text-dim); }
   .pf .foot .ok { color: var(--ok); display: flex; align-items: center; gap: 5px; }
   .pf .foot .ok svg.i { width: 11px; height: 11px; stroke-width: 2.4; }
-  .pf.on .tile.lg { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .pf.on .tile.lg { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
 
   .pf.mod { border-style: dashed; border-color: var(--line-strong); }
   .pf.mod .switch { margin-left: auto; }
 
+  .apps { margin-top: 16px; display: flex; align-items: center; gap: 8px; padding: 11px 14px 11px 18px; border-radius: 14px; border: 1px solid var(--line); }
+  .apps .lbl { margin-right: auto; }
+  .apps .lbl b { display: block; font: 500 13px/18px "Plex Sans"; color: var(--text); }
+  .apps .lbl span { font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+  .app { display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 12px 0 9px; border-radius: 9px; box-shadow: inset 0 0 0 1px var(--line); font: 500 13px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap; }
+  .app small { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .app.on { color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
   .summary {
     margin-top: 20px; display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 14px;
     background: var(--surface); border: 1px solid var(--line);
@@ -103,10 +110,18 @@
         </div>
       </div>
 
+      <div class="apps solid">
+        <span class="lbl"><b>Приложения</b><span>ставятся вместе с профилем</span></span>
+        <span class="app on"><span class="box on"><svg data-i="check"></svg></span>Obsidian<small>заметки и память Джексона</small></span>
+        <span class="app"><span class="box"></span>Blender</span>
+        <span class="app"><span class="box"></span>OBS Studio</span>
+        <span class="app"><span class="box"></span>Telegram</span>
+      </div>
+
       <div class="summary">
         <svg data-i="package"></svg>
-        <div class="t">Будет установлено: <b>ML-лаборатория, Локальные модели, Dev</b>. Перед установкой — снимок системы.</div>
-        <div class="r"><span><b>21,4 ГБ</b>из 1,8 ТБ свободных</span><span><b>≈ 9 мин</b></span></div>
+        <div class="t">Будет установлено: <b>ML-лаборатория, Локальные модели, Dev и Obsidian</b>. Сначала — снимок системы.</div>
+        <div class="r"><span><b>21,6 ГБ</b>из 1,8 ТБ свободных</span><span><b>≈ 9 мин</b></span></div>
       </div>
     </div>
 

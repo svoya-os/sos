@@ -7,10 +7,13 @@ Design (1920×1080 reference, positions are GRUB proportional specs so they hold
 * background   the Graphite wallpaper surface (gradients + grain) without the signal;
 * horizon      the wallpaper's horizon line and Morse burst as components anchored at 78 %, so the
                timeout highlight (a __timeout__ progress bar on the same anchor) always sits on it:
-               the line fills with amber toward the burst while GRUB counts down;
+               the line brightens toward the burst while GRUB counts down;
 * menu         left-aligned IBM Plex Mono (as PFF2 "Svoya Mono", see make-fonts.sh), the selected
-               entry in amber with a Morse dash as the marker; static texts (caption, key hints) are
+               entry in `text` with a Morse dash in `text` as the marker; static texts (caption, key hints) are
                PNGs so they keep the brand's tracking and keycaps.
+
+Neutral by rule (design/DESIGN.md §12): no accent anywhere, only Graphite text tones, so the boot
+menu can never clash with the accent a user picks later.
 
 GRUB parses integer percentages only ("78%-2" is fine, "77.8%" would hang its parser).
 
@@ -88,7 +91,7 @@ def render_layers(r: brand.Renderer):
     }
     out = {}
     for name, layers in jobs.items():
-        doc = wallpapers.page_html("graphite", width_units, DPR, True, layers=layers)
+        doc = wallpapers.page_html("graphite", width_units, DPR, True, layers=layers, accent=C["text"])
         tmp = brand.OUT / "grub" / f".{name}.png"
         r.html(doc, round(width_units), wallpapers.UNIT_H, tmp, scale=DPR, transparent=name != "background",
                wait_ms=120)
@@ -129,7 +132,7 @@ def make_rasters(r: brand.Renderer) -> dict:
     geo["burst_top"] = f"{ANCHOR}-{anchor - y0}"
     # timeout highlight: 5 rows, core on the line row; fade in from the left, soft head at the right
     prof = np.array([0.10, 0.34, 1.0, 0.34, 0.10])
-    acc = brand.rgb(C["accent"])
+    acc = brand.rgb(C["text"])                                  # neutral: the signal is drawn in `text`
     rgba(prof[:, None] * 0.95, acc).save(THEME / "timeout_hl_c.png")
     ramp = np.linspace(0, 1, 240) ** 1.6
     rgba(prof[:, None] * ramp[None, :] * 0.95, acc).save(THEME / "timeout_hl_w.png")
@@ -208,7 +211,7 @@ def mark_png(r: brand.Renderer, out: pathlib.Path, d: float = 5.0) -> tuple[int,
     w = math.ceil(MARK.width * d) + 2
     h = math.ceil(d) + 2
     rects = "".join(f'<rect x="{x + 1:.2f}" y="1" width="{ew:.2f}" height="{eh:.2f}" rx="{eh / 2:.2f}" '
-                    f'fill="{C["accent"] if dash else C["text"]}"/>'
+                    f'fill="{C["text"]}"/>'
                     for x, _y, ew, eh, dash, _ in mark_elements(d))
     r.svg(f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}">{rects}</svg>', w, h, out)
     return w, h
@@ -242,7 +245,7 @@ terminal-border: "0"
 + image {{ left = {MARGIN} top = 24% width = {mw} height = {mh} file = "mark.png" }}
 + image {{ left = {MARGIN} top = 24%+20 width = {cw} height = {ch} file = "caption-{lang}.png" }}
 
-# the menu: text aligns with the mark, the Morse-dash marker hangs in the margin
+# the menu: text aligns with the mark, the Morse-dash marker hangs in the margin; neutral (no accent)
 + boot_menu {{
     left = 8%-{MARKER_W - 7}
     top = 33%
@@ -251,7 +254,7 @@ terminal-border: "0"
     item_font = "{FONT} {ITEM_FONT}"
     selected_item_font = "{FONT} {ITEM_FONT}"
     item_color = "{C['textDim']}"
-    selected_item_color = "{C['accent']}"
+    selected_item_color = "{C['text']}"
     item_height = {ITEM_H}
     item_spacing = {ITEM_GAP}
     item_padding = 0
@@ -263,7 +266,7 @@ terminal-border: "0"
     scrollbar = false
 }}
 
-# the horizon of the wallpaper; while GRUB counts down it fills with amber toward the burst
+# the horizon of the wallpaper; while GRUB counts down it brightens toward the burst
 + image {{ left = 0 top = {geo['horizon_top']} width = 100% height = 9 file = "horizon.png" }}
 + image {{ left = {geo['burst_left']} top = {geo['burst_top']} width = {bw} height = {bh} file = "burst.png" }}
 + progress_bar {{
@@ -329,7 +332,7 @@ def preview(r: brand.Renderer, lang: str, geo: dict, sizes: dict, out: pathlib.P
         if sel:
             rows.append(f'<img src="{(THEME / "select_w.png").as_uri()}" style="left:{menu_left}px;top:{y}px">')
         base = y + grub_baseline(ITEM_FONT, ITEM_H)
-        rows.append(text_path(e, ITEM_FONT, menu_left + MARKER_W, base, C["accent"] if sel else C["textDim"]))
+        rows.append(text_path(e, ITEM_FONT, menu_left + MARKER_W, base, C["text"] if sel else C["textDim"]))
     bx, by, bw, bh = geo["burst"]
     tw = spec(geo["timeout_width"], W)
     hl_w = int(tw * countdown)

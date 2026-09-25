@@ -1,12 +1,13 @@
 import QtQuick
 import qs.core
 
-// Thin progress meter (bar job: 34×4, radius 2, surface3 track).
+// Thin meter (bar job: 34×4, radius 2, surface3 track). Neutral by default; running jobs pass
+// `fill: Theme.accent` (the live signal, DESIGN §11).
 Rectangle {
     id: root
 
     property real value: 0            // 0..1
-    property color fill: Theme.accent
+    property color fill: Theme.textDim
 
     implicitWidth: 34
     implicitHeight: 4

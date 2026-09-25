@@ -169,7 +169,7 @@ Scope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: modelData.morse === true
                                 text: Strings.morse
-                                color: Theme.accent
+                                color: Theme.textFaint
                             }
                         }
                     }

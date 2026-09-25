@@ -263,6 +263,8 @@ class FakeRunner(Runner):
         self.snapshots = 0
         self.broken: set[str] = set()   # commands that "succeed" without an effect
         self.launched: list[str] = []
+        self.accent: str | None = None  # None = the theme's default ("signal")
+        self.spawned: list[tuple[float, list[str]]] = []   # (time.monotonic(), argv) of detached commands
 
     def which(self, name: str) -> str | None:
         return f"/usr/bin/{name}" if name in self.available else None
@@ -271,13 +273,47 @@ class FakeRunner(Runner):
         self.calls.append(list(argv))
         if argv[0] not in self.available:
             return None
+        self.spawned.append((time.monotonic(), list(argv)))
+        if argv[0] in ("sos", "svoya"):  # a detached sos command still has its effect
+            self.run(argv)
+            return 4243
         self.launched.append(" ".join(argv))
         return 4242
 
     def _write_theme(self) -> None:
         if self.paths is not None:
             self.paths.state_dir.mkdir(parents=True, exist_ok=True)
-            self.paths.theme_json.write_text(json.dumps({"id": self.theme, "mode": "dark"}), encoding="utf-8")
+            self.paths.theme_json.write_text(json.dumps({"id": self.theme, "mode": "dark",
+                                                         "accentId": self.accent or "signal"}), encoding="utf-8")
+
+    ACCENT_WORDS = {"фиолетовым": "lilac", "фиолетовый": "lilac", "сирень": "lilac", "lilac": "lilac",
+                    "violet": "lilac", "зеленый": "phosphor", "зелёный": "phosphor", "green": "phosphor",
+                    "оранжевый": "amber", "amber": "amber", "mono": "mono", "моно": "mono", "синий": "ink",
+                    "#ff8800": "custom"}
+    ACCENT_NAMES = {"lilac": ("Lilac", "Сирень"), "phosphor": ("Phosphor", "Фосфор"), "amber": ("Amber", "Янтарь"),
+                    "mono": ("Mono", "Моно"), "ink": ("Ink", "Чернила"), "signal": ("Signal", "Сигнал"),
+                    "custom": ("Custom", "Свой")}
+
+    def _accent(self, words: list[str]) -> RunResult:
+        word = " ".join(words).lower()
+        if word.startswith(("красн", "red")):
+            return RunResult(2, json.dumps({"ok": False, "error": "red is reserved for errors", "hint": "rose"}))
+        if word == "default":
+            new = None
+        elif word in self.ACCENT_WORDS:
+            new = self.ACCENT_WORDS[word]
+        else:
+            return RunResult(2, json.dumps({"ok": False, "error": f"unknown accent: {word}", "hint": None}))
+        prev, self.accent = self.accent, new
+        if "accent" not in self.broken:
+            self._write_theme()
+        aid = new or "signal"
+        en, ru = self.ACCENT_NAMES[aid]
+        return RunResult(0, json.dumps({"ok": True, "accent": {"id": aid, "name": {"en": en, "ru": ru},
+                                                               "color": "#bba4ff", "custom": word if aid == "custom" else None,
+                                                               "adjusted": aid == "custom"},
+                                        "changed": prev != new, "visible": prev != new,
+                                        "previous": {"theme": self.theme, "accent": prev}}))
 
     def run(self, argv: Any, timeout: float = 5.0, env: Any = None, cwd: Any = None, input: Any = None) -> RunResult:
         argv = list(argv)
@@ -345,6 +381,16 @@ class FakeRunner(Runner):
                 return RunResult(0, json.dumps({"id": f"snap-{self.snapshots}"}))
             if a[:1] == ["undo"]:
                 return RunResult(0, "rolled back\n")
+            if a[:2] == ["theme", "accent"]:
+                return self._accent([x for x in a[2:] if x != "--json"])
+            if a[:1] == ["ai"] and self.paths is not None:
+                marker = self.paths.ai_off_markers[1]
+                if a[1] == "off":
+                    marker.parent.mkdir(parents=True, exist_ok=True)
+                    marker.write_text("off\n")
+                elif a[1] == "on" and marker.exists():
+                    marker.unlink()
+                return RunResult(0, f"ai {a[1]}\n")
             if a[:2] == ["status", "--json"]:
                 return RunResult(0, json.dumps({"gpu": [{"index": 0, "vendor": "nvidia", "name": "RTX 4090",
                                                          "vramUsedMiB": 11468, "vramTotalMiB": 24564, "tempC": 64,

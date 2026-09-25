@@ -1,4 +1,4 @@
-/* svoya:generated — theme «{{ name.ru }}» / {{ name.en }} ({{ id }}). Written by `sos theme apply`; edits are overwritten.
+/* svoya:generated — theme «{{ name.ru }}» / {{ name.en }} ({{ id }}). Written by `sos theme` (apply · accent); edits are overwritten.
    Your own CSS: keep it in gtk.css.pre-svoya (imported below when it exists).
    libadwaita: named colors (all versions) + CSS variables (libadwaita ≥ 1.6). Matte: no translucency. */
 
@@ -7,16 +7,16 @@
 @define-color accent_fg_color {{ color.accentInk | hex }};
 @define-color destructive_color {{ color.bad | hex }};
 @define-color destructive_bg_color {{ color.bad | hex }};
-@define-color destructive_fg_color {{ color.accentInk | hex }};
+@define-color destructive_fg_color {{ color.bad | ink | hex }};
 @define-color success_color {{ color.ok | hex }};
 @define-color success_bg_color {{ color.ok | hex }};
-@define-color success_fg_color {{ color.accentInk | hex }};
+@define-color success_fg_color {{ color.ok | ink | hex }};
 @define-color warning_color {{ color.warn | hex }};
 @define-color warning_bg_color {{ color.warn | hex }};
-@define-color warning_fg_color {{ color.accentInk | hex }};
+@define-color warning_fg_color {{ color.warn | ink | hex }};
 @define-color error_color {{ color.bad | hex }};
 @define-color error_bg_color {{ color.bad | hex }};
-@define-color error_fg_color {{ color.accentInk | hex }};
+@define-color error_fg_color {{ color.bad | ink | hex }};
 @define-color window_bg_color {{ color.surface | hex }};
 @define-color window_fg_color {{ color.text | hex }};
 @define-color view_bg_color {{ color.surface2 | hex }};
@@ -54,16 +54,16 @@
   --accent-fg-color: {{ color.accentInk | hex }};
   --destructive-color: {{ color.bad | hex }};
   --destructive-bg-color: {{ color.bad | hex }};
-  --destructive-fg-color: {{ color.accentInk | hex }};
+  --destructive-fg-color: {{ color.bad | ink | hex }};
   --success-color: {{ color.ok | hex }};
   --success-bg-color: {{ color.ok | hex }};
-  --success-fg-color: {{ color.accentInk | hex }};
+  --success-fg-color: {{ color.ok | ink | hex }};
   --warning-color: {{ color.warn | hex }};
   --warning-bg-color: {{ color.warn | hex }};
-  --warning-fg-color: {{ color.accentInk | hex }};
+  --warning-fg-color: {{ color.warn | ink | hex }};
   --error-color: {{ color.bad | hex }};
   --error-bg-color: {{ color.bad | hex }};
-  --error-fg-color: {{ color.accentInk | hex }};
+  --error-fg-color: {{ color.bad | ink | hex }};
   --window-bg-color: {{ color.surface | hex }};
   --window-fg-color: {{ color.text | hex }};
   --view-bg-color: {{ color.surface2 | hex }};

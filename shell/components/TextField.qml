@@ -12,6 +12,7 @@ Item {
     property bool big: false
     property bool password: false
     property real size: root.big ? Theme.fsTitle : Theme.fsBody
+    property bool mono: false          // Plex Mono (hex values, paths)
 
     signal accepted
     signal escape
@@ -36,9 +37,9 @@ Item {
         color: Theme.text
         selectionColor: Theme.accentSoft
         selectedTextColor: Theme.text
-        font.family: Theme.sans
+        font.family: root.mono ? Theme.mono : Theme.sans
         font.pixelSize: root.size
-        font.features: Theme.sansFeatures
+        font.features: root.mono ? Theme.monoFeatures : Theme.sansFeatures
         font.letterSpacing: root.size >= 20 ? -0.005 * root.size : 0
         echoMode: root.password ? TextInput.Password : TextInput.Normal
         passwordCharacter: "•"

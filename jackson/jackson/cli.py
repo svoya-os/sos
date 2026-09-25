@@ -30,7 +30,7 @@ from .i18n import fmt_cost, fmt_number, meta_line, norm_lang
 from .paths import Paths
 
 SUBCOMMANDS = ("ask", "status", "models", "memory", "notes", "audit", "undo", "approve", "route", "persona",
-               "doctor", "mcp", "version", "help")
+               "avatar", "doctor", "mcp", "version", "help")
 
 # Graphite defaults (themes/graphite.toml); theme.json overrides them when present.
 DEFAULT_COLORS = {"accent": "#ffb547", "ok": "#8fd48a", "warn": "#ffb547", "bad": "#ff7a6b", "cloud": "#7ad3e6",
@@ -95,6 +95,12 @@ def say(lang: str, ru: str, en: str) -> str:
     return ru if lang == "ru" else en
 
 
+def my_name(lang: str, paths: Paths | None = None) -> str:
+    """Jackson's name from ~/.config/svoya/avatar.json (default «Джексон» / "Jackson")."""
+    from . import avatar as avatar_mod
+    return avatar_mod.load((paths or Paths.from_env()).avatar_file).display_name(lang)
+
+
 # ---------------------------------------------------------------------------
 # asking
 
@@ -135,8 +141,7 @@ class Renderer:
         while True:
             ev = await self.conn.recv()
             if ev is None:
-                self.meta(self.se.color("✗ " + say(self.lang, "связь с Джексоном оборвалась", "lost the connection"),
-                                        "bad"))
+                self.meta(self.se.color("✗ " + say(self.lang, "связь оборвалась", "lost the connection"), "bad"))
                 return 1
             if ev.get("id") not in (self.turn_id, None) or ev.get("type") in ("state", "welcome", "pong"):
                 continue
@@ -171,7 +176,10 @@ class Renderer:
                 return 0
             elif kind == "error":
                 if not self.json_mode:
-                    self.meta(self.se.color("✗ " + str(ev.get("message") or "error"), "bad"))
+                    if ev.get("aiOff"):  # a calm switch state, not a failure
+                        self.meta(self.se.color("⏻ " + str(ev.get("message")), "warn"))
+                    else:
+                        self.meta(self.se.color("✗ " + str(ev.get("message") or "error"), "bad"))
                 return 1
 
     def footer(self, ev: dict[str, Any]) -> None:
@@ -252,14 +260,16 @@ async def _ask(question: str, context: dict[str, Any], opts: argparse.Namespace)
         conn = await open_connection(paths, allow_embedded=not opts.no_local_fallback)
     except (OSError, asyncio.TimeoutError) as exc:
         lang = _lang(opts.lang)
-        err.write(say(lang, f"✗ Джексон недоступен: {exc}\n", f"✗ Jackson is unavailable: {exc}\n"))
+        name = my_name(lang, paths)
+        err.write(say(lang, f"✗ {name} недоступен: {exc}\n", f"✗ {name} is unavailable: {exc}\n"))
         return 3
     try:
         welcome = await conn.hello("jackson-cli", opts.lang)
         lang = norm_lang((welcome or {}).get("lang") or opts.lang or "ru")
         if opts.verbose and conn.in_process:
-            err.write(Style(err, paths).dim(say(lang, "Джексон не запущен в фоне — отвечаю прямо здесь.\n",
-                                                "Jackson is not running in the background — answering here.\n")))
+            name = str((welcome or {}).get("name") or my_name(lang, paths))
+            err.write(Style(err, paths).dim(say(lang, f"{name} не запущен в фоне — отвечаю прямо здесь.\n",
+                                                f"{name} is not running in the background — answering here.\n")))
         return await _turn_loop(conn, question, context, opts, lang, paths)
     finally:
         await conn.close()
@@ -430,12 +440,21 @@ def cmd_status(args: argparse.Namespace) -> int:
     if status is None:
         app = _app()
         status = {"version": __version__, **app.engine.status(), "persona": app.persona(lang),
-                  "models": app.router.model_table()}
+                  "models": app.router.model_table(), "name": app.name(lang), "avatar": app.avatar.to_event(),
+                  "ai": app.ai_state()}
     if args.json:
         print(json.dumps({"running": running, **status}, ensure_ascii=False, indent=1))
         return 0
     persona = status.get("persona") or {}
-    print(out.bold(say(lang, "Джексон", "Jackson")) + out.dim(f" · {persona.get('name', '')} · {status.get('version')}"))
+    name = str(status.get("name") or my_name(lang))
+    look = status.get("avatar") or {}
+    who = say(lang, "кот", "cat") if look.get("character") == "cat" else say(lang, "чёрт", "imp")
+    print(out.bold(name) + out.dim(f" · {persona.get('name', '')} · {who} · {status.get('version')}"))
+    ai = status.get("ai") or {}
+    if ai and not ai.get("enabled", True):
+        how = "sos ai on --system" if ai.get("off") == "system" else "sos ai on"
+        print(out.color(say(lang, f"ИИ         выключен — только быстрые команды (включить: {how})",
+                            f"AI         off — quick commands only (turn on: {how})"), "warn"))
     if running:
         state = out.color(say(lang, "работает", "running"), "ok")
     else:
@@ -644,7 +663,8 @@ def cmd_approve(args: argparse.Namespace) -> int:
     except asyncio.TimeoutError:
         events = []  # no error within a second: the approval was accepted
     if events is None:
-        print(say(lang, "Джексон не запущен в фоне — отвечать некому.", "Jackson is not running — nothing to answer."),
+        name = my_name(lang)
+        print(say(lang, f"{name} не запущен в фоне — отвечать некому.", f"{name} is not running — nothing to answer."),
               file=sys.stderr)
         return 1
     err = next((e for e in events if e.get("type") == "error"), None)
@@ -711,7 +731,7 @@ def cmd_persona(args: argparse.Namespace) -> int:
         for pid in PERSONAS:
             mark = "●" if pid == cfg.persona else "○"
             print(f"{mark} {pid:<11} {persona_title(pid, lang)}")
-        print(say(lang, f"юмор: {cfg.humor} (0–2) · аватар: {cfg.avatar}", f"humor: {cfg.humor} (0–2) · avatar: {cfg.avatar}"))
+        print(say(lang, f"юмор: {cfg.humor} (0–2) · внешний вид: j avatar", f"humor: {cfg.humor} (0–2) · look: j avatar"))
         return 0
     if args.action == "set" and args.value in PERSONAS:
         set_toml_value(paths.config_file, "", "persona", args.value)
@@ -721,14 +741,71 @@ def cmd_persona(args: argparse.Namespace) -> int:
         set_toml_value(paths.config_file, "", "humor", int(args.value))
         print(f"✓ humor = {args.value}")
         return 0
-    if args.action == "avatar" and args.value in ("auto", "imp", "cat", "none"):
-        set_toml_value(paths.config_file, "", "avatar", args.value)
-        print(f"✓ avatar = {args.value}")
-        return 0
-    print(say(lang, "Можно: persona set kent|sysop|dispatcher|pirate · persona humor 0|1|2 · persona avatar auto|imp|cat|none",
-              "Use: persona set kent|sysop|dispatcher|pirate · persona humor 0|1|2 · persona avatar auto|imp|cat|none"),
+    print(say(lang, "Можно: persona set kent|sysop|dispatcher|pirate · persona humor 0|1|2 (внешний вид: j avatar)",
+              "Use: persona set kent|sysop|dispatcher|pirate · persona humor 0|1|2 (look: j avatar)"),
           file=sys.stderr)
     return 2
+
+
+def cmd_avatar(args: argparse.Namespace) -> int:
+    """`j avatar [show|set <key> <value>|reset]` — ~/.config/svoya/avatar.json (DESIGN.md §13)."""
+    from . import avatar as av
+    lang = _lang(args.lang)
+    paths = Paths.from_env()
+    path = paths.avatar_file
+    out = Style(sys.stdout, paths)
+    if args.action == "show":
+        look = av.load(path)
+        if args.json:
+            print(json.dumps({**look.to_event(), "file": str(path), "exists": path.exists()}, ensure_ascii=False,
+                             indent=1))
+            return 0
+        rows = [("character", say(lang, "персонаж", "character")), ("skin", say(lang, "окрас", "skin")),
+                ("outfit", say(lang, "одежда", "outfit")), ("style", say(lang, "стиль", "style")),
+                ("headphones", say(lang, "наушники", "headphones")), ("glasses", say(lang, "очки", "glasses")),
+                ("hood", say(lang, "капюшон", "hood")), ("name", say(lang, "имя", "name"))]
+        for key, title in rows:
+            if key == "hood" and look.data["character"] == "cat":
+                continue
+            value = look.display_name(lang) if key == "name" else look.label(key, lang)
+            print(out.dim(f"{title:<11}") + value)
+        print(out.dim(say(lang, f"файл: {path}" + ("" if path.exists() else " (ещё нет — всё по умолчанию)"),
+                               f"file: {path}" + ("" if path.exists() else " (not yet — all defaults)"))))
+        return 0
+    prev = av.read_stored(path)
+    if args.action == "reset":
+        new = {k: v for k, v in (prev or {}).items() if k not in av.KEYS}  # keep what a newer shell wrote
+        summary = say(lang, "внешний вид по умолчанию", "default look")
+    else:
+        if not args.key or not args.value:
+            print(say(lang, "Как: j avatar set <ключ> <значение>, например: j avatar set персонаж кот · "
+                            "j avatar set очки круглые · j avatar set имя Макс",
+                      "Use: j avatar set <key> <value>, e.g. j avatar set character cat · "
+                      "j avatar set glasses round · j avatar set name Max"), file=sys.stderr)
+            return 2
+        try:
+            key = av.parse_key(args.key)
+            new = av.apply_change(dict(prev or {}), key, " ".join(args.value))
+        except av.AvatarError as exc:
+            print("✗ " + exc.text(lang), file=sys.stderr)
+            return 2
+        summary = f"{key} = {av.resolve(new)[key]}"
+    if av.resolve(new) == av.resolve(prev or {}) and args.action != "reset":
+        print(say(lang, "Уже так.", "Already like that."))
+        return 0
+    av.write(path, new)
+    check = av.load(path)
+    from .audit import AuditLog
+    from .tools.base import UndoSpec
+    from .trash import Trash
+    from .undo import UndoLog
+    action = UndoLog(paths.actions_file, Trash(paths.trash_dir)).register(
+        UndoSpec("avatar", say(lang, "мой вид: ", "my look: ") + summary, {"prev": prev}), "", "cli")
+    AuditLog(paths.audit_file, paths.audit_head).append("avatar", change=summary, source="cli", action=action.id)
+    verified = check.data == av.resolve(new)
+    print(("✓ " if verified else "✗ ") + summary + out.dim(say(lang, f"  (вернуть: jackson undo {action.id})",
+                                                              f"  (undo: jackson undo {action.id})")))
+    return 0 if verified else 1
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -808,8 +885,13 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("action", nargs="?", choices=["show", "set"])
     r.add_argument("key", nargs="?")
     r.add_argument("value", nargs="?")
-    pe = sub.add_parser("persona", help="образ: show | set <id> | humor 0-2 | avatar <id>")
-    pe.add_argument("action", nargs="?", choices=["show", "set", "humor", "avatar"])
+    pe = sub.add_parser("persona", help="образ: show | set <id> | humor 0-2")
+    pe.add_argument("action", nargs="?", choices=["show", "set", "humor"])
+    av = sub.add_parser("avatar", help="внешний вид и имя: show | set <ключ> <значение> | reset")
+    av.add_argument("action", nargs="?", choices=["show", "set", "reset"], default="show")
+    av.add_argument("key", nargs="?")
+    av.add_argument("value", nargs="*")
+    av.add_argument("--json", action="store_true")
     pe.add_argument("value", nargs="?")
     d = sub.add_parser("doctor", help="проверка")
     d.add_argument("--online", action="store_true", help="also check cloud providers over the network")
@@ -832,7 +914,7 @@ def _ask_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--screenshot", help="приложить изображение")
     p.add_argument("--no-stdin", action="store_true", help="не читать stdin")
     p.add_argument("--no-local-fallback", action="store_true",
-                   help="не отвечать в этом процессе, если Джексон не запущен в фоне")
+                   help="не отвечать в этом процессе, если ассистент не запущен в фоне")
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("--lang", choices=["ru", "en"])
 
@@ -853,7 +935,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         handler = {"status": cmd_status, "models": cmd_models, "memory": cmd_memory, "notes": cmd_notes,
                    "audit": cmd_audit, "undo": cmd_undo, "approve": cmd_approve, "route": cmd_route,
-                   "persona": cmd_persona, "doctor": cmd_doctor, "mcp": cmd_mcp}[args.cmd]
+                   "persona": cmd_persona, "avatar": cmd_avatar, "doctor": cmd_doctor, "mcp": cmd_mcp}[args.cmd]
         return handler(args)
     # Anything else is a question: `jackson найди мои датасеты`, `j -`, `j` (chat).
     if argv and argv[0] == "ask":

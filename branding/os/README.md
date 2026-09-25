@@ -27,8 +27,9 @@ run `python3 branding/os/generate.py`. Files under `root/` are laid out as they 
   as Mint does, rather than giving up our codename.
 * `LOGO=sos`: the icon name in `/usr/share/icons/hicolor/*/apps/sos.png` and `scalable/apps/sos.svg`
   (from `branding/logo/icon/`), used by GNOME About, fastfetch and systemd's welcome screen.
-* `ANSI_COLOR="38;2;255;181;71"`: the Graphite amber `#ffb547` as a 24-bit SGR color. The Linux VT maps it
-  to the nearest palette color. `/etc/issue` reuses it through agetty's `\S{ANSI_COLOR}`.
+* `ANSI_COLOR="1;37"`: neutral bright white. The console is a pre-login surface and carries no accent
+  (design/DESIGN.md §12), so it can never clash with the accent the user picks. `/etc/issue` reuses it
+  through agetty's `\S{ANSI_COLOR}`.
 * The URLs point at the placeholder repository `https://github.com/svoya-os/sos`. `PRIVACY_POLICY_URL` links
   the published promise in `docs/VISION.md` (no telemetry).
 
@@ -41,6 +42,6 @@ because `LOGO=` names an icon, and that icon is the product mark.
 
 ## Console
 
-`/etc/issue` shows `··· ——— ···` in amber, then the pretty name, then `host · tty · kernel`
+`/etc/issue` shows `··· ——— ···` in bright white, then the pretty name, then `host · tty · kernel`
 in half-bright. The console font must contain `·` and `—`. Set `CODESET="Uni2"` in
 `/etc/default/console-setup` (Ubuntu's default for ru/en) or use a Terminus font. `issue.net` is plain ASCII.

@@ -245,3 +245,31 @@ file `hyprland.conf` sources (`svoya-colors.conf` via `sos theme apply auto`, `s
 `user.conf`, `~/.local/state/svoya/hypr/input.conf`) and starts Hyprland. `sos session-start` runs
 `dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE`.
 `/etc/svoya/live` marks the live session (show "Install", skip the wizard).
+
+**Accent (§4.1).** `themes/accents.toml` + `[theme] accent = "<id>|#rrggbb"` in `~/.config/svoya/svoya.toml`
+(default: the base theme's `accentDefault`). theme.json adds `accentStrong, accentId, accentNameEn, accentNameRu,
+accentCustom (#rrggbb|null), accentAdjusted, accentContrast`; `accent accentSoft accentStrong accentInk` come from the
+accent system. `sos theme accent <id|name|#hex> [--system] [--undo] [--dry-run] [--json]`;
+`sos theme accents --json` → `[{id, name, note, dark, light, ink{dark,light}, gnome{dark,light}, default, current}]`
++ `custom`. `--system` writes `/etc/svoya/theme.json` (same keys, dark base, `choice: "system"`) through
+`pkexec sos theme system-write`, which the polkit action `org.svoya.theme.system-write` allows for active local
+sessions without a password (it only writes the login screen's colors).
+
+**Undo of looks.** Explicit theme/accent changes are journaled in `~/.local/state/svoya/undo.json`; `sos undo`
+reverts the newest change (journal or snapshot pair); ids `look-N`, `N`, `snap-N`; `--list --json` rows add `id`
+and `kind: "look"`.
+
+**AI switch.** AI is off while `~/.config/svoya/ai.off` or `/etc/svoya/ai.off` exists or `[ai] enabled = false`
+(`sos ai off|on|status [--system] [--json]`). `sos status --json` always has `ai.enabled`, plus `ai.off`
+(`user|system|config`) while off. AI units carry `ConditionPathExists=!%h/.config/svoya/ai.off` and
+`ConditionPathExists=!/etc/svoya/ai.off`. Jackson then answers only fast-path commands; other turns end with
+`error {aiOff: true, off: …}` explaining `sos ai on`. Jackson runs `sos ai off` only after its answer is sent.
+
+**Jackson's look and name (DESIGN §13).** `~/.config/svoya/avatar.json` is shared by the shell and Jackson:
+`character` (imp|cat), `skin`, `outfit`, `style`, `headphones`, `glasses`, `hood`, `name`. It may be sparse
+(missing keys follow the character's defaults); writers keep unknown keys and replace the file atomically.
+`welcome` carries `name`, `avatar` (the full resolved object), `ai {enabled, off}`, `capabilities` and
+`personas`; every `state` carries the full `avatar`; when the file changes, Jackson re-sends
+`state {detail: "avatar"}` to every client within 2 s. Sprites: `shell/assets/jackson/{imp,cat}.json`
+(format `sos-jackson/1`, see `design/mascot/FORMAT.md`). Jackson changes the accent only via
+`sos theme accent <word|#hex> --json` and verifies `theme.json` `accentId`.

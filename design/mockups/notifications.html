@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="desktop.css">
 <link rel="stylesheet" href="components.css">
 <script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 <style>
   .toasts { position: absolute; right: 18px; top: 44px; width: 330px; z-index: 6; display: flex; flex-direction: column; gap: 10px; }
   .toasts .toast { position: relative; right: auto; top: auto; }
@@ -15,7 +17,9 @@
   .toast .h .x { width: 12px; height: 12px; color: var(--text-faint); stroke-width: 2; }
   .toast .h .app-ic { width: 14px; height: 14px; color: var(--text-dim); stroke-width: 1.8; }
   .toast.jk { border-color: var(--line-strong); }
-  .toast.jk .h svg.scope { filter: var(--glow); }
+  .toast.tt { display: flex; gap: 12px; padding-left: 13px; }
+  .toast.tt > div { flex: 1; min-width: 0; }
+  .toast.tt .b { margin-top: 6px; }
   .toast .b { margin-top: 10px; }
   .toast .sub { margin-top: 5px; }
 </style>
@@ -48,16 +52,16 @@
   </section>
 
   <div class="toasts">
-    <div class="toast jk">
-      <div class="h">
-        <svg class="scope" data-kind="answer" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg>
-        <b>Джексон</b>сейчас<span class="spacer"></span><svg class="x" data-i="x"></svg>
-      </div>
-      <div class="b">Обучение завершено — loss <b>0.298</b>.<br>Запустить оценку?</div>
-      <div class="sub">tts-finetune · 3 эпохи · 54 мин · 2 900 шагов</div>
-      <div class="acts">
-        <button class="btn sm primary">Запустить оценку</button>
-        <button class="btn sm">Позже</button>
+    <div class="toast jk tt">
+      <span class="ava"><canvas data-jackson="imp" data-state="happy"></canvas></span>
+      <div>
+        <div class="h"><b>Джексон</b>сейчас<span class="spacer"></span><svg class="x" data-i="x"></svg></div>
+        <div class="b">Обучение завершено — loss <b>0.298</b>.<br>Запустить оценку?</div>
+        <div class="sub">tts-finetune · 3 эпохи · 54 мин</div>
+        <div class="acts">
+          <button class="btn sm primary">Запустить оценку</button>
+          <button class="btn sm">Позже</button>
+        </div>
       </div>
     </div>
 

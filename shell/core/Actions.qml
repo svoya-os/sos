@@ -24,6 +24,17 @@ Singleton {
             Jackson.ask(text);
     }
 
+    // «Настроить Джексона»: right-click on the mascot, the control center, IPC `jackson customize`
+    function customizeJackson() {
+        Ui.show("customizer");
+    }
+
+    // control center → «Оформление» (theme, accent, login screen, Jackson)
+    function openLook() {
+        Ui.ccPage = "look";
+        Ui.show("cc");
+    }
+
     // ---- screenshot (Super+Shift+S): slurp a region, grim it, offer actions -------------
     function hexRgba(c, a) {
         const h = v => ("0" + Math.round(v * 255).toString(16)).slice(-2);
@@ -38,7 +49,8 @@ Singleton {
         Ui.hide();
         const file = Sys.runtimeDir + "/shots/shot-" + Date.now() + ".png";
         const script = 'g=$(slurp -d -w 1 -b "$2" -c "$3" -s "$4") || exit 1; mkdir -p "$(dirname "$1")"; exec grim -g "$g" "$1"';
-        Sys.sh(script, [file, root.hexRgba(Theme.wall, 0.35), root.hexRgba(Theme.accent, 1), root.hexRgba(Theme.accent, 0.08)], function (code) {
+        // neutral frame (DESIGN §11: a selection frame is `text`, never the accent)
+        Sys.sh(script, [file, root.hexRgba(Theme.wall, 0.35), root.hexRgba(Theme.text, 0.9), root.hexRgba(Theme.text, 0.06)], function (code) {
             if (code === 0) {
                 Ui.shotPath = file;
                 Ui.show("shot");

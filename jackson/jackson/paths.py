@@ -75,6 +75,20 @@ class Paths:
         return self.config_dir / "secrets.env"
 
     @property
+    def avatar_file(self) -> Path:
+        """Jackson's look and name, shared with the shell (DESIGN.md §13)."""
+        return self.config_dir / "avatar.json"
+
+    @property
+    def svoya_toml(self) -> Path:
+        return self.config_dir / "svoya.toml"
+
+    @property
+    def ai_off_markers(self) -> tuple[Path, Path]:
+        """The AI switch (`sos ai off`): (system-wide, this user)."""
+        return self.system_config / "ai.off", self.config_dir / "ai.off"
+
+    @property
     def state_dir(self) -> Path:
         return self.state_home / "svoya"
 

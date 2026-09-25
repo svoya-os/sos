@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 
 from .i18n import fmt_bytes, fmt_latency, fmt_number, norm_lang, plural_ru
@@ -40,16 +41,33 @@ NUM_WORDS = "|".join(sorted(set(RU_NUMS) | set(EN_NUMS), key=len, reverse=True))
 NUM = rf"(?:\d{{1,3}}|(?:(?:{NUM_WORDS})(?: (?:{NUM_WORDS}))?))"
 
 
-def normalize(text: str) -> str:
-    s = text.lower().replace("ё", "е").strip()
+_WAKE_CACHE: dict[tuple[str, ...], re.Pattern[str]] = {}
+
+
+def _wake_re(names: tuple[str, ...]) -> re.Pattern[str]:
+    extra = tuple(sorted({n.lower().replace("ё", "е") for n in names if n}))
+    if not extra:
+        return WAKE_RE
+    pat = _WAKE_CACHE.get(extra)
+    if pat is None:
+        alts = "|".join(["джексон", "jackson", *(re.escape(n) for n in extra)])
+        pat = re.compile(rf"^(эй |ну |слушай |hey |ok |okay )?({alts})\b[ ,]*", re.IGNORECASE)
+        _WAKE_CACHE[extra] = pat
+    return pat
+
+
+def normalize(text: str, names: tuple[str, ...] = (), keep_case: bool = False) -> str:
+    """Lower-case (unless *keep_case*), ё→е, no punctuation, no wake word («Джексон, …»), no «пожалуйста»."""
+    s = text.strip() if keep_case else text.lower().replace("ё", "е").strip()
     s = re.sub(r"['’`]", "", s)  # what's → whats
     s = re.sub(r"[«»\"“”„!?.,;:()\[\]…]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
+    wake = _wake_re(names)
     for _ in range(3):
         before = s
-        s = WAKE_RE.sub("", s).strip()
-        s = POLITE_RE.sub("", s).strip()
-        s = LEAD_RE.sub("", s).strip()
+        s = wake.sub("", s).strip()
+        s = POLITE_RE.sub("", s).strip() if not keep_case else re.sub(POLITE_RE.pattern, "", s, flags=re.I).strip()
+        s = LEAD_RE.sub("", s).strip() if not keep_case else re.sub(LEAD_RE.pattern, "", s, flags=re.I).strip()
         s = re.sub(r"\s+", " ", s)
         if s == before:
             break
@@ -107,6 +125,7 @@ class FastResult:
     verified: bool | None = None
     undo: list[UndoSpec] = field(default_factory=list)
     data: dict[str, Any] | None = None
+    after: Callable[[], Any] | None = None   # runs after the answer was delivered (e.g. `sos ai off`)
 
 
 @dataclass
@@ -122,6 +141,9 @@ class FastCtx:
     set_policy: Callable[[str], tuple[bool, str, UndoSpec | None]] | None = None
     models: Callable[[], list[dict[str, Any]]] | None = None
     route_info: Callable[[], str] | None = None
+    avatar_path: Path | None = None                   # ~/.config/svoya/avatar.json
+    on_avatar_change: Callable[[], None] | None = None
+    ai_off_reason: Callable[[], str | None] | None = None
 
     @property
     def ru(self) -> bool:
@@ -566,11 +588,13 @@ HELP_RU = """Без модели, мгновенно:
 - звук: «громче», «тише», «громкость 30», «выключи звук»
 - яркость: «ярче», «темнее», «яркость 60»
 - «открой firefox», «открой загрузки», «заблокируй экран», «скриншот»
-- тема: «тёмная тема», «светлая тема», «тема авто»
+- тема: «тёмная тема», «светлая тема», «тема авто», «включи бумагу/графит/фосфор»
+- цвет: «сделай акцент фиолетовым», «акцент сирень», «верни оранжевый», «без цвета»
+- мой вид: «стань котом/чёртом», «надень очки», «сними наушники», «капюшон долой»; имя: «тебя зовут Макс»
 - «таймер на 10 минут», «напомни через 20 минут проверить духовку»
 - «какая у меня видеокарта», «сколько места», «заряд батареи», «сколько памяти», «мой ip»
 - «включи/выключи wi-fi», «включи/выключи bluetooth»
-- «отмени» — откатить моё последнее действие, «новый разговор», «только локально»
+- «отмени» — откатить моё последнее действие, «новый разговор», «только локально», «выключи ИИ»
 
 С моделью: вопросы, файлы («найди договор в документах»), команды в песочнице, заметки
 («запомни, что…»). Всё рискованное я сначала покажу и спрошу. Отмена — Super+Z или `jackson undo`."""
@@ -579,11 +603,13 @@ HELP_EN = """Instant, no model needed:
 - sound: "louder", "quieter", "volume 30", "mute"
 - brightness: "brighter", "dimmer", "brightness 60"
 - "open firefox", "open downloads", "lock the screen", "screenshot"
-- theme: "dark theme", "light theme", "auto theme"
+- theme: "dark theme", "light theme", "auto theme", "switch to paper/graphite/phosphor"
+- color: "make the accent green", "lilac accent", "no color"
+- my look: "become a cat/imp", "put on glasses", "take off headphones", "hood off"; name: "your name is Max"
 - "timer for 10 minutes", "remind me in 20 minutes to check the oven"
 - "what's my GPU", "disk space", "battery", "memory usage", "my ip"
 - "turn wi-fi on/off", "bluetooth on/off"
-- "undo" — revert my last action, "new chat", "local only"
+- "undo" — revert my last action, "new chat", "local only", "turn AI off"
 
 With a model: questions, files ("find the contract in Documents"), sandboxed commands, notes
 ("remember that…"). Anything risky is shown to you first. Undo: Super+Z or `jackson undo`."""
@@ -636,6 +662,181 @@ def h_route_any(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
 
 
 # ---------------------------------------------------------------------------
+# look: accent (DESIGN.md §10) — `sos theme accent` resolves RU/EN color words itself
+
+ACCENT_DEFAULT_WORDS = {"по умолчанию", "стандартный", "обычный", "как было по умолчанию", "default", "сброс",
+                        "стандарт"}
+ACCENT_NAMES = {"signal": ("Сигнал", "Signal"), "amber": ("Янтарь", "Amber"), "ink": ("Чернила", "Ink"),
+                "phosphor": ("Фосфор", "Phosphor"), "ice": ("Лёд", "Ice"), "lilac": ("Сирень", "Lilac"),
+                "rose": ("Роза", "Rose"), "mono": ("Моно", "Mono")}
+
+
+def _accent_label(ctx: FastCtx, acc: dict[str, Any]) -> str:
+    if acc.get("custom"):
+        return str(acc.get("color") or acc["custom"])
+    name = acc.get("name") if isinstance(acc.get("name"), dict) else {}
+    ru, en = ACCENT_NAMES.get(str(acc.get("id")), (str(acc.get("id")), str(acc.get("id"))))
+    return str(name.get("ru") or ru) if ctx.ru else str(name.get("en") or en)
+
+
+def h_accent(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    svoya = ctx.osc.svoya
+    if not svoya.available():
+        return _no_backend(ctx, "не нашёл команду sos (цвет меняет она)", "the sos command is missing (it sets colors)")
+    word = "mono" if a.get("mono") else str(a.get("color") or "").strip()
+    if word in ACCENT_DEFAULT_WORDS:
+        word = "default"
+    res = svoya.accent_set(word)
+    if not res.get("ok"):
+        hint = res.get("hint")
+        if hint:
+            hint_ru, hint_en = ACCENT_NAMES.get(str(hint), (str(hint), str(hint)))
+            return FastResult(False, ctx.say(f"Красный у нас — цвет ошибок, акцентом его не делаю. Может, «{hint_ru}»?",
+                                             f"Red is reserved for errors. How about {hint_en}?"), verified=False)
+        return FastResult(False, ctx.say(f"Не знаю такой цвет акцента: «{word}». Есть сигнал, янтарь, чернила, "
+                                         "фосфор, лёд, сирень, роза, моно или свой #hex.",
+                                         f"Unknown accent “{word}”. Try signal, amber, ink, phosphor, ice, lilac, "
+                                         "rose, mono or a #hex."), verified=False)
+    acc = res.get("accent") or {}
+    label = _accent_label(ctx, acc)
+    now = svoya.accent_current()
+    verified = now is not None and now == acc.get("id")
+    prev = (res.get("previous") or {}).get("accent") if isinstance(res.get("previous"), dict) else None
+    if res.get("changed") is False:
+        return FastResult(True, ctx.say(f"Акцент уже {label}.", f"The accent is already {label}."), label, verified)
+    undo = [UndoSpec("accent", ctx.say(f"акцент → {label}", f"accent → {label}"),
+                     {"prev": prev or "default", "new": acc.get("id")})]
+    if not verified:
+        return FastResult(False, ctx.say(f"sos ответил, что акцент теперь {label}, но тема этого пока не показывает.",
+                                         f"sos says the accent is {label} now, but the theme does not show it yet."),
+                          label, False, undo)
+    note = ""
+    if acc.get("custom") and acc.get("adjusted"):
+        note = ctx.say(" (чуть поправил яркость для читаемости)", " (brightness adjusted for readability)")
+    return FastResult(True, ctx.say(f"Акцент: {label}{note}.", f"Accent: {label}{note}."), label, True, undo)
+
+
+# ---------------------------------------------------------------------------
+# Jackson's look and name (DESIGN.md §13): ~/.config/svoya/avatar.json
+
+SKIN_STEMS = (("рыж", "ginger"), ("черн", "black"), ("снежн", "snow"), ("бел", "snow"), ("сиамск", "siamese"),
+              ("голуб", "blue"), ("сер", "blue"), ("огнен", "ember"), ("бордов", "wine"), ("винн", "wine"),
+              ("сливов", "plum"), ("графитов", "graphite"), ("мятн", "mint"),
+              ("ginger", "ginger"), ("black", "black"), ("snow", "snow"), ("white", "snow"), ("siamese", "siamese"),
+              ("blue", "blue"), ("grey", "blue"), ("gray", "blue"), ("ember", "ember"), ("wine", "wine"),
+              ("plum", "plum"), ("graphite", "graphite"), ("mint", "mint"))
+
+
+def _change_avatar(ctx: FastCtx, changes: list[tuple[str, Any]], ok_ru: str, ok_en: str) -> FastResult:
+    from . import avatar as av
+    path = ctx.avatar_path
+    if path is None:
+        return FastResult(False, ctx.say("Не знаю, где мой внешний вид.", "I don't know where my look is stored."))
+    prev = av.read_stored(path)
+    stored = dict(prev or {})
+    try:
+        for key, value in changes:
+            stored = av.apply_change(stored, key, value)
+    except av.AvatarError as exc:
+        return FastResult(False, exc.text("ru" if ctx.ru else "en"), verified=False)
+    if av.resolve(stored) == av.resolve(prev or {}):
+        return FastResult(True, ctx.say("Я и так такой.", "I already look like that."), "—", True)
+    av.write(path, stored)
+    after = av.load(path)
+    verified = all(after.data.get(k) == av.resolve(stored).get(k) for k, _ in changes)
+    if ctx.on_avatar_change is not None:
+        ctx.on_avatar_change()
+    text = ok_ru.format(name=after.display_name("ru")) if ctx.ru else ok_en.format(name=after.display_name("en"))
+    undo = [UndoSpec("avatar", ctx.say("мой вид: ", "my look: ") + ", ".join(f"{k}={v}" for k, v in changes),
+                     {"prev": prev})]
+    return FastResult(verified, text if verified else ctx.say("Записал, но проверка не сошлась.",
+                                                              "Saved, but the check did not match."),
+                      ", ".join(f"{k}={after.data.get(k)}" for k, _ in changes), verified, undo)
+
+
+def h_character(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    word = a.get("char", "")
+    character = "cat" if word.startswith(("кот", "кош", "cat", "kitt")) else "imp"
+    changes: list[tuple[str, Any]] = [("character", character)]
+    skin_word = (a.get("skin") or "").strip()
+    if skin_word:
+        skin = next((v for stem, v in SKIN_STEMS if skin_word.startswith(stem)), None)
+        if skin is not None:
+            changes.append(("skin", skin))
+    who_ru = "кот" if character == "cat" else "чёрт"
+    who_en = "a cat" if character == "cat" else "an imp"
+    return _change_avatar(ctx, changes, f"Готово — теперь я {who_ru}.", f"Done — I'm {who_en} now.")
+
+
+def h_glasses(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    if a.get("off"):
+        return _change_avatar(ctx, [("glasses", "none")], "Снял очки.", "Glasses off.")
+    kind = (a.get("kind") or "").strip()
+    value = "shades" if kind.startswith(("темн", "солнеч", "солнц", "sun", "dark")) or a.get("shades") else "round"
+    return _change_avatar(ctx, [("glasses", value)], "Надел очки.", "Glasses on.")
+
+
+def h_headphones(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    on = not a.get("off")
+    return _change_avatar(ctx, [("headphones", on)], "Надел наушники." if on else "Снял наушники.",
+                          "Headphones on." if on else "Headphones off.")
+
+
+def h_hood(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    on = not a.get("off")
+    return _change_avatar(ctx, [("hood", on)], "Капюшон на голове." if on else "Капюшон долой.",
+                          "Hood up." if on else "Hood down.")
+
+
+def h_style(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    word = a.get("style", "")
+    style = "hoodie" if word.startswith(("худи", "толстов", "hood")) else \
+        "jacket" if word.startswith(("курт", "косух", "jack")) else "tee"
+    names = {"hoodie": ("худи", "a hoodie"), "jacket": ("куртку", "a jacket"), "tee": ("футболку", "a tee")}
+    return _change_avatar(ctx, [("style", style)], f"Переоделся в {names[style][0]}.", f"Changed into {names[style][1]}.")
+
+
+def h_rename(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    name = " ".join(str(a.get("name") or "").split())
+    if name and name == name.lower():
+        name = name[:1].upper() + name[1:]
+    return _change_avatar(ctx, [("name", name)], "Окей, теперь я {name}.", "Okay, I'm {name} now.")
+
+
+# ---------------------------------------------------------------------------
+# the AI switch (WORKFLOWS.md §8)
+
+def h_ai_off(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    svoya = ctx.osc.svoya
+    if ctx.ai_off_reason is not None and ctx.ai_off_reason():
+        return FastResult(True, ctx.say("ИИ уже выключен. Включить: `sos ai on`.", "AI is already off. Turn it on: `sos ai on`."),
+                          "off", True)
+    if not svoya.available():
+        return _no_backend(ctx, "не нашёл команду sos — выключатель ИИ есть в центре управления",
+                           "the sos command is missing — the AI switch is in the control center")
+    text = ctx.say("Выключаю ИИ: я и локальные модели остановимся. Включить обратно — `sos ai on` "
+                   "или «ИИ и приватность» в центре управления.",
+                   "Turning AI off: I and the local model servers will stop. Turn it back on with `sos ai on` "
+                   "or in the control center → AI & privacy.")
+    return FastResult(True, text, ctx.say("выключаю ИИ", "turning AI off"), None,
+                      [UndoSpec("ai", ctx.say("ИИ выключен", "AI turned off"), {"state": "off"})],
+                      after=svoya.ai_off_later)
+
+
+def h_ai_on(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    if ctx.ai_off_reason is not None and not ctx.ai_off_reason():
+        return FastResult(True, ctx.say("ИИ и так включён.", "AI is already on."), "on", True)
+    ok, out = ctx.osc.svoya.ai_on()
+    verified = ctx.ai_off_reason is not None and ctx.ai_off_reason() is None
+    if not ok:
+        return FastResult(False, ctx.say(f"Не получилось включить ИИ: {out}", f"Could not turn AI on: {out}"),
+                          verified=False)
+    return FastResult(verified, ctx.say("ИИ включён." if verified else "Команда прошла, но ИИ всё ещё выключен.",
+                                        "AI is on." if verified else "The command ran, but AI is still off."),
+                      "on", verified)
+
+
+# ---------------------------------------------------------------------------
 # intent table (order matters: specific before generic)
 
 BY = rf"(?: (?:на|by) (?P<n>{NUM})(?: ?%| процент\w*| percent)?)?"
@@ -650,6 +851,17 @@ INTENTS: list[Intent] = [
     Intent("new_chat", _p(r"новый (разговор|чат|диалог)", r"начн(ем|и) (сначала|заново|с чистого листа)",
                           r"забудь (этот )?(разговор|контекст)", r"очисти (историю|контекст)",
                           r"new (chat|conversation)", r"start over", r"clear (the )?(context|history)"), h_new_chat),
+    Intent("ai_off", _p(r"(выключи|отключи|вырубь?и|останови) (ии|искусственный интеллект|нейросети|нейросеть|ai)",
+                        r"(выключись|отключись|вырубись)", r"(turn off|disable|switch off|stop) (the )?(ai|artificial intelligence)",
+                        r"turn (the )?ai off", r"ai off"), h_ai_off, T1),
+    Intent("ai_on", _p(r"(включи|верни|запусти) (ии|искусственный интеллект|нейросети|ai)",
+                       r"(turn on|enable|switch on) (the )?(ai|artificial intelligence)", r"turn (the )?ai on", r"ai on"),
+           h_ai_on, T1),
+    Intent("rename", _p(r"(тебя )?(теперь )?(зовут|звать) (?P<name>[\w .-]{1,24})",
+                        r"(зови себя|называй себя|назовись|твое имя|твоё имя) (?P<name>[\w .-]{1,24})",
+                        r"(хочу|буду) (звать|называть) тебя (?P<name>[\w .-]{1,24})",
+                        r"(your name is|call yourself|you are now called|from now on you are|i will call you|ill call you)"
+                        r" (?P<name>[\w .-]{1,24})"), h_rename, T1),
     Intent("route_local", _p(r"(работай |отвечай )?только локально", r"без облака", r"офлайн(-| )?режим",
                              r"не (используй|ходи в) облако", r"(stay |work )?local only", r"no cloud",
                              r"offline mode"), h_route_local, T1),
@@ -686,12 +898,23 @@ INTENTS: list[Intent] = [
                                  rf"яркость (ниже|меньше|вниз)){BY}",
                                  rf"(dimmer|brightness down|decrease (the )?brightness|dim the screen|"
                                  rf"turn (the )?brightness down){BY}"), h_brightness_down, T1),
+    Intent("accent", _p(r"(сделай |поставь |смени |поменяй |измени |включи |хочу )?(цвет )?акцент\w*( на| в)? "
+                        r"(?P<color>[\w#\- ]{2,30})",
+                        r"(?P<color>[а-я]+(ый|ий|ой|ая|ую))( цвет)? акцент",
+                        r"верни (?P<color>[а-я]+(ый|ий|ой|ую|ая))( цвет| акцент)?",
+                        r"(?P<mono>(сделай )?(все |всё )?без цвета|убери цвет|бесцветн\w*( тема)?)",
+                        r"(make |set |change |switch )?(the )?accent( colou?r)?( to| is)? (?P<color>[\w#\- ]{2,30})",
+                        r"(make it |go )?(?P<color>violet|purple|blue|green|cyan|teal|pink|orange|yellow|white|black|gray|grey"
+                        r"|lilac|amber|ink|phosphor|ice|rose|mono|signal) accent",
+                        r"(?P<mono>no colou?r|colou?rless)"), h_accent, T1),
     Intent("theme", _p(r"(включи |поставь |сделай |переключи на |смени на |давай )?"
                        r"(?P<which>темн\w*|светл\w*|авто\w*|фосфор\w*|графит\w*|бумаг\w*|ночн\w*|дневн\w*) "
                        r"(тем[ау]|режим|оформление)",
                        r"тем[ау] (?P<which>темн\w*|светл\w*|авто|фосфор|графит|бумага)",
                        r"(switch to |use |enable |turn on )?(?P<which>dark|light|auto|phosphor|graphite|paper) "
-                       r"(theme|mode)", r"theme (?P<which>dark|light|auto|phosphor|graphite|paper)"), h_theme, T1),
+                       r"(theme|mode)", r"theme (?P<which>dark|light|auto|phosphor|graphite|paper)",
+                       r"(включи|поставь|сделай|переключи на|смени на|давай) (?P<which>бумагу|графит|фосфор)( тему)?",
+                       r"(switch to|use|enable) (?P<which>paper|graphite|phosphor)( theme)?"), h_theme, T1),
     Intent("wifi_on", _p(r"(включи|включить|подключи) (wi-?fi|вай-?фай|wifi|беспроводную сеть)",
                          r"(turn on|enable) (the )?wi-?fi", r"wi-?fi on"), h_wifi_on, T1),
     Intent("wifi_off", _p(r"(выключи|выключить|отключи) (wi-?fi|вай-?фай|wifi|беспроводную сеть)",
@@ -733,6 +956,26 @@ INTENTS: list[Intent] = [
                       r"today'?s date"), h_date),
     Intent("ip", _p(r"(какой )?(у меня )?(мой )?(локальный )?(ip|айпи)( ?адрес)?( у меня)?",
                     r"(what(s| is) )?my (local )?ip( address)?", r"ip address"), h_ip),
+    Intent("character", _p(r"(стань|будь|превратись в|обернись) (?P<skin>[а-я]+(ым|им) )?"
+                           r"(?P<char>котом|котиком|кошкой|котэ|чертом|чертиком|чертенком|бесом|кота|черта)",
+                           r"(become|be|turn into|switch to) (an? )?(?P<skin>[a-z]+ )?(?P<char>cat|kitty|imp|devil)"),
+           h_character, T1),
+    Intent("glasses", _p(r"(надень|одень|нацепи) (?P<kind>темные |солнечные |солнцезащитные |круглые )?очки",
+                         r"(?P<off>сними|убери) очки", r"очки (?P<off>долой)",
+                         r"(put on|wear) (some |your )?(?P<shades>sunglasses|shades|dark glasses)",
+                         r"(put on|wear) (some |your )?(round )?glasses", r"glasses on",
+                         r"(?P<off>take off|remove) (your |the )?(glasses|sunglasses|shades)", r"glasses (?P<off>off)"),
+           h_glasses, T1),
+    Intent("headphones", _p(r"(надень|одень|нацепи) наушники", r"(?P<off>сними|убери) наушники",
+                            r"наушники (?P<off>долой)", r"(put on|wear) (your |the )?headphones", r"headphones on",
+                            r"(?P<off>take off|remove) (your |the )?headphones", r"headphones (?P<off>off)"),
+           h_headphones, T1),
+    Intent("hood", _p(r"(?P<off>капюшон долой|сними капюшон|убери капюшон)", r"(надень|накинь) капюшон",
+                      r"(?P<off>hood (off|down)|take off (your |the )?hood)", r"(hood (on|up)|put (your |the )?hood (on|up))"),
+           h_hood, T1),
+    Intent("style", _p(r"(надень|одень|переоденься в|переодень) (?P<style>худи|толстовку|куртку|косуху|футболку|майку)",
+                       r"(put on|wear|change into) (a |an |your )?(?P<style>hoodie|jacket|tee|t-shirt|tshirt)"),
+           h_style, T1),
     Intent("open_folder", _p(r"(открой|покажи) (мне )?(папку )?(?P<folder>загрузки|документы|изображения|картинки|"
                              r"музыку|видео|рабочий стол|домашнюю папку|домашнюю|скриншоты)",
                              r"(open|show) (my )?(the )?(?P<folder>downloads|documents|pictures|music|videos|desktop|"
@@ -742,11 +985,13 @@ INTENTS: list[Intent] = [
 ]
 
 
-def match(text: str, osc: OsControl | None = None) -> FastMatch | None:
-    """Return the matching intent or None (then the request goes to a model)."""
+def match(text: str, osc: OsControl | None = None, names: tuple[str, ...] = ()) -> FastMatch | None:
+    """Return the matching intent or None (then the request goes to a model).
+
+    *names* are extra wake words (Jackson's custom name from avatar.json: «Макс, громче»)."""
     if len(text) > 160 or "\n" in text.strip():
         return None
-    norm = normalize(text)
+    norm = normalize(text, names)
     if not norm:
         return None
     for intent in INTENTS:
@@ -755,6 +1000,13 @@ def match(text: str, osc: OsControl | None = None) -> FastMatch | None:
             if not m:
                 continue
             args = {k: v for k, v in m.groupdict().items() if v is not None}
+            if intent.name == "rename":  # keep the user's spelling of the new name (case, ё)
+                cased = normalize(text, names, keep_case=True)
+                m2 = re.compile(pattern.pattern, re.IGNORECASE).fullmatch(
+                    cased.replace("Ё", "Е").replace("ё", "е")) if cased else None
+                if m2 and m2.group("name"):
+                    start, end = m2.span("name")
+                    args["name"] = cased[start:end]
             if intent.name == "open_app":
                 app = args.get("app", "").strip()
                 if APP_STOP.search(app) or len(app.split()) > 3 or osc is None:

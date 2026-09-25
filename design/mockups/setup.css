@@ -13,9 +13,8 @@
 .wz-steps { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; }
 .wz-steps .seg { display: flex; gap: 5px; }
 .wz-steps .seg i { width: 26px; height: 3px; border-radius: 2px; background: var(--line-strong); }
-.wz-steps .seg i.done { background: color-mix(in srgb, var(--accent) 55%, var(--line-strong)); }
-.wz-steps .seg i.now { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent); }
-[data-theme="paper"] .wz-steps .seg i.now { box-shadow: none; }
+.wz-steps .seg i.done { background: var(--text-dim); }
+.wz-steps .seg i.now { background: var(--text); }
 .wz-steps .n { font: 500 11.5px/1 "Plex Mono"; color: var(--text-dim); letter-spacing: 0.04em; }
 .wz-steps .n b { color: var(--text); font-weight: 500; }
 .wz-top .aux { display: flex; align-items: center; gap: 20px; }
@@ -23,7 +22,7 @@
 
 /* content column */
 .wz-body { position: absolute; left: 50%; top: 104px; width: 1040px; transform: translateX(-50%); }
-.wz-eyebrow { font: 500 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.wz-eyebrow { font: 500 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
 .wz-h { margin-top: 14px; font: 500 28px/34px "Plex Sans"; letter-spacing: -0.005em; color: var(--text); }
 .wz-sub { margin-top: 10px; max-width: 660px; font: 400 14px/22px "Plex Sans"; color: var(--text-dim); }
 .wz-sub code, .wz-note code { font: 400 12.5px/1 "Plex Mono"; color: var(--text); padding: 2px 5px; border-radius: 5px; background: var(--surface-3); }
@@ -34,10 +33,10 @@
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
 }
 [data-theme="paper"] .card { background: var(--surface-2); }
-.card.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 0 5px var(--accent-soft); }
+.card.on { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
 .card .ck {
   position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%;
-  display: grid; place-items: center; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; background: var(--text); color: var(--surface);
 }
 .card .ck svg.i { width: 12px; height: 12px; stroke-width: 2.6; }
 .card .ring {

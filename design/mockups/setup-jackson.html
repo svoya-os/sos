@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — first run · 6/7 meet Jackson</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<link rel="stylesheet" href="setup.css">
+<script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
+<style>
+  .grid { display: grid; grid-template-columns: 404px 1fr; gap: 28px; margin-top: 30px; align-items: stretch; }
+
+  /* intro stage */
+  .stage {
+    position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line);
+    background: radial-gradient(circle, var(--canvas-dot) 0.9px, transparent 1.3px) 0 0 / 16px 16px, var(--canvas);
+  }
+  .stage canvas.hero { position: absolute; left: 138px; top: 196px; }
+  .bubble {
+    position: absolute; left: 50%; top: 90px; transform: translateX(-50%); width: 316px; padding: 12px 15px 13px;
+    border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line-strong);
+    font: 400 14px/21px "Plex Sans"; color: var(--text); box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.55);
+  }
+  .bubble::after {   /* tail towards the mascot */
+    content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; margin-left: -6px;
+    background: var(--surface-2); border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); transform: rotate(45deg);
+  }
+  .who { position: absolute; left: 0; right: 0; top: 350px; text-align: center; }
+  .who b { display: block; font: 500 20px/26px "Plex Sans"; letter-spacing: -0.005em; color: var(--text); }
+  .who span { display: block; margin-top: 3px; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+  .howto { position: absolute; left: 16px; right: 16px; bottom: 18px; display: flex; justify-content: center; gap: 20px; }
+  .howto .hint { gap: 5px; }
+
+  /* quick look */
+  .sec + .sec { margin-top: 18px; }
+  .sec > .caps { margin: 0 2px 10px; display: flex; justify-content: space-between; }
+  .sec > .caps span { text-transform: none; letter-spacing: 0.02em; font-weight: 400; color: var(--text-faint); }
+  .chars { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .chars .card { display: flex; gap: 14px; align-items: center; padding: 14px 16px 14px 14px; height: 104px; }
+  .chars .pic { width: 76px; height: 76px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); flex: none; }
+  .chars .pic canvas { width: 64px; height: 64px; }
+  .chars .t b { display: block; font: 500 15px/20px "Plex Sans"; color: var(--text); }
+  .chars .t span { display: block; margin-top: 3px; max-width: 170px; font: 400 12.5px/18px "Plex Sans"; color: var(--text-dim); }
+
+  .rows { border-radius: 14px; border: 1px solid var(--line); }
+  .row { display: grid; grid-template-columns: 96px 1fr; align-items: center; min-height: 54px; padding: 0 16px; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row > label { font: 500 13px/18px "Plex Sans"; color: var(--text-dim); }
+  .row .v { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .skins { display: flex; gap: 2px; padding: 10px 0 9px; }
+  .skins .s { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .skins .s i { width: 24px; height: 24px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3); }
+  .skins .s.on i { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--text); }
+  [data-theme="paper"] .skins .s.on i { box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 3.5px var(--text); }
+  .skins .s em { font: 400 11px/1 "Plex Mono"; font-style: normal; color: var(--text-faint); white-space: nowrap; }
+  .skins .s.on em { color: var(--text); }
+  .row .auto { display: flex; align-items: center; gap: 8px; font: 400 13px/1 "Plex Sans"; color: var(--text); }
+  .row .auto i { width: 16px; height: 16px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); }
+  .row .field { width: 240px; height: 36px; font-size: 14px; }
+  .sample { border-radius: 14px; border: 1px solid var(--line); padding: 14px 16px 15px; }
+  .sample .q { display: flex; justify-content: flex-end; }
+  .sample .q span { padding: 7px 12px 8px; border-radius: 12px 12px 4px 12px; background: var(--surface-3); font: 400 13px/18px "Plex Sans"; color: var(--text); }
+  .sample .a { margin-top: 10px; display: flex; gap: 10px; align-items: flex-start; }
+  .sample .a p { padding-top: 6px; font: 400 13.5px/20px "Plex Sans"; color: var(--text); }
+  .sample .a p span { color: var(--text-dim); }
+  .hum { flex: 1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper"><div class="grain"></div></div>
+
+  <div class="wz">
+    <div class="wz-top">
+      <div class="brand"><svg class="morse"></svg>Настройка <span>· первый запуск</span></div>
+      <div class="wz-steps">
+        <div class="seg"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i></div>
+        <span class="n"><b>6</b> / 7</span>
+      </div>
+      <div class="aux">
+        <span class="tbtn"><svg data-i="accessibility"></svg><kbd>Super</kbd><kbd>Alt</kbd><kbd>A</kbd></span>
+        <span class="tbtn">пропустить настройку</span>
+      </div>
+    </div>
+
+    <div class="wz-body">
+      <div class="wz-eyebrow">Джексон · 1 из 2</div>
+      <h1 class="wz-h">Знакомься, это Джексон</h1>
+      <p class="wz-sub">Он живёт в системе: отвечает на вопросы, ставит программы, следит за обучением и спрашивает, прежде чем что-то менять. Выбери, каким он будет, — передумать можно в любой момент.</p>
+
+      <div class="grid">
+        <div class="stage">
+          <div class="bubble">Йо! Я Джексон. Если что — жми <b>Super+J</b>, я рядом)</div>
+          <canvas class="px hero" data-jackson="imp" data-state="happy" data-px="128"></canvas>
+          <div class="who"><b id="nm">Джексон</b><span>Чёрт · огонь · в цвет акцента</span></div>
+          <div class="howto">
+            <span class="hint"><kbd>Super</kbd><kbd>J</kbd>позвать</span>
+            <span class="hint">держи — говори голосом</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec">
+            <div class="caps">Кто тебе ближе<span>оба умеют одно и то же</span></div>
+            <div class="chars">
+              <div class="card on">
+                <span class="pic"><canvas class="px" data-jackson="imp" data-state="idle" data-px="64"></canvas></span>
+                <span class="t"><b>Чёрт</b><span>Хитро улыбается, но всегда за тебя. Худи, рога, наушники.</span></span>
+                <span class="ck"><svg data-i="check"></svg></span>
+              </div>
+              <div class="card">
+                <span class="pic"><canvas class="px" data-jackson="cat" data-state="idle" data-px="64"></canvas></span>
+                <span class="t"><b>Кот</b><span>Из нулевых: тёмные очки, наушники на шее, всё замечает.</span></span>
+                <span class="ring"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="caps">Быстрый образ<span>остальное — в Настройки → Джексон</span></div>
+            <div class="rows solid">
+              <div class="row"><label>Кожа</label><div class="v skins" id="skins"></div></div>
+              <div class="row"><label>Одежда</label><div class="v"><span class="auto" id="outfit"></span><span class="meta">сменишь акцент — сменится и худи</span></div></div>
+              <div class="row"><label>Имя</label><div class="v"><div class="field focus">Джексон<span class="caret"></span></div><span class="meta">так он подписывается</span></div></div>
+              <div class="row"><label>Юмор</label><div class="v hum"><span>по делу</span><span class="slider"><i style="width:62%"></i><b style="left:62%"></b></span><span>шутит почаще</span></div></div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="caps">Так он ответит<span>меняется вместе с юмором</span></div>
+            <div class="sample solid">
+              <div class="q"><span>Сколько места осталось на диске?</span></div>
+              <div class="a"><span class="ava"><canvas data-jackson="imp" data-state="talk1"></canvas></span><p>1,4 ТБ свободно — влезет ещё пара десятков моделей. <span>Можешь не экономить)</span></p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wz-foot">
+      <button class="btn lg back"><svg data-i="chevronRight" style="transform:scaleX(-1)"></svg>Назад</button>
+      <div class="mid">дальше — чем он будет думать: под <b>RTX 4090</b> подберём модель</div>
+      <button class="btn lg primary">Дальше<span class="k">Enter</span></button>
+    </div>
+  </div>
+
+</div>
+<script>
+  const theme = document.documentElement.dataset.theme, mode = theme === 'paper' ? 'light' : 'dark';
+  const imp = window.JACKSON.imp, acc = document.documentElement.dataset.accent;
+  document.getElementById('skins').innerHTML = Object.entries(imp.skins).map(([id, s]) =>
+    `<span class="s ${id === imp.defaults.skin ? 'on' : ''}" style="--c:${s.colors.skin}"><i></i><em>${s.name.ru}</em></span>`).join('');
+  const a = imp.accents[acc] || imp.accents.signal;
+  document.getElementById('outfit').innerHTML = `<i style="--c:${a[mode].outfit}"></i>в цвет акцента — ${a.name.ru}`;
+  SOS.init({ bar: false });
+</script>
+</body>
+</html>

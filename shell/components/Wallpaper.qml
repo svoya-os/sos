@@ -11,6 +11,11 @@ Item {
 
     property bool colophon: true
     property bool showSignal: true
+    // the soft glows follow the accent on the desktop and the lock screen; the greeter keeps
+    // them neutral (DESIGN §12: before login the accent is only the caret and the burst)
+    property bool ambient: true
+    readonly property color glowTint: root.ambient ? Theme.accent : Theme.text
+    readonly property real glowGain: root.ambient ? 1 : 0.4
     property string image: Settings.wallpaper
 
     readonly property real s: Math.max(1, Math.min(1.6, Math.max(width / 1440, height / 900)))
@@ -46,7 +51,7 @@ Item {
         cy: -root.height * 0.06
         rx: 1100 * root.s
         ry: 620 * root.s
-        color: Theme.alpha(Theme.accent, 0.075)
+        color: Theme.alpha(root.glowTint, 0.075 * root.glowGain)
         stop: 0.62
     }
     Glow {
@@ -66,7 +71,7 @@ Item {
         cy: root.height * 1.18
         rx: 1200 * root.s
         ry: 520 * root.s
-        color: Theme.alpha(Theme.accent, 0.10)
+        color: Theme.alpha(root.glowTint, 0.10 * root.glowGain)
         stop: 0.65
     }
     Glow {
@@ -75,7 +80,7 @@ Item {
         cy: 0
         rx: 900 * root.s
         ry: 500 * root.s
-        color: Theme.alpha(Theme.accent, 0.035)
+        color: Theme.alpha(root.glowTint, 0.035 * root.glowGain)
         stop: 0.60
     }
 

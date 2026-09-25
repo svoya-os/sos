@@ -5,7 +5,8 @@ import qs.core
 import qs.components
 
 // One layer-shell window hosts every modal surface (Jackson, launcher, control
-// center, СОС menu, session, clipboard, shortcuts, about, screenshot actions),
+// center, СОС menu, session, clipboard, shortcuts, about, screenshot actions,
+// Jackson's customizer),
 // so only one can be open and keyboard focus is exclusive while it is.
 // Transparent and matte: no dimming, no blur. A click outside closes; each
 // panel handles its own keys (Esc closes). The window lives on Ui.screen and
@@ -97,6 +98,12 @@ PanelWindow {
         x: Math.round((overlay.width - width) / 2)
         y: Math.round((overlay.height - height) / 2 - 60)
         shown: Ui.modal === "about"
+    }
+
+    JacksonCustomizer {
+        x: Math.round((overlay.width - width) / 2)
+        y: Math.max(48, Math.round((overlay.height - height) / 2))
+        shown: Ui.modal === "customizer"
     }
 
     ControlCenter {

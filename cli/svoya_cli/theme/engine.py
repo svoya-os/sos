@@ -13,6 +13,7 @@ Syntax::
     {{ color.accent | mix(color.surface, 0.7) | hex }}   blend toward another color
     {{ color.text | lighten(0.1) }}  {{ color.text | darken(0.1) }}  {{ color.accent | opacity(0.3) | hexa }}
     {{ color.accentSoft | over(color.surface) | hex }}   flatten a translucent color
+    {{ color.warn | ink | hex }}          text color for a fill: #141518 or #ffffff, whichever contrasts more
     {{ font.mono | json }}   {{ name.ru | upper }}   {{ effects.grain | round(2) }}
 
 Unknown variables and filters are errors (with template name and line), never silent blanks.
@@ -61,6 +62,7 @@ FILTERS: dict[str, Callable[..., Any]] = {
     "lighten": lambda v, x: _color(v, "lighten").lighten(float(x)),
     "darken": lambda v, x: _color(v, "darken").darken(float(x)),
     "opacity": lambda v, a: _color(v, "opacity").with_alpha(float(a)),
+    "ink": lambda v: _color(v, "ink").with_alpha(1.0).ink(),
     "json": lambda v: json.dumps(v, ensure_ascii=False),
     "upper": lambda v: str(v).upper(),
     "lower": lambda v: str(v).lower(),

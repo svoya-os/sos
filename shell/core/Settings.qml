@@ -37,6 +37,7 @@ Singleton {
     property alias kbSwitch: adapter.kbSwitch             // xkb option, e.g. grp:alt_shift_toggle
     property alias kbCustom: adapter.kbCustom             // true once the wizard/user picked layouts
     property alias tiledWorkspaces: adapter.tiledWorkspaces // workspace ids that differ from the preset default
+    property alias themeOnLogin: adapter.themeOnLogin     // theme/accent changes also go to the login screen (--system)
 
     FileView {
         id: file
@@ -70,6 +71,7 @@ Singleton {
             property string kbSwitch: "grp:alt_shift_toggle"
             property bool kbCustom: false
             property var tiledWorkspaces: []
+            property bool themeOnLogin: false
         }
     }
 }

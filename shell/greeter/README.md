@@ -51,3 +51,7 @@ line. tuigreet remembers the last user in `/var/cache/tuigreet`, which must be w
 * RU/EN switches the greeter's language only; the session keeps the user's locale.
 * Power buttons need two presses (3 s window) and use logind (`systemctl suspend|reboot|poweroff`),
   which polkit allows for the active greeter session.
+* Look: `/etc/svoya/theme.json` (written by `sos theme apply --system`, always a dark base; the
+  first user's choice by default: «Использовать на экране входа» in the wizard and the control
+  center). Missing → Graphite + «Сигнал». The accent colors only the caret and the wallpaper burst
+  (DESIGN §12); the user ring, field border, power buttons and wallpaper glow stay neutral.

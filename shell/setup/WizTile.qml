@@ -3,8 +3,8 @@ import qs.core
 import qs.components
 
 // Icon tile (components.css .tile.lg): 32×32, radius 8, surface3 with a 1px
-// lineStrong inset, 17px icon (stroke 1.7) in textDim. `accent`: accentSoft
-// fill, accent icon and a 35% accent inset (selected profile cards).
+// lineStrong inset, 17px icon (stroke 1.7) in textDim. `accent` (selected cards): the icon
+// and inset in `text` — neutral, like every selection (DESIGN §11).
 Rectangle {
     id: root
 
@@ -14,9 +14,9 @@ Rectangle {
     width: 32
     height: 32
     radius: 8
-    color: root.accent ? Theme.accentSoft : Theme.surface3
+    color: Theme.surface3
     border.width: 1
-    border.color: root.accent ? Theme.alpha(Theme.accent, 0.35) : Theme.lineStrong
+    border.color: root.accent ? Theme.alpha(Theme.text, 0.45) : Theme.lineStrong
     antialiasing: true
 
     Icon {
@@ -24,6 +24,6 @@ Rectangle {
         glyph: root.glyph
         size: 17
         stroke: 1.7
-        color: root.accent ? Theme.accent : Theme.textDim
+        color: root.accent ? Theme.text : Theme.textDim
     }
 }

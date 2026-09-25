@@ -75,7 +75,7 @@ Item {
                         glyph: card.modelData.glyph
                         size: 16
                         stroke: 1.7
-                        color: card.selected ? Theme.accent : Theme.textDim
+                        color: card.selected ? Theme.text : Theme.textDim
                     }
                     SText {
                         anchors.verticalCenter: parent.verticalCenter

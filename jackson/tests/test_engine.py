@@ -215,6 +215,20 @@ class EngineTest(unittest.TestCase):
         self.assertAlmostEqual(done["costEur"], (1000 * 0.86 + 100 * 4.30) / 1e6, places=6)
         self.assertIn("данные отправлены: Anthropic", done["meta"])
         self.assertGreater(app.spend.today()["eur"], 0)
+        # sos status reads this: back to local once the cloud turn is over
+        self.assertEqual(json.loads((app.paths.runtime_dir / "ai.json").read_text()),
+                         {"local": True, "cloudActiveSince": None})
+
+    def test_ai_json_marks_active_cloud_turns(self):
+        app = make_app(self.root)
+        turn = Turn(id="t-c", session=Session("c", "ru"), text="x", emit=None)  # type: ignore[arg-type]
+        path = app.paths.runtime_dir / "ai.json"
+        app.engine._cloud(turn, True)
+        during = json.loads(path.read_text())
+        self.assertFalse(during["local"])
+        self.assertRegex(during["cloudActiveSince"], r"^\d{4}-\d{2}-\d{2}T")
+        app.engine._cloud(turn, False)
+        self.assertEqual(json.loads(path.read_text()), {"local": True, "cloudActiveSince": None})
 
     def test_cancel_mid_stream(self):
         def slow(body):

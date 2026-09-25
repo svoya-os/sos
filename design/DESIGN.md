@@ -44,7 +44,8 @@ Never pixel font for body text. Minimum text size 11px.
 * Radii: windows 11 · floating panels (Jackson, launcher, control center) 16 · buttons 9 · chips pill ·
   keycaps 5 · small controls 6.
 * Borders: 1px `line` inside surfaces; floating panels use `lineStrong`; floating panels get a thin accent
-  highlight on the top edge (horizontal gradient transparent → accent → transparent, 55% opacity, inset 88px).
+  highlight on the top edge (horizontal gradient transparent → accent → transparent, 55% opacity, inset 88px) — only the live Jackson panel
+  keeps it; every other floating panel uses a neutral edge.
 * Shadows: one soft, large shadow per level (see `shadow` token); nothing else.
 * Bar: 30px, flush to the top edge, solid `bar` color, 1px bottom `line`.
 
@@ -174,7 +175,7 @@ How the user changes it (all live, 260 ms cross-fade, undoable):
 * First-run wizard, step «Оформление»: same controls with a live full-size preview.
 * `sos theme accent <id|#hex>` (RU names accepted: `sos theme accent сирень`).
 * Jackson: «сделай акцент фиолетовым» / "make the accent violet" (fast path, T1, undoable).
-Everything follows at once: bar, panels, Jackson (scope + mascot outfit), windows (Hyprland borders, hyprbars),
+Everything follows at once: bar, panels, Jackson (scope + mascot outfit), window title-bar buttons on hover (hyprbars),
 terminal (cursor/selection), GTK/Qt accent, wallpaper signal, lock screen. The login screen follows when
 «Использовать на экране входа» is on (the first user's choice is applied system-wide).
 
@@ -190,6 +191,8 @@ inline links.
 The accent MUST NOT color: selection rings, checkmarks, toggles, radio buttons, step indicators, eyebrow labels,
 headings, icons, active workspace, focus rings, borders. These use `text` (selected/on) and `line`/`lineStrong`
 (off). Eyebrow labels are `textFaint`.
+Transient states may borrow it because they are never visible at rest: the hover glyphs of the window buttons,
+the pressed state of the primary action, the swatch under the pointer while picking an accent.
 
 ## 12. Pre-login surfaces are neutral
 
@@ -221,6 +224,6 @@ Customization (`~/.config/svoya/avatar.json`, shared by the shell and Jackson):
 
 The outfit's three shades are derived from the chosen color (dark themes: lightness 0.32/0.25/0.40 in OKLCH;
 light themes: 0.45/0.36/0.56), `detail` = the accent itself, so the mascot always matches the system.
-Where: Jackson panel head (32 px, radius 8, `surface3` backing), toasts (24 px), the wizard (128 px intro),
+Where: Jackson panel head (32 px, radius 8, `surface3` backing), toasts (32 px — the sprite is only drawn at integer scales), the wizard (128 px intro),
 the customizer (192 px, animated states). Customizer entry points: right-click the mascot → «Настроить
 Джексона», Settings → Джексон, `j avatar …`, or ask Jackson («стань котом»).

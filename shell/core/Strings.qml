@@ -404,9 +404,9 @@ Singleton {
     readonly property string wzBack: root.t("Назад", "Back")
     readonly property string wzClose: root.t("Закрыть", "Close")
     readonly property string wzFootNote: root.t("каждый шаг можно пропустить · любой выбор <b>отменяется</b>", "every step can be skipped · every choice <b>can be undone</b>")
-    readonly property var wzEyebrows: root.ru ? ["Доступность", "Язык", "Оформление", "Окна", "Профиль", "ИИ", "Готово"] : ["Accessibility", "Language", "Appearance", "Windows", "Profile", "AI", "Done"]
-    readonly property var wzTitles: root.ru ? ["Удобно ли смотреть и читать?", "На каком языке говорим?", "Как будет выглядеть система?", "Как расставлять окна?", "Чем ты будешь заниматься?", "Джексон и модели", "Что остаётся у тебя"] : ["Is everything easy to see and read?", "Which language do we speak?", "How should the system look?", "How should windows be arranged?", "What will you do with it?", "Jackson and models", "What stays with you"]
-    readonly property var wzSubs: root.ru ? ["Эти настройки всегда под рукой: <code>Super + Alt + A</code>, даже на экране входа.", "Язык интерфейса и раскладки клавиатуры. Раскладку переключает Alt + Shift, если не выберешь другое.", "Тема применяется сразу — прямо на этом экране. Передумать можно когда угодно: в центре управления или командой <code>sos theme</code>.", "Пресет можно сменить в любой момент, а Super + T включает плитку только для текущего стола.", "Профиль — только стартовый набор модулей. Любой модуль потом ставится и удаляется одной командой, с откатом: <code>sos modules</code>.", "Нашли видеокарту и подобрали модель, которая в неё влезет. Облако — по желанию: ключи лежат в системной связке, а не в файлах.", "Коротко о приватности, первый снимок системы и клавиши, которые стоит запомнить."] : ["These settings are always one press away: <code>Super + Alt + A</code>, even on the login screen.", "Interface language and keyboard layouts. Alt + Shift switches layouts unless you pick another key.", "The theme applies right away, on this very screen. Change it any time in the control center or with <code>sos theme</code>.", "Switch presets any time; Super + T tiles just the current workspace.", "A profile is just a starter set of modules. Any module installs and uninstalls later with one command, with undo: <code>sos modules</code>.", "We found your graphics card and picked a model that fits it. The cloud is optional: keys live in the system keyring, not in files.", "Privacy in short, the first system snapshot and the keys worth remembering."]
+    readonly property var wzEyebrows: root.ru ? ["Доступность", "Язык", "Оформление", "Окна", "Профиль", "Джексон", "Готово"] : ["Accessibility", "Language", "Appearance", "Windows", "Profile", "Jackson", "Done"]
+    readonly property var wzTitles: root.ru ? ["Удобно ли смотреть и читать?", "На каком языке говорим?", "Как будет выглядеть система?", "Как расставлять окна?", "Чем ты будешь заниматься?", "Знакомься: Джексон", "Что остаётся у тебя"] : ["Is everything easy to see and read?", "Which language do we speak?", "How should the system look?", "How should windows be arranged?", "What will you do with it?", "Meet Jackson", "What stays with you"]
+    readonly property var wzSubs: root.ru ? ["Эти настройки всегда под рукой: <code>Super + Alt + A</code>, даже на экране входа.", "Язык интерфейса и раскладки клавиатуры. Раскладку переключает Alt + Shift, если не выберешь другое.", "Тема применяется сразу — прямо на этом экране. Передумать можно когда угодно: в центре управления или командой <code>sos theme</code>.", "Пресет можно сменить в любой момент, а Super + T включает плитку только для текущего стола.", "Профиль — только стартовый набор модулей. Любой модуль потом ставится и удаляется одной командой, с откатом: <code>sos modules</code>.", "Как он выглядит и как его зовут, а ниже — на чём он думает: локальная модель под твою видеокарту, облако по желанию (ключи — в системной связке).", "Коротко о приватности, первый снимок системы и клавиши, которые стоит запомнить."] : ["These settings are always one press away: <code>Super + Alt + A</code>, even on the login screen.", "Interface language and keyboard layouts. Alt + Shift switches layouts unless you pick another key.", "The theme applies right away, on this very screen. Change it any time in the control center or with <code>sos theme</code>.", "Switch presets any time; Super + T tiles just the current workspace.", "A profile is just a starter set of modules. Any module installs and uninstalls later with one command, with undo: <code>sos modules</code>.", "How he looks and what he's called; below, what he thinks with: a local model that fits your GPU, the cloud if you want it (keys go to the system keyring).", "Privacy in short, the first system snapshot and the keys worth remembering."]
 
     // step 1
     readonly property string wzMotionSub: root.t("без анимаций, скоп статичен", "no animations, still scope")
@@ -439,6 +439,9 @@ Singleton {
     readonly property string wzAutoTitle: root.t("Как работает «Авто»", "How «Auto» works")
     readonly property string wzAutoBody: root.t("Место не спрашиваем: по умолчанию 07:00 и 20:00. По закату — только если разрешишь геолокацию.", "We don't ask where you are: 07:00 and 20:00 by default. Sunset times only if you allow location.")
     readonly property string wzNow: root.t("сейчас", "now")
+    readonly property string wzAccentSub: root.t("один цвет: главная кнопка, курсор и живые сигналы", "one color: the main button, the caret and live signals")
+    readonly property string wzOnLogin: root.t("На экране входа", "On the login screen")
+    readonly property string wzOnLoginSub: root.t("тот же акцент", "the same accent")
     readonly property string themeGraphite: root.t("Графит", "Graphite")
     readonly property string themePaper: root.t("Бумага", "Paper")
     readonly property string themeAuto: root.t("Авто", "Auto")
@@ -508,4 +511,134 @@ Singleton {
     readonly property string wzModelDone: root.t("Модель скачана", "Model downloaded")
     readonly property string wzModelFailed: root.t("Модель не скачалась", "Model download failed")
     readonly property string wzUndoHint: root.t("отменить: sos undo", "undo: sos undo")
+
+    // ---- appearance: theme, accent (DESIGN §10) --------------------------------------------------------
+    readonly property string appearance: root.t("Оформление", "Appearance")
+    readonly property string accentLabel: root.t("Акцент", "Accent")
+    readonly property string customAccent: root.t("Свой…", "Custom…")
+    readonly property string customAccentName: root.t("Свой", "Custom")
+    readonly property string useOnLogin: root.t("Использовать на экране входа", "Use on the login screen")
+    readonly property string onLoginShort: root.t("на экране входа", "on the login screen")
+    readonly property string applyHex: root.t("Применить", "Apply")
+    readonly property string hexHint: root.t("#rrggbb — любой цвет", "#rrggbb — any color")
+    function contrastOk(ratio) {
+        return "AA · " + Fmt.num(ratio, 1) + " : 1";
+    }
+    function contrastFixed(ratio) {
+        return root.t("поправили · ", "adjusted · ") + Fmt.num(ratio, 1) + " : 1";
+    }
+    readonly property string contrastAdjusted: root.t("подправили яркость для читаемости", "lightness adjusted for readability")
+    readonly property string contrastBadHex: root.t("нужен цвет вида 7b61ff", "a color like 7b61ff")
+    function hexNoteOk(dark) {
+        return dark ? root.t("читается и на кнопке, и в тексте · для Бумаги подберём темнее сами", "reads on buttons and in text · for Paper we pick a darker one")
+                    : root.t("читается и на кнопке, и в тексте · для Графита подберём светлее сами", "reads on buttons and in text · for Graphite we pick a lighter one");
+    }
+    function hexNoteAdjusted(dark, hex) {
+        return dark ? root.t("на Графите чуть светлее: " + hex + " — иначе текст не читается", "a bit lighter on Graphite: " + hex + " — or text would not read")
+                    : root.t("на Бумаге чуть темнее: " + hex + " — иначе текст на кнопке не читается", "a bit darker on Paper: " + hex + " — or button text would not read");
+    }
+    function accentApplied(name) {
+        return root.t("Акцент: " + name, "Accent: " + name);
+    }
+    readonly property string aiSwitch: root.t("ИИ на этом компьютере", "AI on this computer")
+    readonly property string aiSwitchSub: root.t("один переключатель выключает весь ИИ", "one switch turns all AI off")
+    readonly property string appliesNow: root.t("применяется сразу", "applies right away")
+    readonly property string autoLine: root.t("Авто: Бумага днём · Графит ночью", "Auto: Paper by day · Graphite by night")
+    readonly property string onLoginSub: root.t("один раз спросит пароль администратора", "asks for the admin password once")
+    readonly property string onLoginFailed: root.t("Экран входа не изменён", "The login screen was not changed")
+    readonly property string onLoginPending: root.t("спросит пароль администратора, когда закроешь панель", "asks for the admin password when you close the panel")
+    readonly property string outfitLikeAccent: root.t("одежда — как акцент", "outfit follows the accent")
+    readonly property string outfitPinned: root.t("одежда — свой цвет", "outfit has its own color")
+    readonly property string undoLabel: root.t("отменить", "undo")
+    readonly property string allSettings: root.t("Все настройки", "All settings")
+    readonly property string back: root.t("Назад", "Back")
+
+    // ---- Jackson's look (DESIGN §13) ------------------------------------------------------------------------
+    readonly property string customize: root.t("Настроить", "Customize")
+    readonly property string customizeJackson: root.t("Настроить Джексона", "Customize Jackson")
+    readonly property string cuCharacter: root.t("Персонаж", "Character")
+    readonly property string cuImp: root.t("Чёрт", "Imp")
+    readonly property string cuCat: root.t("Кот", "Cat")
+    readonly property string cuSkin: root.t("Окрас", "Skin")
+    readonly property string cuFur: root.t("Шерсть", "Fur")
+    readonly property string cuOutfit: root.t("Одежда", "Outfit")
+    readonly property string cuAsAccent: root.t("как акцент", "like the accent")
+    readonly property string cuStyle: root.t("Стиль", "Style")
+    readonly property var cuStyles: ({ hoodie: root.t("Худи", "Hoodie"), jacket: root.t("Куртка", "Jacket"), tee: root.t("Футболка", "Tee") })
+    readonly property string cuHeadphones: root.t("Наушники", "Headphones")
+    readonly property string cuGlasses: root.t("Очки", "Glasses")
+    readonly property var cuGlassesKinds: ({ none: root.t("Без", "None"), shades: root.t("Тёмные", "Shades"), round: root.t("Круглые", "Round") })
+    readonly property string cuHood: root.t("Капюшон", "Hood")
+    readonly property string cuName: root.t("Имя", "Name")
+    readonly property string cuPersona: root.t("Характер", "Persona")
+    readonly property var cuPersonas: ({ kent: root.t("Кент из нулевых", "2000s buddy"), sysop: "SYSOP", dispatcher: root.t("Диспетчер", "Dispatcher"), pirate: root.t("Пиратское радио", "Pirate radio") })
+    readonly property string cuHumor: root.t("Юмор", "Humor")
+    readonly property var cuHumorLevels: [root.t("без шуток", "no jokes"), root.t("изредка", "now and then"), root.t("почаще", "more often")]
+    readonly property string cuReset: root.t("По умолчанию", "Defaults")
+    readonly property string cuHint: root.t("Правый клик по Джексону — эта панель. Или просто скажи ему: «стань котом».", "Right-click Jackson for this panel. Or just tell him: “be a cat”.")
+    readonly property string cuSub: root.t("Как он выглядит и как разговаривает. Всё меняется сразу — в панели и в уведомлениях.", "How he looks and how he talks. Everything changes at once — in the panel and in notifications.")
+    readonly property string cuCmd: "j avatar skin mint"
+    readonly property string cuSay: root.t("или просто: «Джексон, стань котом»", "or just say: “Jackson, be a cat”")
+    readonly property string cuPreview: root.t("Предпросмотр", "Preview")
+    readonly property string cuInPanel: root.t("Так он выглядит в панели", "How he looks in the panel")
+    readonly property string cuDetails: root.t("Детали", "Details")
+    readonly property string cuCharacterSection: root.t("Характер", "Character")
+    readonly property string cuCharacterNote: root.t("как он разговаривает", "how he talks")
+    readonly property string cuNameHint: root.t("так он подписывается", "how he signs")
+    readonly property string cuHumorLow: root.t("по делу", "to the point")
+    readonly property string cuHumorHigh: root.t("шутит почаще", "jokes more")
+    readonly property string cuRevert: root.t("вернуть как было", "put it back")
+    readonly property string cuResetCmd: root.t("или j avatar reset", "or j avatar reset")
+    readonly property var cuCharacterSubs: ({ imp: root.t("в худи", "in a hoodie"), cat: root.t("из нулевых", "from the 2000s") })
+    readonly property var cuStates: ({ idle: root.t("покой", "idle"), listening: root.t("слушает", "listening"), thinking: root.t("думает", "thinking"), talking: root.t("говорит", "talking"), happy: root.t("рад", "happy"), error: root.t("ошибка", "error") })
+    readonly property var cuPersonaNotes: ({
+            kent: root.t("на «ты», словечки нулевых", "casual, 2000s slang"),
+            sysop: root.t("сухо и точно, как журнал", "terse, like log lines"),
+            dispatcher: root.t("чек-лист ✓/✗ и GO / NO-GO", "checklists and GO / NO-GO"),
+            pirate: root.t("ночной эфир из 90-х", "a late-night 90s DJ")
+        })
+    function cuFrames(n, ms) {
+        return n > 1 ? root.t(n + " кадра · " + ms + " мс", n + " frames · " + ms + " ms") : root.t("1 кадр", "1 frame");
+    }
+    readonly property string cuPause: root.t("Пауза", "Pause")
+    readonly property string cuPlay: root.t("Смотреть все состояния", "Cycle through the states")
+    readonly property string cuNameBad: root.t("до 24 знаков, без спецсимволов", "up to 24 characters, no symbols")
+    readonly property var skinNames: ({
+            ember: root.t("Огонь", "Ember"), wine: root.t("Бордо", "Wine"), plum: root.t("Слива", "Plum"),
+            graphite: root.t("Графит", "Graphite"), mint: root.t("Мята", "Mint"),
+            blue: root.t("Русский голубой", "Russian blue"), ginger: root.t("Рыжий", "Ginger"), black: root.t("Чёрный", "Black"),
+            snow: root.t("Снежный", "Snow"), siamese: root.t("Сиамский", "Siamese")
+        })
+    // step 6 · Jackson, two pages (design/mockups/setup-jackson.html, setup-ai.html)
+    function wzJacksonEyebrow(page) {
+        return root.t("Джексон · " + (page + 1) + " из 2", "Jackson · " + (page + 1) + " of 2");
+    }
+    function wzJacksonTitle(page, name) {
+        return page === 0 ? root.t("Знакомься, это " + name, "Meet " + name) : root.t("Чем " + name + " будет думать", "What " + name + " thinks with");
+    }
+    readonly property var wzJacksonSubs: root.ru ? ["Он живёт в системе: отвечает на вопросы, ставит программы, следит за обучением и спрашивает, прежде чем что-то менять. Выбери, каким он будет, — передумать можно в любой момент.", "Посмотрели железо и подобрали модель, которая в него влезет. Всё работает на этом компьютере; облако — по желанию (ключи — в системной связке)."] : ["He lives in the system: answers questions, installs programs, watches your training runs and asks before changing anything. Pick what he is like — you can change your mind any time.", "We looked at the hardware and picked a model that fits. Everything runs on this computer; the cloud only if you want it (keys go to the system keyring)."]
+    function wzJacksonNext(gpu) {
+        return gpu.length > 0 ? root.t("дальше — чем он будет думать: под <b>" + gpu + "</b> подберём модель", "next — what he thinks with: a model that fits <b>" + gpu + "</b>") : root.t("дальше — чем он будет думать: подберём модель под этот компьютер", "next — what he thinks with: a model that fits this computer");
+    }
+    readonly property string wzWhoCloser: root.t("Кто тебе ближе", "Who do you like more")
+    readonly property string wzBothSame: root.t("оба умеют одно и то же", "both can do the same")
+    readonly property var wzCharacterDescs: ({
+            imp: root.t("Хитро улыбается, но всегда за тебя. Худи, рога, наушники.", "A sly grin, but always on your side. Hoodie, horns, headphones."),
+            cat: root.t("Из нулевых: тёмные очки, наушники на шее, всё замечает.", "Straight from the 2000s: shades, headphones, notices everything.")
+        })
+    readonly property string wzQuickLook: root.t("Быстрый образ", "Quick look")
+    readonly property string wzQuickLookNote: root.t("остальное — правый клик по Джексону", "the rest — right-click Jackson")
+    function wzOutfitAccent(name) {
+        return root.t("в цвет акцента — " + name, "in the accent color — " + name);
+    }
+    readonly property string wzOutfitNote: root.t("сменишь акцент — сменится и одежда", "change the accent, the outfit follows")
+    readonly property string wzHowHeAnswers: root.t("Так он ответит", "How he answers")
+    readonly property string wzHowHeAnswersNote: root.t("меняется вместе с юмором", "changes with the humor")
+    readonly property string wzSampleQ: root.t("Сколько места осталось на диске?", "How much disk space is left?")
+    readonly property var wzSampleA: root.ru ? ["Свободно 1,4 ТБ из 2 ТБ.", "1,4 ТБ свободно — влезет ещё пара десятков моделей.", "1,4 ТБ свободно — влезет ещё пара десятков моделей. Можешь не экономить)"] : ["1.4 TB free of 2 TB.", "1.4 TB free — room for a couple dozen more models.", "1.4 TB free — room for a couple dozen more models. No need to be stingy)"]
+    function wzHello(name) {
+        return root.t("Йо! Я " + name + ". Если что — жми <b>Super+J</b>, я рядом)", "Yo! I'm " + name + ". Need anything — press <b>Super+J</b>, I'm around)");
+    }
+    readonly property string wzCall: root.t("позвать", "call")
+    readonly property string wzHoldVoice: root.t("держи — говори голосом", "hold — talk")
 }

@@ -49,8 +49,14 @@ def main() -> None:
         for n in [16, 24, 32, 48, 64])
     walls = "".join(
         f'<figure><img class="wp" src="{U(B / "wallpapers" / t / f"signal-{t}-2880x1800.png")}">'
-        f'<figcaption>signal · {t} · 1920×1080 · 2560×1440 · 2880×1800 · 3840×2160 · + lock</figcaption></figure>'
+        f'<figcaption>signal · {t} · desktop (theme accent) · 1920×1080 · 2560×1440 · 2880×1800 · 3840×2160</figcaption></figure>'
         for t in ["graphite", "paper", "phosphor"])
+    walls += "".join(
+        f'<figure><img class="wp" src="{U(B / "wallpapers" / t / f"signal-{t}-lock-2880x1800.png")}">'
+        f'<figcaption>signal · {t} · lock · neutral (text color, §12)</figcaption></figure>'
+        for t in ["graphite", "paper"])
+    walls += (f'<figure><img class="wp" src="{U(brand.OUT / "wallpapers-lilac/graphite/signal-graphite-2880x1800.png")}">'
+              f'<figcaption>re-render in a user accent: generate.py --accent lilac</figcaption></figure>')
     frames_meta = [("1-power-on", "0,10 с · пятно"), ("2-warm-up", "0,52 с · линия"), ("3-boot-24", "загрузка 24 %"),
                    ("4-boot-71-message", "71 % · сообщение"), ("5-unlock", "ключ диска"), ("6-shutdown", "выключение")]
     frames = "".join(
@@ -62,9 +68,9 @@ def main() -> None:
     logo_txt = (B / "fastfetch/logo.txt").read_text(encoding="utf-8").splitlines()
     def ff_line(line: str) -> str:
         out, color = [], "d"
-        for part in re.split(r"(\$[12])", line):
-            if part in ("$1", "$2"):
-                color = "d" if part == "$1" else "a"
+        for part in re.split(r"(\$[123])", line):
+            if part in ("$1", "$2", "$3"):
+                color = {"$1": "d", "$2": "a", "$3": "f"}[part]
             elif part:
                 out.append(f'<span class="{color}">{html.escape(part)}</span>')
         return "".join(out)
@@ -102,7 +108,7 @@ figcaption {{ font: 400 11px/1.4 "Plex Mono"; letter-spacing: .06em; color: {G['
 .term .bar b {{ color: {G['text']}; font-weight: 500; margin-right: 9px; }}
 .term pre {{ font: 400 14px/1.6 "Plex Mono"; padding: 22px 26px; color: {G['text']}; display: grid; grid-template-columns: auto 1fr; gap: 48px; white-space: pre; }}
 .term pre > span {{ white-space: pre; }}
-.term .a {{ color: {G['accent']}; }} .term i {{ font-style: normal; color: {G['accent']}; }} .term .d {{ color: {G['text']}; }}
+.term .a {{ color: {G['text']}; }} .term .f {{ color: {G['textFaint']}; }} .term i {{ font-style: normal; color: {G['textFaint']}; }} .term .d {{ color: {G['text']}; }}
 table {{ border-collapse: collapse; font: 400 12.5px/1 "Plex Mono"; color: {G['textDim']}; }}
 td {{ padding: 7px 26px 7px 0; border-bottom: 1px solid {G['line']}; }}
 td:first-child {{ color: {G['text']}; }}
@@ -129,13 +135,13 @@ td:first-child {{ color: {G['text']}; }}
 <div class="row"><div class="panel dark" style="flex:1"><div class="icons">{icons}</div></div>
 <div class="panel light" style="width:520px"><div class="icons" style="gap:22px">{icons_light}</div></div></div>
 
-<h2>Wallpapers · «Сигнал» <span>branding/wallpapers · identical to the approved mockup at 2880×1800</span></h2>
+<h2>Wallpapers · «Сигнал» <span>branding/wallpapers · desktop = approved mockup · lock neutral · any accent on demand</span></h2>
 <div class="grid3">{walls}</div>
 
-<h2>Plymouth · svoya-signal <span>branding/plymouth · preview.html frames; the same states rendered by plymouth's own script engine match within 5/255</span></h2>
+<h2>Plymouth · svoya-signal <span>branding/plymouth · neutral (DESIGN §12) · preview.html frames = plymouth's own engine within 6/255</span></h2>
 <div class="grid3">{frames}</div>
 
-<h2>GRUB · svoya <span>branding/grub · countdown fills the horizon toward the burst · fonts via make-fonts.sh</span></h2>
+<h2>GRUB · svoya <span>branding/grub · neutral · countdown brightens the horizon toward the burst · fonts via make-fonts.sh</span></h2>
 <div class="row" style="gap:40px;align-items:flex-start">
   <img class="grub" src="{U(B / 'grub/preview.png')}">
   <div style="display:flex;flex-direction:column;gap:28px">

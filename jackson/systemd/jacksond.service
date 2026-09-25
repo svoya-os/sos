@@ -7,6 +7,9 @@ Description=Jackson, the SOS assistant
 Documentation=file:///usr/share/doc/svoya-jackson/README.md
 PartOf=graphical-session.target
 After=graphical-session.target
+# The AI switch (`sos ai off`): the service does not start while either flag exists.
+ConditionPathExists=!%h/.config/svoya/ai.off
+ConditionPathExists=!/etc/svoya/ai.off
 
 [Service]
 Type=notify

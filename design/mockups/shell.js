@@ -7,9 +7,38 @@
  * states, and the line-icon set (Lucide geometry, ISC — redrawn on the 24px grid, round caps).
  * Rendering is deterministic: no randomness, no clock, so PNGs are reproducible.
  */
+/* System accents (themes/accents.toml, DESIGN §10): each has a dark-base and a light-base variant. */
+window.SOS_ACCENTS = {
+  signal: { ru: 'Сигнал', dark: '#ffb547', light: '#2b3af7' },
+  amber: { ru: 'Янтарь', dark: '#ffb547', light: '#9a5200' },
+  ink: { ru: 'Чернила', dark: '#8f9dff', light: '#2b3af7' },
+  phosphor: { ru: 'Фосфор', dark: '#5cf08f', light: '#0f7a3a' },
+  ice: { ru: 'Лёд', dark: '#62d4f2', light: '#006f8e' },
+  lilac: { ru: 'Сирень', dark: '#bba4ff', light: '#6a3fd6' },
+  rose: { ru: 'Роза', dark: '#ff82b2', light: '#b8185a' },
+  mono: { ru: 'Моно', dark: '#ebe8e1', light: '#151515' },
+};
+window.SOS_applyAccent = function (el, id) {
+  const theme = el.dataset.theme || (el.closest && el.closest('[data-theme]') || document.documentElement).dataset.theme || 'graphite';
+  const dark = theme !== 'paper';
+  if (!id) id = theme === 'phosphor' ? 'phosphor' : 'signal';
+  const A = window.SOS_ACCENTS[id];
+  const hex = A ? A[dark ? 'dark' : 'light'] : id;
+  const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const lum = (c) => { const v = c.map((x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const L = lum(rgb), cDark = (L + 0.05) / (lum([20, 21, 24]) + 0.05), cLight = 1.05 / (L + 0.05);
+  el.dataset.accent = id;
+  el.style.setProperty('--accent', hex);
+  el.style.setProperty('--accent-soft', `rgba(${rgb.join(',')}, ${dark ? 0.14 : 0.09})`);
+  el.style.setProperty('--accent-ink', cDark >= cLight ? '#141518' : '#ffffff');
+  el.style.setProperty('--glow', dark ? `drop-shadow(0 0 6px rgba(${rgb.join(',')}, 0.45))` : 'none');
+  return hex;
+};
 (function () {
   const q = new URLSearchParams(location.search);
   document.documentElement.dataset.theme = q.get('theme') || 'graphite';
+  window.SOS_applyAccent(document.documentElement, q.get('accent') || '');
 })();
 
 window.SOS = (() => {
@@ -133,7 +162,7 @@ window.SOS = (() => {
   /* ─────────────── Morse mark ··· ——— ··· ───────────────
      s = scale (1 = the bar mark: 3.2px high). The ——— is always the accent.
      lit = how many of the nine symbols are lit (boot progress); unlit symbols use `var(--unlit)`. */
-  function mark(svg, s = 1, lit = 9) {
+  function mark(svg, s = 1, lit = 9, live = false) {
     const u = 3.2 * s, dash = 8 * s, gap = 2.4 * s, letterGap = 3.2 * s;
     const h = Math.ceil(u + 6.8 * s);
     const cy = h / 2;
@@ -145,7 +174,7 @@ window.SOS = (() => {
         const r = document.createElementNS(NS, 'rect');
         r.setAttribute('x', x.toFixed(2)); r.setAttribute('y', (cy - u / 2).toFixed(2));
         r.setAttribute('width', w.toFixed(2)); r.setAttribute('height', u.toFixed(2)); r.setAttribute('rx', (u / 2).toFixed(2));
-        r.setAttribute('fill', n >= lit ? 'var(--unlit, var(--line-strong))' : li === 1 ? 'var(--accent)' : 'currentColor');
+        r.setAttribute('fill', n >= lit ? 'var(--unlit, var(--line-strong))' : li === 1 && live ? 'var(--accent)' : 'currentColor');
         svg.append(r);
         x += w + gap; n += 1;
       });
@@ -209,11 +238,12 @@ window.SOS = (() => {
       for (const k in attrs) e.setAttribute(k, attrs[k]);
       svg.append(e); return e;
     };
-    const base = () => add('path', { d: `M 0 ${cy} L ${w} ${cy}`, stroke: 'var(--accent)', 'stroke-opacity': kind === 'idle' ? 0.3 : 0.22, 'stroke-width': 1, fill: 'none' });
-    const line = (d, extra = {}) => add('path', { d, fill: 'none', stroke: 'var(--accent)', 'stroke-width': sw, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', ...extra });
+    const ink = svg.dataset.tone === 'n' ? 'var(--text-dim)' : 'var(--accent)';   // neutral when Jackson isn't live
+    const base = () => add('path', { d: `M 0 ${cy} L ${w} ${cy}`, stroke: ink, 'stroke-opacity': kind === 'idle' ? 0.3 : 0.22, 'stroke-width': 1, fill: 'none' });
+    const line = (d, extra = {}) => add('path', { d, fill: 'none', stroke: ink, 'stroke-width': sw, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', ...extra });
 
     if (kind === 'idle') {
-      add('path', { d: `M 0 ${cy} L ${w} ${cy}`, stroke: 'var(--accent)', 'stroke-opacity': 0.55, 'stroke-width': sw, 'stroke-linecap': 'round', fill: 'none' });
+      add('path', { d: `M 0 ${cy} L ${w} ${cy}`, stroke: svg.dataset.tone === 'n' ? 'var(--text-dim)' : 'var(--accent)', 'stroke-opacity': 0.55, 'stroke-width': sw, 'stroke-linecap': 'round', fill: 'none' });
       return;
     }
     if (kind === 'error') {
@@ -278,10 +308,10 @@ window.SOS = (() => {
     const jack = o.jackson || 'active'; // active | idle | listening
     const jackMini = jack === 'listening'
       ? `<div class="jack-mini live"><svg data-i="mic"></svg><svg class="scope" data-kind="voice" data-period="3" data-amp="4.4" width="22" height="10"></svg></div>`
-      : `<div class="jack-mini ${jack === 'idle' ? 'idle' : ''}"><svg class="scope" data-kind="${jack === 'idle' ? 'idle' : 'answer'}" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg></div>`;
+      : `<div class="jack-mini ${jack === 'idle' ? 'idle' : ''}"><svg class="scope" ${jack === 'idle' ? 'data-tone="n"' : ''} data-kind="${jack === 'idle' ? 'idle' : 'answer'}" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg></div>`;
     el.innerHTML = `
       <div class="bar-left">
-        <div class="mark"><svg class="morse"></svg></div>
+        <div class="mark"><svg class="morse" data-live="${jack === 'idle' ? 0 : 1}"></svg></div>
         <div class="ws">${ws.map(([n, c]) => `<span class="${c}">${n}</span>`).join('')}</div>
         ${title ? `<div class="win-title">${title[0]}${title[1] ? `<i>/</i><span>${title[1]}</span>` : ''}</div>` : ''}
       </div>
@@ -298,7 +328,7 @@ window.SOS = (() => {
 
   /* ─────────────── shared window bodies ─────────────── */
   function training(state = 'running') {
-    const head = `<span class="a">›</span> sos run train.py
+    const head = `<span class="p">›</span> sos run train.py
 <span class="m">  среда    </span>torch 2.13 · CUDA 13.0 · RTX 4090 <span class="d">24 ГБ</span>
 <span class="m">  модель   </span>qwen3-tts-0.6b <span class="d">+</span> LoRA r16
 <span class="m">  данные   </span>ru-voice <span class="d">·</span> 48 213 примеров
@@ -413,7 +443,7 @@ window.SOS = (() => {
     return `<div class="trk">
         <div class="trk-head">
           <span class="run">tts-finetune<span>/</span>0924-1832</span>
-          ${done ? '<span class="tag ok"><span class="dot ok"></span>готово · 54 мин</span>' : '<span class="tag acc"><span class="dot"></span>идёт · эпоха 2/3</span>'}
+          ${done ? '<span class="tag ok"><span class="dot ok"></span>готово · 54 мин</span>' : '<span class="tag"><span class="dot"></span>идёт · эпоха 2/3</span>'}
           <span class="spacer"></span>
           <span class="meta">${done ? 'завершено в 19:26' : 'обновлено 5 с назад'}</span>
         </div>
@@ -430,6 +460,23 @@ window.SOS = (() => {
       </div>`;
   }
 
+  /* ─────────────── Jackson mascot (design/mascot/jackson.js + out/jackson-data.js) ─────────────── */
+  function mascots(root = document) {
+    if (!window.JacksonSprite || !window.JACKSON) return;
+    root.querySelectorAll('canvas[data-jackson]').forEach((c) => {
+      const data = window.JACKSON[c.dataset.jackson];
+      const themed = c.closest('[data-theme]') || document.documentElement;
+      const theme = themed.dataset.theme || 'graphite';
+      const accEl = c.closest('[data-accent]') || document.documentElement;
+      let acc = c.dataset.accent || accEl.dataset.accent || 'signal';
+      if (theme === 'phosphor' && acc === 'signal') acc = 'phosphor';
+      const opts = JSON.parse(c.dataset.opts || '{}');
+      window.JacksonSprite.draw(c, data, opts, c.dataset.state || 'idle', theme === 'paper' ? 'light' : 'dark', acc, 1);
+      const px = +(c.dataset.px || 32);
+      c.style.width = px + 'px'; c.style.height = px + 'px';
+    });
+  }
+
   /* ─────────────── init ─────────────── */
   function init(o = {}) {
     if (o.bar !== false) bar(o.bar || {});
@@ -437,12 +484,13 @@ window.SOS = (() => {
     document.querySelectorAll('[data-trackio]').forEach((e) => { e.innerHTML = trackio(e.dataset.trackio, +(e.dataset.w || 650), +(e.dataset.h || 210)); });
     document.querySelectorAll('[data-ctl]').forEach((e) => { e.outerHTML = winControls(); });
     document.querySelectorAll('svg.signal').forEach((s) => signal(s, JSON.parse(s.dataset.o || '{}')));
-    document.querySelectorAll('svg.morse').forEach((s) => mark(s, +(s.dataset.s || 1), +(s.dataset.lit ?? 9)));
+    document.querySelectorAll('svg.morse').forEach((s) => mark(s, +(s.dataset.s || 1), +(s.dataset.lit ?? 9), s.dataset.live === '1'));
+    mascots();
     document.querySelectorAll('svg.scope').forEach(scope);
     document.querySelectorAll('svg.loss').forEach((s) => lossChart(s, JSON.parse(s.dataset.o || '{}')));
     icons();
     document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
   }
 
-  return { q, NS, MORSE, ICONS, icons, mark, signal, scope, bar, training, trackio, comfy, lossChart, init };
+  return { q, NS, MORSE, ICONS, icons, mark, signal, scope, bar, training, trackio, comfy, lossChart, mascots, init };
 })();

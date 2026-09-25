@@ -1,8 +1,8 @@
 import QtQuick
 import qs.core
 
-// Switch (components.css .switch): 32×18 track (surface3 + 1px lineStrong; accent when on),
-// 12px knob 3px in (textFaint; accentInk when on). Space/Enter toggles when focused.
+// Switch (components.css .switch): 32×18 track (surface3 + 1px lineStrong; `text` when on —
+// never the accent, DESIGN §11), 12px knob 3px in (textFaint; surface when on). Space/Enter toggles when focused.
 Item {
     id: root
 
@@ -23,7 +23,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: height / 2
-        color: root.checked ? Theme.accent : Theme.surface3
+        color: root.checked ? Theme.selected : Theme.surface3
         border.width: root.checked ? 0 : 1
         border.color: Theme.lineStrong
         antialiasing: true
@@ -40,7 +40,7 @@ Item {
             radius: 6
             y: 3
             x: root.checked ? parent.width - width - 3 : 3
-            color: root.checked ? Theme.accentInk : Theme.textFaint
+            color: root.checked ? Theme.surface : Theme.textFaint
             antialiasing: true
 
             Behavior on x {

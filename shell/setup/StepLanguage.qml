@@ -133,9 +133,9 @@ Item {
                         width: chipRow.implicitWidth + 24
                         height: 32
                         radius: 9
-                        color: chip.chosen ? Theme.accentSoft : (chipMouse.containsMouse ? Theme.surface3 : (Theme.isDark ? Theme.surface : Theme.surface2))
+                        color: chip.chosen ? Theme.surface3 : (chipMouse.containsMouse ? Theme.surface3 : (Theme.isDark ? Theme.surface : Theme.surface2))
                         border.width: 1
-                        border.color: chip.chosen ? Theme.alpha(Theme.accent, 0.45) : Theme.line
+                        border.color: chip.chosen ? Theme.selected : Theme.line
                         antialiasing: true
 
                         Row {
@@ -149,7 +149,7 @@ Item {
                                 text: chip.modelData.toUpperCase()
                                 size: 11.5
                                 font.weight: Font.Medium
-                                color: chip.chosen ? Theme.accent : Theme.textDim
+                                color: chip.chosen ? Theme.text : Theme.textDim
                             }
                             SText {
                                 anchors.verticalCenter: parent.verticalCenter
@@ -162,7 +162,7 @@ Item {
                                 visible: chip.order === 0 && root.layouts.length > 1
                                 text: "1"
                                 size: 10.5
-                                color: Theme.accent
+                                color: Theme.textFaint
                             }
                         }
 
@@ -212,7 +212,7 @@ Item {
                     radius: 9
                     color: Theme.surface2
                     border.width: 1
-                    border.color: tryField.input.activeFocus ? Theme.accent : Theme.lineStrong
+                    border.color: tryField.input.activeFocus ? Theme.selected : Theme.lineStrong
 
                     TextField {
                         id: tryField

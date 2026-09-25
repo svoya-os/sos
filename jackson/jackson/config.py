@@ -21,7 +21,6 @@ from .paths import Paths
 POLICIES = ("local-only", "eu", "any")
 ROUTES = ("auto", "local", "cloud")
 PERSONAS = ("kent", "sysop", "dispatcher", "pirate")
-AVATARS = ("auto", "imp", "cat", "none")
 TASKS = ("chat", "code", "vision", "long")
 
 # Prices are EUR per 1M tokens (input, output), converted at ≈0.86 €/$ on 2026-09-24
@@ -48,7 +47,7 @@ DEFAULTS: dict[str, Any] = {
     "address": "ty",            # ty | vy — informal «ты» by default (DESIGN.md §8)
     "persona": "kent",          # kent («Кент из нулевых») | sysop | dispatcher | pirate
     "humor": 1,                 # 0 none · 1 occasional (default) · 2 more
-    "avatar": "auto",           # mascot hint for the shell: auto | imp | cat | none
+    # Jackson's look and name live in ~/.config/svoya/avatar.json (shared with the shell), not here.
     "allowed_roots": ["~"],
     "max_steps": 8,
     "route": {
@@ -219,7 +218,6 @@ class Config:
     address: str = "ty"
     persona: str = "kent"
     humor: int = 1
-    avatar: str = "auto"
     allowed_roots: list[str] = field(default_factory=lambda: ["~"])
     max_steps: int = 8
     route: RouteConfig = field(default_factory=RouteConfig)
@@ -336,7 +334,6 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
     cfg.address = _choice(data.get("address"), ("ty", "vy"), "ty", "address", warnings)
     cfg.persona = _choice(data.get("persona"), PERSONAS, "kent", "persona", warnings)
     cfg.humor = int(_as_num(data.get("humor"), 1, 0, 2))
-    cfg.avatar = _choice(data.get("avatar"), AVATARS, "auto", "avatar", warnings)
     cfg.allowed_roots = _as_str_list(data.get("allowed_roots")) or ["~"]
     cfg.max_steps = int(_as_num(data.get("max_steps"), 8, 1, 64))
 

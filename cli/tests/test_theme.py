@@ -57,8 +57,12 @@ class ColorTest(unittest.TestCase):
     def test_terminal_palette(self):
         p = A.load_theme(Paths(env={"HOME": "/nonexistent"}), "paper")
         pal = terminal_palette(p.colors, p.mode)
-        self.assertEqual(pal["blue"], p.colors["accent"])          # ink blue accent doubles as ANSI blue
         self.assertEqual(len([k for k in pal if re.fullmatch(r"c\d+", k)]), 16)
+        # the accent never becomes an ANSI color: terminal programs look the same with every accent
+        self.assertNotIn(p.colors["accent"], pal.values())
+        self.assertEqual((pal["red"], pal["yellow"], pal["green"]), (p.colors["bad"], p.colors["warn"], p.colors["ok"]))
+        other = dict(p.colors, accent=Color.parse("#ff00ff"))
+        self.assertEqual(terminal_palette(other, p.mode), pal)
 
 
 class TemplatesTest(SandboxTest):

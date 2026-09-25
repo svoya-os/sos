@@ -2,8 +2,11 @@
 
 **SOS** (English) / **«СОС»** (Russian) — *Svoya Operating System / Своя Операционная Система*.
 The mark is Morse `··· ——— ···`: S O S in international Morse and С О С in Russian Morse. It is the same
-signal in both alphabets. One signal color per theme: amber `#ffb547` on Graphite (night), ink blue
-`#2b3af7` on Paper (day), phosphor green `#5cf08f` on Phosphor (the optional "era" theme).
+signal in both alphabets. The brand's own signal is amber `#ffb547` on Graphite and ink blue `#2b3af7`
+on Paper. In the OS the accent is the user's choice (`themes/accents.toml`, design/DESIGN.md §10–§11).
+**Pre-login surfaces are neutral** (§12): GRUB, Plymouth and the console use only Graphite `text`
+`#ebe8e1`, `textDim` `#9d9a92` and `textFaint` `#67655f`. They can never clash with the accent a
+user picks.
 
 Everything here is generated from code plus `themes/*.toml`, the only source of color truth. Review it
 all at once in [`out/contact-sheet.png`](out/contact-sheet.png).
@@ -21,15 +24,16 @@ branding/
 │   │                                   variant: on-dark · on-light · mono-black · mono-white
 │   └── icon/sos.svg · sos-symbolic.svg · src/sos-<n>.svg · png/sos-{16,24,32,48,64,128,256,512}.png
 ├── wallpapers/generate.py      «Сигнал»: {graphite,paper,phosphor}/signal-<theme>[-lock]-<W>x<H>.png
-│   └── wallpapers.json         index (id, theme, variant, sizes, author, license)
+│   │                           desktop = theme accent (the approved mockup) · lock = neutral · --accent <id|#hex>
+│   └── wallpapers.json         index (id, theme, variant, accent, sizes, author, license)
 ├── plymouth/
-│   ├── svoya-signal/           the theme: .plymouth, .script, 37 PNG sprites
+│   ├── svoya-signal/           the theme (neutral): .plymouth, .script, 37 PNG sprites
 │   ├── generate.py             sprites + the script's geometry block + preview frames
 │   ├── preview.html            JS simulation of the script (interactive; keys in the file header)
 │   ├── frames/frame-*.png      6 key frames from preview.html · engine-*.png from plymouth's own engine
 │   └── harness/                builds plymouth 24.004's script engine headless and runs the theme (test only)
 ├── grub/
-│   ├── svoya/                  theme.txt (ru) · theme-en.txt · PNG assets (fonts come from make-fonts.sh)
+│   ├── svoya/                  theme.txt (ru) · theme-en.txt · PNG assets, neutral (fonts come from make-fonts.sh)
 │   ├── generate.py · make-fonts.sh · default-grub.cfg · preview.png · preview-en.png
 ├── sounds/
 │   ├── svoya/index.theme · svoya/stereo/*.oga   freedesktop sound theme, 17 sounds
@@ -46,6 +50,7 @@ branding/
 branding/build.sh            # all generators in order, then the contact sheet (≈ 3 min)
 python3 branding/logo/generate.py
 python3 branding/wallpapers/generate.py [graphite|paper|phosphor] [1920x1080 …]
+python3 branding/wallpapers/generate.py --accent lilac --out DIR [--variant desktop|lock|both]   # user accent
 python3 branding/plymouth/generate.py [--no-frames]
 python3 branding/grub/generate.py
 python3 branding/sounds/generate.py
@@ -86,14 +91,17 @@ deterministic, apart from Chromium's anti-aliasing and dither noise (±2/255).
 
 * Use the SVGs as they are: `on-dark` on Graphite or any dark surface, `on-light` on Paper or light
   surfaces, and `mono-*` where only one color is possible (print, emboss, laser).
-* Keep the dashes in the theme's signal color and the dots in the ink color. On Phosphor, use the Graphite
-  artwork recolored from `themes/phosphor.toml`. The shell draws the mark live from tokens.
+* In brand artwork, keep the dashes in the signal color and the dots in the ink color. Inside the OS the
+  shell draws the mark live: in the user's accent while Jackson is active, otherwise in `text`
+  (the accent budget, §11).
 * Let the mark breathe: one signal per view. If the wallpaper burst is visible, do not add another mark
   next to it.
 * Use the folded mark only where the linear one would be smaller than 44 px wide.
 
 ### Don't
 
+* Don't put any accent on pre-login surfaces (GRUB, Plymouth, POST, console, `os-release` colors). They
+  are neutral by rule (§12).
 * Don't redraw the letters, change the tracking, or set «СОС»/SOS in another typeface or weight.
 * Don't recolor the dots and dashes arbitrarily, add gradients, glass, bevels, outlines or drop shadows.
   The only glow allowed is the soft signal glow used by the dark themes.
@@ -105,7 +113,7 @@ deterministic, apart from Chromium's anti-aliasing and dither noise (±2/255).
 
 ## Color
 
-From `themes/*.toml` (never duplicate them elsewhere):
+Base themes come from `themes/*.toml`; accents come from `themes/accents.toml` (never duplicate them elsewhere):
 
 | token | Graphite (night) | Paper (day) | Phosphor (era) |
 |---|---|---|---|
@@ -161,7 +169,10 @@ exception: it is named `sos` because `os-release` says `LOGO=sos`.
 * **Plymouth, verified in its own engine:** `plymouth/harness` builds the script interpreter of
   plymouth 24.004.60 (parser, executor, image/sprite/math/string libraries, label-freetype) with a fake
   display. The theme parses and runs through every callback and mode. Its frames match `preview.html`
-  within 5/255, apart from text rasterisation. The engine silently ignores calls to undefined
+  within 6/255, apart from text rasterisation.
+* **Neutrality:** no pixel in the Plymouth frames or the GRUB preview is more saturated than the `text`
+  color itself (maximum channel spread ≤ 12). The default desktop wallpapers are byte-identical to the
+  previous render. The lock wallpapers are neutral. The engine silently ignores calls to undefined
   functions, so the frame comparison is the real test.
 * **Needs a real system:** the Plymouth theme on real DRM and initrd (dracut/initramfs-tools, LUKS
   prompt, HiDPI); `grub-mkfont` and the GRUB theme in real GRUB (the preview only emulates gfxmenu's

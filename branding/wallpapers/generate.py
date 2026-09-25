@@ -14,6 +14,11 @@ gradients, grain filter, horizon fade, burst geometry, colophon — for every ta
     python3 branding/wallpapers/generate.py                 # everything
     python3 branding/wallpapers/generate.py graphite 1920x1080
     python3 branding/wallpapers/generate.py --html          # dump the HTML sources for a browser
+    python3 branding/wallpapers/generate.py --accent lilac --out ~/.local/share/svoya/wallpapers
+                                     # re-render in a user accent (id from themes/accents.toml or #hex)
+
+Accent: desktop variants carry the theme's default accent (as approved); lock variants are neutral
+(the theme's `text` color, design/DESIGN.md §12) so they never clash with a user-chosen accent.
 
 SPDX-License-Identifier: Apache-2.0
 The images it produces are licensed CC BY-SA 4.0.
@@ -46,10 +51,10 @@ SIGNAL_X0_REL = 1030.0 / 1440.0            # burst start, relative to the width 
 SIGNAL_LEAD = 70.0
 
 # Per-theme surface recipe (values from design/mockups/desktop.css; colors from themes/*.toml)
-def surface_css(theme_id: str, dpr: float) -> str:
+def surface_css(theme_id: str, dpr: float, accent: str) -> str:
     c = brand.theme(theme_id)["color"]
     if theme_id == "graphite":
-        return (f"radial-gradient(1100px 620px at 12% -6%, {brand.rgba_css(c['accent'], 0.075)}, transparent 62%),\n"
+        return (f"radial-gradient(1100px 620px at 12% -6%, {brand.rgba_css(accent, 0.075)}, transparent 62%),\n"
                 f"    radial-gradient(900px 700px at 104% 108%, {brand.rgba_css(c['cloud'], 0.045)}, transparent 60%),\n"
                 f"    linear-gradient(180deg, #0f1012 0%, #0b0c0e 100%)")
     if theme_id == "paper":
@@ -60,17 +65,35 @@ def surface_css(theme_id: str, dpr: float) -> str:
                 f"{cell / 2:.4f}px {cell / 2:.4f}px / {cell:.4f}px {cell:.4f}px,\n"
                 f"    linear-gradient(180deg, #edeae3 0%, #e6e3da 100%)")
     if theme_id == "phosphor":
-        return (f"radial-gradient(1200px 520px at 50% 118%, {brand.rgba_css(c['accent'], 0.10)}, transparent 65%),\n"
-                f"    radial-gradient(900px 500px at 0% 0%, {brand.rgba_css(c['accent'], 0.035)}, transparent 60%),\n"
+        return (f"radial-gradient(1200px 520px at 50% 118%, {brand.rgba_css(accent, 0.10)}, transparent 65%),\n"
+                f"    radial-gradient(900px 500px at 0% 0%, {brand.rgba_css(accent, 0.035)}, transparent 60%),\n"
                 f"    {c['wall']}")
     raise KeyError(theme_id)
 
 
-GLOW = {  # --glow in design/mockups/tokens.css (dark themes only)
-    "graphite": "drop-shadow(0 0 6px rgba(255, 181, 71, 0.45))",
-    "paper": "none",
-    "phosphor": "drop-shadow(0 0 7px rgba(92, 240, 143, 0.55))",
-}
+def glow_css(theme_id: str, accent: str) -> str:
+    """--glow in design/mockups/tokens.css (dark themes only), in the color of the signal."""
+    if theme_id == "graphite":
+        return f"drop-shadow(0 0 6px {brand.rgba_css(accent, 0.45)})"
+    if theme_id == "phosphor":
+        return f"drop-shadow(0 0 7px {brand.rgba_css(accent, 0.55)})"
+    return "none"
+
+
+def resolve_accent(theme_id: str, spec: str | None) -> str:
+    """None → the theme's own accent · "neutral" → the theme's text color · an id from
+    themes/accents.toml (dark or light variant by the theme's mode) · or "#rrggbb"."""
+    t = brand.theme(theme_id)
+    if spec is None:
+        return t["color"]["accent"]
+    if spec == "neutral":
+        return t["color"]["text"]
+    if spec.startswith("#") and len(spec) == 7:
+        return spec.lower()
+    accents = brand.accents()
+    if spec not in accents:
+        raise SystemExit(f"unknown accent {spec!r}; one of {sorted(k for k in accents if k != 'default')} or #rrggbb")
+    return accents[spec]["dark" if t["mode"] == "dark" else "light"]
 GRAIN_BLEND = {"graphite": "overlay", "paper": "multiply", "phosphor": "overlay"}
 BASE_OPACITY = {"graphite": 0.22, "paper": 0.4, "phosphor": 0.22}
 GRAIN_SVG = ("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'>"
@@ -82,10 +105,13 @@ GRAIN_SVG = ("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' wi
 ALL_LAYERS = frozenset({"surface", "base", "pulse", "tick", "grain", "colophon"})
 
 
-def page_html(theme_id: str, width_units: float, dpr: float, lock: bool, layers=ALL_LAYERS) -> str:
-    """layers: which parts to draw (the GRUB theme renders the surface and the signal separately)."""
+def page_html(theme_id: str, width_units: float, dpr: float, lock: bool, layers=ALL_LAYERS,
+              accent: str | None = None) -> str:
+    """layers: which parts to draw (the GRUB theme renders the surface and the signal separately).
+    accent: #rrggbb for the signal and the accent glow; default: the theme's accent."""
     t = brand.theme(theme_id)
     c = t["color"]
+    acc = accent or c["accent"]
     y, u, h = SIGNAL_Y, SIGNAL_U, SIGNAL_H
     x0 = SIGNAL_X0_REL * width_units
     d, x_end = brand.burst_path(x0, y, u, h, SIGNAL_LEAD)
@@ -100,10 +126,10 @@ def page_html(theme_id: str, width_units: float, dpr: float, lock: bool, layers=
 html, body {{ width: {width_units:.4f}px; height: {UNIT_H}px; overflow: hidden; background: {c['wall'] if 'surface' in layers else 'transparent'}; }}
 body {{ -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; font-feature-settings: "ss02", "zero"; }}
 .wallpaper {{ position: absolute; inset: 0; background:
-    {surface_css(theme_id, dpr) if 'surface' in layers else 'transparent'}; }}
+    {surface_css(theme_id, dpr, acc) if 'surface' in layers else 'transparent'}; }}
 svg.signal {{ position: absolute; inset: 0; width: {width_units:.4f}px; height: {UNIT_H}px; }}
 .signal .base {{ fill: none; stroke-width: 1; opacity: {BASE_OPACITY[theme_id]}; }}
-.signal .pulse {{ fill: none; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; opacity: 0.9; filter: {GLOW[theme_id]}; }}
+.signal .pulse {{ fill: none; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; opacity: 0.9; filter: {glow_css(theme_id, acc)}; }}
 .signal .tick {{ fill: {c['textFaint']}; font: 400 10px "Plex Mono"; letter-spacing: 0.3em; opacity: 0.8; }}
 .grain {{ position: absolute; inset: 0; opacity: {t['effects']['grain']}; mix-blend-mode: {GRAIN_BLEND[theme_id]};
   background-image: url("{GRAIN_SVG}"); }}
@@ -115,16 +141,16 @@ svg.signal {{ position: absolute; inset: 0; width: {width_units:.4f}px; height: 
 <svg class="signal" viewBox="0 0 {width_units:.4f} {UNIT_H}">
   <defs>
     <linearGradient id="fade" x1="0" x2="{width_units:.4f}" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="{c['accent']}" stop-opacity="0"/>
-      <stop offset=".22" stop-color="{c['accent']}" stop-opacity=".9"/>
-      <stop offset=".86" stop-color="{c['accent']}" stop-opacity=".9"/>
-      <stop offset="1" stop-color="{c['accent']}" stop-opacity="0"/>
+      <stop offset="0" stop-color="{acc}" stop-opacity="0"/>
+      <stop offset=".22" stop-color="{acc}" stop-opacity=".9"/>
+      <stop offset=".86" stop-color="{acc}" stop-opacity=".9"/>
+      <stop offset="1" stop-color="{acc}" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="burst" x1="{x0 - SIGNAL_LEAD:.3f}" x2="{x_end + SIGNAL_LEAD:.3f}" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="{c['accent']}" stop-opacity="0"/>
-      <stop offset=".18" stop-color="{c['accent']}" stop-opacity="1"/>
-      <stop offset=".82" stop-color="{c['accent']}" stop-opacity="1"/>
-      <stop offset="1" stop-color="{c['accent']}" stop-opacity="0"/>
+      <stop offset="0" stop-color="{acc}" stop-opacity="0"/>
+      <stop offset=".18" stop-color="{acc}" stop-opacity="1"/>
+      <stop offset=".82" stop-color="{acc}" stop-opacity="1"/>
+      <stop offset="1" stop-color="{acc}" stop-opacity="0"/>
     </linearGradient>
   </defs>
   {f'<path class="base" d="M 0 {y} L {width_units:.4f} {y}" stroke="url(#fade)"/>' if "base" in layers else ""}
@@ -148,19 +174,23 @@ def scanlines(img: Image.Image, dpr: float) -> Image.Image:
     return Image.fromarray(np.clip(np.rint(a), 0, 255).astype(np.uint8))
 
 
-def out_path(theme_id: str, w: int, h: int, lock: bool) -> pathlib.Path:
+def out_path(theme_id: str, w: int, h: int, lock: bool, root: pathlib.Path = HERE) -> pathlib.Path:
     name = f"signal-{theme_id}{'-lock' if lock else ''}-{w}x{h}.png"
-    return HERE / theme_id / name
+    return root / theme_id / name
 
 
-def render(r: brand.Renderer, theme_id: str, w: int, h: int, lock: bool) -> pathlib.Path:
+def render(r: brand.Renderer, theme_id: str, w: int, h: int, lock: bool, accent_spec: str | None = None,
+           root: pathlib.Path = HERE) -> pathlib.Path:
+    """accent_spec None: desktop → the theme's accent, lock → neutral (DESIGN.md §12)."""
     dpr = h / UNIT_H
     width_units = w / dpr
-    html = page_html(theme_id, width_units, dpr, lock)
-    target = out_path(theme_id, w, h, lock)
-    tmp = brand.OUT / "wallpapers" / f".{target.stem}.png"
+    if accent_spec is None and lock:
+        accent_spec = "neutral"
+    html = page_html(theme_id, width_units, dpr, lock, accent=resolve_accent(theme_id, accent_spec))
+    target = out_path(theme_id, w, h, lock, root)
+    tmp = brand.OUT / f".wallpaper-{target.stem}.png"
     page = r.page(round(width_units), UNIT_H, dpr)
-    src = brand.write(brand.OUT / "wallpapers" / f".{target.stem}.html", html)
+    src = brand.write(brand.OUT / f".wallpaper-{target.stem}.html", html)
     try:
         page.goto(src.as_uri())
         page.evaluate("document.fonts.ready")
@@ -195,6 +225,7 @@ def write_index() -> pathlib.Path:
                 "theme": theme_id,
                 "mode": t["mode"],
                 "variant": "lock" if lock else "desktop",
+                "accent": "neutral" if lock else "theme",
                 "name": {"en": f"{NAME['en']} · {t['name']['en']}", "ru": f"{NAME['ru']} · {t['name']['ru']}"},
                 "description": {
                     "en": "A quiet horizon line carrying one Morse «СОС» burst" + ("" if lock else "; colophon bottom right"),
@@ -211,11 +242,22 @@ def write_index() -> pathlib.Path:
         "default": {"graphite": "signal-graphite", "paper": "signal-paper", "phosphor": "signal-phosphor"},
         "lock": {"graphite": "signal-graphite-lock", "paper": "signal-paper-lock", "phosphor": "signal-phosphor-lock"},
         "pick": "choose the size whose aspect ratio matches the output, then the smallest size ≥ the output resolution; scale to cover",
+        "accent": "desktop files carry the theme's default accent; lock files are neutral (the theme's text color). "
+                  "Re-render in a user accent: generate.py --accent <id|#rrggbb> --out <dir> [--variant desktop|lock|both]",
         "wallpapers": entries,
     }
     path = HERE / "wallpapers.json"
     path.write_text(json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def flag(argv: list[str], name: str) -> str | None:
+    if name in argv:
+        i = argv.index(name)
+        if i + 1 < len(argv):
+            return argv[i + 1]
+        raise SystemExit(f"{name} needs a value")
+    return None
 
 
 def main(argv: list[str]) -> None:
@@ -224,15 +266,23 @@ def main(argv: list[str]) -> None:
             p = brand.write(brand.OUT / "wallpapers" / f"{theme_id}.html", page_html(theme_id, 1440, 2.0, False))
             print(brand.rel(p))
         return
-    themes = [a for a in argv if a in THEMES] or THEMES
-    sizes = [tuple(map(int, a.split("x"))) for a in argv if "x" in a and a[0].isdigit()] or SIZES
+    accent = flag(argv, "--accent")
+    out = flag(argv, "--out")
+    variant = flag(argv, "--variant") or "both"
+    values = {accent, out, variant}
+    args = [a for a in argv if not a.startswith("--") and a not in values]
+    themes = [a for a in args if a in THEMES] or THEMES
+    sizes = [tuple(map(int, a.split("x"))) for a in args if "x" in a and a[0].isdigit()] or SIZES
+    locks = {"desktop": (False,), "lock": (True,), "both": (False, True)}[variant]
+    root = pathlib.Path(out).expanduser() if out else (brand.OUT / f"wallpapers-{accent.lstrip('#')}" if accent else HERE)
     with brand.Renderer() as r:
         for theme_id in themes:
             for w, h in sizes:
-                for lock in (False, True):
-                    p = render(r, theme_id, w, h, lock)
-                    print(f"{brand.rel(p)}  {p.stat().st_size / 1e6:.1f} MB")
-    print(brand.rel(write_index()))
+                for lock in locks:
+                    p = render(r, theme_id, w, h, lock, accent, root)
+                    print(f"{p}  {p.stat().st_size / 1e6:.1f} MB")
+    if root == HERE:
+        print(brand.rel(write_index()))
 
 
 if __name__ == "__main__":

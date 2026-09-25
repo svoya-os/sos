@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — accents</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
+<style>
+  html, body { height: auto; overflow: visible; }
+  body { background: var(--wall); color: var(--text); }
+  .sheet { width: 1440px; padding: 52px 56px 40px; }
+  .top { display: flex; justify-content: space-between; align-items: flex-end; }
+  .top h1 { margin-top: 14px; font: 500 28px/34px "Plex Sans"; letter-spacing: -0.005em; }
+  .top p { margin-top: 10px; max-width: 860px; font: 400 14px/22px "Plex Sans"; color: var(--text-dim); }
+  .top .r { text-align: right; font: 400 11px/19px "Plex Mono"; color: var(--text-faint); }
+  .top .r code { color: var(--text-dim); }
+
+  .grid { margin-top: 34px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px 40px; }
+  .lbl { display: flex; align-items: baseline; gap: 10px; height: 22px; margin-bottom: 10px; white-space: nowrap; }
+  .lbl .sw { align-self: center; width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3); }
+  .lbl b { font: 500 15px/1 "Plex Sans"; color: var(--text); }
+  .lbl code { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .lbl em { font: 400 12.5px/1 "Plex Sans"; font-style: normal; color: var(--text-dim); }
+  .lbl .c { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .lbl .c b { font: 400 11px/1 "Plex Mono"; color: var(--text-dim); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* one compact scene at 1:1 */
+  .scene { position: relative; height: 256px; border-radius: 12px; overflow: hidden; background: var(--wall); box-shadow: inset 0 0 0 1px var(--line); isolation: isolate; }
+  [data-theme="paper"].scene { background: radial-gradient(circle, rgba(21, 21, 21, 0.12) 0.9px, transparent 1.25px) 5px 5px / 22px 22px, #ebe8e0; }
+  .scene .bar { padding: 0 12px 0 6px; border-radius: 12px 12px 0 0; }
+  .scene .bar .mark { padding: 0 6px; }
+  .scene .bar-left, .scene .bar-right { gap: 12px; }
+  .scene svg.signal { position: absolute; left: 0; top: 0; z-index: 0; }
+  .scene .panel { left: 14px; right: 14px; top: 44px; box-shadow: var(--shadow-soft); border-radius: 14px; }
+  .scene .panel::before { left: 60px; right: 60px; }
+  .scene .hd { display: flex; align-items: center; gap: 10px; padding: 11px 12px 0 11px; }
+  .scene .hd .nm b { display: block; font: 500 13px/16px "Plex Sans"; color: var(--text); }
+  .scene .hd .nm span { display: flex; align-items: center; gap: 6px; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .scene .hd .nm .dot { width: 6px; height: 6px; }
+  .scene .in { padding: 11px 13px 0; font: 400 14.5px/20px "Plex Sans"; color: var(--text); letter-spacing: -0.003em; white-space: nowrap; }
+  .scene .in .caret { display: inline-block; width: 2px; height: 17px; background: var(--accent); vertical-align: -3px; margin-left: 2px; }
+  .scene .ans { margin-top: 10px; border-top: 1px solid var(--line); padding: 10px 13px 12px; }
+  .scene .ans p { font: 400 12.5px/18px "Plex Sans"; color: var(--text-dim); white-space: nowrap; }
+  .scene .ans p b { font-weight: 500; color: var(--text); }
+  .scene .actions { margin-top: 10px; }
+  .scene .cap { position: absolute; right: 12px; bottom: 9px; z-index: 1; font: 400 10px/1 "Plex Mono"; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
+
+  .foot { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; gap: 36px; font: 400 11px/18px "Plex Mono"; color: var(--text-faint); }
+  .foot b { font-weight: 400; color: var(--text-dim); }
+  .foot .spacer { flex: 1; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="top">
+    <div>
+      <div class="caps">Акцент · восемь вариантов</div>
+      <h1>Один цвет — и всё в тон</h1>
+      <p>Акцент не зависит от темы: у каждого есть вариант для тёмной основы и для светлой. Он красит только главную кнопку, курсор и живые сигналы — скоп Джексона, морзянку, пока Джексон говорит, и всплеск на обоях. Одежда Джексона — тот же цвет, только приглушённый.</p>
+    </div>
+    <div class="r">themes/accents.toml<br><code>sos theme accent сирень</code><br>«Джексон, сделай акцент розовым»</div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">
+    <span><b>Слева</b> Графит, <b>справа</b> Бумага · масштаб 1 : 1</span>
+    <span>цифры — контраст акцента с панелью, WCAG AA ≥ 4,5 : 1</span>
+    <span class="spacer"></span>
+    <span>текст на кнопке — почти чёрный или белый, что читается лучше</span>
+  </div>
+</div>
+<script>
+  const NOTE = { signal: 'янтарь ночью, чернила днём', amber: 'тёплый, как лампа', ink: 'спокойный синий', phosphor: 'зелёный люминофор',
+    ice: 'холодный голубой', lilac: 'мягкий фиолетовый', rose: 'яркий, но не кричит', mono: 'совсем без цвета' };
+  const ASK = { signal: 'Что влезет в видеокарту?', amber: 'Как там обучение?', ink: 'Найди вчерашний датасет', phosphor: 'Почини звук',
+    ice: 'Поставь ComfyUI', lilac: 'Сделай акцент фиолетовым', rose: 'Сколько потратили на облако?', mono: 'Покажи логи' };
+  const ANS = {
+    signal: ['<b>Wan 2.2 5B</b> влезет: 11,4 из 24 ГБ.', 'Установить'],
+    amber: ['Эпоха 2 из 3, loss <b>0.412</b> и падает.', 'Открыть Trackio'],
+    ink: ['<b>ru-voice</b> в ~/datasets, 48 213 примеров.', 'Открыть'],
+    phosphor: ['Выход не тот. Переключить на <b>наушники</b>?', 'Переключить'],
+    ice: ['Займёт <b>4,2 ГБ</b>, сначала снимок системы.', 'Поставить'],
+    lilac: ['Готово: теперь <b>Сирень</b>. Нравится?', 'Оставить'],
+    rose: ['Сегодня <b>0,42 €</b> — три запроса.', 'Журнал'],
+    mono: ['<b>312 строк</b>, ошибок нет.', 'Показать'],
+  };
+  const lum = (h) => { const v = [1, 3, 5].map((i) => { const x = parseInt(h.slice(i, i + 2), 16) / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const fmt = (r) => r.toFixed(1).replace('.', ',');
+  const SURF = { graphite: '#191b1f', paper: '#fdfcfa' };
+
+  const ids = Object.keys(window.SOS_ACCENTS);
+  document.getElementById('grid').innerHTML = ids.map((id, i) => {
+    const a = window.SOS_ACCENTS[id], kind = i % 2 ? 'cat' : 'imp';
+    const tile = (theme) => `
+      <div class="scene" data-theme="${theme}" data-acc="${id}">
+        <svg class="signal" width="100%" height="256" data-o='{"w":${660 / 2 - 4},"hgt":256,"y":236,"x0":178,"u":3.4,"h":7,"tick":false}'></svg>
+        <header class="bar">
+          <div class="bar-left"><div class="mark"><svg class="morse" data-live="1"></svg></div><div class="ws"><span class="on">1</span><span>2</span><span>3</span></div></div>
+          <div class="bar-right"><div class="jack-mini"><svg class="scope" data-kind="answer" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg></div><time>Чт<b>18:42</b></time></div>
+        </header>
+        <section class="panel live">
+          <div class="hd">
+            <span class="ava"><canvas data-jackson="${kind}" data-state="talk1"></canvas></span>
+            <div class="nm"><b>Джексон</b><span><i class="dot ok"></i>локально</span></div>
+            <span class="spacer"></span>
+            <svg class="scope glow" data-kind="answer" data-seed="${0.3 + i * 0.4}" width="64" height="18"></svg>
+          </div>
+          <div class="in">${ASK[id]}<span class="caret"></span></div>
+          <div class="ans"><p>${ANS[id][0]}</p><div class="actions"><button class="btn sm primary">${ANS[id][1]}</button><button class="btn sm">Позже</button></div></div>
+        </section>
+      </div>`;
+    const cd = ratio(a.dark, SURF.graphite), cl = ratio(a.light, SURF.paper);
+    return `<section>
+      <div class="lbl"><i class="sw" style="background:linear-gradient(135deg, ${a.dark} 50%, ${a.light} 50%)"></i><b>${a.ru}</b><code>${id}</code><em>${NOTE[id]}</em>
+        <span class="c"><b>${a.dark}</b> ${fmt(cd)} : 1 · <b>${a.light}</b> ${fmt(cl)} : 1</span></div>
+      <div class="pair">${tile('graphite')}${tile('paper')}</div>
+    </section>`;
+  }).join('');
+  document.querySelectorAll('.scene').forEach((t) => window.SOS_applyAccent(t, t.dataset.acc));
+  SOS.init({ bar: false });
+</script>
+</body>
+</html>

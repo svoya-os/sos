@@ -39,7 +39,8 @@ Singleton {
     property string avatar: "auto"
     property string mood: "calm"      // calm listening thinking busy talking asking sorry
     property string displayName: ""   // «Джексон» / "Jackson" from welcome
-    readonly property string name: root.displayName.length > 0 ? root.displayName : Strings.jackson
+    // The name lives in ~/.config/svoya/avatar.json (Avatar); the daemon reads the same file.
+    readonly property string name: Avatar.name.length > 0 ? Avatar.name : (root.displayName.length > 0 ? root.displayName : Strings.jackson)
     property real happyUntil: 0       // a short "happy" beat after an answer (avatar)
 
     // Routes: the default (welcome/status) and the current turn's route.
@@ -62,6 +63,24 @@ Singleton {
         return root.daemonState;
     }
     readonly property bool active: root.mode !== "idle" && root.mode !== "offline" && root.mode !== "off"
+    // The live signal (DESIGN §5, §11): the Morse mark and the bar scope light up only now.
+    readonly property bool signalLive: root.mode === "listening" || root.mode === "thinking" || root.mode === "working" || root.mode === "speaking"
+
+    // Persona and humor go through Jackson's own CLI (`j persona set <id>`, `j persona humor 0-2`),
+    // which validates them and tells the daemon; the next welcome/state event reports them back.
+    readonly property var personas: ["kent", "sysop", "dispatcher", "pirate"]
+    readonly property string personaId: root.persona && typeof root.persona.id === "string" ? root.persona.id : "kent"
+    readonly property int humor: root.persona && root.persona.humor !== undefined ? Number(root.persona.humor) : 1
+
+    function setPersona(id) {
+        root.persona = Object.assign({}, root.persona || {}, { id: id });
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona set "$1"', [id]);
+    }
+
+    function setHumor(level) {
+        root.persona = Object.assign({}, root.persona || {}, { humor: level });
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona humor "$1"', [String(level)]);
+    }
 
     // Current turn (the panel shows one turn at a time, like a command palette).
     property string turnId: ""

@@ -16,15 +16,16 @@ from . import i18n
 BULLET = "›"
 DOT = "·"
 
-# Graphite defaults (themes/graphite.toml) — used when no theme.json is present.
+# Graphite defaults (themes/graphite.toml, accent «signal») — used when no theme.json is present.
+# Semantic colors never reuse the accent (DESIGN §10): warn is yellow, not amber.
 _DEFAULTS = {
     "accent": "#ffb547",
     "text": "#ebe8e1",
     "textDim": "#9d9a92",
     "textFaint": "#67655f",
     "ok": "#8fd48a",
-    "warn": "#ffb547",
-    "bad": "#ff7a6b",
+    "warn": "#f5cf52",
+    "bad": "#ff6b6b",
     "cloud": "#7ad3e6",
 }
 
@@ -107,6 +108,14 @@ class Style:
 
     def bold(self, s: str) -> str:
         return f"\x1b[1m{s}\x1b[22m" if self.enabled and s else s
+
+    def swatch(self, hexstr: str | None, width: int = 2) -> str:
+        """A small block painted in an arbitrary color (accent previews); empty without color."""
+        if not self.enabled or not hexstr:
+            return ""
+        r, g, b = _rgb(hexstr)
+        code = f"\x1b[38;2;{r};{g};{b}m" if self.truecolor else f"\x1b[38;5;{_to256(r, g, b)}m"
+        return f"{code}{'█' * width}\x1b[0m"
 
 
 _style: Style | None = None

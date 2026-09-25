@@ -1,4 +1,4 @@
-/* svoya:generated — theme «{{ name.ru }}» / {{ name.en }} ({{ id }}). Written by `sos theme apply`; edits are overwritten.
+/* svoya:generated — theme «{{ name.ru }}» / {{ name.en }} ({{ id }}). Written by `sos theme` (apply · accent); edits are overwritten.
    Your own CSS: keep it in gtk.css.pre-svoya (imported below when it exists).
    Named colors understood by adw-gtk3 and other libadwaita-style GTK3 themes. Matte: no translucency. */
 
@@ -8,16 +8,16 @@
 
 @define-color destructive_color {{ color.bad | hex }};
 @define-color destructive_bg_color {{ color.bad | hex }};
-@define-color destructive_fg_color {{ color.accentInk | hex }};
+@define-color destructive_fg_color {{ color.bad | ink | hex }};
 @define-color success_color {{ color.ok | hex }};
 @define-color success_bg_color {{ color.ok | hex }};
-@define-color success_fg_color {{ color.accentInk | hex }};
+@define-color success_fg_color {{ color.ok | ink | hex }};
 @define-color warning_color {{ color.warn | hex }};
 @define-color warning_bg_color {{ color.warn | hex }};
-@define-color warning_fg_color {{ color.accentInk | hex }};
+@define-color warning_fg_color {{ color.warn | ink | hex }};
 @define-color error_color {{ color.bad | hex }};
 @define-color error_bg_color {{ color.bad | hex }};
-@define-color error_fg_color {{ color.accentInk | hex }};
+@define-color error_fg_color {{ color.bad | ink | hex }};
 
 @define-color window_bg_color {{ color.surface | hex }};
 @define-color window_fg_color {{ color.text | hex }};

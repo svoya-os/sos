@@ -16,9 +16,9 @@
   /* ── Plymouth key frame ── */
   #splash svg { position: absolute; left: 0; top: 0; }
   .sig-base { fill: none; stroke-width: 1.2; }
-  .sig-on { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; filter: var(--glow); }
+  .sig-on { fill: none; stroke: var(--text); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(235, 232, 225, 0.35)); }
   .sig-off { fill: none; stroke: var(--line-strong); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-  .beam { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+  .beam { fill: var(--text); filter: drop-shadow(0 0 6px rgba(235, 232, 225, 0.6)); }
   .splash-cap { position: absolute; left: 0; right: 0; top: 486px; text-align: center; font: 400 11px/1 "Plex Mono"; letter-spacing: 0.3em; color: var(--text-faint); }
   .splash-cap b { color: var(--text-dim); font-weight: 500; }
 
@@ -38,14 +38,14 @@
   .g-menu { position: absolute; left: 50%; top: 290px; width: 704px; transform: translateX(-50%); }
   .g-row { position: relative; display: flex; align-items: center; gap: 22px; height: 44px; padding: 0 22px; font: 400 22px/22px "Departure"; color: var(--text-dim); white-space: nowrap; }
   .g-row .k { margin-left: auto; font-size: 11px; color: var(--text-faint); letter-spacing: 0.06em; }
-  .g-row.on { color: var(--text); background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
-  .g-row.on::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); }
-  .g-row.on .k { color: var(--accent); }
+  .g-row.on { color: var(--text); background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .g-row.on::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--text); }
+  .g-row.on .k { color: var(--text-dim); }
   .g-row small { font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; }
   .g-sep { height: 1px; margin: 11px 22px; background: var(--line); }
   .g-count { position: absolute; left: 50%; top: 612px; width: 704px; transform: translateX(-50%); display: flex; align-items: center; gap: 22px; padding: 0 22px; font: 400 11px/11px "Departure"; color: var(--text-dim); letter-spacing: 0.06em; }
   .g-count .gt { flex: 1; height: 2px; background: var(--line); position: relative; }
-  .g-count .gt i { position: absolute; left: 0; top: 0; bottom: 0; width: 40%; background: var(--accent); }
+  .g-count .gt i { position: absolute; left: 0; top: 0; bottom: 0; width: 40%; background: var(--text-dim); }
   .g-keys { position: absolute; left: 0; right: 0; bottom: 66px; display: flex; justify-content: center; gap: 33px; font: 400 11px/11px "Departure"; color: var(--text-faint); letter-spacing: 0.06em; }
   .g-keys span { display: flex; align-items: center; gap: 11px; }
   .g-keys b { font-weight: 400; color: var(--text-dim); padding: 5px 7px; box-shadow: inset 0 0 0 1px var(--line-strong); }
@@ -101,7 +101,7 @@
     const total = syms.reduce((a, s) => a + s.w + s.gap, 0);
     const x0 = cx - total / 2;
     if (phase === 'dot') return `<circle class="beam" cx="${cx}" cy="${cy}" r="2.4"/>`;
-    if (phase === 'line') return `<path d="M ${cx - 60} ${cy} H ${cx + 60}" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" style="filter:var(--glow)"/><circle class="beam" cx="${cx}" cy="${cy}" r="1.6"/>`;
+    if (phase === 'line') return `<path d="M ${cx - 60} ${cy} H ${cx + 60}" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" style="filter:drop-shadow(0 0 5px rgba(235,232,225,0.35))"/><circle class="beam" cx="${cx}" cy="${cy}" r="1.6"/>`;
     let x = x0, on = '', off = '';
     syms.forEach((s, i) => {
       const seg = `M ${x} ${cy} L ${x} ${cy - h} L ${x + s.w} ${cy - h} L ${x + s.w} ${cy} ` + (s.gap ? `L ${x + s.w + s.gap} ${cy} ` : '');
@@ -110,10 +110,10 @@
     });
     const litEnd = lit >= 9 ? x0 + total : x0 + syms.slice(0, lit).reduce((a, s) => a + s.w + s.gap, 0);
     return `
-      <defs><linearGradient id="fadeL${cx}" x1="${x0 - lead}" x2="${x0}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="var(--accent)" stop-opacity="0"/><stop offset="1" stop-color="var(--accent)" stop-opacity="1"/></linearGradient>
+      <defs><linearGradient id="fadeL${cx}" x1="${x0 - lead}" x2="${x0}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="var(--text)" stop-opacity="0"/><stop offset="1" stop-color="var(--text)" stop-opacity="1"/></linearGradient>
             <linearGradient id="fadeR${cx}" x1="${x0 + total}" x2="${x0 + total + lead}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="var(--line-strong)" stop-opacity="1"/><stop offset="1" stop-color="var(--line-strong)" stop-opacity="0"/></linearGradient></defs>
-      <path d="M ${x0 - lead} ${cy} H ${x0}" stroke="url(#fadeL${cx})" stroke-width="1.6" style="filter:var(--glow)"/>
-      <path d="M ${x0 + total} ${cy} H ${x0 + total + lead}" stroke="${lit >= 9 ? 'var(--accent)' : `url(#fadeR${cx})`}" stroke-width="1.6" ${lit >= 9 ? `opacity=".5"` : ''}/>
+      <path d="M ${x0 - lead} ${cy} H ${x0}" stroke="url(#fadeL${cx})" stroke-width="1.6"/>
+      <path d="M ${x0 + total} ${cy} H ${x0 + total + lead}" stroke="${lit >= 9 ? 'var(--text)' : `url(#fadeR${cx})`}" stroke-width="1.6" ${lit >= 9 ? `opacity=".5"` : ''}/>
       <path class="sig-off" d="${off}"/><path class="sig-on" d="${on}"/>
       ${lit < 9 ? `<circle class="beam" cx="${litEnd}" cy="${cy}" r="2.2"/>` : ''}`;
   }

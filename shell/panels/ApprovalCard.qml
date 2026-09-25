@@ -38,7 +38,7 @@ Rectangle {
                 width: tierLabel.implicitWidth + 12
                 height: 18
                 radius: 9
-                color: root.tier >= 3 ? Theme.alpha(Theme.warn, 0.14) : Theme.accentSoft
+                color: root.tier >= 3 ? Theme.alpha(Theme.warn, 0.14) : Theme.surface3
 
                 MText {
                     id: tierLabel
@@ -46,7 +46,7 @@ Rectangle {
                     anchors.centerIn: parent
                     text: "T" + root.tier + " · " + (Strings.tierNames[root.tier] || "")
                     size: 10.5
-                    color: root.tier >= 3 ? Theme.warn : Theme.accent
+                    color: root.tier >= 3 ? Theme.warn : Theme.textDim
                 }
             }
 

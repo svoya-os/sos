@@ -8,11 +8,12 @@
 // (symlinks), so every change is live: Settings (shell.json) and the theme
 // (theme.json) are shared with the running shell.
 //
-// Seven skippable steps (DESIGN.md §5, design/mockups/setup-*.html):
-//   1 accessibility · 2 language & keyboard · 3 look · 4 windows ·
-//   5 profile + apps (Obsidian pre-checked) · 6 AI (one suggested local model
-//   with a fit bar and «Установить», optional cloud keys) · 7 privacy, first
-//   snapshot, keys.
+// Seven skippable steps (DESIGN.md §5, WORKFLOWS §1, design/mockups/setup-*.html):
+//   1 accessibility · 2 language & keyboard · 3 look (theme + accent + «на экране
+//   входа») · 4 windows · 5 profile + apps (Obsidian pre-checked) · 6 Jackson, in
+//   two pages: meet him (Чёрт/Кот, skin, name, humor → ~/.config/svoya/avatar.json,
+//   `j persona humor`), then his brain (one suggested local model with a fit bar and
+//   «Установить», optional cloud keys) · 7 privacy, first snapshot, keys.
 // Choices apply at once (reversible: settings, `sos theme apply`); the model
 // downloads while you continue (`sos models pull <id> --yes --json`). Module
 // installs need administrator rights, so they start after the wizard hides
@@ -39,8 +40,15 @@ ShellRoot {
     property int step: 0
     readonly property int count: 7
     readonly property bool last: root.single || root.step === root.count - 1
+    // step 6 has two pages: 0 = meet Jackson, 1 = what he thinks with
+    readonly property int jacksonStep: 5
+    property int jacksonPage: 0
 
     function next() {
+        if (!root.single && root.step === root.jacksonStep && root.jacksonPage === 0) {
+            root.jacksonPage = 1;
+            return;
+        }
         if (root.last)
             root.finish();
         else
@@ -48,11 +56,18 @@ ShellRoot {
     }
 
     function back() {
-        if (root.step > 0 && !root.single)
+        if (root.step === root.jacksonStep && root.jacksonPage === 1) {
+            root.jacksonPage = 0;
+            return;
+        }
+        if (root.step > 0 && !root.single) {
+            root.jacksonPage = root.step - 1 === root.jacksonStep ? 1 : 0;
             root.step -= 1;
+        }
     }
 
     function goTo(i) {
+        root.jacksonPage = 0;
         root.step = Math.max(0, Math.min(root.count - 1, i));
     }
 
@@ -61,10 +76,18 @@ ShellRoot {
     property bool offline: false
     property bool obsidian: true
 
-    readonly property string themeChoice: Theme.autoMode ? "auto" : Theme.themeId
+    readonly property string themeChoice: Theme.baseChoice
 
     function applyTheme(id) {
-        Sys.sos(["theme", "apply", id, "--quiet"]);
+        Theme.setBase(id);
+    }
+
+    // Jackson's humor (0–2) goes through his own CLI; the wizard does not talk to jacksond.
+    property int humor: 1
+
+    function setHumor(level) {
+        root.humor = level;
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 0; exec "$c" persona humor "$1"', [String(level)]);
     }
 
     function setKeyboard(layouts, option) {
@@ -284,8 +307,22 @@ ShellRoot {
         root.markDone();
         root.open = false;
         root.applyJacksonRoute();
-        root.startInstall();
+        // one admin prompt at a time: the login screen first, then the module installs
+        root.applyLoginScreen(root.startInstall);
         root.maybeQuit();
+    }
+
+    // Commands still running after the window hid (the process must not quit under them).
+    property int jobs: 0
+
+    function job(argv, cb) {
+        root.jobs += 1;
+        Sys.run(argv, function (code, out, err) {
+            root.jobs -= 1;
+            if (cb)
+                cb(code, out, err);
+            root.maybeQuit();
+        });
     }
 
     // The profile decides where Jackson answers by default (local | auto | cloud); reversible with
@@ -295,9 +332,24 @@ ShellRoot {
         const route = p && p.jacksonRoute;
         if (route !== "local" && route !== "auto" && route !== "cloud")
             return;
-        Sys.sh('c=$(command -v jackson || command -v j) || exit 0; exec "$c" route set default "$1"', [route], function (code) {
+        root.job(["sh", "-c", 'c=$(command -v jackson || command -v j) || exit 0; exec "$c" route set default "$1"', "sh", route], function (code) {
             if (code !== 0)
                 console.warn("setup: could not set Jackson route", route, "exit", code);
+        });
+    }
+
+    // «На экране входа»: the chosen look goes to /etc/svoya/theme.json once the wizard is out of the
+    // way (polkit asks for the admin password; its dialog must not sit under this window).
+    function applyLoginScreen(then) {
+        if (!Settings.themeOnLogin || root.sosMissing) {
+            then();
+            return;
+        }
+        Theme.systemSyncPending = false;
+        root.job(["sh", "-c", 'c=$(command -v sos || command -v svoya) || exit 127; exec "$c" theme apply --system --quiet', "sh"], function (code) {
+            if (code !== 0)
+                root.notify(Strings.onLoginFailed, "sos theme apply --system");
+            then();
         });
     }
 
@@ -307,8 +359,26 @@ ShellRoot {
     }
 
     function maybeQuit() {
-        if (!root.open && !root.installing && root.pullState !== "running")
+        if (!root.open && !root.installing && root.pullState !== "running" && root.jobs === 0)
             Qt.quit();
+    }
+
+    // «Использовать на экране входа» starts on for the first user of the machine: nobody has given
+    // the login screen a look yet (WORKFLOWS §1). Checked once shell.json had its chance to load.
+    FileView {
+        id: systemThemeFile
+
+        path: "/etc/svoya/theme.json"
+        printErrors: false
+    }
+
+    Timer {
+        running: !root.single
+        interval: 1200
+        onTriggered: {
+            if (!systemThemeFile.loaded && !Settings.themeOnLogin)
+                Settings.themeOnLogin = true;
+        }
     }
 
     function startInstall() {
@@ -384,6 +454,7 @@ ShellRoot {
     }
 
     Component.onCompleted: {
+        Theme.autoSystemSync = false;
         root.targetScreen = Hypr.focusedScreen;
         if (!root.single)
             root.loadAll();

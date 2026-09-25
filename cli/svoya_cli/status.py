@@ -120,8 +120,8 @@ def _maybe_spawn_refresh(ctx: Ctx) -> None:
 
 def ai_state(ctx: Ctx, now) -> dict:
     """``ai`` for the bar: jacksond's runtime state (``$XDG_RUNTIME_DIR/svoya/ai.json``: local,
-    cloudActiveSince, …) + the AI switch (``[ai] enabled`` in svoya.toml) + today's totals from
-    Jackson's spend ledger (``~/.local/share/svoya/jackson/spend.json``)."""
+    cloudActiveSince, …) + the AI switch (``enabled``/``off``: ``sos ai off`` markers or ``[ai] enabled``
+    in svoya.toml) + today's totals from Jackson's spend ledger (``~/.local/share/svoya/jackson/spend.json``)."""
     out: dict = {}
     rt = read_json(ctx.paths.runtime_svoya / "ai.json")
     if isinstance(rt, dict):
@@ -129,14 +129,16 @@ def ai_state(ctx: Ctx, now) -> dict:
         if "local" in out:
             out["local"] = bool(out["local"])
             out.setdefault("cloudActiveSince", None)
-    try:
-        import tomllib
-        with open(ctx.paths.user_config, "rb") as f:
-            enabled = tomllib.load(f).get("ai", {}).get("enabled")
-        if isinstance(enabled, bool):
-            out["enabled"] = enabled
-    except (OSError, ValueError):
-        pass
+    # the AI switch: ~/.config/svoya/ai.off, /etc/svoya/ai.off (sos ai off) or [ai] enabled = false
+    if ctx.sys("/etc/svoya/ai.off").exists():
+        out["enabled"], out["off"] = False, "system"
+    elif (ctx.paths.user_config_dir / "ai.off").exists():
+        out["enabled"], out["off"] = False, "user"
+    else:
+        from . import config as config_mod
+        out["enabled"] = config_mod.load(ctx.paths).get("ai", {}).get("enabled") is not False
+        if not out["enabled"]:
+            out["off"] = "config"
     ledger = read_json(ctx.paths.data_home / "svoya" / "jackson" / "spend.json")
     if isinstance(ledger, dict) and isinstance(ledger.get("days"), dict):
         day = ledger["days"].get(now.astimezone().strftime("%Y-%m-%d")) or {}

@@ -17,7 +17,6 @@ import brand  # noqa: E402
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = "https://github.com/svoya-os/sos"
 UBUNTU = {"release": "26.04", "codename": "resolute", "description": "Ubuntu 26.04 LTS"}
-AMBER = brand.rgb(brand.color("graphite", "accent"))
 PRETTY = f"{brand.NAME} {brand.VERSION} «{brand.CODENAME_RU}»"
 
 OS_RELEASE = f"""# /usr/lib/os-release (with /etc/os-release → ../usr/lib/os-release) — SOS, Svoya Operating System.
@@ -36,7 +35,7 @@ SUPPORT_URL="{REPO}/discussions"
 BUG_REPORT_URL="{REPO}/issues"
 PRIVACY_POLICY_URL="{REPO}/blob/main/docs/VISION.md#3-the-promise-published-binding"
 LOGO=sos
-ANSI_COLOR="38;2;{AMBER[0]};{AMBER[1]};{AMBER[2]}"
+ANSI_COLOR="1;37"
 """
 
 LSB_RELEASE = f"""DISTRIB_ID={brand.NAME}
@@ -53,7 +52,7 @@ DISTRIB_DESCRIPTION="{UBUNTU['description']}"
 """
 
 # agetty(8) expands \S{…} from os-release, \n host, \l tty, \e{…} colors; the mark is drawn in the
-# os-release ANSI_COLOR so a single value changes both. The console font needs · and — (Uni2 or Terminus).
+# os-release ANSI_COLOR (neutral bright white: pre-login surfaces carry no accent, DESIGN.md §12). The console font needs · and — (Uni2 or Terminus).
 ISSUE = """\\e[\\S{ANSI_COLOR}m··· ——— ···\\e[0m  \\S{PRETTY_NAME}
 \\e{halfbright}\\n · \\l · \\r\\e{reset}
 

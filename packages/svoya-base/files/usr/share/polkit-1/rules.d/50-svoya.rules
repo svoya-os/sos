@@ -2,6 +2,10 @@
 // System changes made through the SOS tools (org.svoya.*) are tier T3 (ARCHITECTURE §4.4):
 // administrators in an active local session authenticate once and are not asked again for a while.
 polkit.addRule(function (action, subject) {
+    // Writing the login screen's colors (/etc/svoya/theme.json) is harmless: allowed for the active local session.
+    if (action.id === "org.svoya.theme.system-write" && subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
     if (action.id.indexOf("org.svoya.") === 0) {
         if (subject.local && subject.active && subject.isInGroup("sudo")) {
             return polkit.Result.AUTH_ADMIN_KEEP;

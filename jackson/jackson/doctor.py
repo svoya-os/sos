@@ -55,10 +55,15 @@ def run_doctor(lang: str = "ru", online: bool = False, start_mcp: bool = False,
 
     running = asyncio.run(service_running(app.paths))
     if running:
-        ok(("Джексон работает в фоне: " if ru else "Jackson is running in the background: ") + str(app.paths.socket))
+        ok((f"{app.name(lang)} работает в фоне: " if ru else f"{app.name(lang)} is running in the background: ")
+           + str(app.paths.socket))
     else:
-        warn(("Джексон не запущен в фоне (systemctl --user start jacksond) — CLI ответит сам"
-              if ru else "Jackson is not running in the background (systemctl --user start jacksond) — the CLI answers itself"))
+        warn((f"{app.name(lang)} не запущен в фоне (systemctl --user start jacksond) — CLI ответит сам"
+              if ru else f"{app.name(lang)} is not running in the background (systemctl --user start jacksond)"
+                         " — the CLI answers itself"))
+    ai = app.ai_state()
+    if not ai["enabled"]:
+        warn(("ИИ выключен (" if ru else "AI is switched off (") + str(ai["off"]) + ") — `sos ai on`")
     rd = app.paths.runtime_dir
     if rd.exists():
         mode = stat.S_IMODE(os.stat(rd).st_mode)

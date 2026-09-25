@@ -21,18 +21,18 @@
 
   /* tiles */
   .tile-w { position: absolute; border-radius: 11px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
-  .tile-w.active { border-color: var(--accent); }
+  .tile-w.active { border-color: var(--text-dim); }
 
   /* editor */
   .ed-tabs { height: 34px; display: flex; align-items: flex-end; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--bar-bg); }
   .ed-tabs span { height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 7px 7px 0 0; font: 400 12px/1 "Plex Mono"; color: var(--text-faint); }
   .ed-tabs span.on { background: var(--surface); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); clip-path: inset(-1px -1px 0 -1px); }
-  .ed-tabs span i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .ed-tabs span i { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
   .code { display: grid; grid-template-columns: 44px 1fr; padding-top: 10px; font: 400 12.5px/20px "Plex Mono"; }
   .code .ln { text-align: right; padding-right: 14px; color: var(--text-faint); opacity: 0.8; white-space: pre; }
   .code .src { white-space: pre; color: var(--text); overflow: hidden; }
   .code .ln b { color: var(--text-dim); font-weight: 400; opacity: 1; }
-  .src .y-k { color: var(--accent); }
+  .src .y-k { color: var(--text-dim); font-weight: 500; }
   .src .y-s { color: var(--ok); }
   .src .y-n { color: var(--cloud); }
   .src .y-c { color: var(--text-faint); }
@@ -43,7 +43,7 @@
     position: absolute; left: 0; right: 0; bottom: 0; height: 26px; display: flex; align-items: center; gap: 14px; padding: 0 10px 0 6px;
     border-top: 1px solid var(--line); background: var(--bar-bg); font: 400 11px/1 "Plex Mono"; color: var(--text-dim);
   }
-  .status .mode { height: 18px; padding: 0 7px; display: flex; align-items: center; border-radius: 4px; background: var(--accent); color: var(--accent-ink); font-weight: 600; letter-spacing: 0.06em; }
+  .status .mode { height: 18px; padding: 0 7px; display: flex; align-items: center; border-radius: 4px; background: var(--text); color: var(--surface); font-weight: 600; letter-spacing: 0.06em; }
   .status .r { margin-left: auto; display: flex; gap: 14px; }
   .status .f { color: var(--text-faint); }
 
@@ -55,7 +55,7 @@
   .urlbar .url b { color: var(--text); font-weight: 400; }
   .urlbar .url svg.i { width: 12px; height: 12px; color: var(--ok); stroke-width: 2; }
   .urlbar .q { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; }
-  .urlbar .q b { color: var(--accent); font-weight: 500; }
+  .urlbar .q b { color: var(--text); font-weight: 500; }
   .cf { position: absolute; left: 0; right: 0; top: 36px; bottom: 0; }
 
   /* training terminal */
@@ -150,7 +150,7 @@ CFG = dict(lr=<span class="y-n">2e-4</span>, epochs=<span class="y-n">3</span>, 
       <div>температура<b>64°</b><span class="meter"><i style="width:64%"></i></span></div>
       <div>мощность<b>301 Вт</b><span class="meter"><i style="width:67%"></i></span></div>
     </div>
-<pre class="tt"><span class="a">›</span> sos run train.py <span class="d"># окружение проекта: uv · torch 2.13 · CUDA 13.0</span>
+<pre class="tt"><span class="m">›</span> sos run train.py <span class="d"># окружение проекта: uv · torch 2.13 · CUDA 13.0</span>
 <span class="d">[18:41:02]</span> шаг 1760  loss 0.421  lr 1.83e-4  <span class="d">3,1 шаг/с</span>
 <span class="d">[18:41:15]</span> шаг 1770  loss 0.418  lr 1.82e-4  <span class="d">3,1 шаг/с</span>
 <span class="d">[18:41:28]</span> шаг 1780  loss 0.416  lr 1.82e-4  <span class="d">3,0 шаг/с</span>

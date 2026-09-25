@@ -2,7 +2,7 @@
 
 1. ``sos theme apply <configured|auto>`` (in-process; files are rewritten only if they changed)
    then ``dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE …``
-2. ``systemctl --user start --no-block jacksond.service`` (skipped when AI is switched off)
+2. ``systemctl --user start --no-block jacksond.service`` (skipped while AI is off: ``sos ai off``)
 3. ``quickshell -p /usr/share/svoya/shell`` — unless it is already running
 4. first login only (no ``~/.config/svoya/first-run-done``): ``quickshell -p …/shell/setup``
 5. warm the status cache in the background (apt/snapper counts)
@@ -83,13 +83,16 @@ def start(ctx: Ctx) -> list[dict]:
         res = r.run(["systemctl", "--user", "import-environment", *names], timeout=5, mutating=True)
         steps.append({"step": "environment", "ok": res.ok, "detail": " ".join(names)})
 
-    # 2. Jackson daemon (the daemon, not a model: AI still never runs by itself)
-    ai_on = cfg.get("ai", {}).get("enabled", True) and cfg.get("session", {}).get("jackson", True)
+    # 2. Jackson daemon (the daemon, not a model: AI still never runs by itself) — not while AI is off
+    from . import ai
+    off = ai.off_reason(ctx, cfg)
+    ai_on = off is None and cfg.get("session", {}).get("jackson", True)
     if ai_on and r.which("systemctl"):
         res = r.run(["systemctl", "--user", "start", "--no-block", "jacksond.service"], timeout=5, mutating=True)
         steps.append({"step": "jacksond", "ok": res.ok, "detail": res.err.strip()[:200]})
     else:
-        steps.append({"step": "jacksond", "ok": True, "detail": "skipped (AI off)" if not ai_on else "no systemctl"})
+        why = f"skipped (AI off: {off})" if off else "skipped (session.jackson = false)" if not ai_on else "no systemctl"
+        steps.append({"step": "jacksond", "ok": True, "detail": why})
 
     # 3. the shell
     shell = str(ctx.paths.shell_dir)

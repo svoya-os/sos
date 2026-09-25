@@ -3,6 +3,9 @@
 [Unit]
 Description=Local LLM server (llama.cpp router over /srv/ai) — SOS
 Documentation=https://github.com/ggml-org/llama.cpp/tree/master/tools/server
+# The AI switch (`sos ai off`): never start while it is off, for this user or for everyone
+ConditionPathExists=!%h/.config/svoya/ai.off
+ConditionPathExists=!/etc/svoya/ai.off
 
 [Service]
 ExecStartPre=-/usr/bin/sos models views --quiet

@@ -130,8 +130,10 @@ class ProtocolTest(unittest.TestCase):
             a.writer.write(b"{not json\n")
             await a.writer.drain()
             self.assertEqual((await until(a, ("error",)))[-1]["retryable"], False)
-            await a.send({"type": "teleport"})
-            self.assertIn("teleport", (await until(a, ("error",)))[-1]["message"])
+            await a.send({"type": "teleport", "id": "x"})     # unknown types are ignored (ARCHITECTURE §8)
+            await a.send({"type": "ping", "id": "after-teleport"})
+            self.assertEqual((await until(a, ("pong", "error")))[-1],
+                             {"type": "pong", "id": "after-teleport"})
             await a.send({"type": "ask", "text": "без id"})
             self.assertIn("id", (await until(a, ("error",)))[-1]["message"])
             await a.send({"type": "ping", "id": "p"})
@@ -181,6 +183,32 @@ class ProtocolTest(unittest.TestCase):
             events = await until(b, ("error",), "t7")
             self.assertTrue(events[-1]["retryable"])
             self.assertFalse(self.app.paths.socket.exists())
+            await b.close()
+        self.run_async(scenario)
+
+    def test_refines_capabilities_and_ai_json(self):
+        cloud_like = {"text": "Второй ответ."}
+        self.srv.script = [{"text": "Первый ответ."}, cloud_like, cloud_like]
+
+        async def scenario(svc):
+            ai_json = self.app.paths.runtime_dir / "ai.json"
+            self.assertEqual(json.loads(ai_json.read_text()), {"local": True, "cloudActiveSince": None})
+            a = await connect(self.app.paths.socket)
+            welcome = await a.hello("shell", "ru")
+            self.assertIn("refines", welcome["capabilities"])
+            self.assertNotIn("voice", welcome["capabilities"])
+            await a.send({"type": "ask", "id": "r1", "text": "первый вопрос"})
+            await until(a, ("done",), "r1")
+            await a.close()
+            b = await connect(self.app.paths.socket)   # a new connection (the panel was reopened)
+            await b.hello("shell", "ru")
+            await b.send({"type": "ask", "id": "r2", "text": "уточни", "refines": "r1"})
+            await until(b, ("done",), "r2")
+            sent = self.srv.requests[-1]["messages"]
+            self.assertIn("первый вопрос", [m.get("content") for m in sent])   # context kept
+            await b.send({"type": "ask", "id": "r3", "text": "с нуля", "new": True})
+            await until(b, ("done",), "r3")
+            self.assertNotIn("первый вопрос", [m.get("content") for m in self.srv.requests[-1]["messages"]])
             await b.close()
         self.run_async(scenario)
 
