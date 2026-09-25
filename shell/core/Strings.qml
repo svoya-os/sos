@@ -175,6 +175,10 @@ Singleton {
     readonly property string suspend: root.t("Сон", "Suspend")
     readonly property string reboot: root.t("Перезагрузить", "Restart")
     readonly property string poweroff: root.t("Выключить", "Shut down")
+    // two-step power buttons on the login screen: "ещё раз — выключить"
+    function pressAgain(label) {
+        return root.t("ещё раз — " + label.toLowerCase(), "again to " + label.toLowerCase());
+    }
     readonly property string screenshotRegion: root.t("Снимок области", "Region screenshot")
     readonly property string clipboard: root.t("Буфер обмена", "Clipboard")
     readonly property string undoSystem: root.t("Отменить последнее изменение системы", "Undo last system change")
@@ -279,6 +283,45 @@ Singleton {
     readonly property string sessionLabel: root.t("Сессия", "Session")
     readonly property string userNamePlaceholder: root.t("Имя пользователя", "User name")
     readonly property string enterUserName: root.t("Введи имя пользователя", "Type a user name")
+
+    // login line (greeter and lock screen, DESIGN §12): the hints under the line and Jackson's lines
+    readonly property string loginEyebrow: root.t("Вход", "Log in")
+    readonly property string lockedEyebrow: root.t("Заблокировано", "Locked")
+    readonly property string nowEyebrow: root.t("Сейчас", "Now")
+    readonly property string passwordWord: root.t("пароль", "password")
+    readonly property string typePassword: root.t("введи пароль", "type your password")
+    readonly property string userNameWord: root.t("имя пользователя", "user name")
+    readonly property string toLogin: root.t("войти", "log in")
+    readonly property string toUnlock: root.t("разблокировать", "unlock")
+    readonly property string toNext: root.t("дальше", "next")
+    readonly property string capsLockOn: root.t("Caps Lock включён", "Caps Lock is on")
+    readonly property string layoutWord: root.t("раскладка", "layout")
+    function moreUsers(n) {
+        return root.t("ещё " + n, n + " more");
+    }
+    function jHello(name) {
+        return name.length > 0 ? root.t("Йо, " + name + ". Пароль?", "Yo, " + name + ". Password?") : root.t("Йо. Пароль?", "Yo. Password?");
+    }
+    readonly property string jWaiting: root.t("жду", "waiting")
+    readonly property string jListening: root.t("слушаю", "listening")
+    readonly property string jChecking: root.t("Сверяю…", "Checking…")
+    readonly property string jSecond: root.t("секунду", "one sec")
+    function jWrong(caps, layout) {
+        if (caps)
+            return root.t("Не то. Caps Lock включён.", "Nope. Caps Lock is on.");
+        if (layout.length > 0)
+            return root.t("Не то. Раскладка сейчас " + layout + ".", "Nope. The layout is " + layout + " right now.");
+        return root.t("Не то. Давай ещё раз.", "Nope. Try again.");
+    }
+    readonly property string jAgain: root.t("ещё раз", "again")
+    readonly property string jWelcome: root.t("Есть контакт. Поехали!", "Connected. Let's go!")
+    readonly property string jLoadingDesk: root.t("загружаю стол", "loading your desk")
+    readonly property string jWho: root.t("Кто там? Имя пользователя.", "Who's there? Your user name.")
+    readonly property string jOneMoreStep: root.t("ещё шаг", "one more step")
+    readonly property string jLocked: root.t("Отошёл? Я покараулю.", "Stepped away? I'll keep watch.")
+    readonly property string jLockedMeta: root.t("заблокировано", "locked")
+    readonly property string jWelcomeBack: root.t("С возвращением!", "Welcome back!")
+    readonly property string jWorking: root.t("работаю", "working")
     function left(sec) {
         return root.ru ? "ещё " + Fmt.duration(sec) : Fmt.duration(sec) + " left";
     }

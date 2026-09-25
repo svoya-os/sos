@@ -4,12 +4,13 @@ import contextlib
 import datetime as dt
 import io
 import json
+import pathlib
 
 from svoya_cli import commands, journal, update
 from svoya_cli.config import load as load_cfg
 from svoya_cli.config import set_user_value, unset_user_value, user_value
 from svoya_cli.theme import cli as theme_cli
-from svoya_cli.theme import look
+from svoya_cli.theme import avatar_export, look
 
 from .helpers import NOW, FakeRunner, Result, SandboxTest, capture, fixture
 
@@ -165,13 +166,13 @@ class SystemWriteTest(SandboxTest):
         rc = theme_cli.main(accent_args("#3a0ca3", system=True), ctx)
         self.assertEqual(rc, 0)
         call = next(c for c in r.calls if c[0] == "pkexec")
-        self.assertEqual(call[-6:], ["theme", "system-write", "--theme", "graphite", "--accent", "#3a0ca3"])
+        self.assertEqual(call[-8:], ["theme", "system-write", "--theme", "graphite", "--accent", "#3a0ca3", "--avatar", ""])
         self.assertIn("login screen too", self.output())
         self.assertTrue(journal.newest(ctx.paths)["system"])
         # undo also restores the login screen
         update.main_undo(argparse.Namespace(list=False, json=False, n=None, yes=False, config="root"), ctx)
         last = [c for c in r.calls if c[0] == "pkexec"][-1]
-        self.assertEqual(last[-2:], ["--accent", "default"])
+        self.assertEqual(last[-4:-2], ["--accent", "default"])
 
     def test_pkexec_refused_keeps_the_user_change(self):
         r = FakeRunner({"pkexec": Result(126, "", "Not authorized")}, available={"pkexec"})
@@ -203,6 +204,64 @@ class SystemWriteTest(SandboxTest):
         res = look.change(ctx, load_cfg(ctx.paths), accent="rose", set_accent=True, system=True)
         self.assertTrue(res["system"]["ok"])
         self.assertEqual(json.loads(self.sb.path("/etc/svoya/theme.json").read_text())["accentId"], "rose")
+
+
+class AvatarExportTest(SandboxTest):
+    """Jackson's look goes to the login screen with the theme (DESIGN §12–§13)."""
+
+    def write_avatar(self, ctx, data):
+        path = ctx.paths.user_config_dir / "avatar.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, ensure_ascii=False))
+
+    def test_user_look_crosses_as_a_validated_spec(self):
+        r = FakeRunner({"pkexec": Result(0)}, available={"pkexec"})
+        ctx = self.sb.ctx(r)
+        self.write_avatar(ctx, {"character": "cat", "skin": "snow", "glasses": "round", "hood": False,
+                                "name": "Кеша; rm -rf", "outfit": "$(reboot)", "extra": "kept only at home"})
+        theme_cli.main(accent_args("ice", system=True), ctx)
+        call = next(c for c in r.calls if c[0] == "pkexec")
+        spec = call[call.index("--avatar") + 1]
+        self.assertEqual(spec, "character=cat;skin=snow;glasses=round;hood=0;name=%D0%9A%D0%B5%D1%88%D0%B0%3B%20rm%20-rf")
+        self.assertEqual(avatar_export.decode(spec), {"character": "cat", "skin": "snow", "glasses": "round",
+                                                      "hood": False, "name": "Кеша; rm -rf"})
+
+    def test_root_half_writes_a_world_readable_copy(self):
+        ctx = self.sb.ctx(uid=0)
+        args = argparse.Namespace(theme_cmd="system-write", theme_id="graphite", accent="lilac", dry_run=False,
+                                  quiet=True, avatar="character=imp;skin=mint;outfit=%23123abc;headphones=0")
+        self.assertEqual(theme_cli.main(args, ctx), 0)
+        path = self.sb.path("/etc/svoya/avatar.json")
+        self.assertEqual(json.loads(path.read_text()), {"character": "imp", "skin": "mint", "outfit": "#123abc",
+                                                        "headphones": False})
+        self.assertEqual(path.stat().st_mode & 0o777, 0o644)
+        # an empty look removes the copy: the greeter shows the default Jackson again
+        args.avatar = ""
+        self.assertEqual(theme_cli.main(args, ctx), 0)
+        self.assertFalse(path.exists())
+
+    def test_root_half_refuses_anything_unexpected(self):
+        ctx = self.sb.ctx(uid=0)
+        for spec in ("character=dragon", "skin=ember;skin=wine", "name=<b>", "hood=yes", "evil=1",
+                     "character=imp;skin=snow", "outfit=%24(reboot)", "x" * 500, "name"):
+            args = argparse.Namespace(theme_cmd="system-write", theme_id="graphite", accent="lilac", dry_run=False,
+                                      quiet=True, avatar=spec)
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(theme_cli.main(args, ctx), 2, spec)
+        self.assertFalse(self.sb.path("/etc/svoya/avatar.json").exists())
+
+    def test_same_rules_as_jackson(self):
+        import ast
+        src = pathlib.Path(__file__).resolve().parents[2] / "jackson" / "jackson" / "avatar.py"
+        consts = {}
+        for node in ast.parse(src.read_text(encoding="utf-8")).body:          # literals only, nothing runs
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                try:
+                    consts[node.targets[0].id] = ast.literal_eval(node.value)
+                except ValueError:
+                    pass
+        for name in ("CHARACTERS", "SKINS", "STYLES", "GLASSES", "ACCENT_IDS", "KEYS"):
+            self.assertEqual(getattr(avatar_export, name), consts[name], name)
 
 
 class ConfigAndWordsTest(SandboxTest):

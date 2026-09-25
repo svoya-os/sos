@@ -58,6 +58,11 @@ Singleton {
         return Math.round((Number(fraction) || 0) * 100) + "%";
     }
 
+    // plain text → safe inside Text.StyledText
+    function escape(text) {
+        return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     function clock(date) {
         return Qt.formatTime(date, "HH:mm");
     }

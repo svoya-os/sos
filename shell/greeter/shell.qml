@@ -8,7 +8,7 @@
 // (Quickshell.Services.Greetd); core/, components/ and assets/ are symlinks to
 // the shell's own directories, so the greeter looks exactly like the lock screen.
 //
-// Flow: pick a user (tiles; Tab cycles) and a session (footer), type the
+// Flow: pick a user (Tab cycles; the name is on the left) and a session (footer), type the
 // password → Greetd.createSession(user) → answer PAM prompts → readyToLaunch →
 // Greetd.launch(session Exec). Multi-step PAM (e.g. a one-time code) shows the
 // prompt as the field's placeholder. The last user/session and each user's last
@@ -43,6 +43,7 @@ ShellRoot {
     property bool promptEcho: false
     property string message: ""
     property bool failed: false
+    property bool welcome: false     // PAM said yes: Jackson grins, the line sweeps, then launch
     property bool a11yOpen: false
 
     // no users with a login shell in /etc/passwd: type the name first
@@ -106,6 +107,13 @@ ShellRoot {
     }
 
     Timer {
+        id: launchLater
+
+        interval: 460
+        onTriggered: root.launch()
+    }
+
+    Timer {
         id: createLater
 
         interval: 250
@@ -160,7 +168,13 @@ ShellRoot {
         }
 
         function onReadyToLaunch() {
-            root.launch();
+            // a short beat so the success is seen (DESIGN §12); none with reduce motion
+            root.busy = false;
+            root.welcome = true;
+            if (Theme.reduceMotion)
+                root.launch();
+            else
+                launchLater.restart();
         }
 
         function onAuthFailure(message) {

@@ -45,8 +45,9 @@ SCREENS: list[Screen] = [
     Screen("control-center", ["graphite", "paper"], "Центр управления"),
     Screen("control-center-look", ["graphite", "paper"], "Центр управления · оформление, свой акцент"),
     Screen("notifications", ["graphite", "paper"], "Уведомления"),
-    Screen("greeter", ["graphite", "paper"], "Экран входа · акцент «Сирень»", {"": "accent=lilac"}),
-    Screen("lock", ["graphite", "paper", "phosphor"], "Экран блокировки"),
+    Screen("greeter", ["graphite"], "Экран входа · линия + Джексон",
+           {"": "", "lilac": "accent=lilac", "error": "state=error", "checking": "state=checking"}),
+    Screen("greeter", ["graphite", "paper", "phosphor"], "Экран блокировки", {"lock": "mode=lock"}),
     Screen("post", ["graphite"], "POST после входа"),
     Screen("setup-look", ["graphite", "paper"], "Первый запуск · 3/7 оформление"),
     Screen("setup-profile", ["graphite", "paper"], "Первый запуск · 5/7 профиль"),
@@ -78,7 +79,8 @@ def targets(screens: list[Screen], only_theme: str | None):
                 if only_theme and theme != only_theme:
                     continue
                 name = f"{s.page}-{suffix}-{theme}" if suffix else f"{s.page}-{theme}"
-                caption = s.caption + {"": "", "grub": " · GRUB", "sequence": " · прогрев"}.get(suffix, "")
+                caption = s.caption + {"": "", "grub": " · GRUB", "sequence": " · прогрев", "lilac": " · акцент «Сирень»",
+                                       "error": " · не тот пароль", "checking": " · проверка"}.get(suffix, "")
                 yield s, name, f"theme={theme}" + (f"&{query}" if query else ""), caption, theme
 
 

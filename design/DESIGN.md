@@ -198,7 +198,20 @@ the pressed state of the primary action, the swatch under the pointer while pick
 
 GRUB, Plymouth and the POST screen use no accent: the signal line, Morse mark and wordmark are drawn in
 `text` (`#ebe8e1`) and `textFaint` on Graphite. They can never clash with whatever accent the user picks.
-The greeter uses the system accent (from `/etc/svoya/theme.json`) only for the caret and the wallpaper burst.
+
+**The login screen continues the boot line** («Линия» + Jackson, chosen 25.09;
+`design/mockups/greeter.html`, `shell/components/LoginLine.qml`). Plymouth ends on a lit line across
+the middle of the screen; the greeter keeps it there. Left, above the line: «ВХОД · host» and the user's
+name (Plex Sans Light 46; Tab or the chip switches users). On the line: the password, one Morse dot per
+character, and the caret — the only accent on the screen. Middle: Jackson stands on the line and reacts
+(listening while you type → thinking while PAM checks, the dots run into him → a red jitter and the dots
+fall off on a wrong password, with the reason: layout or Caps Lock → a grin and a sweep to the burst on
+success, then the session starts). Right: «СЕЙЧАС», the time, the ··· ——— ··· burst in `text`, the date.
+Footer in mono text buttons: sessions and accessibility left; RU/EN, sleep, restart and shut down right
+(restart and shut down ask for a second press). The greeter is always dark (`/etc/svoya/theme.json`);
+Jackson's look comes from `/etc/svoya/avatar.json`, exported with «Использовать на экране входа»
+(default Jackson otherwise). The lock screen is the same line inside the session: your theme (light too),
+«ЗАБЛОКИРОВАНО», your Jackson, and while a job runs he says how far it got.
 
 ## 13. Jackson's look (mascot system)
 

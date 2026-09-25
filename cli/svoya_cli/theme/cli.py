@@ -8,7 +8,7 @@ from .. import i18n, ui
 from ..context import Ctx
 from ..i18n import tr
 from ..util import read_json
-from . import accents
+from . import accents, avatar_export
 from . import look
 from .apply import ThemeError, list_themes, load_theme, next_switch, resolve, resolve_accent
 
@@ -310,7 +310,9 @@ def cmd_system_write(args, ctx: Ctx) -> int:
         return 2
     try:
         path = look.write_system_theme(ctx, args.theme_id, args.accent)
-    except (ThemeError, accents.AccentError, OSError) as e:
+        if getattr(args, "avatar", None) is not None:
+            avatar_export.write_system_avatar(ctx, args.avatar)
+    except (ThemeError, accents.AccentError, ValueError, OSError) as e:
         ui.err(f"sos: {e}")
         return 2
     if not args.quiet:

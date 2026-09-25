@@ -17,7 +17,10 @@ import "Color.js" as Color
 Singleton {
     id: root
 
-    readonly property string path: Settings.configDir + "/avatar.json"
+    // The greeter runs as its own user: it shows the copy `sos theme … --system` exported for the login
+    // screen (/etc/svoya/avatar.json, cli/svoya_cli/theme/avatar_export.py) and never writes.
+    readonly property bool readOnly: Theme.systemTheme
+    readonly property string path: root.readOnly ? "/etc/svoya/avatar.json" : Settings.configDir + "/avatar.json"
     readonly property string defaultName: "Джексон"
 
     readonly property var characters: ["imp", "cat"]
@@ -135,8 +138,12 @@ Singleton {
 
     // ---- writing -------------------------------------------------------------------------------------
     function write(obj) {
+        if (root.readOnly)
+            return;
         root.stored = obj;
         file.setText(JSON.stringify(obj, null, 2) + "\n");
+        // the login screen shows this Jackson too when the look goes there (no-op otherwise)
+        Theme.queueSystemSync();
     }
 
     // One change; returns false when the value is not valid for the key.

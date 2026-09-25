@@ -49,9 +49,13 @@ line. tuigreet remembers the last user in `/var/cache/tuigreet`, which must be w
 * The greeter remembers the last user, session and login times in its own state directory
   (`/var/lib/svoya-greeter/.local/state/quickshell/…/greeter.json`).
 * RU/EN switches the greeter's language only; the session keeps the user's locale.
-* Power buttons need two presses (3 s window) and use logind (`systemctl suspend|reboot|poweroff`),
-  which polkit allows for the active greeter session.
-* Look: `/etc/svoya/theme.json` (written by `sos theme apply --system`, always a dark base; the
-  first user's choice by default: «Использовать на экране входа» in the wizard and the control
-  center). Missing → Graphite + «Сигнал». The accent colors only the caret and the wallpaper burst
-  (DESIGN §12); the user ring, field border, power buttons and wallpaper glow stay neutral.
+* Restart and shut down need two presses (3 s window); all power actions use logind
+  (`systemctl suspend|reboot|poweroff`), which polkit allows for the active greeter session.
+* Look: «Линия» + Jackson (DESIGN §12, `design/mockups/greeter.html`): the boot line through the middle,
+  the password typed onto it as dots, Jackson standing on it. `/etc/svoya/theme.json` (written by
+  `sos theme apply --system`, always a dark base; the first user's choice by default: «Использовать на
+  экране входа» in the wizard and the control center). Missing → Graphite + «Сигнал». The accent colors
+  only the caret. Jackson's look: `/etc/svoya/avatar.json`, exported by the same `--system` step
+  (`cli/svoya_cli/theme/avatar_export.py`, validated on the root side); missing → the default Jackson.
+* After PAM says yes the greeter waits 460 ms (the grin and the sweep) before starting the session;
+  with reduce motion it starts at once.

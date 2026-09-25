@@ -3,8 +3,9 @@
 ``change()`` renders everything with the new choice, then remembers it in ``~/.config/svoya/svoya.toml``
 (``[theme] id`` / ``[theme] accent``) and in the undo journal (``sos undo`` / ``sos theme accent --undo``).
 ``system_write()`` puts the same look into ``/etc/svoya/theme.json`` for the login screen: as root
-directly, otherwise through ``pkexec sos theme system-write --theme <id> --accent <id|#hex|default>``
-— only ids and a validated hex cross the privilege boundary, never file contents.
+directly, otherwise through ``pkexec sos theme system-write --theme <id> --accent <id|#hex|default>
+--avatar <key=value;…>`` — only ids, a validated hex and Jackson's validated look cross the privilege
+boundary, never file contents (``avatar_export``: the greeter shows the user's Jackson).
 """
 from __future__ import annotations
 
@@ -18,7 +19,7 @@ from .. import journal
 from ..context import Ctx
 from ..runner import svoya_argv
 from ..util import atomic_write
-from . import accents
+from . import accents, avatar_export
 from .apply import ThemeError, _theme_from_file, apply_theme, resolve_accent, theme_json
 
 KIND = "look"
@@ -123,17 +124,19 @@ def undo(ctx: Ctx, cfg: dict, entry_id: str | None = None) -> dict | None:
 def system_write(ctx: Ctx, theme_id: str, accent: str | None) -> dict:
     """Write the login screen's theme.json: directly as root, else ``pkexec sos theme system-write``."""
     acc_arg = accent or "default"
+    avatar_spec = avatar_export.encode(avatar_export.user_look(ctx))
     if ctx.is_root:
         try:
             path = write_system_theme(ctx, theme_id, acc_arg)
+            avatar_export.write_system_avatar(ctx, avatar_spec)
             return {"ok": True, "path": path}
-        except (ThemeError, accents.AccentError, OSError) as e:
+        except (ThemeError, accents.AccentError, ValueError, OSError) as e:
             return {"ok": False, "error": str(e)}
     if not ctx.runner.which("pkexec"):
         return {"ok": False, "error": "pkexec is not installed"}
     helper = "/usr/lib/svoya/theme-system-write"      # polkit action org.svoya.theme.system-write (no password)
     head = [helper] if ctx.runner.which(helper) or Path(helper).exists() else [*svoya_argv(), "theme", "system-write"]
-    res = ctx.runner.run(["pkexec", *head, "--theme", theme_id, "--accent", acc_arg],
+    res = ctx.runner.run(["pkexec", *head, "--theme", theme_id, "--accent", acc_arg, "--avatar", avatar_spec],
                          timeout=300, mutating=True)
     return {"ok": res.ok, "path": SYSTEM_THEME_JSON, **({} if res.ok else {"error": (res.err or res.out).strip()[:300] or f"exit {res.rc}"})}
 

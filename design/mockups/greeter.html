@@ -2,106 +2,215 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>SOS — greeter (login)</title>
+<title>SOS — login screen «Линия» with Jackson</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="desktop.css">
 <link rel="stylesheet" href="components.css">
+<script src="../mascot/jackson.js"></script>
+<script src="../mascot/out/jackson-data.js"></script>
 <script src="shell.js"></script>
 <style>
-  .hero { top: 180px; }
+  /* The login screen (chosen 25.09: «A + Джексон из C»). The boot scope never switches off: Plymouth
+     ends on a lit line across the middle and the login screen is the same line. Left: who you are,
+     and the password typed onto the trace as Morse dots. Middle: Jackson stands on the line and
+     reacts. Right: when and where, with the ··· ——— ··· burst. After Enter the dots run into Jackson,
+     he grins, and the line glides down to the wallpaper's horizon: boot → login → desktop is one
+     continuous signal. The accent colors only the caret (DESIGN §12). */
+  .bg { position: absolute; inset: 0;
+    background:
+      radial-gradient(760px 300px at 30% 50%, rgba(235, 232, 225, 0.035), transparent 70%),
+      linear-gradient(180deg, #0e0f11 0%, #0b0c0e 100%); }
+  /* the lock screen is inside the session: the user's own wallpaper colors, accent glow allowed */
+  [data-mode="lock"] .bg { display: none; }
+  [data-mode="lock"] .wallpaper { display: block; }
+  .wallpaper { display: none; }
+  [data-mode="lock"] .who .alt, [data-mode="lock"] .foot .sess, [data-mode="lock"] .foot .pwr { display: none; }
+  svg#scope { position: absolute; left: 0; top: 0; }
 
-  .users { display: flex; gap: 16px; margin-top: 52px; }
-  .user { width: 176px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .user .avatar { width: 56px; height: 56px; font-size: 20px; }
-  .user .avatar svg.i { width: 24px; height: 24px; stroke-width: 1.5; color: var(--text-dim); }
-  .user.on .avatar { box-shadow: inset 0 0 0 1px var(--line-strong), 0 0 0 3px var(--wall), 0 0 0 4.5px var(--text); }
-  .user .n { margin-top: 14px; font: 500 14px/18px "Plex Sans"; color: var(--text); }
-  .user .m { margin-top: 3px; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
-  .user:not(.on) .avatar { opacity: 0.72; }
-  .user:not(.on) .n { color: var(--text-dim); font-weight: 400; }
+  .eyebrow { font: 400 10.5px/1 "Plex Mono"; letter-spacing: 0.26em; text-transform: uppercase; color: var(--text-faint); }
+  .big { font: 300 46px/1 "Plex Sans"; letter-spacing: -0.01em; color: var(--text); }
+  .meta { font: 400 11.5px/1 "Plex Mono"; letter-spacing: 0.04em; color: var(--text-dim); }
+  .faint { color: var(--text-faint); }
 
-  .pw { margin-top: 26px; }
-  .field .ph { font-size: 14px; }
+  .who { position: absolute; left: 200px; top: 334px; }
+  .who .eyebrow { display: flex; gap: 10px; align-items: center; }
+  .who .big { margin-top: 18px; display: flex; align-items: baseline; gap: 14px; }
+  .who .alt { display: inline-flex; align-items: center; gap: 6px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint);
+    padding: 5px 8px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); transform: translateY(-8px); }
+  .who .alt svg { width: 12px; height: 12px; stroke-width: 1.8; }
 
-  .top-left { position: absolute; left: 24px; top: 18px; z-index: 4; }
+  .under-left { position: absolute; left: 200px; top: 472px; display: flex; flex-direction: column; gap: 12px; }
+  .under-left .row { display: flex; gap: 10px; align-items: center; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .under-left .row b { font-weight: 400; color: var(--text-dim); }
 
-  .sess { display: flex; align-items: center; gap: 14px; }
-  .sess .lbl { font: 400 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
-  .opt { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px; border-radius: 7px; font: 400 11.5px/1 "Plex Mono"; color: var(--text-dim); }
-  .opt.on { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
-  .opt svg.i { width: 13px; height: 13px; stroke-width: 1.8; }
-  .right { display: flex; align-items: center; gap: 18px; }
-  .lang { display: flex; gap: 2px; }
-  .pwr { display: flex; gap: 8px; }
-  .pwr span {
-    width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: var(--text-dim);
-    background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong);
-  }
-  .pwr svg.i { width: 15px; height: 15px; stroke-width: 1.7; }
-  .foot-row { align-items: center; bottom: 20px; }
-  .foot-row .mid { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+  .jk { position: absolute; left: 632px; top: 354px; width: 96px; height: 96px; }
+  .jk canvas { image-rendering: pixelated; display: block; }
+  .say { position: absolute; left: 712px; top: 312px; padding: 8px 12px 9px; border-radius: 12px 12px 12px 3px;
+    background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong), 0 18px 40px -20px rgba(0,0,0,.8);
+    font: 400 13.5px/1.35 "Plex Sans"; color: var(--text); white-space: nowrap; }
+  .say small { color: var(--text-faint); font: 400 10.5px/1 "Plex Mono"; margin-left: 8px; letter-spacing: 0.03em; }
+
+  .when { position: absolute; left: 1000px; top: 334px; }
+  .when .big { margin-top: 18px; font-feature-settings: "tnum"; }
+  .when .big i { font-style: normal; color: var(--text-faint); margin: 0 1px; }
+  .under-right { position: absolute; left: 1000px; top: 472px; display: flex; flex-direction: column; gap: 12px; }
+
+  .foot { position: absolute; left: 200px; right: 200px; bottom: 34px; display: flex; justify-content: space-between; align-items: center;
+    font: 400 11px/1 "Plex Mono"; color: var(--text-faint); letter-spacing: 0.02em; }
+  .foot .grp { display: flex; gap: 22px; align-items: center; }
+  .foot .t { display: inline-flex; align-items: center; gap: 7px; }
+  .foot .t svg { width: 13px; height: 13px; stroke-width: 1.7; }
+  .foot .on { color: var(--text); }
+  .top { position: absolute; left: 200px; right: 200px; top: 30px; display: flex; justify-content: space-between;
+    font: 400 11px/1 "Plex Mono"; color: var(--text-faint); letter-spacing: 0.02em; }
+  .top .g { display: inline-flex; align-items: center; gap: 7px; color: var(--text-dim); }
+  .top svg { width: 14px; height: 14px; stroke-width: 1.6; }
+  .top .grp { display: flex; gap: 18px; }
 </style>
 </head>
 <body>
 <div class="screen">
+  <div class="wallpaper"></div>
+  <div class="bg"></div>
+  <div class="grain"></div>
+  <svg id="scope" width="1440" height="900" viewBox="0 0 1440 900"></svg>
 
-  <div class="wallpaper">
-    <svg class="signal"></svg>
-    <div class="grain"></div>
+  <div class="top">
+    <span>··· ——— ··· &nbsp;SOS 26.10</span>
+    <span class="grp"><span class="g"><svg data-i="wifi"></svg>Дом-5G</span><span class="g"><svg data-i="battery"></svg>82%</span></span>
   </div>
 
-  <div class="top-left tbtn"><svg data-i="monitor"></svg>maxim-4090<span class="sep">·</span>SOS 26.10</div>
-  <div class="corner">
-    <span class="g"><svg data-i="wifi"></svg>Дом-5G</span>
-    <span class="g"><svg data-i="battery"></svg>82%</span>
+  <div class="who">
+    <div class="eyebrow">Вход <span>·</span> maxim-4090</div>
+    <div class="big" id="name">Максим <span class="alt"><svg data-i="chevronDown"></svg>Tab</span></div>
+  </div>
+  <div class="under-left">
+    <div class="row" id="hint">пароль <span>·</span> <b>Enter</b> — войти</div>
+    <div class="row" id="msg">вход вчера в 23:40 <span>·</span> Caps Lock выкл.</div>
   </div>
 
-  <div class="hero">
-    <div class="clock">09<i>:</i>14</div>
-    <div class="date">четверг · 24 сентября</div>
+  <div class="jk"><canvas id="jack" data-jackson="imp" data-state="listening" data-px="96"></canvas></div>
+  <div class="say" id="say">Йо, Максим. Пароль?<small>слушаю</small></div>
 
-    <div class="users">
-      <div class="user on">
-        <span class="avatar">М</span>
-        <div class="n">Максим</div>
-        <div class="m">вход вчера в 23:40</div>
-      </div>
-      <div class="user">
-        <span class="avatar"><svg data-i="user"></svg></span>
-        <div class="n">Гость</div>
-        <div class="m">без пароля · всё стирается</div>
-      </div>
-    </div>
-
-    <div class="pw">
-      <div class="field focus">
-        <span class="caret" style="margin:0 -9px 0 -1px"></span><span class="ph">Пароль</span>
-        <span class="go"><svg data-i="arrowRight"></svg></span>
-      </div>
-    </div>
-    <div class="under"><span class="hint"><kbd>Tab</kbd>другой пользователь</span><span class="sep">·</span><span class="hint"><kbd>Super</kbd><kbd>Alt</kbd><kbd>A</kbd>спец. возможности</span></div>
+  <div class="when">
+    <div class="eyebrow">Сейчас</div>
+    <div class="big">09<i>:</i>14</div>
+  </div>
+  <div class="under-right">
+    <div class="meta">четверг · 24 сентября</div>
+    <div class="meta faint">SOS 26.10 · первый сигнал</div>
   </div>
 
-  <div class="foot-row">
-    <div class="sess">
-      <span class="lbl">Сессия</span>
-      <span class="opt on"><svg data-i="windows"></svg>SOS</span>
-      <span class="opt"><svg data-i="tiles"></svg>SOS (тайлинг)</span>
-    </div>
-    <span class="mid"><svg class="morse" data-s="1.5"></svg></span>
-    <div class="right">
-      <div class="lang"><span class="opt on">RU</span><span class="opt">EN</span></div>
-      <div class="pwr">
-        <span title="Сон"><svg data-i="moon"></svg></span>
-        <span title="Перезагрузка"><svg data-i="restart"></svg></span>
-        <span title="Выключение"><svg data-i="power"></svg></span>
-      </div>
-    </div>
+  <div class="foot">
+    <span class="grp">
+      <span class="t sess">сессия <span class="on">SOS</span></span>
+      <span class="t sess">SOS (тайлинг)</span>
+      <span class="t"><svg data-i="access"></svg>доступность</span>
+    </span>
+    <span class="grp">
+      <span class="t"><span class="on">RU</span> · EN</span>
+      <span class="t pwr"><svg data-i="moon"></svg>сон</span>
+      <span class="t pwr"><svg data-i="restart"></svg>перезагрузка</span>
+      <span class="t pwr"><svg data-i="power"></svg>выключение</span>
+    </span>
   </div>
-
 </div>
 <script>
+  Object.assign(SOS.ICONS, {
+    chevronDown: '<path d="m6 9 6 6 6-6"/>',
+    access: '<circle cx="12" cy="4.5" r="1.6"/><path d="M5 8.5c2.3.7 4.6 1 7 1s4.7-.3 7-1"/><path d="M12 9.5v5m0 0-3 6m3-6 3 6"/>',
+  });
+
+  // states: idle · typing · checking · error · welcome
+  const state = SOS.q.get('state') || 'typing';
+  const lock = SOS.q.get('mode') === 'lock';
+  document.querySelector('.screen').dataset.mode = lock ? 'lock' : 'login';
+  const Y = 450, W = 1440, u = 7, h = 12, step = 16, r = 3.4;
+  const x0 = 200, bx = 1000, jx = 632, jw = 96;
+  const typed = state === 'idle' ? 0 : 8;
+  const err = state === 'error';
+  const M = ['...', '---', '...'];
+
+  // Morse burst: same proportions as Plymouth and the wallpaper
+  let bd = '', x = bx;
+  M.forEach((l, li) => [...l].forEach((c, si) => {
+    const w = (c === '.' ? 1 : 3) * u;
+    bd += `M ${x} ${Y} L ${x} ${Y - h} L ${x + w} ${Y - h} L ${x + w} ${Y} `;
+    x += w + (si < l.length - 1 ? u : li < 2 ? 3 * u : 0);
+  }));
+  const bEnd = x;
+
+  // password: one dot per character, threaded on the line; «checking» sends them toward Jackson
+  let beads = '';
+  for (let i = 0; i < typed; i++) {
+    let px = x0 + 6 + i * step;
+    if (state === 'checking') px = jx - 40 - (typed - 1 - i) * 11;          // flowing into Jackson
+    if (state === 'welcome') continue;
+    const dy = err ? [3, -2, 4, -3, 2, -4, 3, -1][i] : 0;
+    beads += `<rect x="${px - r}" y="${Y - r + dy}" width="${2 * r}" height="${2 * r}" rx="${r}" opacity="${state === 'checking' ? (0.35 + i * 0.08).toFixed(2) : 1}"/>`;
+  }
+  const xc = x0 + (typed ? 6 + (typed - 1) * step + 14 : 0);
+  const showCaret = state === 'idle' || state === 'typing';
+  const lit = err ? 'var(--bad)' : 'var(--text)';
+  const trailTo = state === 'welcome' ? bEnd + 140 : state === 'checking' ? jx : xc;
+
+  document.getElementById('scope').innerHTML = `
+    <defs>
+      <linearGradient id="base" x1="0" x2="${W}" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="var(--text)" stop-opacity="0"/>
+        <stop offset=".08" stop-color="var(--text)" stop-opacity=".14"/>
+        <stop offset=".92" stop-color="var(--text)" stop-opacity=".14"/>
+        <stop offset="1" stop-color="var(--text)" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="trail" x1="${x0 - 150}" x2="${trailTo}" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${lit}" stop-opacity="0"/>
+        <stop offset="1" stop-color="${lit}" stop-opacity="${state === 'welcome' ? '.9' : '.75'}"/>
+      </linearGradient>
+      <linearGradient id="burstLead" x1="${bx - 140}" x2="${bEnd + 140}" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="var(--text)" stop-opacity="0"/>
+        <stop offset=".2" stop-color="var(--text)" stop-opacity=".55"/>
+        <stop offset=".8" stop-color="var(--text)" stop-opacity=".55"/>
+        <stop offset="1" stop-color="var(--text)" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="shadow"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+      <filter id="glow" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="3.2"/></filter>
+      <filter id="beam" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="5"/></filter>
+    </defs>
+    <path d="M 0 ${Y} H ${W}" stroke="url(#base)" stroke-width="1"/>
+    ${typed || state === 'welcome' ? `<path d="M ${x0 - 150} ${Y} H ${trailTo}" stroke="url(#trail)" stroke-width="1.4"/>` : ''}
+    <path d="M ${bx - 140} ${Y} H ${bEnd + 140}" stroke="url(#burstLead)" stroke-width="1.2"/>
+    <ellipse cx="${jx + jw / 2}" cy="${Y + 1}" rx="44" ry="5" fill="url(#shadow)"/>
+    ${beads ? `<g fill="${lit}" filter="url(#glow)" opacity=".6">${beads}</g><g fill="${lit}">${beads}</g>` : ''}
+    <path d="${bd}" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linejoin="round" filter="url(#glow)" opacity="${state === 'welcome' ? '.8' : '.35'}"/>
+    <path d="${bd}" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linejoin="round" opacity=".92"/>
+    ${showCaret ? `<rect x="${xc}" y="${Y - 13}" width="2" height="26" rx="1" fill="var(--accent)" filter="url(#beam)" opacity=".7"/>
+    <rect x="${xc}" y="${Y - 13}" width="2" height="26" rx="1" fill="var(--accent)"/>` : ''}`;
+
+  const jack = document.getElementById('jack'), say = document.getElementById('say');
+  const lines = lock ? {
+    idle: ['idle', 'Отошёл? Я покараулю.', 'заблокировано'],
+    typing: ['listening', 'Отошёл? Я покараулю.', 'слушаю'],
+    checking: ['thinking', 'Сверяю…', 'секунду'],
+    error: ['error', 'Не то. Раскладка сейчас EN.', 'ещё раз'],
+    welcome: ['happy', 'С возвращением!', ''],
+  }[state] : {
+    idle: ['listening', 'Йо, Максим. Пароль?', 'жду'],
+    typing: ['listening', 'Йо, Максим. Пароль?', 'слушаю'],
+    checking: ['thinking', 'Сверяю…', 'секунду'],
+    error: ['error', 'Не то. Раскладка сейчас EN.', 'ещё раз'],
+    welcome: ['happy', 'Есть контакт. Поехали!', 'загружаю стол'],
+  }[state];
+  if (lock) {
+    document.querySelector('.who .eyebrow').innerHTML = 'Заблокировано <span>·</span> maxim-4090';
+    document.getElementById('hint').innerHTML = (state === 'idle' ? 'введи пароль' : 'пароль') + ' <span>·</span> <b>Enter</b> — разблокировать';
+    document.getElementById('msg').innerHTML = 'раскладка RU';
+  }
+  jack.dataset.state = lines[0];
+  say.innerHTML = `${lines[1]}<small>${lines[2]}</small>`;
+  if (state === 'idle') document.getElementById('hint').innerHTML = 'введите пароль <span>·</span> <b>Enter</b> — войти';
+  if (err) document.getElementById('msg').innerHTML = '<span style="color:var(--bad)">не тот пароль</span> <span>·</span> раскладка EN <span>·</span> Caps Lock выкл.';
+  if (state === 'checking') document.getElementById('hint').innerHTML = 'проверка…';
   SOS.init({ bar: false });
 </script>
 </body>

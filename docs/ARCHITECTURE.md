@@ -273,3 +273,7 @@ and `kind: "look"`.
 `state {detail: "avatar"}` to every client within 2 s. Sprites: `shell/assets/jackson/{imp,cat}.json`
 (format `sos-jackson/1`, see `design/mascot/FORMAT.md`). Jackson changes the accent only via
 `sos theme accent <word|#hex> --json` and verifies `theme.json` `accentId`.
+Login screen copy: with «Использовать на экране входа», `sos theme … --system` also passes the look to
+the root helper as `--avatar key=value;…` (values percent-encoded, validated again as root) and it writes
+`/etc/svoya/avatar.json` (0644); an empty look removes it. The greeter reads only that copy and never
+writes. The shell queues this sync after every avatar change (`Theme.queueSystemSync()`).

@@ -1,19 +1,18 @@
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
+import Quickshell.Io
 import qs.core
 
-// Lock screen face (DESIGN.md §5, design/mockups/lock.html): the wallpaper with
-// the signal line, status top-right, the hero column at 226/900 of the height
-// (clock + date, user row 56px below, 320px password field, a status line),
-// and the bottom row: accessibility (left), the Morse mark (center), the
-// colophon (right, drawn by the wallpaper).
+// Lock screen face (DESIGN §12, design/mockups/greeter.html — the same «Линия» as the greeter):
+// the boot line through the middle, your name and «Заблокировано» on the left, the password typed
+// onto the line, Jackson (your own look) standing on it, the time and the burst on the right.
+// While a job runs, Jackson says how far it got. Bottom left: accessibility.
 Item {
     id: root
 
     property string userName: Sys.user
     property string displayName: root.userName
-    property string avatar: ""            // image path; the initial letter otherwise
+    property string avatar: ""            // kept for the Lock API (the line shows Jackson instead)
     property bool busy: false
     property string message: ""           // PAM prompt, info or error
     property bool error: false
@@ -21,139 +20,192 @@ Item {
 
     signal submit(string password)
 
+    readonly property real s: Math.max(0.75, Math.min(1.8, Math.min(width / 1440, height / 900)))
+    readonly property real lineY: Math.round(height / 2) + 0.5
+    readonly property real leftX: Math.round(width * 200 / 1440)
+    readonly property real rightX: Math.round(width * 1000 / 1440)
+
     function focusField() {
-        field.focusField();
+        line.focusField();
     }
 
     function clear() {
-        field.clear();
+        line.clear();
     }
+
+    SystemClock {
+        id: clock
+
+        precision: SystemClock.Minutes
+    }
+
+    FileView {
+        id: hostnameFile
+
+        path: "/etc/hostname"
+        printErrors: false
+    }
+    readonly property string host: hostnameFile.text().trim()
 
     Wallpaper {
         anchors.fill: parent
-        colophon: true
+        colophon: false
+        showSignal: false
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: line.focusField()
+    }
+
+    MText {
+        x: root.leftX
+        y: 30 * root.s
+        text: Strings.morse + "   " + Strings.osName + " " + Sys.osVersion
+        size: 11 * root.s
+        color: Theme.textFaint
     }
 
     CornerStatus {
         anchors.top: parent.top
-        anchors.topMargin: 18
+        anchors.topMargin: 28 * root.s
         anchors.right: parent.right
-        anchors.rightMargin: 24
+        anchors.rightMargin: root.leftX
         showLayout: true
     }
 
-    Item {
-        id: hero
+    // ---- who ----------------------------------------------------------------------------------------------
+    MText {
+        x: root.leftX
+        y: root.lineY - 116 * root.s
+        text: Strings.lockedEyebrow + (root.host.length > 0 ? "  ·  " + root.host : "")
+        size: 10.5 * root.s
+        caps: true
+        tracking: 0.26
+        color: Theme.textFaint
+    }
 
-        y: Math.round(parent.height * 226 / 900)
-        width: parent.width
-        height: 314
+    SText {
+        x: root.leftX
+        y: root.lineY - 96 * root.s
+        height: 52 * root.s
+        verticalAlignment: Text.AlignBottom
+        text: root.displayName
+        size: 46 * root.s
+        font.weight: Font.Light
+    }
 
-        BigClock {
-            anchors.horizontalCenter: parent.horizontalCenter
+    // ---- the line -----------------------------------------------------------------------------------------------
+    readonly property var job: Status.job
+
+    LoginLine {
+        id: line
+
+        anchors.fill: parent
+        s: root.s
+        lineY: root.lineY
+        inputX: root.leftX
+        burstX: root.rightX
+        jacksonX: Math.round(root.width * 632 / 1440)
+        busy: root.busy
+        error: root.error
+        inputEnabled: root.inputEnabled
+        say: {
+            if (root.busy)
+                return Strings.jChecking;
+            if (root.error && line.ghost > 0)
+                return Strings.jWrong(line.capsOn, Hypr.layoutCode);
+            if (root.job !== null && line.length === 0)
+                return Strings.whileAway + " " + (root.job.label || "") + (root.job.progress !== undefined ? " " + Math.round(root.job.progress * 100) + "%" : "");
+            return Strings.jLocked;
+        }
+        sayMeta: {
+            if (root.busy)
+                return Strings.jSecond;
+            if (root.error && line.ghost > 0)
+                return Strings.jAgain;
+            if (root.job !== null && line.length === 0)
+                return root.job.etaSec ? Strings.left(root.job.etaSec) : Strings.jWorking;
+            return line.length > 0 ? Strings.jListening : Strings.jLockedMeta;
+        }
+        onSubmit: text => root.submit(text)
+    }
+
+    Column {
+        x: root.leftX
+        y: root.lineY + 22 * root.s
+        spacing: 12 * root.s
+
+        MText {
+            textFormat: Text.StyledText
+            text: (line.length > 0 ? Strings.passwordWord : Strings.typePassword) + "  ·  <font color=\"" + Theme.textDim + "\">Enter</font> — " + Strings.toUnlock
+            size: 11 * root.s
+            color: Theme.textFaint
         }
 
-        // user row: 40px avatar + 12 + name (Plex Sans 500 15)
-        Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 126 + 56
-            height: 40
-            spacing: 12
-
-            ClippingRectangle {
-                width: 40
-                height: 40
-                radius: 20
-                color: Theme.surface3
-                border.width: 1
-                border.color: Theme.lineStrong
-
-                Image {
-                    id: face
-
-                    anchors.fill: parent
-                    source: root.avatar.length > 0 ? "file://" + root.avatar : ""
-                    sourceSize.width: 80
-                    sourceSize.height: 80
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    visible: status === Image.Ready
-                }
-
-                SText {
-                    anchors.centerIn: parent
-                    visible: face.status !== Image.Ready
-                    text: root.displayName.length > 0 ? root.displayName[0].toUpperCase() : "?"
-                    size: 15
-                    font.weight: Font.Medium
-                }
+        MText {
+            textFormat: Text.StyledText
+            text: {
+                if (root.message.length > 0)
+                    return "<font color=\"" + (root.error ? Theme.bad : Theme.textDim) + "\">" + Fmt.escape(root.message) + "</font>";
+                const parts = [];
+                if (Hypr.layoutCode.length > 0)
+                    parts.push(Strings.layoutWord + " " + Hypr.layoutCode);
+                if (line.capsOn)
+                    parts.push("<font color=\"" + Theme.warn + "\">" + Strings.capsLockOn + "</font>");
+                return parts.join("  ·  ");
             }
-
-            SText {
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.displayName
-                size: 15
-                font.weight: Font.Medium
-            }
-        }
-
-        PasswordField {
-            id: field
-
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 126 + 56 + 40 + 22
-            busy: root.busy
-            error: root.error
-            inputEnabled: root.inputEnabled
-            onSubmit: text => root.submit(text)
-        }
-
-        // status line (14px below the field): a PAM message, else a running job
-        Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: field.y + 40 + 14
-            height: 16
-            spacing: 8
-            visible: root.message.length > 0 || Status.job !== null
-
-            Dot {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: root.message.length === 0
-                size: 5
-                color: Theme.accent
-            }
-
-            MText {
-                anchors.verticalCenter: parent.verticalCenter
-                height: 16
-                visible: root.message.length > 0
-                text: root.message
-                size: 11
-                color: root.error ? Theme.bad : Theme.textDim
-            }
-
-            MText {
-                readonly property var job: Status.job
-
-                anchors.verticalCenter: parent.verticalCenter
-                height: 16
-                visible: root.message.length === 0 && job !== null
-                textFormat: Text.StyledText
-                text: job === null ? "" : Strings.whileAway + " " + (job.label || "") + (job.progress !== undefined ? " <font color=\"" + Theme.textDim + "\">" + Math.round(job.progress * 100) + "%</font>" : "") + (job.etaSec ? " · " + Strings.left(job.etaSec) : "")
-                size: 11
-                color: Theme.textFaint
-            }
+            size: 11 * root.s
+            color: Theme.textFaint
         }
     }
 
-    // accessibility: a small popover with the three switches that matter here
+    // ---- when ---------------------------------------------------------------------------------------------------------
+    MText {
+        x: root.rightX
+        y: root.lineY - 116 * root.s
+        text: Strings.nowEyebrow
+        size: 10.5 * root.s
+        caps: true
+        tracking: 0.26
+        color: Theme.textFaint
+    }
+
+    SText {
+        x: root.rightX
+        y: root.lineY - 96 * root.s
+        height: 52 * root.s
+        verticalAlignment: Text.AlignBottom
+        text: Fmt.clock(clock.date)
+        size: 46 * root.s
+        font.weight: Font.Light
+        font.features: ({ "tnum": 1 })
+    }
+
+    Column {
+        x: root.rightX
+        y: root.lineY + 22 * root.s
+        spacing: 12 * root.s
+
+        MText {
+            text: Strings.lockDate(clock.date)
+            size: 11.5 * root.s
+            color: Theme.textDim
+        }
+        MText {
+            text: Strings.osName + " " + Sys.osVersion + " · " + Strings.codename
+            size: 11 * root.s
+            color: Theme.textFaint
+        }
+    }
+
+    // ---- accessibility: a small popover with the three switches that matter here -------------------------------------
     TextButton {
         id: a11y
 
-        anchors.left: parent.left
-        anchors.leftMargin: 28
+        x: root.leftX - 10
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 22
+        anchors.bottomMargin: 28 * root.s
         glyph: "svoya-accessibility"
         text: Strings.a11yShort
         selected: a11yPop.visible
@@ -210,13 +262,5 @@ Item {
                 }
             }
         }
-    }
-
-    // the mark, 1.5×, centered 38px above the bottom edge
-    MorseMark {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 36
-        unit: 1.5
     }
 }

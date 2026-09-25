@@ -193,6 +193,7 @@ def _parser() -> argparse.ArgumentParser:
     tsw = tsub.add_parser("system-write")                  # root half of --system (pkexec); ids only
     tsw.add_argument("--theme", dest="theme_id", required=True)
     tsw.add_argument("--accent", required=True)
+    tsw.add_argument("--avatar", default=None)          # Jackson's look, key=value;… (validated again)
     tsw.add_argument("--dry-run", action="store_true")
     tsw.add_argument("--quiet", "-q", action="store_true")
 
