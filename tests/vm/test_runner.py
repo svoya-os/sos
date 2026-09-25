@@ -102,6 +102,24 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(any(p.name.startswith("fail-01") for p in (out / "screens").iterdir()))
             qmp.close()
 
+    def test_journey_goes_on_after_a_failed_step(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp)
+            (out / "serial.log").write_text("")
+            a, b = socket.socketpair()
+            ScreenQEMU(b, [frame((0, 0, 0))]).start()
+            qmp = QMPClient(a, timeout=2)
+            qmp.negotiate()
+            runner = run.Runner(qmp, out, scale=0.01, proc=None)
+            ok = runner.run([
+                {"id": "blank", "action": "screenshot", "name": "a", "assert": "not_blank", "continue_on_failure": True},
+                {"id": "pause", "action": "sleep", "seconds": 0.1},
+                {"id": "next", "action": "screenshot", "name": "b"},
+            ])
+            self.assertFalse(ok)                                       # the failure is still reported
+            self.assertEqual([r["status"] for r in runner.results], ["failed", "ok", "ok"])
+            qmp.close()
+
 
 if __name__ == "__main__":
     unittest.main()

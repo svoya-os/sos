@@ -246,7 +246,8 @@ class Runner:
             entry["seconds"] = round(time.monotonic() - started, 1)
             self.results.append(entry)
             print(f"[{entry['status']:>7}] {n:2d} {entry['id']:<12} {action:<11} {entry['detail']}", flush=True)
-            if not ok and not step.get("continue_on_failure"):
+            # stop at a failed step unless it says to go on (earlier failures do not stop later steps)
+            if entry["status"] == "failed" and not step.get("continue_on_failure"):
                 break
         return ok
 

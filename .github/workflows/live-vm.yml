@@ -1,0 +1,146 @@
+# SPDX-License-Identifier: Apache-2.0
+# A live SOS VM for hands-on testing (manual only): boots the ISO of an earlier run in QEMU with
+# KVM, shows its screen through noVNC over a Cloudflare quick tunnel, and stays up for `minutes`.
+# The link is encrypted with the RSA public key given when starting the run (tests/vm/live.py), so
+# only its holder can open the VM; the encrypted link goes to the ci-live branch and the job log.
+# Stop it early with «Cancel workflow».
+name: Live VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: "ID of the ISO workflow run whose sos-iso artifact to boot"
+        required: true
+      pubkey:
+        description: "RSA public key, SubjectPublicKeyInfo DER in base64 (encrypts the link)"
+        required: true
+      minutes:
+        description: "How long the VM stays up (≤ 330)"
+        default: "150"
+      firmware:
+        type: choice
+        options: [uefi, bios]
+        default: uefi
+
+permissions: {}
+
+concurrency:
+  group: live-vm
+  cancel-in-progress: false
+
+jobs:
+  live:
+    name: Live VM (${{ inputs.firmware }}, ${{ inputs.minutes }} min)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    permissions:
+      contents: write   # the encrypted link → ci-live branch (never main)
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check inputs
+        env:
+          MINUTES: ${{ inputs.minutes }}
+          RUN: ${{ inputs.run-id }}
+        run: |
+          set -euo pipefail
+          [[ "$MINUTES" =~ ^[0-9]+$ ]] && [ "$MINUTES" -ge 5 ] && [ "$MINUTES" -le 330 ] || { echo "::error::minutes: 5–330"; exit 1; }
+          [[ "$RUN" =~ ^[0-9]+$ ]] || { echo "::error::run-id must be a number"; exit 1; }
+
+      - name: Free disk space
+        run: scripts/ci-free-disk.sh
+
+      - name: Download ISO
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sos-iso
+          path: iso
+          run-id: ${{ inputs.run-id }}
+          github-token: ${{ github.token }}
+
+      - name: Reassemble and verify
+        run: |
+          set -euo pipefail
+          scripts/split-artifact.sh join iso
+          isos=(iso/*.iso)
+          [ -f "${isos[0]}" ] || { echo "::error::no ISO in the artifact"; exit 1; }
+          echo "ISO=${isos[0]}" >>"$GITHUB_ENV"
+
+      - name: Install QEMU, OVMF, noVNC, cloudflared
+        run: |
+          set -euo pipefail
+          sudo apt-get -o Acquire::Retries=3 update -q
+          sudo apt-get -o Acquire::Retries=3 install -y -q --no-install-recommends \
+              qemu-system-x86 qemu-utils ovmf python3-pil novnc websockify
+          # Cloudflare's own release build (a quick tunnel needs no account)
+          sudo curl -fsSL --retry 3 -o /usr/local/bin/cloudflared \
+              https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          sudo chmod 0755 /usr/local/bin/cloudflared
+          cloudflared --version
+
+      - name: Enable KVM
+        run: scripts/ci-enable-kvm.sh
+
+      - name: Publish the encrypted link (ci-live branch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          # wait for live.py (next step, in the background) to write session.txt, then publish it
+          (
+            for _ in $(seq 1 240); do [ -s dist/live/session.txt ] && break; sleep 2; done
+            [ -s dist/live/session.txt ] || exit 0
+            work=$(mktemp -d)
+            url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+            git clone -q --depth 1 --branch ci-live "$url" "$work" 2>/dev/null ||
+              { git init -q -b ci-live "$work"; git -C "$work" remote add origin "$url"; }
+            mkdir -p "$work/sessions"
+            cp dist/live/session.txt "$work/sessions/$RUN.txt"
+            git -C "$work" -c user.name=sos-ci -c user.email=sos-ci@users.noreply.github.com add -A
+            git -C "$work" -c user.name=sos-ci -c user.email=sos-ci@users.noreply.github.com \
+                commit -q -m "live VM $RUN" || exit 0
+            for i in 1 2 3 4 5; do
+              git -C "$work" pull -q --rebase origin ci-live 2>/dev/null || true
+              git -C "$work" push -q origin HEAD:ci-live && break
+              sleep $((i * 3))
+            done
+            echo "::notice::encrypted link published: ci-live/sessions/$RUN.txt"
+            cat dist/live/session.txt
+          ) &
+
+      - name: Run the VM
+        env:
+          PUBKEY: ${{ inputs.pubkey }}
+          MINUTES: ${{ inputs.minutes }}
+          FW: ${{ inputs.firmware }}
+        run: |
+          python3 tests/vm/live.py --iso "$ISO" --out dist/live --minutes "$MINUTES" --firmware "$FW" \
+              --pubkey-b64 "$PUBKEY"
+
+      - name: Keep the log
+        if: always()
+        run: |
+          log=dist/live/serial.log
+          [ -f "$log" ] || exit 0
+          echo "::group::serial: SOS marks and diagnostics"
+          awk '/SOS-DIAG begin/{d=1} d{print} /SOS-DIAG end/{d=0; next} !d && /SOS-MARK/' "$log" | tr -d '\r' | tail -n 800
+          echo "::endgroup::"
+
+      - name: Upload screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: live-vm-${{ github.run_id }}
+          path: |
+            dist/live/screens
+            dist/live/serial.log
+            dist/live/qemu.log
+            dist/live/session.txt
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,78 @@
+{
+  "name": "user-journeys",
+  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, Jackson CLI), the Jackson panel, the control center, System Doctor and the lock screen. A screenshot after every step; nothing stops the journey.",
+  "vm": {
+    "memory_mib": 8192,
+    "smp": 4,
+    "resolution": [1440, 900],
+    "smbios_product": "sos-vm-test"
+  },
+  "steps": [
+    {"id": "boot", "action": "wait_serial", "pattern": "SOS 26\\.10", "timeout_s": 60, "optional": true},
+    {"id": "boot", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
+    {"id": "boot", "action": "key", "keys": ["ret"]},
+    {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
+    {"id": "desktop", "action": "sleep", "seconds": 10},
+    {"id": "desktop", "action": "screenshot", "name": "01-desktop", "assert": "not_blank"},
+
+    {"id": "cheatsheet", "action": "key", "keys": ["meta_l", "k"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "cheatsheet", "action": "sleep", "seconds": 2},
+    {"id": "cheatsheet", "action": "screenshot", "name": "02-cheatsheet", "expect_change_from": "01-desktop", "continue_on_failure": true},
+    {"id": "cheatsheet", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+    {"id": "cheatsheet", "action": "sleep", "seconds": 1},
+
+    {"id": "launcher", "action": "key", "keys": ["meta_l", "spc"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "launcher", "action": "sleep", "seconds": 2},
+    {"id": "launcher", "action": "type", "text": "term", "continue_on_failure": true},
+    {"id": "launcher", "action": "sleep", "seconds": 2},
+    {"id": "launcher", "action": "screenshot", "name": "03-launcher-search", "expect_change_from": "01-desktop", "continue_on_failure": true},
+    {"id": "launcher", "action": "key", "keys": ["ret"], "continue_on_failure": true},
+    {"id": "terminal", "action": "sleep", "seconds": 5},
+    {"id": "terminal", "action": "screenshot", "name": "04-terminal", "continue_on_failure": true},
+
+    {"id": "doctor-cli", "action": "type", "text": "sos doctor\n", "continue_on_failure": true},
+    {"id": "doctor-cli", "action": "sleep", "seconds": 10},
+    {"id": "doctor-cli", "action": "screenshot", "name": "05-sos-doctor", "continue_on_failure": true},
+
+    {"id": "models", "action": "type", "text": "clear; sos models suggest\n", "continue_on_failure": true},
+    {"id": "models", "action": "sleep", "seconds": 8},
+    {"id": "models", "action": "screenshot", "name": "06-models-suggest", "continue_on_failure": true},
+
+    {"id": "accent", "action": "type", "text": "clear; sos theme accent lilac\n", "continue_on_failure": true},
+    {"id": "accent", "action": "sleep", "seconds": 6},
+    {"id": "accent", "action": "screenshot", "name": "07-accent-lilac", "continue_on_failure": true},
+    {"id": "accent", "action": "type", "text": "sos theme accent --undo\n", "continue_on_failure": true},
+    {"id": "accent", "action": "sleep", "seconds": 6},
+    {"id": "accent", "action": "screenshot", "name": "08-accent-undo", "continue_on_failure": true},
+
+    {"id": "jackson-cli", "action": "type", "text": "clear; j hi, what can you do\n", "continue_on_failure": true},
+    {"id": "jackson-cli", "action": "sleep", "seconds": 15},
+    {"id": "jackson-cli", "action": "screenshot", "name": "09-jackson-cli", "continue_on_failure": true},
+
+    {"id": "jackson", "action": "key", "keys": ["meta_l", "j"], "hold_ms": 150, "continue_on_failure": true},
+    {"id": "jackson", "action": "sleep", "seconds": 3},
+    {"id": "jackson", "action": "type", "text": "which model fits this computer\n", "continue_on_failure": true},
+    {"id": "jackson", "action": "sleep", "seconds": 15},
+    {"id": "jackson", "action": "screenshot", "name": "10-jackson-panel", "continue_on_failure": true},
+    {"id": "jackson", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+    {"id": "jackson", "action": "sleep", "seconds": 1},
+
+    {"id": "control", "action": "key", "keys": ["meta_l", "a"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "control", "action": "sleep", "seconds": 2},
+    {"id": "control", "action": "screenshot", "name": "11-control-center", "continue_on_failure": true},
+    {"id": "control", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+    {"id": "control", "action": "sleep", "seconds": 1},
+
+    {"id": "doctor", "action": "key", "keys": ["meta_l", "esc"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "doctor", "action": "sleep", "seconds": 6},
+    {"id": "doctor", "action": "screenshot", "name": "12-system-doctor", "continue_on_failure": true},
+    {"id": "doctor", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+    {"id": "doctor", "action": "sleep", "seconds": 1},
+
+    {"id": "lock", "action": "key", "keys": ["meta_l", "l"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "lock", "action": "sleep", "seconds": 3},
+    {"id": "lock", "action": "type", "text": "wrong-password\n", "continue_on_failure": true},
+    {"id": "lock", "action": "sleep", "seconds": 2},
+    {"id": "lock", "action": "screenshot", "name": "13-lock-wrong-password", "continue_on_failure": true}
+  ]
+}

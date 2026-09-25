@@ -41,9 +41,24 @@ diag() {
         journalctl -b -u greetd --no-pager -o short-monotonic 2>&1 | tail -n 30
         echo "## user $user: warnings and errors"
         journalctl -b "_UID=$uid" -p warning --no-pager -o short-monotonic 2>&1 | tail -n 80
-        for f in "/run/user/$uid/sos-session.log" /run/user/"$uid"/hypr/*/hyprland.log; do
-            [ -f "$f" ] && { echo "## $f (tail)"; tail -n 80 "$f"; }
+        for f in "/home/$user/.local/state/svoya/session.log" "/run/user/$uid/sos-shell.log" \
+                 "/run/user/$uid/sos-session.log"; do
+            [ -f "$f" ] && { echo "## $f (tail)"; tail -n 120 "$f"; }
         done
+        # Hyprland's own log: only what matters (the full file is thousands of lines of DRM detail)
+        for f in /run/user/"$uid"/hypr/*/hyprland.log; do
+            [ -f "$f" ] && { echo "## $f (errors, config, exec)"; grep -aE 'ERR|CRIT|WARN|[Cc]onfig|[Ee]xec' "$f" | grep -av 'aquamarine' | tail -n 60; }
+        done
+        # No shell? Run it once in the foreground for 8 s and keep what it says.
+        if ! pgrep -u "$user" -x quickshell >/dev/null; then
+            wl=$(find "/run/user/$uid" -maxdepth 1 -name 'wayland-[0-9]' -printf '%f\n' 2>/dev/null | head -n 1)
+            sig=$(find "/run/user/$uid/hypr" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | head -n 1)
+            echo "## probe: quickshell -p /usr/share/svoya/shell (8 s, WAYLAND_DISPLAY=$wl)"
+            timeout 8 runuser -u "$user" -- env XDG_RUNTIME_DIR="/run/user/$uid" WAYLAND_DISPLAY="$wl" \
+                HYPRLAND_INSTANCE_SIGNATURE="$sig" QT_QPA_PLATFORM=wayland LANG=ru_RU.UTF-8 \
+                quickshell -p /usr/share/svoya/shell 2>&1 | tail -n 100
+            echo "## probe exit: ${PIPESTATUS[0]}"
+        fi
         for f in /home/"$user"/.cache/hyprland/hyprlandCrashReport*.txt \
                  /home/"$user"/.local/share/hyprland/hyprlandCrashReport*.txt; do
             [ -f "$f" ] && { echo "## $f"; head -n 60 "$f"; }
@@ -63,12 +78,16 @@ while [ "$SECONDS" -lt "$deadline" ]; do
     if pgrep -u "$user" -x Hyprland >/dev/null; then
         [ -n "${hypr_seen:-}" ] || { mark hyprland-running; hypr_seen=1; }
     fi
-    if pgrep -u "$user" -x Hyprland >/dev/null && pgrep -u "$user" -f 'quickshell|/usr/bin/qs' >/dev/null; then
-        # the shell needs a moment to map its surfaces
+    # The shell itself (process name, not a command line that merely mentions it) and still alive
+    # 5 s later: the first CI run counted the `sh -c '… quickshell …'` wrapper as a running shell.
+    if pgrep -u "$user" -x Hyprland >/dev/null && pgrep -u "$user" -x quickshell >/dev/null; then
         sleep 5
-        mark desktop-ready
-        diag ready
-        break
+        if pgrep -u "$user" -x quickshell >/dev/null; then
+            mark desktop-ready
+            diag ready
+            break
+        fi
+        mark shell-restarting
     fi
     if [ "$SECONDS" -ge "$next_diag" ]; then
         diag "t+${SECONDS}s"

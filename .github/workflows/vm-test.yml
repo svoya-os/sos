@@ -14,6 +14,10 @@ on:
         description: "Run that produced the ISO artifact (default: this run)"
         type: string
         default: ""
+      plan:
+        description: "Test plan (tests/vm/*.json)"
+        type: string
+        default: tests/vm/plan.json
   workflow_dispatch:
     inputs:
       run-id:
@@ -21,6 +25,9 @@ on:
         required: true
       artifact:
         default: sos-iso
+      plan:
+        description: "Test plan: tests/vm/plan.json (smoke) or tests/vm/journeys.json (user journeys)"
+        default: tests/vm/plan.json
 
 permissions: {}
 
@@ -76,7 +83,9 @@ jobs:
         run: scripts/ci-enable-kvm.sh
 
       - name: Boot and screenshot
-        run: python3 tests/vm/run.py --iso "$ISO" --firmware "${{ matrix.firmware }}" --out "dist/vm-${{ matrix.firmware }}"
+        env:
+          PLAN: ${{ inputs.plan || 'tests/vm/plan.json' }}
+        run: python3 tests/vm/run.py --iso "$ISO" --plan "$PLAN" --firmware "${{ matrix.firmware }}" --out "dist/vm-${{ matrix.firmware }}"
 
       - name: Report
         if: always()
