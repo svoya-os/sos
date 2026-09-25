@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — boot: Plymouth splash and GRUB</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  body, .screen { background: var(--wall); }
+  .frame { position: absolute; inset: 0; display: none; }
+  [data-frame="splash"] #splash, [data-frame="grub"] #grub, [data-frame="seq"] #seq { display: block; }
+
+  /* ── Plymouth key frame ── */
+  #splash svg { position: absolute; left: 0; top: 0; }
+  .sig-base { fill: none; stroke-width: 1.2; }
+  .sig-on { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; filter: var(--glow); }
+  .sig-off { fill: none; stroke: var(--line-strong); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .beam { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+  .splash-cap { position: absolute; left: 0; right: 0; top: 486px; text-align: center; font: 400 11px/1 "Plex Mono"; letter-spacing: 0.3em; color: var(--text-faint); }
+  .splash-cap b { color: var(--text-dim); font-weight: 500; }
+
+  /* ── sequence strip (documentation) ── */
+  #seq .cells { position: absolute; left: 80px; right: 80px; top: 346px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  #seq .cell { height: 250px; border-radius: 12px; border: 1px solid var(--line); background: #08090a; position: relative; overflow: hidden; }
+  #seq .cell svg { position: absolute; inset: 0; }
+  #seq .lab { margin-top: 14px; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+  #seq .lab b { display: block; font: 500 13px/18px "Plex Sans"; color: var(--text); margin-bottom: 2px; }
+  #seq h1 { position: absolute; left: 80px; top: 246px; font: 500 28px/34px "Plex Sans"; color: var(--text); }
+  #seq .sub { position: absolute; left: 80px; top: 288px; font: 400 14px/22px "Plex Sans"; color: var(--text-dim); }
+
+  /* ── GRUB ── */
+  #grub { font-family: "Departure"; -webkit-font-smoothing: none; }
+  .g-head { position: absolute; left: 0; right: 0; top: 190px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .g-head .t { font: 400 11px/11px "Departure"; letter-spacing: 0.2em; color: var(--text-faint); }
+  .g-menu { position: absolute; left: 50%; top: 290px; width: 704px; transform: translateX(-50%); }
+  .g-row { position: relative; display: flex; align-items: center; gap: 22px; height: 44px; padding: 0 22px; font: 400 22px/22px "Departure"; color: var(--text-dim); white-space: nowrap; }
+  .g-row .k { margin-left: auto; font-size: 11px; color: var(--text-faint); letter-spacing: 0.06em; }
+  .g-row.on { color: var(--text); background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
+  .g-row.on::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); }
+  .g-row.on .k { color: var(--accent); }
+  .g-row small { font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; }
+  .g-sep { height: 1px; margin: 11px 22px; background: var(--line); }
+  .g-count { position: absolute; left: 50%; top: 612px; width: 704px; transform: translateX(-50%); display: flex; align-items: center; gap: 22px; padding: 0 22px; font: 400 11px/11px "Departure"; color: var(--text-dim); letter-spacing: 0.06em; }
+  .g-count .gt { flex: 1; height: 2px; background: var(--line); position: relative; }
+  .g-count .gt i { position: absolute; left: 0; top: 0; bottom: 0; width: 40%; background: var(--accent); }
+  .g-keys { position: absolute; left: 0; right: 0; bottom: 66px; display: flex; justify-content: center; gap: 33px; font: 400 11px/11px "Departure"; color: var(--text-faint); letter-spacing: 0.06em; }
+  .g-keys span { display: flex; align-items: center; gap: 11px; }
+  .g-keys b { font-weight: 400; color: var(--text-dim); padding: 5px 7px; box-shadow: inset 0 0 0 1px var(--line-strong); }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <!-- Plymouth key frame: the scope warms up (dot → line) and the Morse burst fills with boot progress -->
+  <div class="frame" id="splash">
+    <svg id="sig" width="1440" height="900" viewBox="0 0 1440 900"></svg>
+    <div class="splash-cap"><b>SOS</b> · загрузка</div>
+  </div>
+
+  <!-- GRUB: yesterday's system is one entry away -->
+  <div class="frame" id="grub">
+    <div class="g-head"><svg class="morse" data-s="2"></svg><div class="t">SOS · ВЫБОР ЗАГРУЗКИ</div></div>
+    <div class="g-menu">
+      <div class="g-row on">SOS 26.10<span class="k">ПО УМОЛЧАНИЮ</span></div>
+      <div class="g-row">До обновления<small>снимок · сегодня 18:02</small></div>
+      <div class="g-row">Вчерашняя система<small>снимок · 23 сен 21:40</small></div>
+      <div class="g-sep"></div>
+      <div class="g-row">Дополнительно<small>ядра · восстановление · память</small></div>
+      <div class="g-row">Прошивка UEFI</div>
+    </div>
+    <div class="g-count"><span>ЗАГРУЗКА ЧЕРЕЗ 3 С</span><span class="gt"><i></i></span></div>
+    <div class="g-keys">
+      <span><b>↑↓</b>ВЫБРАТЬ</span><span><b>ENTER</b>ЗАГРУЗИТЬ</span><span><b>E</b>ИЗМЕНИТЬ</span><span><b>C</b>КОНСОЛЬ</span>
+    </div>
+  </div>
+
+  <!-- warm-up sequence (for the spec) -->
+  <div class="frame" id="seq">
+    <h1>Загрузка: прогрев осциллографа</h1>
+    <div class="sub">Точка → линия → сигнал. Символы ··· ——— ··· загораются по мере загрузки; ошибка сворачивает линию в точку.</div>
+    <div class="cells">
+      <div><div class="cell"><svg data-phase="dot"></svg></div><div class="lab"><b>0 мс · точка</b>луч включился в центре</div></div>
+      <div><div class="cell"><svg data-phase="line"></svg></div><div class="lab"><b>160 мс · линия</b>точка растягивается в горизонт</div></div>
+      <div><div class="cell"><svg data-phase="3"></svg></div><div class="lab"><b>~ 1 с · сигнал 3/9</b>каждый символ — этап загрузки</div></div>
+      <div><div class="cell"><svg data-phase="9"></svg></div><div class="lab"><b>готово · 9/9</b>затем 180 мс — в экран входа</div></div>
+    </div>
+  </div>
+
+</div>
+<script>
+  const frame = SOS.q.get('frame') || 'splash';
+  document.querySelector('.screen').dataset.frame = frame;
+
+  // Morse burst on a horizon; `lit` symbols of nine glow in the accent. Returns SVG markup.
+  function burst({ cx, cy, u = 7, h = 16, lead = 150, lit = 9, phase = null }) {
+    const M = ['...', '---', '...'];
+    const syms = []; M.forEach((l, li) => [...l].forEach((c, si) => syms.push({ w: (c === '.' ? 1 : 3) * u, gap: si < l.length - 1 ? u : li < 2 ? 3 * u : 0 })));
+    const total = syms.reduce((a, s) => a + s.w + s.gap, 0);
+    const x0 = cx - total / 2;
+    if (phase === 'dot') return `<circle class="beam" cx="${cx}" cy="${cy}" r="2.4"/>`;
+    if (phase === 'line') return `<path d="M ${cx - 60} ${cy} H ${cx + 60}" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" style="filter:var(--glow)"/><circle class="beam" cx="${cx}" cy="${cy}" r="1.6"/>`;
+    let x = x0, on = '', off = '';
+    syms.forEach((s, i) => {
+      const seg = `M ${x} ${cy} L ${x} ${cy - h} L ${x + s.w} ${cy - h} L ${x + s.w} ${cy} ` + (s.gap ? `L ${x + s.w + s.gap} ${cy} ` : '');
+      if (i < lit) on += seg; else off += seg;
+      x += s.w + s.gap;
+    });
+    const litEnd = lit >= 9 ? x0 + total : x0 + syms.slice(0, lit).reduce((a, s) => a + s.w + s.gap, 0);
+    return `
+      <defs><linearGradient id="fadeL${cx}" x1="${x0 - lead}" x2="${x0}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="var(--accent)" stop-opacity="0"/><stop offset="1" stop-color="var(--accent)" stop-opacity="1"/></linearGradient>
+            <linearGradient id="fadeR${cx}" x1="${x0 + total}" x2="${x0 + total + lead}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="var(--line-strong)" stop-opacity="1"/><stop offset="1" stop-color="var(--line-strong)" stop-opacity="0"/></linearGradient></defs>
+      <path d="M ${x0 - lead} ${cy} H ${x0}" stroke="url(#fadeL${cx})" stroke-width="1.6" style="filter:var(--glow)"/>
+      <path d="M ${x0 + total} ${cy} H ${x0 + total + lead}" stroke="${lit >= 9 ? 'var(--accent)' : `url(#fadeR${cx})`}" stroke-width="1.6" ${lit >= 9 ? `opacity=".5"` : ''}/>
+      <path class="sig-off" d="${off}"/><path class="sig-on" d="${on}"/>
+      ${lit < 9 ? `<circle class="beam" cx="${litEnd}" cy="${cy}" r="2.2"/>` : ''}`;
+  }
+  document.getElementById('sig').innerHTML = burst({ cx: 720, cy: 450, lit: 6 });
+  document.querySelectorAll('[data-phase]').forEach((svg) => {
+    const r = svg.parentElement.getBoundingClientRect();
+    svg.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+    const p = svg.dataset.phase;
+    svg.innerHTML = burst({ cx: r.width / 2, cy: r.height / 2 + 8, u: 5, h: 12, lead: 60, lit: +p || 0, phase: isNaN(+p) ? p : null });
+  });
+  SOS.init({ bar: false });
+</script>
+</body>
+</html>

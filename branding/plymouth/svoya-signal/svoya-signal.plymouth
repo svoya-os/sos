@@ -1,0 +1,16 @@
+[Plymouth Theme]
+Name=SOS Signal
+Description=SOS boot splash: a phosphor spot warms up into a line that carries the Morse «СОС».
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/svoya-signal
+ScriptFile=/usr/share/plymouth/themes/svoya-signal/svoya-signal.script
+# Read by plymouth-populate-initrd (dracut): the matching font files are copied into the initrd,
+# so Image.Text (password prompt, messages) renders in IBM Plex with full Cyrillic.
+TitleFont=IBM Plex Sans 13px
+MonospaceFont=IBM Plex Mono 13px
+
+[script-env-vars]
+# ru | en — language of the captions baked into the sprites; the installer may rewrite this line.
+svoya_lang=ru

@@ -1,0 +1,13 @@
+# LoRA SFT settings for {{ project.name }}. Model and data come from the shared store (HF_HOME=/srv/ai).
+model = "{{ run.model_repo }}"          # Apache-2.0; check `sos models fit` before going bigger
+dataset = "trl-lib/Capybara"            # replace with yours (data/ → /srv/ai/datasets)
+split = "train"
+output_dir = "runs/lora"
+epochs = 1
+batch_size = 2
+grad_accum = 8
+lr = 2e-4
+lora_r = 16
+lora_alpha = 32
+bf16 = true
+report_to = "trackio"                   # local, W&B-compatible: trackio show

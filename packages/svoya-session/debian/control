@@ -1,0 +1,27 @@
+Source: svoya-session
+Section: x11
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/sos
+Rules-Requires-Root: no
+
+Package: svoya-session
+Architecture: all
+Depends: ${misc:Depends},
+         dbus-user-session,
+         greetd,
+         hyprland (>= 0.53.3~),
+         hyprland (<< 0.54~),
+         hyprland-plugin-hyprbars,
+         quickshell,
+         svoya-shell,
+         xdg-desktop-portal-gtk,
+         xdg-desktop-portal-hyprland
+Recommends: gnome-keyring, libpam-gnome-keyring, xdg-user-dirs
+Description: SOS desktop session (Hyprland + SOS Shell)
+ The Wayland session of SOS: the session launcher (environment, keyboard
+ layout, Hyprland with the SOS configuration from /usr/share/svoya/hypr),
+ the greeter session for greetd (Hyprland running the Quickshell greeter as
+ the "svoya-greeter" system user) and the portal preferences.

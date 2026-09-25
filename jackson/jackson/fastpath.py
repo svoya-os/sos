@@ -42,7 +42,8 @@ NUM = rf"(?:\d{{1,3}}|(?:(?:{NUM_WORDS})(?: (?:{NUM_WORDS}))?))"
 
 def normalize(text: str) -> str:
     s = text.lower().replace("ё", "е").strip()
-    s = re.sub(r"[«»\"“”„'`!?.,;:()\[\]…]", " ", s)
+    s = re.sub(r"['’`]", "", s)  # what's → whats
+    s = re.sub(r"[«»\"“”„!?.,;:()\[\]…]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
     for _ in range(3):
         before = s
@@ -112,7 +113,9 @@ class FastResult:
 class FastCtx:
     osc: OsControl
     lang: str
-    persona: str = "sysop"
+    persona: str = "kent"
+    humor: int = 1
+    seed: str = ""
     # Engine callbacks for intents that need engine state.
     undo_last: Callable[[], tuple[bool, str]] | None = None
     new_chat: Callable[[], None] | None = None
@@ -358,7 +361,7 @@ def h_theme(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
         return FastResult(False, ctx.say("Не понял, какую тему включить.", "Which theme?"))
     svoya = ctx.osc.svoya
     if not svoya.available():
-        return _no_backend(ctx, "не найден svoya (темы переключает он)", "the svoya CLI is missing (it applies themes)")
+        return _no_backend(ctx, "не нашёл команду sos (темы переключает она)", "the sos command is missing (it applies themes)")
     prev = svoya.theme_current()
     ok, out = svoya.theme_apply(theme)
     if not ok:
@@ -409,8 +412,8 @@ def _duration_text(seconds: int, ctx: FastCtx) -> str:
 def h_gpu(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
     gpus = ctx.osc.gpus()
     if not gpus:
-        return FastResult(True, ctx.say("Видеокарту не вижу: нет nvidia-smi, svoya status и данных в sysfs.",
-                                        "I don't see a GPU: no nvidia-smi, svoya status or sysfs data."), "—", True)
+        return FastResult(True, ctx.say("Видеокарту не вижу: нет nvidia-smi, sos status и данных в sysfs.",
+                                        "I don't see a GPU: no nvidia-smi, sos status or sysfs data."), "—", True)
     lines = []
     for g in gpus:
         parts = [str(g.get("name", "GPU"))]
@@ -667,7 +670,7 @@ INTENTS: list[Intent] = [
                              rf"(turn (it |the volume |the sound )?down|volume down|quieter|lower (the )?volume|"
                              rf"decrease (the )?volume){BY}"), h_volume_down, T1),
     Intent("volume_get", _p(r"какая (сейчас )?громкость", r"какой (сейчас )?уровень (звука|громкости)",
-                            r"сколько (сейчас )?громкость", r"what('s| is) the volume( now)?", r"current volume"),
+                            r"сколько (сейчас )?громкость", r"what(s| is) the volume( now)?", r"current volume"),
            h_volume_get),
     Intent("mute", _p(r"(выключи|отключи|убери|вырубь?и) (звук|громкость)", r"без звука", r"заглуши( звук)?",
                       r"мьют", r"mute( (the )?(sound|audio|volume))?", r"sound off"), h_mute, T1),
@@ -708,7 +711,7 @@ INTENTS: list[Intent] = [
                        rf"remind me in {DURATION}(?: (to )?(?P<label>.{{1,80}}))?"), h_timer, T1),
     Intent("gpu", _p(r"(какая|что за|что) (у меня )?(за )?(видеокарта|видюха|gpu|гпу)( у меня)?( стоит)?",
                      r"сколько (у меня )?(свободной )?(видеопамяти|vram)", r"(загрузка|температура) (видеокарты|gpu)",
-                     r"видеокарта", r"видеопамять", r"vram", r"gpu", r"what('s| is) my (gpu|graphics card|video card)",
+                     r"видеокарта", r"видеопамять", r"vram", r"gpu", r"what(s| is) my (gpu|graphics card|video card)",
                      r"(how much )?(free )?vram( do i have)?", r"gpu (usage|status|temp\w*|load)", r"my gpu"), h_gpu),
     Intent("disk", _p(r"сколько (свободного )?места( на диске| осталось| свободно)?", r"(свободное )?место на диске",
                       r"свободное место", r"(how much )?(free )?disk space( left| do i have)?", r"free space",
@@ -720,16 +723,16 @@ INTENTS: list[Intent] = [
                      r"оперативка", r"озу", r"(how much )?(free )?(ram|memory)( is)?( free| used| left| available)?",
                      r"memory usage"), h_ram),
     Intent("cpu", _p(r"(какой )?(у меня )?процессор( у меня)?", r"загрузка (процессора|цп|cpu)",
-                     r"(what('s| is) my )?(cpu|processor)( usage| load)?"), h_cpu),
+                     r"(what(s| is) my )?(cpu|processor)( usage| load)?"), h_cpu),
     Intent("uptime", _p(r"(сколько|как долго) (уже )?(работает|включен) (компьютер|комп|система)", r"аптайм",
                         r"uptime", r"how long (has the (computer|system) been|have i been) (up|on|running)"), h_uptime),
     Intent("time", _p(r"(который|сколько) (сейчас )?час\w*", r"сколько (сейчас )?времени", r"время",
                       r"what time is it", r"(the )?time( now)?", r"current time"), h_time),
     Intent("date", _p(r"какое (сегодня )?число", r"какая (сегодня )?дата", r"какой (сегодня )?день( недели)?",
-                      r"сегодня какое число", r"what('s| is) (the )?date( today)?", r"what day is (it|today)",
+                      r"сегодня какое число", r"what(s| is) (the )?date( today)?", r"what day is (it|today)",
                       r"today'?s date"), h_date),
     Intent("ip", _p(r"(какой )?(у меня )?(мой )?(локальный )?(ip|айпи)( ?адрес)?( у меня)?",
-                    r"(what('s| is) )?my (local )?ip( address)?", r"ip address"), h_ip),
+                    r"(what(s| is) )?my (local )?ip( address)?", r"ip address"), h_ip),
     Intent("open_folder", _p(r"(открой|покажи) (мне )?(папку )?(?P<folder>загрузки|документы|изображения|картинки|"
                              r"музыку|видео|рабочий стол|домашнюю папку|домашнюю|скриншоты)",
                              r"(open|show) (my )?(the )?(?P<folder>downloads|documents|pictures|music|videos|desktop|"
@@ -767,7 +770,8 @@ def match(text: str, osc: OsControl | None = None) -> FastMatch | None:
 
 def run(m: FastMatch, ctx: FastCtx) -> FastResult:
     result = m.intent.handler(ctx, m.args)
-    result.text = style_fast(ctx.persona, ctx.lang, result.text, result.ok)
+    if m.name not in ("help", "models"):  # long factual listings stay plain
+        result.text = style_fast(ctx.persona, ctx.lang, result.text, result.ok, ctx.humor, ctx.seed)
     return result
 
 

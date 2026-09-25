@@ -376,7 +376,7 @@ def apply_theme(ctx: Ctx, choice: str, *, force: bool = False, only: list[str] |
         write_json(tj_path, new)
 
     hooks = run_hooks(ctx, theme, results, mode_changed or force)
-    return {"theme": theme.id, "choice": choice, "reason": reason, "mode": theme.mode,
+    return {"theme": theme.id, "name": dict(theme.name), "choice": choice, "reason": reason, "mode": theme.mode,
             "themeJson": str(tj_path), "themeJsonChanged": tj_changed,
             "targets": [{"id": r.target.id, "path": str(r.target.path), "changed": r.changed,
                          "backup": str(r.backup) if r.backup else None, "skipped": r.skipped} for r in results],

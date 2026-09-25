@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "gaming"
+name = { en = "Gaming", ru = "Игры" }
+summary = { en = "Steam, GameMode, MangoHud, gamescope. Optional: Heroic, Lutris, LACT.", ru = "Steam, GameMode, MangoHud, gamescope. По желанию: Heroic, Lutris, LACT." }
+category = "media"
+profiles = []
+requires = []
+apt = ["gamemode", "mangohud", "gamescope"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 1.0
+vram_gb_min = 0
+aliases = ["games", "steam", "игры"]
+options.heroic = { en = "Heroic Games Launcher (Flathub, GPL-3.0)", ru = "Heroic Games Launcher (Flathub, GPL-3.0)", disk_gb = 0.5 }
+options.lutris = { en = "Lutris (Flathub, GPL-3.0)", ru = "Lutris (Flathub, GPL-3.0)", disk_gb = 0.5 }
+options.lact = { en = "LACT: fans, power, undervolt (Flathub, MIT)", ru = "LACT: вентиляторы, мощность, андервольт (Flathub, MIT)", disk_gb = 0.3 }
+license_note = { en = "The Steam client is proprietary: steam-installer downloads it from Valve on first start. Enables the i386 architecture.", ru = "Клиент Steam проприетарный: steam-installer скачивает его у Valve при первом запуске. Включает архитектуру i386." }

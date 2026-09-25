@@ -1,0 +1,18 @@
+Source: grub-btrfs
+Section: admin
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/Antynea/grub-btrfs
+Rules-Requires-Root: no
+
+Package: grub-btrfs
+Architecture: all
+Depends: ${misc:Depends}, bash, btrfs-progs, gawk, grub-common
+Recommends: inotify-tools
+Description: GRUB boot menu entries for btrfs snapshots
+ Adds a "snapshots" submenu to GRUB so any snapper snapshot of the root
+ subvolume can be booted. grub-btrfsd regenerates the menu when snapshots
+ are created or deleted. In SOS this is "yesterday's system is one entry in
+ the boot menu".

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — model store (/srv/ai)</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  .store .content { display: grid; grid-template-columns: 224px 1fr; }
+  .side { background: var(--bar-bg); border-right: 1px solid var(--line); padding: 12px 10px; display: flex; flex-direction: column; }
+  .side .caps { padding: 10px 10px 8px; }
+  .side .it { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border-radius: 7px; font: 400 13px/1 "Plex Sans"; color: var(--text-dim); }
+  .side .it svg.i { width: 15px; height: 15px; color: var(--text-faint); stroke-width: 1.6; }
+  .side .it small { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .side .it.on { background: var(--surface-3); color: var(--text); }
+  .side .it.on svg.i { color: var(--accent); }
+  .disk { margin: auto 4px 4px; padding: 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+  .disk .v { font: 500 15px/1 "Plex Mono"; color: var(--text); }
+  .disk .v small { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); margin-left: 4px; }
+  .disk .meter { width: 100%; height: 5px; margin: 11px 0 12px; border-radius: 3px; }
+  .disk .meter i { border-radius: 3px; }
+  .disk .save { display: flex; align-items: center; gap: 7px; font: 500 12px/16px "Plex Sans"; color: var(--ok); }
+  .disk .save svg.i { width: 14px; height: 14px; stroke-width: 1.8; }
+  .disk p { margin-top: 4px; font: 400 11px/16px "Plex Mono"; color: var(--text-faint); }
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .tools { display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .tools .field { flex: 1; height: 34px; font-size: 13px; }
+  .tools .field svg.i { width: 15px; height: 15px; color: var(--text-faint); }
+  .tools .field .src { margin-left: auto; }
+  .tools .segm { width: 272px; }
+  .tools .segm span { height: 26px; font-size: 12.5px; }
+  .tools .segm small { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+
+  .banner { display: flex; align-items: center; gap: 12px; margin: 14px 18px 4px; padding: 11px 14px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 9%, transparent); font: 400 12.5px/18px "Plex Sans"; color: var(--text-dim); }
+  .banner b { color: var(--text); font-weight: 500; }
+  .banner svg.i { width: 16px; height: 16px; color: var(--ok); flex: none; }
+  .banner .lnk { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; }
+
+  .tbl { padding: 6px 10px 0; }
+  .th, .tr { display: grid; grid-template-columns: 1fr 104px 72px 188px 170px 118px; align-items: center; gap: 16px; padding: 0 10px; }
+  .th { height: 32px; font: 500 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+  .th .r, .tr .sz { text-align: right; }
+  .tr { height: 50px; border-top: 1px solid var(--line); }
+  .tr .nm { font: 500 13px/17px "Plex Sans"; color: var(--text); white-space: nowrap; }
+  .tr .nm small { display: block; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .tr .nm .share { color: var(--ok); }
+  .tr .sz { font: 400 12px/1 "Plex Mono"; color: var(--text-dim); }
+  .tr .fitc { display: flex; align-items: center; gap: 10px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .tr .fitc .vram { flex: 1; }
+  .tr .fitc .vram i.warn { background: var(--warn); }
+  .tr .fitc .val { width: 40px; text-align: right; }
+  .tr .who { font: 400 11px/15px "Plex Mono"; color: var(--text-dim); white-space: nowrap; }
+  .tr .who small { display: block; color: var(--text-faint); }
+  .tr .who .live { color: var(--accent); }
+  .tr.sel { background: var(--hover); }
+  .tr .tag svg.i { width: 11px; height: 11px; stroke-width: 2; }
+
+  .sect { display: flex; align-items: center; gap: 10px; height: 44px; margin-top: 10px; padding: 0 10px; border-top: 1px solid var(--line); }
+  .sect .caps { color: var(--text-faint); }
+  .sect .meta { margin-left: auto; }
+  .tr.sug .nm { font-weight: 400; color: var(--text-dim); }
+  .tr.sug .btn.sm { justify-self: start; }
+  .tr .blocked { font: 400 11px/15px "Plex Mono"; color: var(--bad); }
+  .tr .blocked small { display: block; color: var(--text-faint); }
+  .foot { margin-top: auto; height: 40px; display: flex; align-items: center; gap: 16px; padding: 0 18px; border-top: 1px solid var(--line); font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .foot b { font-weight: 400; color: var(--text-dim); }
+  .foot .sp { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+    <div class="colophon"><b>SOS</b> 26.10 · первый сигнал</div>
+  </div>
+
+  <header class="bar"></header>
+
+  <section class="window active store" style="left:96px; top:56px; width:1248px; height:788px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="box"></svg><b>Модели</b>/srv/ai · общее хранилище</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content">
+      <aside class="side">
+        <div class="caps">Установлено</div>
+        <div class="it on"><svg data-i="layers"></svg>Все<small>9</small></div>
+        <div class="it"><svg data-i="text"></svg>Языковые<small>2</small></div>
+        <div class="it"><svg data-i="image"></svg>Изображения<small>1</small></div>
+        <div class="it"><svg data-i="video"></svg>Видео<small>2</small></div>
+        <div class="it"><svg data-i="wave"></svg>Голос<small>3</small></div>
+        <div class="it"><svg data-i="hash"></svg>Эмбеддинги<small>1</small></div>
+        <div class="caps" style="margin-top:8px">Инструменты</div>
+        <div class="it"><svg data-i="workflow"></svg>ComfyUI<small>5</small></div>
+        <div class="it"><svg data-i="terminal"></svg>llama.cpp<small>2</small></div>
+        <div class="it"><svg data-i="flask"></svg>ML-лаборатория<small>1</small></div>
+        <div class="disk">
+          <div class="v">412 ГБ<small>из 1,8 ТБ</small></div>
+          <div class="meter acc"><i style="width:22.4%"></i></div>
+          <div class="save"><svg data-i="layers"></svg>общие файлы сэкономили 38 ГБ</div>
+          <p>один файл — для всех программ</p>
+        </div>
+      </aside>
+
+      <div class="main">
+        <div class="tools">
+          <div class="field"><svg data-i="search"></svg><span class="ph">Искать на Hugging Face: модель, автор, задача…</span><span class="src tag line">HF</span></div>
+          <div class="segm"><span class="on">Установленные <small>9</small></span><span>Hugging Face</span></div>
+        </div>
+
+        <div class="banner"><svg data-i="layers"></svg><span><b>Общие файлы сэкономили 38 ГБ.</b> Wan 2.2 5B и 14B берут один текстовый энкодер, три модели — общий VAE.</span><span class="lnk">подробнее ›</span></div>
+
+        <div class="tbl">
+          <div class="th"><span>Модель</span><span>Тип</span><span class="r">Размер</span><span>Видеопамять · 24 ГБ</span><span>Лицензия</span><span>Кто использует</span></div>
+          <div class="tr sel">
+            <span class="nm">Qwen3.5 14B<small>Qwen · Q5_K_M · GGUF</small></span>
+            <span><span class="tag">текст</span></span>
+            <span class="sz">10,2 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:42.5%"></i><span class="cap"></span></div><span class="val">10,2</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>Apache-2.0</span></span>
+            <span class="who"><span class="live">● Джексон</span><small>сейчас</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">Wan 2.2 TI2V 5B<small>Wan-AI · bf16 · <span class="share">общий энкодер −6,1 ГБ</span></small></span>
+            <span><span class="tag">видео</span></span>
+            <span class="sz">11,4 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:47.5%"></i><span class="cap"></span></div><span class="val">11,4</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>Apache-2.0</span></span>
+            <span class="who">ComfyUI<small>вчера, 23:14</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">Wan 2.2 I2V 14B<small>Wan-AI · fp8 · <span class="share">общий энкодер и VAE</span></small></span>
+            <span><span class="tag">видео</span></span>
+            <span class="sz">16,8 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:70%"></i><span class="cap"></span></div><span class="val">16,8</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>Apache-2.0</span></span>
+            <span class="who">ComfyUI<small>22 сен</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">FLUX.1 [dev]<small>Black Forest Labs · fp8</small></span>
+            <span><span class="tag">картинки</span></span>
+            <span class="sz">17,2 ГБ</span>
+            <span class="fitc"><div class="vram"><i class="warn" style="width:92%"></i><span class="cap"></span></div><span class="val">22,1</span></span>
+            <span><span class="tag warn">некоммерческая</span></span>
+            <span class="who">ComfyUI<small>19 сен</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">qwen3-tts-0.6b<small>Qwen · + LoRA r16 (твоя)</small></span>
+            <span><span class="tag">голос</span></span>
+            <span class="sz">1,2 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:5%"></i><span class="cap"></span></div><span class="val">1,2</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>Apache-2.0</span></span>
+            <span class="who"><span class="live">● обучение 62%</span><small>ML-лаборатория</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">whisper-large-v3-turbo<small>OpenAI · fp16</small></span>
+            <span><span class="tag">голос</span></span>
+            <span class="sz">1,6 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:7%"></i><span class="cap"></span></div><span class="val">1,6</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>MIT</span></span>
+            <span class="who">Джексон<small>голос · 18:40</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">F5-TTS<small>SWivid · v1 base</small></span>
+            <span><span class="tag">голос</span></span>
+            <span class="sz">1,4 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:6%"></i><span class="cap"></span></div><span class="val">1,4</span></span>
+            <span><span class="tag warn">CC BY-NC</span></span>
+            <span class="who">Студия<small>18 сен</small></span>
+          </div>
+          <div class="tr">
+            <span class="nm">bge-m3<small>BAAI · эмбеддинги памяти</small></span>
+            <span><span class="tag">векторы</span></span>
+            <span class="sz">2,2 ГБ</span>
+            <span class="fitc"><div class="vram"><i style="width:9%"></i><span class="cap"></span></div><span class="val">2,2</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>MIT</span></span>
+            <span class="who">Джексон<small>память · сегодня</small></span>
+          </div>
+          <div class="sect"><span class="caps">Можно поставить</span><span class="meta">с Hugging Face · подобрано под RTX 4090</span></div>
+          <div class="tr sug">
+            <span class="nm">Qwen3.5 32B<small>Qwen · Q4_K_M · GGUF</small></span>
+            <span><span class="tag">текст</span></span>
+            <span class="sz">19,8 ГБ</span>
+            <span class="fitc"><div class="vram"><i class="warn" style="width:82.5%"></i><span class="cap"></span></div><span class="val">19,8</span></span>
+            <span><span class="tag ok"><svg data-i="check"></svg>Apache-2.0</span></span>
+            <button class="btn sm"><svg data-i="download"></svg>Установить</button>
+          </div>
+          <div class="tr sug">
+            <span class="nm">HunyuanVideo 1.5<small>Tencent · fp8</small></span>
+            <span><span class="tag">видео</span></span>
+            <span class="sz">15,6 ГБ</span>
+            <span class="fitc"><div class="vram empty"></div><span class="val">—</span></span>
+            <span><span class="tag bad">не для ЕС</span></span>
+            <span class="blocked">недоступна<small>лицензия исключает ЕС</small></span>
+          </div>
+        </div>
+
+        <div class="foot"><span>9 моделей · <b>412 ГБ</b></span><span>HF_HOME=<b>/srv/ai</b></span><span>лицензии проверены для ЕС</span><span class="sp"><b>sos models</b> — то же в терминале</span></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+  SOS.init({ bar: { title: ['Модели', '/srv/ai'], jackson: 'idle' } });
+</script>
+</body>
+</html>

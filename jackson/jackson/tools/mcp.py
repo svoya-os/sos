@@ -41,7 +41,7 @@ from .base import Assessment, Tool, ToolContext, ToolRegistry, ToolResult
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 MODERN_ERRORS = {-32020, -32021, -32022}
-CLIENT_INFO = {"name": "jackson", "title": "Jackson (Svoya OS)", "version": __version__}
+CLIENT_INFO = {"name": "jackson", "title": "Jackson (SOS)", "version": __version__}
 
 POISON_RE = re.compile(
     r"(<\s*/?\s*(important|instructions?|system)\s*>|ignore (all |any |the )?(previous|prior|above) instructions"
@@ -108,29 +108,35 @@ class StdioClient:
 
     def _reader(self) -> None:
         assert self.proc is not None and self.proc.stdout is not None
-        for raw in self.proc.stdout:
-            try:
-                msg = json.loads(raw)
-            except ValueError:
-                continue  # stdout must only carry MCP messages; ignore garbage
-            if not isinstance(msg, dict):
-                continue
-            if "id" in msg and ("result" in msg or "error" in msg) and "method" not in msg:
-                with self._lock:
-                    waiter = self._pending.pop(msg["id"], None)
-                if waiter is not None:
-                    waiter[1].append(msg)
-                    waiter[0].set()
-            elif "method" in msg and "id" in msg:
-                self._answer_server_request(msg)
-            elif msg.get("method") == "notifications/tools/list_changed":
-                self.tools_changed = True
-        self._dead = "the server closed its output"
+        try:
+            for raw in self.proc.stdout:
+                self._on_line(raw)
+        except (ValueError, OSError):
+            pass  # the pipe was closed by close()
+        self._dead = self._dead or "the server closed its output"
         with self._lock:
             pending, self._pending = self._pending, {}
         for event, box in pending.values():
             box.append({"error": {"code": -32000, "message": self._dead}})
             event.set()
+
+    def _on_line(self, raw: bytes) -> None:
+        try:
+            msg = json.loads(raw)
+        except ValueError:
+            return  # stdout must only carry MCP messages; ignore garbage
+        if not isinstance(msg, dict):
+            return
+        if "id" in msg and ("result" in msg or "error" in msg) and "method" not in msg:
+            with self._lock:
+                waiter = self._pending.pop(msg["id"], None)
+            if waiter is not None:
+                waiter[1].append(msg)
+                waiter[0].set()
+        elif "method" in msg and "id" in msg:
+            self._answer_server_request(msg)
+        elif msg.get("method") == "notifications/tools/list_changed":
+            self.tools_changed = True
 
     def _answer_server_request(self, msg: dict[str, Any]) -> None:
         # Only legacy servers send requests; answer the harmless ones.
@@ -285,6 +291,11 @@ class StdioClient:
                 proc.kill()
                 proc.wait(timeout=2.0)
         self._dead = self._dead or "closed"
+        try:
+            if proc.stdout:
+                proc.stdout.close()
+        except OSError:
+            pass
 
 
 # ---------------------------------------------------------------------------

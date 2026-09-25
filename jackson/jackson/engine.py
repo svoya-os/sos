@@ -22,7 +22,7 @@ from . import fastpath
 from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
-from .persona import system_prompt
+from .persona import mood_for, system_prompt
 from .providers import (CancelToken, Cancelled, ChatRequest, End, Provider, ProviderError, TextDelta, ToolCall,
                         Usage, cost_eur)
 from .router import Candidate, RouteDecision, RouteError
@@ -145,7 +145,10 @@ class Engine:
         if turn.state == state and not extra:
             return
         turn.state = state
-        await self._emit(turn, {"type": "state", "state": state, **extra})
+        # persona/avatar/mood let the shell animate the mascot (additive fields).
+        await self._emit(turn, {"type": "state", "state": state, "persona": self.config.persona,
+                                "avatar": self.config.avatar, "mood": mood_for(state, extra.get("detail")),
+                                **extra})
 
     # ------------------------------------------------------------------
     async def run_turn(self, turn: Turn) -> None:
@@ -188,7 +191,9 @@ class Engine:
         turn.finished = True
         if turn.cost > 0 or turn.left_to:
             self.app.spend.add(turn.cost, bool(turn.left_to))
-        await self._emit(turn, {"type": "error", "message": message, "retryable": bool(retryable)})
+        await self._emit(turn, {"type": "error", "message": message, "retryable": bool(retryable),
+                                "costEur": round(turn.cost, 6), "leftMachine": bool(turn.left_to)})
+        await self._state(turn, "idle", detail="error")
 
     async def _done(self, turn: Turn, cancelled: bool = False, route_model: str | None = None) -> None:
         if turn.finished:
@@ -237,8 +242,8 @@ class Engine:
                 return f"Политика: {rc.policy} · маршрут: {rc.default}" + (" · офлайн" if rc.offline else "")
             return f"Policy: {rc.policy} · route: {rc.default}" + (" · offline" if rc.offline else "")
 
-        return fastpath.FastCtx(self.app.osc, lang, self.config.persona, undo_last=undo_last,
-                                new_chat=turn.session.reset, set_policy=set_policy,
+        return fastpath.FastCtx(self.app.osc, lang, self.config.persona, humor=self.config.humor, seed=turn.id,
+                                undo_last=undo_last, new_chat=turn.session.reset, set_policy=set_policy,
                                 models=self.app.router.model_table, route_info=route_info)
 
     async def _fastpath(self, turn: Turn) -> bool:
@@ -351,7 +356,8 @@ class Engine:
             tools = app.registry.tools()
             system = system_prompt(lang=lang, persona=self.config.persona, address=self.config.address,
                                    route=self._route_text(chosen, lang), cwd=cwd_text, memory=memory_block,
-                                   skills=skills_block, taint=session.taint.label() if session.taint else "")
+                                   skills=skills_block, taint=session.taint.label() if session.taint else "",
+                                   humor=self.config.humor)
             provider = app.providers[chosen.provider]
             app.key_check(chosen.provider)
             req = ChatRequest(model=chosen.model, system=system, messages=messages, tools=[t_.spec() for t_ in tools])
@@ -529,8 +535,9 @@ class Engine:
                 if tier >= 4:
                     turn.task_grants.add((tool.name, a.scope))
 
-            if tier >= 1 and ("write" in tool.effects or tier >= 3) and not turn.snapshot_taken \
-                    and self.config.snapshots.enabled:
+            own_files = tool.name.startswith(("memory.", "notes."))  # reversible by their own records
+            if tier >= 1 and ("write" in tool.effects or tier >= 3) and not own_files \
+                    and not turn.snapshot_taken and self.config.snapshots.enabled:
                 turn.snapshot_taken = True
                 snap = await asyncio.to_thread(app.svoya.snapshot, f"jackson {turn.id}: {tool.name}")
                 if snap is not None:
@@ -696,7 +703,6 @@ class Engine:
             "spentTodayEur": round(today["eur"], 6),
             "leftMachineToday": today["left"],
             "pendingApprovals": self.pending_approvals(),
-            "persona": self.config.persona,
             "language": self.config.language,
             "sandbox": app.sandbox.available(),
             "svoya": app.svoya.available(),

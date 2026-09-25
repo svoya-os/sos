@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/svoya-installer
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+
+override_dh_fixperms:
+	dh_fixperms
+	find $(PKG)/usr/lib/svoya/installer -type f ! -name 'lib.sh' -exec chmod 0755 {} +
+	chmod 0644 $(PKG)/usr/lib/svoya/installer/lib.sh
+	chmod 0755 $(PKG)/usr/bin/sos-install

@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# sos-studio — ComfyUI in a sandbox (SOS module studio).  SPDX-License-Identifier: Apache-2.0
+#   sos-studio start | stop | build | status | snapshot | node-add <git-url>
+# Sandbox: rootless podman, no capabilities, models read-only, network port only on 127.0.0.1.
+set -euo pipefail
+DATA=${XDG_DATA_HOME:-$HOME/.local/share}/svoya/studio
+SNAPS=$DATA.snapshots
+IMAGE=localhost/sos-studio:latest
+RECIPE=/usr/lib/svoya/studio
+
+backend() {
+  if [[ -n "${UV_TORCH_BACKEND:-}" ]]; then echo "$UV_TORCH_BACKEND"; return; fi
+  sos doctor --gpu --json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("torchBackend") or "cpu")' 2>/dev/null || echo cpu
+}
+gpu_args() {
+  if [[ -e /dev/nvidiactl ]]; then echo "--device nvidia.com/gpu=all"
+  elif [[ -e /dev/kfd ]]; then echo "--device /dev/kfd --device /dev/dri --group-add keep-groups"
+  fi
+}
+snapshot() {
+  mkdir -p "$SNAPS"
+  local stamp; stamp=$(date +%Y%m%d-%H%M%S)
+  if btrfs subvolume show "$DATA" >/dev/null 2>&1; then
+    btrfs subvolume snapshot -r "$DATA" "$SNAPS/$stamp" >/dev/null
+  else
+    tar -C "$DATA" -czf "$SNAPS/$stamp.tar.gz" custom_nodes user
+  fi
+  echo "› snapshot $SNAPS/$stamp"
+}
+
+cmd=${1:-start}
+case "$cmd" in
+  build)
+    podman build --build-arg TORCH_BACKEND="$(backend)" -t "$IMAGE" -f "$RECIPE/Containerfile" "$RECIPE" ;;
+  start)
+    podman image exists "$IMAGE" || "$0" build
+    mkdir -p "$DATA"/{custom_nodes,user,output,input}
+    # shellcheck disable=SC2046
+    exec podman run --rm --name sos-studio $(gpu_args) -p 127.0.0.1:8188:8188 \
+      --security-opt=no-new-privileges --cap-drop=ALL \
+      -v /srv/ai:/srv/ai:ro -v "$DATA":/data:Z -v "$DATA/custom_nodes":/opt/ComfyUI/custom_nodes:Z "$IMAGE" ;;
+  stop) podman stop sos-studio ;;
+  status) podman ps --filter name=sos-studio ;;
+  snapshot) snapshot ;;
+  node-add)
+    url=${2:?usage: sos-studio node-add <git-url>}
+    snapshot
+    name=$(basename "$url" .git)
+    git -C "$DATA/custom_nodes" clone --depth 1 "$url"
+    req="$DATA/custom_nodes/$name/requirements.txt"
+    if [[ -f "$req" ]]; then
+      echo "› requirements of $name:"; sed 's/^/    /' "$req"
+      if uv audit --help >/dev/null 2>&1; then
+        if ! uv audit -r "$req"; then
+          mv "$DATA/custom_nodes/$name" "$DATA/custom_nodes/$name.disabled"
+          echo "× uv audit found known vulnerabilities — node disabled (see above)"; exit 1
+        fi
+      else
+        echo "! uv audit is not available: review the requirements yourself"
+      fi
+    fi
+    echo "› restart the studio to load $name (undo: restore the snapshot above)" ;;
+  *) echo "usage: sos-studio start|stop|build|status|snapshot|node-add <git-url>" >&2; exit 2 ;;
+esac

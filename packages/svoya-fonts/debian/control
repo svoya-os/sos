@@ -1,0 +1,18 @@
+Source: svoya-fonts
+Section: fonts
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/sos
+Rules-Requires-Root: no
+
+Package: svoya-fonts
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}, fontconfig
+Description: SOS typefaces: IBM Plex Sans, IBM Plex Mono, Departure Mono
+ IBM Plex Sans (reading), IBM Plex Mono (system facts) and Departure Mono
+ (pixel labels, boot screens), with a fontconfig rule that makes Plex the
+ default sans-serif and monospace families. Fonts are licensed under the
+ SIL Open Font License 1.1.

@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import urllib.parse
-from pathlib import Path
 from typing import Any
 
 from ..i18n import fmt_bytes, fmt_number, norm_lang
@@ -149,7 +148,7 @@ def apply_theme(ctx: ToolContext, theme: str) -> ToolResult:
     prev = ctx.svoya.theme_current()
     ok, out = ctx.svoya.theme_apply(theme)
     if not ok:
-        return ToolResult(False, f"svoya theme apply failed: {out}",
+        return ToolResult(False, f"sos theme apply failed: {out}",
                           (f"тема не сменилась: {out}" if ru else f"theme not changed: {out}"))
     now = ctx.svoya.theme_current()
     verified = now is not None and (now == theme or theme == "auto")
@@ -175,7 +174,7 @@ def tools() -> list[Tool]:
         Tool("notify", "Show a desktop notification.",
              obj({"title": {"type": "string"}, "body": {"type": "string"}}, ["title"]),
              notify, T0, frozenset({"read"}), None, {"ru": "уведомление", "en": "notification"}),
-        Tool("settings.theme", "Switch the Svoya theme: graphite (dark), paper (light), phosphor, auto.",
+        Tool("settings.theme", "Switch the SOS theme: graphite (dark), paper (light), phosphor, auto.",
              obj({"theme": {"type": "string", "enum": sorted(THEMES | {"dark", "light"})}}, ["theme"]),
              settings_theme, T1, frozenset({"write"}), _assess_theme, {"ru": "тема", "en": "theme"}),
     ]

@@ -4,7 +4,7 @@
 Every setter is paired with a getter so callers can verify the effect before claiming success.
 Backends: PipeWire (`wpctl`, fallback `pactl`), `brightnessctl`, NetworkManager (`nmcli`),
 `bluetoothctl`, logind (`loginctl`), `grim`, `systemd-run --user`, `notify-send`,
-`gtk-launch`/`gio launch`, `svoya status --json` / `nvidia-smi` / sysfs / procfs.
+`gtk-launch`/`gio launch`, `sos status --json` / `nvidia-smi` / sysfs / procfs.
 """
 
 from __future__ import annotations

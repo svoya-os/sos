@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+# Jackson, the SOS assistant — per-user background service.
+# Started explicitly by `sos session-start` (ARCHITECTURE §5): AI never starts by itself,
+# so this unit has no [Install] section and is not enabled by default.
+[Unit]
+Description=Jackson, the SOS assistant
+Documentation=file:///usr/share/doc/svoya-jackson/README.md
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/lib/svoya/jacksond
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=10
+Environment=PYTHONUNBUFFERED=1
+UMask=0077
+# Light hardening that keeps polkit (pkexec) usable for approved T3 actions.
+LockPersonality=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+MemoryHigh=768M

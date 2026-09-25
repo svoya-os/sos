@@ -1,0 +1,9 @@
+#compdef sos svoya
+# zsh completion for sos / svoya (SOS «СОС»).  SPDX-License-Identifier: Apache-2.0
+# Installed as /usr/share/zsh/vendor-completions/_sos.
+_sos() {
+  local -a cands
+  cands=("${(@f)$(sos __complete "${(@)words[2,CURRENT]}" 2>/dev/null)}")
+  compadd -Q -- "${cands[@]}"
+}
+_sos "$@"

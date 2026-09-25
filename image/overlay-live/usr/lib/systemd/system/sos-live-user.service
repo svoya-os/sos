@@ -1,0 +1,14 @@
+# SOS live image: make sure the live user can use the model store (/srv/ai, group "ai") and the GPU,
+# whatever groups casper gave it. Live image only; never copied to installed systems.
+[Unit]
+Description=SOS live session user groups
+ConditionKernelCommandLine=boot=casper
+After=systemd-user-sessions.service systemd-sysusers.service
+Before=greetd.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/svoya/live-user-groups
+
+[Install]
+WantedBy=multi-user.target

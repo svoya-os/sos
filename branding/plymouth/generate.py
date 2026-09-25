@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Svoya OS Plymouth theme «svoya-signal»: sprites, geometry block, preview frames.
+"""SOS Plymouth theme «svoya-signal» (theme id stays in the technical `svoya` namespace): sprites, geometry block, preview frames.
 
     python3 branding/plymouth/generate.py            # sprites + script geometry + preview frames
     python3 branding/plymouth/generate.py --no-frames
@@ -10,7 +10,8 @@
 * preview      branding/plymouth/preview.html (JS simulation of the script with the same sprites)
                → branding/plymouth/frames/*.png and branding/out/plymouth-frames.png
 
-SPDX-License-Identifier: Apache-2.0 (code) · sprites CC BY-SA 4.0
+SPDX-License-Identifier: Apache-2.0
+The sprites it produces are licensed CC BY-SA 4.0.
 """
 from __future__ import annotations
 
@@ -19,6 +20,7 @@ import math
 import pathlib
 import re
 import sys
+import urllib.parse
 
 import numpy as np
 from PIL import Image
@@ -83,7 +85,7 @@ GEOMETRY = {
 BG_TOP, BG_BOTTOM = (15, 16, 18), (11, 12, 14)   # the wallpaper's linear gradient (#0f1012 → #0b0c0e)
 
 CAPTIONS = {   # name: (ru, en, color)
-    "boot": ("СВОЯ ОПЕРАЦИОННАЯ СИСТЕМА", "YOUR OWN OPERATING SYSTEM", FAINT),
+    "boot": ("СВОЯ ОПЕРАЦИОННАЯ СИСТЕМА", "SVOYA OPERATING SYSTEM", FAINT),
     "shutdown": ("ВЫКЛЮЧЕНИЕ", "POWERING OFF", DIM),
     "reboot": ("ПЕРЕЗАГРУЗКА", "RESTARTING", DIM),
     "updates": ("УСТАНОВКА ОБНОВЛЕНИЙ", "INSTALLING UPDATES", DIM),
@@ -280,8 +282,8 @@ def render_vectors(r: brand.Renderer):
     dash_i = next(i for i, k in enumerate(KEY_ON) if k[3] == 3)
     jobs["flare-dot.png"] = burst_svg(dot_i)
     jobs["flare-dash.png"] = burst_svg(dash_i)
-    jobs["wordmark-ru.png"] = text_svg("СОС", "sans", 600, 22, TEXT, 0.2)
-    jobs["wordmark-en.png"] = text_svg("Svoya OS", "sans", 600, 20, TEXT, 0.0)
+    jobs["wordmark-ru.png"] = text_svg(brand.NAME_RU, "sans", 600, 22, TEXT, 0.2)
+    jobs["wordmark-en.png"] = text_svg(brand.NAME, "sans", 600, 22, TEXT, 0.2)
     for name, (ru, en, col) in CAPTIONS.items():
         jobs[f"caption-{name}-ru.png"] = text_svg(ru, "mono", 400, 10.5, col, 0.16)
         jobs[f"caption-{name}-en.png"] = text_svg(en, "mono", 400, 10.5, col, 0.16)
@@ -293,8 +295,8 @@ def render_vectors(r: brand.Renderer):
 
 def write_plymouth_file() -> pathlib.Path:
     text = """[Plymouth Theme]
-Name=Svoya Signal
-Description=Svoya OS boot splash: a phosphor spot warms up into a line that carries the Morse «СОС».
+Name=SOS Signal
+Description=SOS boot splash: a phosphor spot warms up into a line that carries the Morse «СОС».
 ModuleName=script
 
 [script]
@@ -332,7 +334,7 @@ def render_frames(r: brand.Renderer) -> list[pathlib.Path]:
     out = []
     for name, caption, state in FRAMES:
         page = r.page(1920, 1080, 1)
-        q = json.dumps(state, ensure_ascii=False)
+        q = urllib.parse.quote(json.dumps(state, ensure_ascii=False))
         page.goto((HERE / "preview.html").as_uri() + "#" + q)
         page.wait_for_function("window.__ready === true", timeout=20000)
         target = FRAMES_DIR / f"frame-{name}.png"

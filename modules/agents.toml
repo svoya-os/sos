@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "agents"
+name = { en = "Agents & sandboxes", ru = "Агенты и песочницы" }
+summary = { en = "Rootless containers, bubblewrap and Node.js for MCP servers — the ground Jackson uses to run coding agents in sandboxes.", ru = "Контейнеры без root, bubblewrap и Node.js для MCP-серверов — основа, на которой Джексон запускает агентов в песочницах." }
+category = "agents"
+profiles = ["agent", "hacker"]
+requires = ["base-ai"]
+apt = ["podman", "bubblewrap", "passt", "uidmap", "nodejs", "npm"]
+flatpak = []
+scripts = {}
+disk_gb = 1.2
+vram_gb_min = 0
+aliases = ["agent", "sandbox", "агенты"]
+license_note = { en = "Agent CLIs (Claude Code, Codex, OpenCode, goose) are separate downloads under their own terms; SOS bundles none of them.", ru = "CLI агентов (Claude Code, Codex, OpenCode, goose) скачиваются отдельно на своих условиях; SOS ничего из них не включает." }

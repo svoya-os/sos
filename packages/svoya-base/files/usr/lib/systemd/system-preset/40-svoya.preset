@@ -1,0 +1,15 @@
+# SOS service defaults (svoya-base). Applied explicitly by image/hooks/80-services.sh.
+enable greetd.service
+enable NetworkManager.service
+enable bluetooth.service
+enable power-profiles-daemon.service
+enable fstrim.timer
+enable snapper-timeline.timer
+enable snapper-cleanup.timer
+enable grub-btrfsd.service
+# No network call without the user asking for it (ARCHITECTURE §7).
+disable fwupd-refresh.timer
+disable motd-news.timer
+disable ssh.service
+disable ssh.socket
+disable cups-browsed.service

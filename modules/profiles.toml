@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: Apache-2.0
+# First-run profiles → module sets, layout preset and Jackson's default route.
+# "@gpu" resolves to the driver module for this machine: nvidia (NVIDIA) · rocm (AMD) · nothing.
+# layout: clean (floating, mouse-first) | classic (taskbar) | hacker (tiling)
+# jackson_route: local | auto (local first, cloud when you allow it) | cloud
+
+[profiles.newcomer]
+name = { en = "Newcomer", ru = "Новичок" }
+summary = { en = "A calm desktop, a local assistant that works offline, video that just plays.", ru = "Спокойный рабочий стол, локальный помощник без интернета, видео, которое просто играет." }
+modules = ["base-ai", "@gpu", "llm-local", "codecs"]
+layout = "clean"
+jackson_route = "auto"
+
+[profiles.creator]
+name = { en = "Creator", ru = "Автор" }
+summary = { en = "Images, video and voice on your own GPU.", ru = "Картинки, видео и голос на своей видеокарте." }
+modules = ["base-ai", "@gpu", "llm-local", "studio", "voice", "codecs"]
+layout = "clean"
+jackson_route = "local"
+
+[profiles.ml]
+name = { en = "ML Engineer", ru = "ML-инженер" }
+summary = { en = "Notebooks, tracking, reproducible projects, cloud GPUs when needed.", ru = "Ноутбуки, трекинг, воспроизводимые проекты, облачные ГП при необходимости." }
+modules = ["base-ai", "@gpu", "llm-local", "ml-lab", "dev", "cloud-burst"]
+layout = "classic"
+jackson_route = "auto"
+
+[profiles.agent]
+name = { en = "Agent Builder", ru = "Строитель агентов" }
+summary = { en = "Sandboxes, MCP servers and local models for agents.", ru = "Песочницы, MCP-серверы и локальные модели для агентов." }
+modules = ["base-ai", "@gpu", "llm-local", "agents", "dev"]
+layout = "classic"
+jackson_route = "auto"
+
+[profiles.hacker]
+name = { en = "Hacker", ru = "Хакер" }
+summary = { en = "Tiling, terminals, everything local.", ru = "Тайлинг, терминалы, всё локально." }
+modules = ["base-ai", "@gpu", "llm-local", "dev", "agents"]
+layout = "hacker"
+jackson_route = "local"
+
+[modifiers.offline]
+name = { en = "Offline only", ru = "Только офлайн" }
+summary = { en = "Nothing that needs the internet to work; Jackson answers locally only.", ru = "Ничего, что требует интернета; Джексон отвечает только локально." }
+remove_modules = ["cloud-burst"]
+add_modules = []
+jackson_route = "local"

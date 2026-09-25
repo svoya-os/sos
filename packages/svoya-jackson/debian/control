@@ -1,0 +1,21 @@
+Source: svoya-jackson
+Section: utils
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), dh-python, python3:any
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/sos
+Rules-Requires-Root: no
+
+Package: svoya-jackson
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3 (>= 3.12)
+Recommends: libsecret-tools, git
+Description: Jackson, the SOS assistant
+ Jackson routes requests to local or cloud models, runs tools and agents in
+ sandboxes, asks before anything risky with an exact preview, keeps a
+ tamper-evident log and undoes its own actions through snapshots.
+ .
+ This package ships the "jackson" command (short: "j") and the
+ jacksond.service user unit. Nothing starts by itself: the SOS session
+ starts Jackson only when AI features are enabled.

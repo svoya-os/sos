@@ -1,8 +1,8 @@
 /*
- * Svoya OS — shared runtime for the screen mockups.
+ * SOS — shared runtime for the screen mockups.
  *
  * Load it in <head> (it sets data-theme from ?theme= before first paint), then call
- * Svoya.init({...}) at the end of <body>. It draws what every screen shares with the approved
+ * SOS.init({...}) at the end of <body>. It draws what every screen shares with the approved
  * desktop mockup: the top bar, the wallpaper signal, the Morse mark, Jackson's scope in all its
  * states, and the line-icon set (Lucide geometry, ISC — redrawn on the 24px grid, round caps).
  * Rendering is deterministic: no randomness, no clock, so PNGs are reproducible.
@@ -12,7 +12,7 @@
   document.documentElement.dataset.theme = q.get('theme') || 'graphite';
 })();
 
-window.Svoya = (() => {
+window.SOS = (() => {
   const NS = 'http://www.w3.org/2000/svg';
   const MORSE = ['...', '---', '...']; // С О С — identical in Russian and international Morse
   const q = new URLSearchParams(location.search);
@@ -116,6 +116,8 @@ window.Svoya = (() => {
     external: '<path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 14v4.2a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 18.2V7.8A1.8 1.8 0 0 1 5.8 6H10"/>',
     stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
     wand: '<path d="m4 20 11-11M14 4v2.5M19.5 9.5H17M17.9 6.1l-1.8 1.8"/>',
+    book: '<path d="M12 7.2v13"/><path d="M3.5 17.6V4.8A.8.8 0 0 1 4.3 4H8a4 4 0 0 1 4 4 4 4 0 0 1 4-4h3.7a.8.8 0 0 1 .8.8v12.8a.8.8 0 0 1-.8.8H15a3 3 0 0 0-3 3 3 3 0 0 0-3-3H4.3a.8.8 0 0 1-.8-.8z"/>',
+    memory: '<rect x="3" y="6.5" width="18" height="11" rx="1.8"/><path d="M7 10.5v3M10.3 10.5v3M13.7 10.5v3M17 10.5v3M6 17.5v2.3M18 17.5v2.3"/>',
   };
 
   function icons(root = document) {
@@ -296,7 +298,7 @@ window.Svoya = (() => {
 
   /* ─────────────── shared window bodies ─────────────── */
   function training(state = 'running') {
-    const head = `<span class="a">›</span> svoya run train.py
+    const head = `<span class="a">›</span> sos run train.py
 <span class="m">  среда    </span>torch 2.13 · CUDA 13.0 · RTX 4090 <span class="d">24 ГБ</span>
 <span class="m">  модель   </span>qwen3-tts-0.6b <span class="d">+</span> LoRA r16
 <span class="m">  данные   </span>ru-voice <span class="d">·</span> 48 213 примеров

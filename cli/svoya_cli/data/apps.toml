@@ -1,0 +1,181 @@
+# SPDX-License-Identifier: Apache-2.0
+# `sos install <name>` for desktop apps: short names → Flathub IDs (installed per user with
+# `flatpak install --user`, so no password is needed and `sos remove <name>` undoes it).
+# Modules win over apps with the same name (e.g. `obsidian` → module notes).
+# proprietary = true → SOS says so before installing.
+
+[app.telegram]
+id = "org.telegram.desktop"
+name = "Telegram"
+license = "GPL-3.0"
+aliases = ["телеграм", "телеграмм"]
+
+[app.vscodium]
+id = "com.vscodium.codium"
+name = "VSCodium"
+license = "MIT"
+aliases = ["codium", "vscode", "code"]
+
+[app.zed]
+id = "dev.zed.Zed"
+name = "Zed"
+license = "GPL-3.0 / Apache-2.0"
+aliases = []
+
+[app.blender]
+id = "org.blender.Blender"
+name = "Blender"
+license = "GPL-3.0"
+aliases = ["блендер"]
+
+[app.gimp]
+id = "org.gimp.GIMP"
+name = "GIMP"
+license = "GPL-3.0"
+aliases = ["гимп"]
+
+[app.krita]
+id = "org.kde.krita"
+name = "Krita"
+license = "GPL-3.0"
+aliases = ["крита"]
+
+[app.inkscape]
+id = "org.inkscape.Inkscape"
+name = "Inkscape"
+license = "GPL-3.0"
+aliases = ["инкскейп"]
+
+[app.obs]
+id = "com.obsproject.Studio"
+name = "OBS Studio"
+license = "GPL-2.0"
+aliases = ["obs-studio", "обс"]
+
+[app.kdenlive]
+id = "org.kde.kdenlive"
+name = "Kdenlive"
+license = "GPL-3.0"
+aliases = []
+
+[app.audacity]
+id = "org.audacityteam.Audacity"
+name = "Audacity"
+license = "GPL-3.0"
+aliases = []
+
+[app.darktable]
+id = "org.darktable.Darktable"
+name = "darktable"
+license = "GPL-3.0"
+aliases = []
+
+[app.handbrake]
+id = "fr.handbrake.ghb"
+name = "HandBrake"
+license = "GPL-2.0"
+aliases = []
+
+[app.firefox]
+id = "org.mozilla.firefox"
+name = "Firefox"
+license = "MPL-2.0"
+aliases = ["фаерфокс"]
+
+[app.chromium]
+id = "org.chromium.Chromium"
+name = "Chromium"
+license = "BSD-3-Clause"
+aliases = ["хромиум"]
+
+[app.thunderbird]
+id = "org.mozilla.Thunderbird"
+name = "Thunderbird"
+license = "MPL-2.0"
+aliases = []
+
+[app.libreoffice]
+id = "org.libreoffice.LibreOffice"
+name = "LibreOffice"
+license = "MPL-2.0"
+aliases = ["office", "либреофис", "офис"]
+
+[app.vlc]
+id = "org.videolan.VLC"
+name = "VLC"
+license = "GPL-2.0"
+aliases = []
+
+[app.mpv]
+id = "io.mpv.Mpv"
+name = "mpv"
+license = "GPL-2.0"
+aliases = []
+
+[app.signal]
+id = "org.signal.Signal"
+name = "Signal"
+license = "AGPL-3.0"
+aliases = []
+
+[app.element]
+id = "im.riot.Riot"
+name = "Element"
+license = "AGPL-3.0"
+aliases = ["matrix"]
+
+[app.anki]
+id = "net.ankiweb.Anki"
+name = "Anki"
+license = "AGPL-3.0"
+aliases = []
+
+[app.zotero]
+id = "org.zotero.Zotero"
+name = "Zotero"
+license = "AGPL-3.0"
+aliases = []
+
+[app.logseq]
+id = "com.logseq.Logseq"
+name = "Logseq"
+license = "AGPL-3.0"
+aliases = []
+
+[app.joplin]
+id = "net.cozic.joplin_desktop"
+name = "Joplin"
+license = "AGPL-3.0"
+aliases = []
+
+[app.bottles]
+id = "com.usebottles.bottles"
+name = "Bottles"
+license = "GPL-3.0"
+aliases = []
+
+[app.flatseal]
+id = "com.github.tchx84.Flatseal"
+name = "Flatseal"
+license = "GPL-3.0"
+aliases = []
+
+[app.lact]
+id = "io.github.ilya_zlobintsev.LACT"
+name = "LACT"
+license = "MIT"
+aliases = []
+
+[app.discord]
+id = "com.discordapp.Discord"
+name = "Discord"
+license = "proprietary"
+proprietary = true
+aliases = ["дискорд"]
+
+[app.spotify]
+id = "com.spotify.Client"
+name = "Spotify"
+license = "proprietary"
+proprietary = true
+aliases = ["спотифай"]

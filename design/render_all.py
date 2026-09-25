@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render every Svoya OS screen mockup to PNG with headless Chromium (Playwright).
+"""Render every SOS screen mockup to PNG with headless Chromium (Playwright).
 
 Sibling of render.py (which renders only the approved desktop). Canvas 1440×900 @2x.
 
@@ -10,7 +10,8 @@ Usage:
     python3 design/render_all.py --sheet             # only rebuild the contact sheet from existing PNGs
     python3 design/render_all.py --scale 1 launcher  # quick 1x preview
 
-Output: design/out/<page>[-<variant>]-<theme>.png and design/out/contact-sheet-screens.png
+Output: design/out/<page>[-<variant>]-<theme>.png, design/out/contact-sheet-screens.png and the
+Jackson mascot sheets design/out/jackson-concepts.png, jackson-in-panel.png (run design/mascot/build.py first).
 """
 from __future__ import annotations
 
@@ -51,10 +52,17 @@ SCREENS: list[Screen] = [
     Screen("desktop-classic", ["graphite", "paper"], "Раскладка «Классика»"),
     Screen("desktop-hacker", ["graphite", "paper"], "Раскладка «Хакер»"),
     Screen("settings-models", ["graphite", "paper"], "Модели · хранилище /srv/ai"),
-    Screen("boot", ["graphite"], "Загрузка", {"": "", "grub": "frame=grub"}),
+    Screen("boot", ["graphite"], "Загрузка", {"": "", "grub": "frame=grub", "sequence": "frame=seq"}),
 ]
 
 THEME_RU = {"graphite": "Графит", "paper": "Бумага", "phosphor": "Фосфор"}
+
+# Concept sheets with fixed output names (not part of the screens contact sheet).
+# page, output file, viewport height (None = 900), full page?
+EXTRAS = [
+    ("jackson-concepts", "jackson-concepts.png", 900, True),
+    ("jackson-in-panel", "jackson-in-panel.png", 900, False),
+]
 
 
 def targets(screens: list[Screen], only_theme: str | None):
@@ -64,7 +72,7 @@ def targets(screens: list[Screen], only_theme: str | None):
                 if only_theme and theme != only_theme:
                     continue
                 name = f"{s.page}-{suffix}-{theme}" if suffix else f"{s.page}-{theme}"
-                caption = s.caption + (" · GRUB" if suffix == "grub" else "")
+                caption = s.caption + {"": "", "grub": " · GRUB", "sequence": " · прогрев"}.get(suffix, "")
                 yield s, name, f"theme={theme}" + (f"&{query}" if query else ""), caption, theme
 
 
@@ -91,7 +99,23 @@ async def render(screens: list[Screen], only_theme: str | None, scale: float) ->
         await browser.close()
 
 
-async def contact_sheet(scale: float = 2.0) -> None:
+async def extras(names: list[str] | None, scale: float) -> None:
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        ctx = await browser.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=scale)
+        page = await ctx.new_page()
+        page.on("pageerror", lambda e: print("  page error:", e))
+        for page_name, out, _, full in EXTRAS:
+            if names and page_name not in names:
+                continue
+            await page.goto((MOCKUPS / f"{page_name}.html").as_uri() + "?theme=graphite")
+            await settle(page)
+            await page.screenshot(path=str(OUT / out), full_page=full)
+            print((OUT / out).relative_to(ROOT.parent))
+        await browser.close()
+
+
+async def contact_sheet(scale: float = 1.5) -> None:
     entries = []
     for i, (s, name, _, caption, theme) in enumerate(targets(SCREENS, None)):
         png = OUT / f"{name}.png"
@@ -118,12 +142,17 @@ def main() -> None:
     ap.add_argument("--sheet", action="store_true", help="only rebuild the contact sheet")
     ap.add_argument("--no-sheet", action="store_true", help="skip the contact sheet")
     a = ap.parse_args()
+    extra_names = {e[0] for e in EXTRAS}
     if not a.sheet:
         chosen = [s for s in SCREENS if not a.pages or s.page in a.pages]
-        unknown = set(a.pages) - {s.page for s in SCREENS}
+        unknown = set(a.pages) - {s.page for s in SCREENS} - extra_names
         if unknown:
             raise SystemExit(f"unknown page(s): {', '.join(sorted(unknown))}")
-        asyncio.run(render(chosen, a.theme, a.scale))
+        if chosen and (not a.pages or set(a.pages) - extra_names):
+            asyncio.run(render(chosen, a.theme, a.scale))
+        wanted = [n for n in a.pages if n in extra_names]
+        if not a.pages or wanted:
+            asyncio.run(extras(wanted or None, a.scale))
     if a.sheet or (not a.pages and not a.no_sheet):
         asyncio.run(contact_sheet())
 

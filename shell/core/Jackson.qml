@@ -6,6 +6,10 @@ pragma Singleton
 // client -> daemon: hello, ask, approve, cancel, status, undo
 // daemon -> client: welcome, route, token, tool, approval, done, error, state
 //
+// Jackson is a character in the UI (never "daemon" in user-facing text). The
+// service sends `persona`, `avatar` ("auto" | "imp" | "cat" | "none") and
+// `mood` with welcome/status/state events; JacksonAvatar.qml renders them.
+//
 // Reconnects with exponential backoff (0.5 s … 30 s). Quickshell's Socket cannot
 // redial after a failed attempt, so every attempt uses a fresh Socket from a
 // Loader. The socket file is probed first so a missing daemon costs one tiny
@@ -30,12 +34,20 @@ Singleton {
     property var capabilities: []
     readonly property bool voice: root.capabilities.indexOf("voice") >= 0
 
-    // Routes: the daemon default (welcome/status) and the current turn's route.
+    // Character: persona {id, name, humor}, mascot and mood from the service.
+    property var persona: null
+    property string avatar: "auto"
+    property string mood: "calm"      // calm listening thinking busy talking asking sorry
+    property string displayName: ""   // «Джексон» / "Jackson" from welcome
+    readonly property string name: root.displayName.length > 0 ? root.displayName : Strings.jackson
+    property real happyUntil: 0       // a short "happy" beat after an answer (avatar)
+
+    // Routes: the default (welcome/status) and the current turn's route.
     property var defaultRoute: null
     property var route: null
     readonly property var shownRoute: root.route ? root.route : root.defaultRoute
 
-    // Scope state (drives Scope.qml): idle listening thinking working speaking error offline off
+    // Scope state (drives Oscilloscope.qml): idle listening thinking working speaking error offline off
     property string daemonState: "idle"
     property bool listening: false // local push-to-talk while the daemon supports voice
     readonly property string mode: {
@@ -189,9 +201,31 @@ Singleton {
         return {
             model: r.model || "",
             provider: r.provider || "",
+            label: r.label || "",
             local: r.local !== false,
+            mode: r.mode || "",
             reason: r.reason || ""
         };
+    }
+
+    function firstLocalModel() {
+        for (let i = 0; i < root.models.length; i++) {
+            const m = root.models[i];
+            if (m && m.local && m.available !== false && m.model)
+                return root.normalizeRoute({ model: m.model, provider: m.provider, label: m.label, local: true });
+        }
+        return null;
+    }
+
+    function applyCharacter(msg) {
+        if (msg.persona !== undefined && msg.persona !== null)
+            root.persona = typeof msg.persona === "string" ? Object.assign({}, root.persona || {}, { id: msg.persona }) : msg.persona;
+        if (typeof msg.avatar === "string" && msg.avatar.length > 0)
+            root.avatar = msg.avatar;
+        if (typeof msg.mood === "string" && msg.mood.length > 0)
+            root.mood = msg.mood;
+        if (typeof msg.name === "string" && msg.name.length > 0)
+            root.displayName = msg.name;
     }
 
     function handleLine(line) {
@@ -215,21 +249,28 @@ Singleton {
             root.daemonVersion = msg.version || "";
             root.models = Array.isArray(msg.models) ? msg.models : [];
             root.capabilities = Array.isArray(msg.capabilities) ? msg.capabilities : [];
-            root.defaultRoute = root.normalizeRoute(msg.route) || (root.models.length > 0 ? root.normalizeRoute({ model: root.models[0].name || root.models[0].id || root.models[0], local: true }) : null);
+            root.defaultRoute = root.normalizeRoute(msg.route) || root.firstLocalModel();
+            root.applyCharacter(msg);
             break;
         case "status":
             if (msg.route)
                 root.defaultRoute = root.normalizeRoute(msg.route);
-            if (typeof msg.state === "string" && !root.busy)
+            if (Array.isArray(msg.models))
+                root.models = msg.models;
+            if (typeof msg.state === "string")
                 root.daemonState = msg.state;
+            root.applyCharacter(msg);
             break;
         case "state":
             {
-                const s = msg.state || msg.value || msg.name;
-                if (typeof s === "string" && (!foreign || msg.id === undefined))
+                // State events are aggregated over every client (the CLI `j` too),
+                // so the scope honestly shows Jackson working for someone else.
+                const s = msg.state || msg.value;
+                if (typeof s === "string")
                     root.daemonState = s;
-                if (s === "idle")
+                if (s === "idle" && !foreign)
                     root.listening = false;
+                root.applyCharacter(msg);
             }
             break;
         case "route":
@@ -269,6 +310,7 @@ Singleton {
                 if (root.daemonState !== "speaking")
                     root.daemonState = "idle";
                 ShellState.recordTurn(msg.costEur, msg.leftMachine === true);
+                root.happyUntil = Date.now() + 1600;
                 root.turnFinished(msg);
             }
             break;
@@ -293,7 +335,7 @@ Singleton {
         root.link = sock;
         root.connected = true;
         root.attempt = 0;
-        root.send({ type: "hello", client: "svoya-shell", version: root.clientVersion });
+        root.send({ type: "hello", client: "sos-shell", version: root.clientVersion, lang: Strings.lang });
         root.requestStatus();
     }
 

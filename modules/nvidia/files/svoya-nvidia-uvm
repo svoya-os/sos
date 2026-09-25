@@ -1,0 +1,37 @@
+#!/bin/sh
+# SOS (module nvidia): CUDA fails after resume until nvidia_uvm is reloaded.
+# systemd-sleep calls this with $1 = pre|post, $2 = suspend|hibernate|hybrid-sleep|suspend-then-hibernate.
+#   pre:  stop GPU compute services (system and every logged-in user's) and remember them
+#   post: reload nvidia_uvm, then start exactly those services again
+STATE=/run/svoya-uvm-services
+SYSTEM_UNITS="svoya-ollama.service ollama.service"
+USER_UNITS="svoya-llm.service llama-swap.service sos-studio.service"
+
+case "$1" in
+pre)
+  : >"$STATE"
+  for u in $SYSTEM_UNITS; do
+    if systemctl is-active --quiet "$u"; then systemctl stop "$u" && echo "system $u -" >>"$STATE"; fi
+  done
+  for uid in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $1}'); do
+    name=$(id -nu "$uid" 2>/dev/null) || continue
+    for u in $USER_UNITS; do
+      if systemctl --user -M "$name@" is-active --quiet "$u" 2>/dev/null; then
+        systemctl --user -M "$name@" stop "$u" && echo "user $name $u" >>"$STATE"
+      fi
+    done
+  done
+  ;;
+post)
+  if grep -q '^nvidia_uvm ' /proc/modules; then
+    modprobe -r nvidia_uvm 2>/dev/null && modprobe nvidia_uvm
+  fi
+  if [ -f "$STATE" ]; then
+    while read -r kind a b; do
+      if [ "$kind" = system ]; then systemctl start "$a"; else systemctl --user -M "$a@" start "$b"; fi
+    done <"$STATE"
+    rm -f "$STATE"
+  fi
+  ;;
+esac
+exit 0

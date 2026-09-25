@@ -1,5 +1,6 @@
-# Svoya model catalog: license facts that drive fit/pull warnings and the default catalog view.
-# SPDX-License-Identifier: Apache-2.0 — facts researched 2026-09; always re-check the model card.
+# SPDX-License-Identifier: Apache-2.0
+# SOS model catalog: license facts that drive fit/pull warnings and the default catalog view.
+# Facts researched 2026-09; always re-check the model card.
 #
 #   match        lowercase substrings of "<repo>/<file>" that identify the model (first match wins,
 #                so specific entries come before families)
@@ -9,7 +10,7 @@
 #   vram_gb      typical need for the common quantization, if known (≈, for the catalog view)
 #   params_b     parameters in billions
 #
-# Default `svoya models list --catalog` view = models usable commercially in the user's region (EU).
+# Default `sos models list --catalog` view = models usable commercially in the user's region (EU).
 
 [[model]]
 id = "qwen-image-2.1"

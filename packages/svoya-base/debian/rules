@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/svoya-base
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 $(PKG)/usr/lib/svoya/setup-snapper $(PKG)/etc/update-motd.d/10-help-text
+	chmod 0644 $(PKG)/usr/share/snapper/config-templates/svoya

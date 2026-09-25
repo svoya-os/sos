@@ -1,0 +1,141 @@
+# SPDX-License-Identifier: Apache-2.0
+# Build the SOS ISO (packages -> ubuntu:26.04 privileged container -> hybrid ISO), upload it split
+# into < 2 GiB parts with SHA256SUMS, then boot it in QEMU and screenshot the milestones.
+name: ISO
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/**"
+      - "installer/**"
+      - "packages/**"
+      - "shell/**"
+      - "jackson/**"
+      - "cli/**"
+      - "branding/**"
+      - "themes/**"
+      - "modules/**"
+      - "tests/vm/**"
+      - "scripts/**"
+      - ".github/workflows/iso.yml"
+      - ".github/workflows/vm-test.yml"
+  schedule:
+    - cron: "17 3 * * *" # nightly, picks up archive updates of the snapshot pin
+  workflow_dispatch:
+    inputs:
+      nvidia_pool:
+        description: "NVIDIA branches for the offline pool ('none' = no pool)"
+        required: false
+        default: "595-open 580"
+      vm_test:
+        description: "Boot the ISO in QEMU afterwards"
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      release:
+        type: boolean
+        default: false
+    outputs:
+      artifact:
+        description: Name of the ISO artifact
+        value: ${{ jobs.iso.outputs.artifact }}
+
+permissions: {}
+
+concurrency:
+  group: iso-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+jobs:
+  packages:
+    uses: ./.github/workflows/packages.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  iso:
+    name: Build ISO
+    needs: packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    permissions:
+      contents: read
+    outputs:
+      artifact: sos-iso
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Free disk space
+        id: disk
+        run: scripts/ci-free-disk.sh
+
+      - name: Download packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sos-repo
+          path: dist/repo
+
+      - name: Build ISO (privileged ubuntu:26.04 container)
+        env:
+          SVOYA_WORK_DIR: ${{ steps.disk.outputs.work_dir }}
+          NVIDIA_BRANCHES: ${{ github.event_name == 'workflow_dispatch' && inputs.nvidia_pool || '595-open 580' }}
+        run: |
+          set -euo pipefail
+          if [ "$NVIDIA_BRANCHES" = none ]; then export NVIDIA_BRANCHES="" POOL_STRICT=0; fi
+          image/docker-build.sh
+          ls -la dist/iso
+
+      - name: Summary
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >>"$GITHUB_STEP_SUMMARY"
+          import glob, json
+          for f in glob.glob("dist/iso/*.iso.json"):
+              info = json.load(open(f))
+              print(f"### {info['iso']}")
+              print(f"- ISO: {info['isoBytes'] / 2**30:.2f} GiB (squashfs {info['squashfsBytes'] / 2**30:.2f} GiB, "
+                    f"driver pool {info['poolBytes'] / 2**30:.2f} GiB)")
+              print(f"- archive snapshot: `{info['snapshot']}`, SOURCE_DATE_EPOCH {info['sourceDateEpoch']}")
+          PY
+
+      - name: Split for upload (< 2 GiB per file)
+        run: |
+          set -euo pipefail
+          for iso in dist/iso/*.iso; do scripts/split-artifact.sh split "$iso" 1900; done
+          cat dist/iso/SHA256SUMS
+
+      - name: Sign checksums (only when a signing key is configured)
+        env:
+          SIGNING_KEY: ${{ secrets.SOS_RELEASE_SIGNING_KEY }}
+        if: env.SIGNING_KEY != ''
+        run: |
+          set -euo pipefail
+          export GNUPGHOME="$RUNNER_TEMP/gnupg"
+          install -d -m 0700 "$GNUPGHOME"
+          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
+          gpg --batch --yes --armor --detach-sign -o dist/iso/SHA256SUMS.asc dist/iso/SHA256SUMS
+          rm -rf "$GNUPGHOME"
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sos-iso
+          path: dist/iso
+          retention-days: ${{ inputs.release && 30 || 7 }}
+          compression-level: 0
+          if-no-files-found: error
+
+  vm-test:
+    needs: iso
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.vm_test }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: read
+      actions: read
+    with:
+      artifact: sos-iso

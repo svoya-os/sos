@@ -1,0 +1,25 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+set -e
+
+case "$1" in
+    configure)
+        # Group "ai" owns the shared model store /srv/ai (ARCHITECTURE §3, §4.6).
+        if ! getent group ai >/dev/null; then
+            if command -v systemd-sysusers >/dev/null 2>&1; then
+                systemd-sysusers /usr/lib/sysusers.d/svoya.conf || groupadd --system ai
+            else
+                groupadd --system ai
+            fi
+        fi
+        if command -v systemd-tmpfiles >/dev/null 2>&1; then
+            systemd-tmpfiles --create /usr/lib/tmpfiles.d/svoya.conf || true
+        else
+            install -d -m 2775 -g ai /srv/ai /srv/ai/hub
+            install -d -m 0755 /var/lib/svoya
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "notes"
+name = { en = "Notes (Obsidian)", ru = "Заметки (Obsidian)" }
+summary = { en = "Obsidian from Flathub: Markdown notes in a folder you own. Optional — installed only when you ask.", ru = "Obsidian с Flathub: заметки в Markdown в вашей собственной папке. По желанию — ставится только по запросу." }
+category = "apps"
+profiles = []
+requires = []
+apt = ["flatpak"]
+flatpak = ["md.obsidian.Obsidian"]
+scripts = {}
+disk_gb = 1.0
+vram_gb_min = 0
+proprietary = true
+aliases = ["obsidian", "обсидиан", "заметки"]
+license_note = { en = "Obsidian is proprietary freeware (free, including for work). SOS never preinstalls it; your notes stay plain Markdown files.", ru = "Obsidian — проприетарная бесплатная программа (в том числе для работы). SOS не ставит её заранее; заметки остаются обычными файлами Markdown." }

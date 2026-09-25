@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/svoya-cli
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+
+override_dh_python3:
+	dh_python3 /usr/lib/svoya
+
+override_dh_installsystemduser:
+	dh_installsystemduser --no-enable
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 $(PKG)/usr/bin/sos
+	find $(PKG)/usr/share/svoya/modules -type f -name '*.sh' -exec chmod 0755 {} +

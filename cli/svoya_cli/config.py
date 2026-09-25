@@ -2,7 +2,7 @@
 
 Keys svoya reads (all optional)::
 
-    [location]            # sunrise/sunset for `svoya theme apply auto`
+    [location]            # sunrise/sunset for `sos theme apply auto`
     latitude = 59.437     # default: Tallinn
     longitude = 24.745
 
@@ -62,3 +62,38 @@ def load(paths: Paths | None = None) -> dict[str, Any]:
     if "lon" in loc:
         loc["longitude"] = loc["lon"]
     return cfg
+
+
+def set_user_value(paths: Paths, section: str, key: str, value: str) -> None:
+    """Set ``[section] key = "value"`` in ~/.config/svoya/svoya.toml, keeping comments and order."""
+    import json
+    import re
+    from .util import atomic_write
+    path = paths.user_config
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = ["# SOS user settings (see `sos help`)."]
+    new = f"{key} = {json.dumps(value, ensure_ascii=False)}"
+    cur, start, done = "", None, False
+    for i, ln in enumerate(lines):
+        m = re.match(r"^\s*\[([^\]]+)\]\s*$", ln)
+        if m:
+            if cur == section and not done:
+                lines.insert(i, new)
+                done = True
+                break
+            cur = m.group(1).strip()
+            if cur == section:
+                start = i
+            continue
+        if cur == section and re.match(rf"^\s*{re.escape(key)}\s*=", ln):
+            lines[i] = new
+            done = True
+            break
+    if not done:
+        if start is not None:
+            lines.append(new)
+        else:
+            lines += ["", f"[{section}]", new]
+    atomic_write(path, "\n".join(lines).strip("\n") + "\n")

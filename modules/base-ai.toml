@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "base-ai"
+name = { en = "AI foundation", ru = "Основа для ИИ" }
+summary = { en = "Shared model store /srv/ai, uv, the hf CLI and GPU monitors — the base for every AI module.", ru = "Общее хранилище моделей /srv/ai, uv, hf и мониторы ГП — основа для всех ИИ-модулей." }
+category = "system"
+profiles = ["newcomer", "creator", "ml", "agent", "hacker"]
+requires = []
+apt = ["python3-venv", "git", "git-lfs", "aria2", "nvtop", "jq", "curl", "zstd"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 0.6
+vram_gb_min = 0
+aliases = ["base", "store", "основа"]
+license_note = { en = "uv, hf (huggingface_hub), nvitop: MIT/Apache-2.0; nvtop: GPL-3.0. Your models stay in /srv/ai even if the module is removed.", ru = "uv, hf (huggingface_hub), nvitop — MIT/Apache-2.0; nvtop — GPL-3.0. Модели остаются в /srv/ai даже после удаления модуля." }

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>Svoya OS — Jackson approval (T2)</title>
+<title>SOS — Jackson approval (T2)</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="desktop.css">
@@ -75,7 +75,7 @@
   <div class="wallpaper">
     <svg class="signal"></svg>
     <div class="grain"></div>
-    <div class="colophon"><b>Svoya OS</b> 26.10 · первый сигнал</div>
+    <div class="colophon"><b>SOS</b> 26.10 · первый сигнал</div>
   </div>
 
   <header class="bar"></header>
@@ -152,7 +152,7 @@
 
 </div>
 <script>
-  Svoya.comfy(document.getElementById('graph'), {
+  SOS.comfy(document.getElementById('graph'), {
     nodes: [
       { id: 'img', x: 24, y: 26, w: 232, title: 'Загрузить изображение', outs: [['IMAGE', 'image'], ['MASK', 'image']], widgets: [['image', 'frame_001.png']], img: 'photo', imgH: 92 },
       { id: 'lora', x: 24, y: 280, w: 236, title: 'WanVideoLoraSelect', state: 'missing', outs: [['LORA', 'lora']], widgets: [['lora', 'reels_style_v2'], ['strength', '0.80']], note: 'нода не найдена' },
@@ -166,7 +166,7 @@
     ],
     links: [['img', 0, 'enc', 0], ['lora', 0, 'model', 0], ['model', 0, 'samp', 0], ['text', 0, 'samp', 1], ['enc', 0, 'samp', 2], ['samp', 0, 'dec', 0], ['dec', 0, 'out', 0]],
   });
-  Svoya.init({ bar: { title: ['ComfyUI', 'reels_wan22_i2v.json'] } });
+  SOS.init({ bar: { title: ['ComfyUI', 'reels_wan22_i2v.json'] } });
 </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Svoya OS · Plymouth theme «svoya-signal» — browser simulation.
+  SOS · Plymouth theme «svoya-signal» — browser simulation.
 
   A tiny re-implementation of the parts of the Plymouth script API the theme uses (Image, Image.Text,
   Image.Scale, Sprite, Window, Plymouth.Set*Function), running a line-by-line port of
@@ -17,7 +17,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>Svoya OS — Plymouth preview</title>
+<title>SOS — Plymouth preview</title>
 <style>
   @font-face { font-family: "Plex Mono"; src: url("../../design/fonts/IBMPlexMono-Regular.ttf"); font-weight: 400; }
   @font-face { font-family: "Plex Mono"; src: url("../../design/fonts/IBMPlexMono-Medium.ttf"); font-weight: 500; }
@@ -56,8 +56,8 @@ class PImage {
     return new PImage(c, w, h);
   }
 }
-function Image(name) { const im = files[name]; return im ? new PImage(im, im.naturalWidth, im.naturalHeight) : null; }
-Image.Text = function (text, r, g, b, a, font, align) {
+const PlyImage = function (name) { const im = files[name]; return im ? new PImage(im, im.naturalWidth, im.naturalHeight) : null; };
+PlyImage.Text = function (text, r, g, b, a, font, align) {
   if (text === null || text === undefined) return null;
   const px = parseFloat(/(\d+(?:\.\d+)?)px/.exec(font)[1]);
   const c = document.createElement("canvas"), g2 = c.getContext("2d");
@@ -77,7 +77,7 @@ class Sprite {
 }
 let W = 1920, H = 1080;
 const bg = { top: D.bg[0], bottom: D.bg[1] };
-const Window = { GetWidth: () => W, GetHeight: () => H, GetX: () => 0, GetY: () => 0,
+const PlyWindow = { GetWidth: () => W, GetHeight: () => H, GetX: () => 0, GetY: () => 0,
   SetBackgroundTopColor() {}, SetBackgroundBottomColor() {} };
 const cb = {};
 let MODE = "boot", CAPS = 0;
@@ -104,6 +104,7 @@ function paint() {
 // ─────────────── port of svoya-signal.script ───────────────
 let S;  // script globals (the script's implicit global scope)
 function runScript(lang) {
+  const Image = PlyImage, Window = PlyWindow;   // the script sees Plymouth's names
   sprites.length = 0;
   const g = Object.assign({}, G0);
   g.SYMBOL_X = D.symbols.map(s => s[0]); g.SYMBOL_W = D.symbols.map(s => s[1]);

@@ -7,7 +7,7 @@
     (``split_files/<folder>/`` of Comfy-Org repackages is honoured; otherwise filename heuristics).
 ``/srv/ai/views/ollama/``      one Modelfile per GGUF + ``import.sh`` with the ``ollama create`` commands
     (Ollama copies weights into its own store; put ``OLLAMA_MODELS`` on the same btrfs volume and
-    run ``svoya models dedup --apply`` afterwards to share the blocks).
+    run ``sos models dedup --apply`` afterwards to share the blocks).
 """
 from __future__ import annotations
 
@@ -118,7 +118,7 @@ def comfy_plan(files: list[CachedFile], out: Path) -> Plan:
             link = out / folder / f"{f.repo.split('/')[0]}--{Path(f.filename).name}"
         used.add(link)
         plan.links.append((link, f.blob_path))
-    lines = [f"# {MARK} by `svoya models views` — regenerate instead of editing.",
+    lines = [f"# {MARK} by `sos models views` — regenerate instead of editing.",
              "# ComfyUI: python main.py --extra-model-paths-config " + str(out / "extra_model_paths.yaml"),
              "svoya:", f"    base_path: {out}/", "    is_default: false"]
     for folder in COMFY_FOLDERS:
@@ -137,7 +137,7 @@ def ollama_name(filename: str) -> str:
 
 def ollama_plan(files: list[CachedFile], out: Path) -> Plan:
     plan = Plan()
-    script = ["#!/usr/bin/env bash", f"# {MARK} by `svoya models views` — review, then run: bash {out}/import.sh",
+    script = ["#!/usr/bin/env bash", f"# {MARK} by `sos models views` — review, then run: bash {out}/import.sh",
               "set -euo pipefail"]
     for f in files:
         fn = Path(f.filename).name.lower()

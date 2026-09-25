@@ -1,0 +1,40 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Start Calamares as root (called by /usr/bin/sos-install through sudo).
+# Makes the live medium available at /run/sos-installer/medium, also after a "toram" boot, where
+# casper copied the system into RAM and the medium may no longer be mounted at /cdrom.
+set -euo pipefail
+# shellcheck source=installer/scripts/lib.sh
+. /usr/lib/svoya/installer/lib.sh
+
+[ "$(id -u)" = 0 ] || die "must run as root"
+mkdir -p "$MEDIUM"
+
+has_image() { [ -f "$1/casper/filesystem.squashfs" ]; }
+
+if ! mountpoint -q "$MEDIUM"; then
+    for cand in /cdrom /run/casper/medium /media/cdrom; do
+        if has_image "$cand"; then
+            mount --bind "$cand" "$MEDIUM"
+            break
+        fi
+    done
+fi
+if ! has_image "$MEDIUM"; then
+    # Look for our medium among ISO9660 and FAT/exFAT devices (USB sticks, Ventoy copies).
+    for dev in $(blkid -o device -t TYPE=iso9660 2>/dev/null) $(blkid -o device -t TYPE=vfat 2>/dev/null); do
+        if mount -o ro "$dev" "$MEDIUM" 2>/dev/null; then
+            if has_image "$MEDIUM" && [ -f "$MEDIUM/.disk/info" ]; then
+                break
+            fi
+            umount "$MEDIUM"
+        fi
+    done
+fi
+if ! has_image "$MEDIUM"; then
+    echo "SOS installer: the installation medium was not found. Insert the SOS USB stick or DVD and try again." >&2
+    echo "Установщик СОС: не найден установочный носитель. Вставьте флешку или диск СОС и попробуйте снова." >&2
+    exit 1
+fi
+
+exec calamares "$@"

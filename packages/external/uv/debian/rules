@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/uv
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	install -Dm0755 prebuilt/uv $(PKG)/usr/bin/uv
+	install -Dm0755 prebuilt/uvx $(PKG)/usr/bin/uvx
+	install -d $(PKG)/usr/share/bash-completion/completions $(PKG)/usr/share/zsh/vendor-completions \
+		$(PKG)/usr/share/fish/vendor_completions.d
+	prebuilt/uv generate-shell-completion bash >$(PKG)/usr/share/bash-completion/completions/uv
+	prebuilt/uv generate-shell-completion zsh >$(PKG)/usr/share/zsh/vendor-completions/_uv
+	prebuilt/uv generate-shell-completion fish >$(PKG)/usr/share/fish/vendor_completions.d/uv.fish
+
+# Upstream binaries are statically linked against musl or already stripped; keep them byte-identical.
+override_dh_strip:
+override_dh_dwz:
+override_dh_shlibdeps:
+	dh_shlibdeps || true

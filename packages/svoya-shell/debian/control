@@ -1,0 +1,27 @@
+Source: svoya-shell
+Section: x11
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/sos
+Rules-Requires-Root: no
+
+Package: svoya-shell
+Architecture: all
+Depends: ${misc:Depends},
+         quickshell (>= 0.3.1~),
+         qml6-module-qtquick,
+         qml6-module-qtquick-controls,
+         qml6-module-qtquick-layouts,
+         qml6-module-qtquick-shapes,
+         qml6-module-qtquick-window,
+         qml6-module-qtqml-workerscript,
+         qt6-wayland,
+         svoya-fonts
+Recommends: ${svoya:QmlDepends}, qt6-svg-plugins, papirus-icon-theme
+Description: SOS Shell (Quickshell/QML)
+ The SOS desktop shell: bar, launcher, Jackson panel, notifications,
+ control center, lock screen, greeter, first-run wizard and on-screen
+ displays, installed in /usr/share/svoya/shell and run with
+ "quickshell -p /usr/share/svoya/shell".

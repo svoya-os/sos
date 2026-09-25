@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: Apache-2.0
+"""`j` — short alias of `jackson` (e.g. `j найди мои датасеты`, `j -` reads the question from stdin)."""
+import os
+import sys
+
+_src = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+if os.path.isfile(os.path.join(_src, "jackson", "__init__.py")):
+    sys.path.insert(0, _src)          # running from the source tree
+else:
+    sys.path.insert(0, "/usr/lib/svoya")  # installed layout (ARCHITECTURE §3)
+
+from jackson.cli import main  # noqa: E402
+
+sys.exit(main())

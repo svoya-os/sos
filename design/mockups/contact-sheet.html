@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — screens contact sheet</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* Filled by render_all.py: build([{src, caption, theme, file}]) */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1712px; background: var(--wall); color: var(--text); font-family: "Plex Sans"; -webkit-font-smoothing: antialiased; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; padding: 56px 56px 36px; }
+  header h1 { font: 500 28px/34px "Plex Sans"; letter-spacing: -0.005em; }
+  header p { margin-top: 8px; font: 400 14px/22px "Plex Sans"; color: var(--text-dim); }
+  header .r { text-align: right; font: 400 11px/18px "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+  header .r b { color: var(--text-dim); font-weight: 500; }
+  header svg { display: block; margin: 0 0 14px auto; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 34px 24px; padding: 0 56px 64px; }
+  figure img { display: block; width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px var(--line), 0 18px 40px -24px rgba(0, 0, 0, 0.7); }
+  figcaption { margin-top: 11px; display: flex; align-items: baseline; gap: 10px; }
+  figcaption .n { font: 500 11px/1 "Plex Mono"; color: var(--accent); }
+  figcaption b { font: 500 13px/18px "Plex Sans"; color: var(--text); }
+  figcaption span { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; }
+</style>
+<script src="shell.js"></script>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SOS — экраны оболочки</h1>
+      <p>Графит ночью, Бумага днём, Фосфор по желанию. 1440 × 900 @2x, IBM Plex, один сигнальный цвет.</p>
+    </div>
+    <div class="r"><svg class="morse" data-s="1.4"></svg><b>SOS</b> 26.10 · первый сигнал<br>design/out · render_all.py</div>
+  </header>
+  <div class="grid" id="grid"></div>
+<script>
+  function build(entries) {
+    document.getElementById('grid').innerHTML = entries.map((e, i) => `
+      <figure><img src="${e.src}" alt="">
+        <figcaption><span class="n">${String(i + 1).padStart(2, '0')}</span><b>${e.caption}</b><span>${e.theme}</span></figcaption>
+      </figure>`).join('');
+    SOS.init({ bar: false });
+  }
+</script>
+</body>
+</html>

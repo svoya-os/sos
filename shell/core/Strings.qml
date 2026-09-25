@@ -1,6 +1,6 @@
 pragma Singleton
 
-// All user-facing copy of Svoya Shell, Russian and English (DESIGN.md §8:
+// All user-facing copy of the SOS Shell, Russian and English (DESIGN.md §8:
 // short, calm, concrete; lowercase in the bar, sentence case elsewhere; never nag).
 //
 // Language: Settings.language ("ru"/"en") if set, otherwise $LANGUAGE, $LC_ALL,
@@ -76,8 +76,8 @@ Singleton {
     }
 
     // ---- brand -------------------------------------------------------------------
-    readonly property string osName: "Svoya OS"
-    readonly property string osNameLocal: root.t("СОС — Своя Операционная Система", "Svoya OS — your own operating system")
+    readonly property string osName: "SOS"
+    readonly property string osNameLocal: root.t("СОС — Своя Операционная Система", "SOS — Svoya Operating System")
     readonly property string codename: root.t("первый сигнал", "first signal")
     readonly property string morse: "··· ——— ···"
 
@@ -272,6 +272,34 @@ Singleton {
     readonly property string login: root.t("Войти", "Log in")
     readonly property string loggingIn: root.t("Вход…", "Logging in…")
     readonly property string greeterError: root.t("Не удалось начать сеанс", "Could not start the session")
+    readonly property string whileAway: root.t("пока тебя нет:", "while you're away:")
+    readonly property string a11yShort: root.t("спец. возможности", "accessibility")
+    readonly property string otherUser: root.t("другой пользователь", "other user")
+    readonly property string sessionLabel: root.t("Сессия", "Session")
+    readonly property string userNamePlaceholder: root.t("Имя пользователя", "User name")
+    readonly property string enterUserName: root.t("Введи имя пользователя", "Type a user name")
+    function left(sec) {
+        return root.ru ? "ещё " + Fmt.duration(sec) : Fmt.duration(sec) + " left";
+    }
+    // "четверг · 24 сентября" (lock screen, greeter)
+    function lockDate(d) {
+        if (root.ru)
+            return root.daysLong[d.getDay()] + " · " + d.getDate() + " " + root.monthsLong[d.getMonth()];
+        return root.daysLong[d.getDay()] + " · " + root.monthsLong[d.getMonth()] + " " + d.getDate();
+    }
+    // "вход вчера в 23:40" (greeter user tiles)
+    function lastLogin(d, now) {
+        if (!d || isNaN(d.getTime()))
+            return "";
+        const day = 86400000;
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const at = Fmt.clock(d);
+        if (d.getTime() >= start)
+            return root.t("вход сегодня в " + at, "last login today at " + at);
+        if (d.getTime() >= start - day)
+            return root.t("вход вчера в " + at, "last login yesterday at " + at);
+        return root.t("вход " + d.getDate() + " " + root.monthsLong[d.getMonth()], "last login " + root.monthsLong[d.getMonth()] + " " + d.getDate());
+    }
 
     // ---- POST splash -----------------------------------------------------------------------------------------
     readonly property string postCpu: root.t("ЦП  ", "CPU ")
@@ -302,7 +330,7 @@ Singleton {
     readonly property string wizBack: root.t("Назад", "Back")
     readonly property string wizSkip: root.t("Пропустить", "Skip")
     readonly property string wizDone: root.t("Готово", "Done")
-    readonly property string wizWelcome: root.t("Добро пожаловать в Свою", "Welcome to Svoya")
+    readonly property string wizWelcome: root.t("Добро пожаловать в СОС", "Welcome to SOS")
     readonly property string wizStepOf: root.t("шаг", "step")
     readonly property string wizReversible: root.t("Каждый выбор можно изменить позже.", "Every choice can be changed later.")
     readonly property string wizA11yTitle: root.t("Специальные возможности", "Accessibility")
@@ -346,7 +374,7 @@ Singleton {
     readonly property string profOfflineHint: root.t("Без облачных модулей и облачного маршрута.", "No cloud modules and no cloud route.")
     readonly property string wizModulesToInstall: root.t("Будет установлено", "Will be installed")
     readonly property string wizInstalling: root.t("Устанавливаю в фоне", "Installing in the background")
-    readonly property string wizCatalogMissing: root.t("Каталог модулей не найден. Модули можно добавить позже: svoya modules add.", "Module catalog not found. Add modules later: svoya modules add.")
+    readonly property string wizCatalogMissing: root.t("Профили недоступны. Модули можно добавить позже: sos install <модуль>.", "Profiles are unavailable. Add modules later: sos install <module>.")
     readonly property string wizAiTitle: root.t("Джексон и модели", "Jackson and models")
     readonly property string wizAiBody: root.t("Локально по умолчанию. Облако — только если ты добавишь ключ.", "Local by default. Cloud only if you add a key.")
     readonly property string wizGpuDetected: root.t("Видеокарта", "Graphics card")
@@ -365,4 +393,118 @@ Singleton {
     readonly property string wizSnapshotFailed: root.t("Снимок не получился; повторить можно позже", "Snapshot failed; you can retry later")
     readonly property string wizShortcuts: root.t("Главные клавиши", "Key shortcuts")
     readonly property string wizFinish: root.t("Начать работу", "Start")
+
+    // wizard frame and steps (design/mockups/setup-*.html)
+    readonly property string wzBrand: root.t("Настройка", "Setup")
+    readonly property string wzFirstRun: root.t("· первый запуск", "· first run")
+    readonly property string wzA11yOnly: root.t("· специальные возможности", "· accessibility")
+    readonly property string wzSkipAll: root.t("пропустить настройку", "skip setup")
+    readonly property string wzNext: root.t("Дальше", "Next")
+    readonly property string wzBack: root.t("Назад", "Back")
+    readonly property string wzClose: root.t("Закрыть", "Close")
+    readonly property string wzFootNote: root.t("каждый шаг можно пропустить · любой выбор <b>отменяется</b>", "every step can be skipped · every choice <b>can be undone</b>")
+    readonly property var wzEyebrows: root.ru ? ["Доступность", "Язык", "Оформление", "Окна", "Профиль", "ИИ", "Готово"] : ["Accessibility", "Language", "Appearance", "Windows", "Profile", "AI", "Done"]
+    readonly property var wzTitles: root.ru ? ["Удобно ли смотреть и читать?", "На каком языке говорим?", "Как будет выглядеть система?", "Как расставлять окна?", "Чем ты будешь заниматься?", "Джексон и модели", "Что остаётся у тебя"] : ["Is everything easy to see and read?", "Which language do we speak?", "How should the system look?", "How should windows be arranged?", "What will you do with it?", "Jackson and models", "What stays with you"]
+    readonly property var wzSubs: root.ru ? ["Эти настройки всегда под рукой: <code>Super + Alt + A</code>, даже на экране входа.", "Язык интерфейса и раскладки клавиатуры. Раскладку переключает Alt + Shift, если не выберешь другое.", "Тема применяется сразу — прямо на этом экране. Передумать можно когда угодно: в центре управления или командой <code>sos theme</code>.", "Пресет можно сменить в любой момент, а Super + T включает плитку только для текущего стола.", "Профиль — только стартовый набор модулей. Любой модуль потом ставится и удаляется одной командой, с откатом: <code>sos modules</code>.", "Нашли видеокарту и подобрали модель, которая в неё влезет. Облако — по желанию: ключи лежат в системной связке, а не в файлах.", "Коротко о приватности, первый снимок системы и клавиши, которые стоит запомнить."] : ["These settings are always one press away: <code>Super + Alt + A</code>, even on the login screen.", "Interface language and keyboard layouts. Alt + Shift switches layouts unless you pick another key.", "The theme applies right away, on this very screen. Change it any time in the control center or with <code>sos theme</code>.", "Switch presets any time; Super + T tiles just the current workspace.", "A profile is just a starter set of modules. Any module installs and uninstalls later with one command, with undo: <code>sos modules</code>.", "We found your graphics card and picked a model that fits it. The cloud is optional: keys live in the system keyring, not in files.", "Privacy in short, the first system snapshot and the keys worth remembering."]
+
+    // step 1
+    readonly property string wzMotionSub: root.t("без анимаций, скоп статичен", "no animations, still scope")
+    readonly property string wzContrastSub: root.t("для всех тем, текст AAA", "every theme, AAA text")
+    readonly property string wzLargeSub: root.t("панели и мастер на 15 % крупнее", "panels and wizard 15% larger")
+    readonly property string wzSoundSub: root.t("··· ——— ··· синусом, 1,8 с", "··· ——— ··· in sine, 1.8 s")
+    readonly property string wzPostTitle: root.t("Экран POST при входе", "POST screen at login")
+    readonly property string wzPostSub: root.t("секунда фактов о машине", "one second of machine facts")
+    readonly property string wzIdleTitle: root.t("Блокировать без дела", "Lock when idle")
+    function wzIdleSub(min) {
+        return min > 0 ? root.t("через " + min + " мин", "after " + min + " min") : root.t("никогда", "never");
+    }
+
+    // step 2
+    readonly property string wzUiLang: root.t("Язык интерфейса", "Interface language")
+    readonly property string wzRuHint: root.t("Интерфейс, Джексон и подсказки по-русски", "Russian interface, Jackson and hints")
+    readonly property string wzEnHint: root.t("Интерфейс, Джексон и подсказки по-английски", "English interface, Jackson and hints")
+    readonly property string wzLayouts: root.t("Раскладки клавиатуры", "Keyboard layouts")
+    readonly property string wzLayoutsHint: root.t("первая — для сочетаний клавиш", "the first one drives shortcuts")
+    readonly property string wzSwitchWith: root.t("Переключать", "Switch with")
+    readonly property string wzTryHere: root.t("Попробуй переключить раскладку здесь", "Try switching layouts here")
+    readonly property var kbNames: ({ us: root.t("Английская", "English"), ru: root.t("Русская", "Russian"), ua: root.t("Украинская", "Ukrainian"), by: root.t("Белорусская", "Belarusian"), kz: root.t("Казахская", "Kazakh"), de: root.t("Немецкая", "German"), fr: root.t("Французская", "French"), es: root.t("Испанская", "Spanish"), pl: root.t("Польская", "Polish"), tr: root.t("Турецкая", "Turkish") })
+
+    // step 3
+    readonly property string wzGraphiteSub: root.t("Тёмная, янтарный сигнал", "Dark, amber signal")
+    readonly property string wzPaperSub: root.t("Светлая, чернильный синий", "Light, ink blue")
+    readonly property string wzAutoSub: root.t("Бумага днём, Графит ночью", "Paper by day, Graphite by night")
+    readonly property string wzPhosphorSub: root.t("Зелёный люминофор, для души", "Green phosphor, for the soul")
+    readonly property string wzDefault: root.t("по умолчанию", "default")
+    readonly property string wzAutoTitle: root.t("Как работает «Авто»", "How «Auto» works")
+    readonly property string wzAutoBody: root.t("Место не спрашиваем: по умолчанию 07:00 и 20:00. По закату — только если разрешишь геолокацию.", "We don't ask where you are: 07:00 and 20:00 by default. Sunset times only if you allow location.")
+    readonly property string wzNow: root.t("сейчас", "now")
+    readonly property string themeGraphite: root.t("Графит", "Graphite")
+    readonly property string themePaper: root.t("Бумага", "Paper")
+    readonly property string themeAuto: root.t("Авто", "Auto")
+    readonly property string themePhosphor: root.t("Фосфор", "Phosphor")
+
+    // step 5
+    readonly property string wzOfflineFoot: root.t("дополняет любой профиль", "adds to any profile")
+    readonly property string wzGpuFits: root.t("видеокарта подходит", "your GPU fits")
+    readonly property string wzGpuShort: root.t("видеокарты мало", "GPU too small")
+    readonly property string wzWillInstall: root.t("Будет установлено:", "Will be installed:")
+    readonly property string wzBeforeInstall: root.t("Перед установкой — снимок системы.", "A system snapshot comes first.")
+    readonly property string wzNothingToInstall: root.t("Ничего не ставим — только основа.", "Nothing to install — just the base.")
+    function wzFreeOf(free) {
+        return root.t("из " + free + " свободных", "of " + free + " free");
+    }
+    readonly property string wzApps: root.t("Приложения", "Apps")
+    readonly property string wzObsidianSub: root.t("заметки в Markdown · из Flathub · бесплатная, закрытый код", "Markdown notes · from Flathub · free, closed source")
+    readonly property string wzAfterSetup: root.t("ставится после настройки, в фоне", "installs after setup, in the background")
+
+    // step 6
+    readonly property string wzVram: root.t("видеопамять", "video memory")
+    readonly property string wzRam: root.t("ОЗУ", "RAM")
+    readonly property string wzCpuOnly: root.t("Без видеокарты — модель работает на процессоре", "No graphics card — the model runs on the CPU")
+    readonly property string wzDoctorOk: root.t("GPU Doctor: всё в порядке", "GPU Doctor: all good")
+    function wzDoctorIssues(n) {
+        return root.t("GPU Doctor: " + n + " " + root.plural(n, "замечание", "замечания", "замечаний"), "GPU Doctor: " + n + (n === 1 ? " issue" : " issues"));
+    }
+    readonly property string wzModelFor: root.t("Модель для Джексона", "Jackson's model")
+    readonly property string wzEstimate: root.t("оценка для твоей видеокарты", "estimated for your GPU")
+    readonly property string wzEstimateCpu: root.t("оценка для твоей памяти", "estimated for your memory")
+    readonly property string wzFits: root.t("влезет", "fits")
+    readonly property string wzTight: root.t("впритык", "tight")
+    readonly property string wzNoFit: root.t("не влезет", "won't fit")
+    function wzLeftover(v) {
+        return root.t("останется " + v, v + " to spare");
+    }
+    readonly property string wzOffloadNote: root.t("часть слоёв в ОЗУ", "some layers in RAM")
+    readonly property string wzTokS: root.t("ток/с", "tok/s")
+    readonly property string wzInstallModel: root.t("Установить", "Install")
+    readonly property string wzRetry: root.t("Повторить", "Retry")
+    readonly property string wzInstalled: root.t("установлена", "installed")
+    readonly property string wzDownloadTo: root.t("скачается в /srv/ai · можно продолжать настройку", "downloads to /srv/ai · you can keep going")
+    function wzDownloading(done, total) {
+        return root.t("скачивается: " + done + " из " + total, "downloading: " + done + " of " + total);
+    }
+    readonly property string wzNoDisk: root.t("не хватает места на диске", "not enough disk space")
+    readonly property string wzNoSuggest: root.t("Подбор модели недоступен: нет команды sos.", "Model suggestions are unavailable: the sos command is missing.")
+    readonly property string wzCloud: root.t("Облачные модели", "Cloud models")
+    readonly property string wzOptional: root.t("необязательно", "optional")
+    readonly property string wzCloudSub: root.t("Без ключей Джексон работает полностью на этом компьютере.", "Without keys Jackson runs entirely on this computer.")
+    readonly property string wzAddKey: root.t("Добавить ключ", "Add key")
+    readonly property string wzKeyInRing: root.t("ключ в связке", "key in keyring")
+    readonly property string wzSave: root.t("Сохранить", "Save")
+    readonly property string wzPasteKey: root.t("Вставь ключ API", "Paste the API key")
+    readonly property string wzCloudNoteTitle: root.t("В облако — только по твоему слову", "To the cloud only when you say so")
+    readonly property string wzCloudNote: root.t("Запрос уходит наружу, если ты выбрал облачную модель или разрешил это для задачи. Каждый такой запрос виден в строке состояния и в журнале, с ценой.", "A request leaves the machine only if you picked a cloud model or allowed it for a task. Every such request shows up in the status line and the log, with its price.")
+
+    // step 7
+    readonly property string wzSnapshotTitle: root.t("Первый снимок системы", "First system snapshot")
+    readonly property string wzSnapshotSub: root.t("Точка, к которой всегда можно вернуться: Super + Z или «вчерашняя система» в загрузчике.", "A point you can always return to: Super + Z, or «yesterday's system» in the boot menu.")
+    readonly property string wzSnapshotButton: root.t("Сделать снимок", "Take snapshot")
+    readonly property string wzKeysTitle: root.t("Клавиши, которые стоит запомнить", "Keys worth remembering")
+    readonly property string wzQueued: root.t("После настройки поставим:", "After setup we install:")
+    readonly property string wzInstallStarted: root.t("Установка модулей началась", "Module installation started")
+    readonly property string wzInstallDone: root.t("Модули установлены", "Modules installed")
+    readonly property string wzInstallFailed: root.t("Установка модулей не удалась", "Module installation failed")
+    readonly property string wzModelDone: root.t("Модель скачана", "Model downloaded")
+    readonly property string wzModelFailed: root.t("Модель не скачалась", "Model download failed")
+    readonly property string wzUndoHint: root.t("отменить: sos undo", "undo: sos undo")
 }

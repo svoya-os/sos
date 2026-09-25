@@ -1,0 +1,9 @@
+# SOS: re-evaluate the theme (Graphite by night, Paper by day) — user unit.
+# Installed in /usr/lib/systemd/user/. Respects an explicit choice (`sos theme apply paper` sticks).
+[Unit]
+Description=SOS: switch the theme by sunrise and sunset
+ConditionPathExists=/usr/bin/sos
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sos theme apply --quiet

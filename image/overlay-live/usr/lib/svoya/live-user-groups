@@ -1,0 +1,9 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# SOS live image: add the live user to the model store and GPU groups (see sos-live-user.service).
+user=$(. /etc/casper.conf 2>/dev/null; echo "${USERNAME:-svoya}")
+id "$user" >/dev/null 2>&1 || exit 0
+for g in ai render video audio; do
+    if getent group "$g" >/dev/null; then usermod -a -G "$g" "$user"; fi
+done
+exit 0

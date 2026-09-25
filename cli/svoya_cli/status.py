@@ -1,8 +1,8 @@
-"""``svoya status [--json] [--write] [--watch N]`` — ARCHITECTURE §4.2, polled by the shell every 2 s.
+"""``sos status [--json] [--write] [--watch N]`` — ARCHITECTURE §4.2, polled by the shell every 2 s.
 
 Fast path only: one ``nvidia-smi`` query, sysfs reads, small JSON files. Anything slow (apt,
 snapper) is read from a cache under ``~/.local/state/svoya/cache/`` and refreshed by a detached
-``svoya status --refresh-cache`` at most once per TTL, so a poll never waits for apt.
+``sos status --refresh-cache`` at most once per TTL, so a poll never waits for apt.
 
 Output (every field optional)::
 
@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import fcntl
 import json
-import os
 import re
 import sys
 import time
@@ -119,6 +118,33 @@ def _maybe_spawn_refresh(ctx: Ctx) -> None:
 
 # ---------------------------------------------------------------- collect
 
+def ai_state(ctx: Ctx, now) -> dict:
+    """``ai`` for the bar: jacksond's runtime state (``$XDG_RUNTIME_DIR/svoya/ai.json``: local,
+    cloudActiveSince, …) + the AI switch (``[ai] enabled`` in svoya.toml) + today's totals from
+    Jackson's spend ledger (``~/.local/share/svoya/jackson/spend.json``)."""
+    out: dict = {}
+    rt = read_json(ctx.paths.runtime_svoya / "ai.json")
+    if isinstance(rt, dict):
+        out.update({k: v for k, v in rt.items() if isinstance(k, str)})
+        if "local" in out:
+            out["local"] = bool(out["local"])
+            out.setdefault("cloudActiveSince", None)
+    try:
+        import tomllib
+        with open(ctx.paths.user_config, "rb") as f:
+            enabled = tomllib.load(f).get("ai", {}).get("enabled")
+        if isinstance(enabled, bool):
+            out["enabled"] = enabled
+    except (OSError, ValueError):
+        pass
+    ledger = read_json(ctx.paths.data_home / "svoya" / "jackson" / "spend.json")
+    if isinstance(ledger, dict) and isinstance(ledger.get("days"), dict):
+        day = ledger["days"].get(now.astimezone().strftime("%Y-%m-%d")) or {}
+        out["todayCostEur"] = round(float(day.get("eur", 0.0)), 4)
+        out["todayCloudRequests"] = int(day.get("left", 0))
+    return out
+
+
 def _gpu_ok(g: dict, doctor: dict | None) -> bool:
     if g.get("tempC") is not None and g["tempC"] >= HOT_C:
         return False
@@ -141,9 +167,9 @@ def collect(ctx: Ctx, *, background: bool = True) -> dict:
 
     status["jobs"] = jobs.for_status(ctx.paths.jobs_dir, now)
 
-    ai = read_json(ctx.paths.runtime_svoya / "ai.json")
-    if isinstance(ai, dict) and "local" in ai:
-        status["ai"] = {"local": bool(ai.get("local")), "cloudActiveSince": ai.get("cloudActiveSince")}
+    ai = ai_state(ctx, now)
+    if ai:
+        status["ai"] = ai
 
     cache = ctx.paths.cache_dir
     upd = read_json(cache / "updates.json")
@@ -228,7 +254,11 @@ def main(args, ctx: Ctx | None = None) -> int:
                 sys.stdout.write(json.dumps(s, ensure_ascii=False, separators=(",", ":")) + "\n")
                 sys.stdout.flush()
                 time.sleep(interval)
-        except (KeyboardInterrupt, BrokenPipeError):
+        except KeyboardInterrupt:
+            return 0
+        except BrokenPipeError:            # reader went away (e.g. `| head`): exit quietly
+            import os
+            os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
             return 0
     s = collect(ctx)
     if args.write:

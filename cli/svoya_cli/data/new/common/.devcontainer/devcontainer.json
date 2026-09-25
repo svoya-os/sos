@@ -1,0 +1,8 @@
+{
+  "name": "{{ project.name }}",
+  "build": { "dockerfile": "../Containerfile", "context": ".." },
+  "hostRequirements": { "gpu": "optional" },
+  "containerEnv": { "HF_HOME": "/srv/ai", "UV_TORCH_BACKEND": "{{ gpu.backend }}" },
+  "mounts": ["source=/srv/ai,target=/srv/ai,type=bind,readonly"],
+  "postCreateCommand": "uv sync"
+}

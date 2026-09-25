@@ -1,0 +1,96 @@
+# SOS base system (the installed system's engine). SPDX-License-Identifier: Apache-2.0
+# One package per line; "#" starts a comment. "?name" = install only if the archive has it
+# (the build logs every skipped optional package). Recommends are NOT installed during the build.
+
+# --- kernel, firmware, initramfs ----------------------------------------------------------------
+linux-image-generic
+linux-firmware
+initramfs-tools          # live initrd needs it (casper); the installer switches the target to dracut
+?thermald
+
+# --- init, users, time, locale ------------------------------------------------------------------
+systemd
+systemd-sysv
+systemd-resolved
+?systemd-oomd
+dbus
+dbus-user-session
+udev
+kmod
+sudo                     # 26.04: sudo-rs is the default provider
+chrony                   # 26.04 default time sync (NTS)
+locales
+tzdata
+keyboard-configuration
+console-setup
+kbd
+?language-pack-en-base
+?language-pack-ru-base
+?language-pack-gnome-en-base
+?language-pack-gnome-ru-base
+
+# --- packaging and basic tools ------------------------------------------------------------------
+apt
+apt-utils
+ca-certificates
+gpg
+curl
+wget
+less
+nano
+vim-tiny
+bash-completion
+man-db
+manpages
+file
+lsof
+pciutils
+usbutils
+dmidecode
+rsync
+zstd
+xz-utils
+unzip
+?zip
+
+# --- network ------------------------------------------------------------------------------------
+iproute2
+iputils-ping
+openssh-client
+network-manager
+wpasupplicant
+bluez
+rfkill
+
+# --- security -----------------------------------------------------------------------------------
+apparmor
+polkitd
+pkexec
+
+# --- storage, boot, snapshots -------------------------------------------------------------------
+btrfs-progs
+dosfstools
+e2fsprogs
+exfatprogs
+ntfs-3g
+cryptsetup
+?systemd-cryptsetup      # split out of systemd in recent releases; dracut's crypt module needs it
+lvm2
+efibootmgr
+mokutil
+grub-common              # boot platform packages (grub-efi-amd64-signed/shim-signed or grub-pc)
+grub2-common             # come from the ISO pool at install time
+os-prober
+snapper
+grub-btrfs
+systemd-zram-generator
+acl
+
+# --- hardware -----------------------------------------------------------------------------------
+ubuntu-drivers-common    # online GPU driver install (offline: the ISO pool)
+?fwupd
+power-profiles-daemon
+upower
+
+# --- SOS ----------------------------------------------------------------------------------------
+svoya-base

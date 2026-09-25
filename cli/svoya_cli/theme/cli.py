@@ -1,4 +1,4 @@
-"""``svoya theme list | current | apply [<id>|auto]``."""
+"""``sos theme list | current | apply [<id>|auto]``."""
 from __future__ import annotations
 
 from .. import config as config_mod
@@ -6,7 +6,7 @@ from .. import i18n, ui
 from ..context import Ctx
 from ..i18n import tr
 from ..util import read_json
-from .apply import ThemeError, apply_theme, list_themes, next_switch, resolve
+from .apply import ThemeError, apply_theme, list_themes, next_switch
 
 
 def main(args, ctx: Ctx | None = None) -> int:
@@ -39,8 +39,8 @@ def main(args, ctx: Ctx | None = None) -> int:
             ui.print_json(data or {})
             return 0
         if not data:
-            ui.head(tr("no theme applied yet — run `svoya theme apply auto`",
-                       "тема ещё не применялась — `svoya theme apply auto`"))
+            ui.head(tr("no theme applied yet — run `sos theme apply auto`",
+                       "тема ещё не применялась — `sos theme apply auto`"))
             return 0
         name = data.get("nameRu" if lang == "ru" else "nameEn") or data.get("id")
         ui.head(f"{name} {st.faint('(' + data.get('id', '') + ')')}")
@@ -57,15 +57,22 @@ def main(args, ctx: Ctx | None = None) -> int:
     try:
         report = apply_theme(ctx, choice, force=args.force, only=args.only or None, cfg=cfg)
     except ThemeError as e:
-        ui.err(f"svoya: {e}")
+        ui.err(f"sos: {e}")
         return 2
+    if args.theme and not ctx.dry_run and cfg.get("theme", {}).get("id") != args.theme:
+        # remember an explicit choice: the auto timer and session start respect it
+        from ..config import set_user_value
+        try:
+            set_user_value(ctx.paths, "theme", "id", args.theme)
+        except OSError:
+            pass
     if args.json:
         ui.print_json(report)
         return 0
     if args.quiet:
         return 0
     changed = [t for t in report["targets"] if t["changed"]]
-    title = report["theme"]
+    title = (report.get("name") or {}).get(lang) or report["theme"]
     if report["choice"] == "auto":
         why = report["reason"]
         title += st.faint(f"  (auto · {tr('by the sun', 'по солнцу') if why == 'sun' else why})")
@@ -82,5 +89,3 @@ def main(args, ctx: Ctx | None = None) -> int:
         ui.note(f"↻ {h}")
     return 0
 
-
-__all__ = ["main", "resolve"]

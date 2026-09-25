@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: Apache-2.0
+# Fast checks on every push to main and every pull request (no secrets needed).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (shellcheck, YAML, JSON)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Tools
+        run: |
+          shellcheck --version | head -n 2
+          python3 -c 'import yaml; print("PyYAML", yaml.__version__)'
+      - name: Lint build, packaging, installer and CI code
+        run: scripts/lint.sh
+
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: VM harness (QMP, screenshots, plan)
+        run: python3 -m unittest discover -s tests/vm -v
+      - name: Installer helpers and Calamares configs
+        run: python3 -m unittest discover -s installer/tests -v
+      - name: Image and packaging helpers
+        run: python3 -m unittest discover -s image/tests -v
+      - name: Jackson
+        if: hashFiles('jackson/tests/**/*.py') != ''
+        working-directory: jackson
+        run: python3 -m unittest discover -s tests -t . -v
+      - name: sos CLI
+        if: hashFiles('cli/tests/**/*.py') != ''
+        working-directory: cli
+        run: python3 -m unittest discover -s tests -t . -v
+
+  plan:
+    name: Packaging and image plan (dry runs)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: packages/build-all.sh --dry-run
+        run: packages/build-all.sh --dry-run
+      - name: image/build-iso.sh --dry-run
+        run: image/build-iso.sh --dry-run
+      - name: tests/vm/run.py --dry-run
+        run: python3 tests/vm/run.py --iso dist/iso/sos.iso --firmware uefi-sb --dry-run --out "$RUNNER_TEMP/vm"

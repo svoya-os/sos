@@ -16,7 +16,7 @@ from typing import Any, Iterator
 
 from .base import CancelToken, Cancelled, ProviderError
 
-USER_AGENT = "jackson/0.1 (Svoya OS)"
+USER_AGENT = "jackson/0.1 (SOS)"
 MAX_ERROR_BODY = 64 * 1024
 
 
@@ -149,11 +149,13 @@ class Connection:
         self.close()
 
     def close(self) -> None:
-        try:
-            if self.conn is not None:
-                self.conn.close()
-        except Exception:
-            pass
+        # A "Connection: close" response owns the socket; close it too, not just the connection.
+        for obj in (self.resp, self.conn):
+            try:
+                if obj is not None:
+                    obj.close()
+            except Exception:
+                pass
 
 
 def http_error(status: int, raw: bytes, provider: str, host: str) -> ProviderError:
@@ -250,6 +252,7 @@ def get_json(url: str, headers: dict[str, str] | None = None, *, timeout: float 
         c.request("GET", path, headers={"User-Agent": USER_AGENT, "Accept": "application/json",
                                         **(headers or {})})
         resp = c.getresponse()
+        conn.resp = resp
         raw = resp.read(4 << 20)
         try:
             data = json.loads(raw.decode("utf-8", "replace")) if raw else None

@@ -23,6 +23,15 @@ Singleton {
     readonly property int cloudRequestsToday: adapter.aiDate === root.today ? adapter.aiCloudRequests : 0
     readonly property int turnsToday: adapter.aiDate === root.today ? adapter.aiTurns : 0
 
+    // Launcher: how often each app was started (id -> count), for the empty query.
+    readonly property var launchCounts: adapter.launchCounts
+
+    function recordLaunch(id) {
+        const c = Object.assign({}, adapter.launchCounts || {});
+        c[id] = (c[id] || 0) + 1;
+        adapter.launchCounts = c;
+    }
+
     // Record one finished Jackson turn.
     function recordTurn(costEur, leftMachine) {
         if (adapter.aiDate !== root.today) {
@@ -56,6 +65,7 @@ Singleton {
             property real aiCostEur: 0
             property int aiCloudRequests: 0
             property int aiTurns: 0
+            property var launchCounts: ({})
         }
     }
 }

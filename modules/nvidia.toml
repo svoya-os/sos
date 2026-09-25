@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "nvidia"
+name = { en = "NVIDIA driver", ru = "Драйвер NVIDIA" }
+summary = { en = "Canonical-signed driver for your GPU generation (595 open / 580 legacy), suspend fixes, CUDA in containers (CDI).", ru = "Подписанный драйвер под поколение карты (595 open / 580 для старых), исправления сна, CUDA в контейнерах (CDI)." }
+category = "system"
+profiles = []            # profiles use "@gpu", which resolves to this module on NVIDIA machines
+requires = []
+hardware = ["nvidia"]
+apt = ["nvidia-driver-{nvidia.branch}{nvidia.open}", "linux-modules-nvidia-{nvidia.branch}{nvidia.open}-{kernel.flavor}"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 1.5
+vram_gb_min = 0
+aliases = ["driver", "драйвер", "cuda"]
+license_note = { en = "NVIDIA's driver is proprietary (kernel modules: open for Turing+); prebuilt modules are signed by Canonical, so Secure Boot works without MOK. Container toolkit: Apache-2.0.", ru = "Драйвер NVIDIA проприетарный (модули ядра для Turing+ открытые); готовые модули подписаны Canonical — Secure Boot без MOK. Container toolkit — Apache-2.0." }

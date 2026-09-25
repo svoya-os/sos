@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "cloud-burst"
+name = { en = "Cloud burst", ru = "Облачный рывок" }
+summary = { en = "Run a project on rented GPUs when yours is not enough: SkyPilot and dstack, rclone for datasets. Keys live in the keyring.", ru = "Запуск проекта на арендованных ГП, когда своей мало: SkyPilot и dstack, rclone для датасетов. Ключи — в связке ключей." }
+category = "cloud"
+profiles = ["ml"]
+requires = ["base-ai"]
+apt = ["rclone"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 0.8
+vram_gb_min = 0
+aliases = ["cloud", "skypilot", "облако"]
+license_note = { en = "SkyPilot: Apache-2.0; dstack: MPL-2.0. Cloud jobs cost money and send your code/data to the provider you choose.", ru = "SkyPilot — Apache-2.0; dstack — MPL-2.0. Облачные задачи стоят денег и отправляют код/данные выбранному провайдеру." }

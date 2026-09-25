@@ -1,4 +1,4 @@
-"""``svoya models list | pull | fit | rm | dedup | views``."""
+"""``sos models list | pull | fit | rm | dedup | views``."""
 from __future__ import annotations
 
 import os
@@ -9,7 +9,6 @@ from pathlib import Path
 from .. import config as config_mod
 from .. import i18n, ui
 from ..context import Ctx
-from ..hw import amd_db
 from ..hw import gpu as gpu_mod
 from ..i18n import tr
 from ..util import iso
@@ -124,24 +123,24 @@ def cmd_fit(args, ctx: Ctx) -> int:
         else:
             ref = remote.parse_ref(target, args.revision)
             if ref is None or not ref.filename:
-                ui.err(tr("svoya: give a .gguf path or org/repo/file.gguf", "svoya: укажите путь .gguf или org/repo/file.gguf"))
+                ui.err(tr("sos: give a .gguf path or org/repo/file.gguf", "sos: укажите путь .gguf или org/repo/file.gguf"))
                 return 2
             if not ref.filename.lower().endswith(".gguf"):
-                ui.err(tr("svoya: fit reads GGUF headers; for other formats see `svoya models list --catalog`",
-                          "svoya: fit читает заголовки GGUF; для других форматов — `svoya models list --catalog`"))
+                ui.err(tr("sos: fit reads GGUF headers; for other formats see `sos models list --catalog`",
+                          "sos: fit читает заголовки GGUF; для других форматов — `sos models list --catalog`"))
                 return 2
             token = remote.hf_token(ctx.env, ctx.paths.ai_root, ctx.paths.home)
             shape, hdr, fetched = load_remote(ref, token)
             label, repo, fname = f"{ref.repo}/{ref.filename}", ref.repo, ref.filename
     except (gguf.GGUFError, remote.RemoteError, OSError) as e:
-        ui.err(f"svoya: {e}")
+        ui.err(f"sos: {e}")
         return 1
     g = gpu_budget(ctx, args.gpu)
     try:
         est = est_mod.estimate(shape, args.ctx, args.kv, flash_attn=not args.no_flash_attn,
                                backend=g["backend"] if g["backend"] != "cpu" else "cuda")
     except ValueError as e:
-        ui.err(f"svoya: {e}")
+        ui.err(f"sos: {e}")
         return 2
     ram = ram_available(ctx)
     f = est_mod.fit(shape, est, g["total"], g["used"], ram)
@@ -290,7 +289,7 @@ def cmd_list(args, ctx: Ctx) -> int:
     ui.head(tr(f"models in {ctx.paths.ai_root}", f"модели в {ctx.paths.ai_root}") +
             st.faint(f" · {len(out)} · {i18n.gib(total)}"))
     if not out:
-        ui.note(tr("empty — `svoya models pull org/repo/file.gguf`", "пусто — `svoya models pull org/repo/file.gguf`"))
+        ui.note(tr("empty — `sos models pull org/repo/file.gguf`", "пусто — `sos models pull org/repo/file.gguf`"))
     for r in out:
         mark = {"ok": st.ok("✓"), "warn": st.warn("!"), "no": st.bad("×")}[r["usable"]]
         name = f"{r.get('repo') or ''}/{r.get('filename') or Path(r['path']).name}"
@@ -302,135 +301,289 @@ def cmd_list(args, ctx: Ctx) -> int:
 
 # ---------------------------------------------------------------- pull
 
+class _Events:
+    """``--json``: one JSON object per line (plan · progress · file-done · done · error) for the
+    first-run wizard; otherwise calm human output."""
+
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+        self._last = 0.0
+
+    def __call__(self, event: str, **kw) -> None:
+        if self.enabled:
+            import json
+            import sys
+            sys.stdout.write(json.dumps({"event": event, **kw}, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+
+    def progress(self, file: str, done: int, total: int | None) -> None:
+        import time
+        now = time.monotonic()
+        if self.enabled and (now - self._last >= 0.5 or (total and done >= total)):
+            self._last = now
+            self("progress", file=file, bytes=done, totalBytes=total,
+                 fraction=round(done / total, 4) if total else None)
+
+
+def _plan_from_alias(alias: "suggest_mod.Choice") -> tuple[str, list[str], dict[str, int]]:
+    files = [f["file"] for f in alias.files]
+    sizes = {f["file"]: f["size"] for f in alias.files}
+    if alias.mmproj:
+        files.append(alias.mmproj["file"])
+        sizes[alias.mmproj["file"]] = alias.mmproj["size"]
+    return alias.model["repo"], files, sizes
+
+
 def cmd_pull(args, ctx: Ctx) -> int:
+    from . import suggest as suggest_mod
     cfg = config_mod.load(ctx.paths)
     st = ui.style()
-    ref = remote.parse_ref(args.repo, args.revision)
-    if ref is None:
-        ui.err(tr("svoya: expected org/repo[/file]", "svoya: ожидается org/repo[/file]"))
-        return 2
-    files = list(args.files)
-    if ref.filename:
-        files.insert(0, ref.filename)
+    ev = _Events(bool(getattr(args, "json", False)))
+    say = (lambda *a, **k: None) if ev.enabled else ui.kv
+    head = (lambda *a, **k: None) if ev.enabled else ui.head
     token = remote.hf_token(ctx.env, ctx.paths.ai_root, ctx.paths.home)
     region = str(cfg["models"].get("region", "EU"))
     commercial = bool(cfg["models"].get("commercial", True))
 
-    # 1. what exactly would be downloaded (Hub API: sizes + sha256)
-    try:
-        info = remote.api_model(ref.repo, ref.revision, token)
-    except remote.RemoteError as e:
-        ui.err(f"svoya: {e}")
-        return 1
-    siblings = {s["rfilename"]: s for s in info.get("siblings", [])}
-    if not files:
-        ggufs = [n for n in siblings if n.lower().endswith(".gguf")]
-        if ggufs and not args.include:
-            ui.head(tr(f"{ref.repo} has {len(ggufs)} GGUF files — pick one:",
-                       f"в {ref.repo} {len(ggufs)} файлов GGUF — выберите один:"))
-            for n in sorted(ggufs):
-                sz = siblings[n].get("size") or (siblings[n].get("lfs") or {}).get("size")
-                ui.out(f"  svoya models pull {ref.repo}/{n}  {st.faint(i18n.gib(sz) if sz else '')}")
-            return 2
-        import fnmatch
-        files = [n for n in siblings if not args.include or any(fnmatch.fnmatch(n, p) for p in args.include)]
-    missing = [f for f in files if f not in siblings]
-    if missing:
-        ui.err(tr(f"svoya: not in {ref.repo}: {', '.join(missing)}", f"svoya: нет в {ref.repo}: {', '.join(missing)}"))
-        return 2
-    # add remaining shards of split GGUFs
-    for f in list(files):
-        m = SHARD.search(f)
-        if m:
-            n = int(m.group(2))
-            for i in range(1, n + 1):
-                sf = SHARD.sub(f"-{i:05d}-of-{n:05d}.gguf", f)
-                if sf in siblings and sf not in files:
-                    files.append(sf)
-    total = sum((siblings[f].get("lfs") or {}).get("size") or siblings[f].get("size") or 0 for f in files)
+    def fail(msg: str, rc: int = 1) -> int:
+        ev("error", message=msg)
+        if not ev.enabled:
+            ui.err(f"sos: {msg}")
+        return rc
 
-    # 2. license
-    card = info.get("cardData") or {}
-    lic_id = card.get("license") if isinstance(card.get("license"), str) else None
-    verdict = licenses.classify(repo=ref.repo, filename=files[0] if files else None, license_id=lic_id)
-    status, reason = verdict.allows(region, commercial)
-    ui.head(f"{ref.repo} {st.faint('· ' + i18n.count(len(files), 'file', 'files', 'файл', 'файла', 'файлов') + ' · ' + i18n.gib(total))}")
-    ui.kv(tr("license", "лицензия"), f"{verdict.license or tr('unknown', 'неизвестна')}  "
-          + {"ok": st.ok("✓ " + (reason or tr('OK for you', 'подходит'))), "warn": st.warn("! " + reason),
-             "no": st.bad("× " + reason)}[status], width=11)
-    if status == "no" and not args.accept_license:
-        ui.note(tr("not downloading. If your use is covered (e.g. personal, outside the region), add --accept-license",
-                   "не скачиваю. Если ваше использование разрешено (например, личное или вне региона) — добавьте --accept-license"))
-        return 3
-
-    # 3. fit (GGUF: remote header only)
-    first_gguf = next((f for f in files if f.lower().endswith(".gguf") and "mmproj" not in f.lower()
-                       and (not SHARD.search(f) or "-00001-of-" in f)), None)
-    fit_res = None
-    if first_gguf:
-        try:
-            shape, _hdr, _ = load_remote(remote.HFRef(ref.repo, first_gguf, ref.revision), token)
-            g = gpu_budget(ctx, "auto")
-            est = est_mod.estimate(shape, args.ctx, backend=g["backend"] if g["backend"] != "cpu" else "cuda")
-            fit_res = est_mod.fit(shape, est, g["total"], g["used"], ram_available(ctx))
-            en, ru = VERDICT[fit_res.verdict]
-            ui.kv(tr("fit", "влезет?"), f"{tr(en, ru)}  {st.faint(i18n.gib(est.total) + ' @ ' + i18n.num(args.ctx) + tr(' tok', ' ток.'))}", width=11)
-        except (gguf.GGUFError, remote.RemoteError) as e:
-            ui.note(tr(f"fit check skipped: {e}", f"проверка пропущена: {e}"))
+    alias = suggest_mod.resolve(args.repo)
+    siblings: dict = {}
+    info: dict = {}
+    if alias is not None:                        # curated ladder id, e.g. qwen3.5-9b:Q4_K_M
+        repo, files, sizes = _plan_from_alias(alias)
+        revision = args.revision
+        verdict = licenses.classify(license_id=str(alias.model.get("license", "")).lower())
     else:
-        entry = licenses.match_catalog(ref.repo)
-        if entry and entry.get("vram_gb"):
-            ui.kv(tr("vram", "видеопамять"), f"≈ {i18n.smart(entry['vram_gb'])} {tr('GB', 'ГБ')} {st.faint(tr('(catalog)', '(каталог)'))}", width=11)
+        ref = remote.parse_ref(args.repo, args.revision)
+        if ref is None:
+            return fail(tr("expected org/repo[/file] or a model id from `sos models suggest`",
+                           "ожидается org/repo[/file] или id модели из `sos models suggest`"), 2)
+        repo, revision = ref.repo, ref.revision
+        files = list(args.files)
+        if ref.filename:
+            files.insert(0, ref.filename)
+        try:
+            info = remote.api_model(repo, revision, token)
+        except remote.RemoteError as e:
+            return fail(str(e))
+        siblings = {s["rfilename"]: s for s in info.get("siblings", [])}
+        if not files:
+            ggufs = [n for n in siblings if n.lower().endswith(".gguf")]
+            if ggufs and not args.include:
+                ev("choose", repo=repo, files=sorted(ggufs))
+                head(tr(f"{repo} has {len(ggufs)} GGUF files — pick one:", f"в {repo} {len(ggufs)} файлов GGUF — выберите один:"))
+                for n in sorted(ggufs):
+                    sz = (siblings[n].get("lfs") or {}).get("size") or siblings[n].get("size")
+                    if not ev.enabled:
+                        ui.out(f"  sos models pull {repo}/{n}  {st.faint(i18n.gib(sz) if sz else '')}")
+                return 2
+            import fnmatch
+            files = [n for n in siblings if not args.include or any(fnmatch.fnmatch(n, p) for p in args.include)]
+        missing = [f for f in files if f not in siblings]
+        if missing:
+            return fail(tr(f"not in {repo}: {', '.join(missing)}", f"нет в {repo}: {', '.join(missing)}"), 2)
+        for f in list(files):          # all shards of a split GGUF
+            m = SHARD.search(f)
+            if m:
+                n = int(m.group(2))
+                for i in range(1, n + 1):
+                    sf = SHARD.sub(f"-{i:05d}-of-{n:05d}.gguf", f)
+                    if sf in siblings and sf not in files:
+                        files.append(sf)
+        sizes = {f: (siblings[f].get("lfs") or {}).get("size") or siblings[f].get("size") or 0 for f in files}
+        card = info.get("cardData") or {}
+        lic_id = card.get("license") if isinstance(card.get("license"), str) else None
+        verdict = licenses.classify(repo=repo, filename=files[0] if files else None, license_id=lic_id)
+    total = sum(sizes.values())
+    status, reason = verdict.allows(region, commercial)
 
-    # 4. disk
+    # fit: curated entries are estimated offline; other GGUFs from the remote header
+    fit_verdict = None
+    if alias is not None:
+        e = suggest_mod.evaluate(alias, suggest_mod.hardware(ctx))
+        fit_verdict, need = e["verdict"], e["memoryBytes8k"]
+    else:
+        first = next((f for f in files if f.lower().endswith(".gguf") and "mmproj" not in f.lower()
+                      and (not SHARD.search(f) or "-00001-of-" in f)), None)
+        need = None
+        if first:
+            try:
+                shape, _hdr, _ = load_remote(remote.HFRef(repo, first, revision), token)
+                g = gpu_budget(ctx, "auto")
+                est = est_mod.estimate(shape, args.ctx, backend=g["backend"] if g["backend"] != "cpu" else "cuda")
+                fit_verdict = est_mod.fit(shape, est, g["total"], g["used"], ram_available(ctx)).verdict
+                need = est.total
+            except (gguf.GGUFError, remote.RemoteError) as e:
+                if not ev.enabled:
+                    ui.note(tr(f"fit check skipped: {e}", f"проверка пропущена: {e}"))
     root = ctx.paths.ai_root
+    probe = root if root.exists() else root.parent
     try:
-        free = shutil.disk_usage(root if root.exists() else root.parent).free
+        free = shutil.disk_usage(probe).free
     except OSError:
         free = None
+    ev("plan", repo=repo, revision=revision, files=files, totalBytes=total, license=verdict.as_json(),
+       usable={"status": status, "reason": reason, "region": region}, fit=fit_verdict, memoryBytes8k=need,
+       diskFreeBytes=free)
+    head(f"{repo} {st.faint('· ' + i18n.count(len(files), 'file', 'files', 'файл', 'файла', 'файлов') + ' · ' + i18n.gib(total))}")
+    say(tr("license", "лицензия"), f"{verdict.license or tr('unknown', 'неизвестна')}  "
+        + {"ok": st.ok("✓ " + (reason or tr('OK for you', 'подходит'))), "warn": st.warn("! " + reason),
+           "no": st.bad("× " + reason)}[status], width=11)
+    if fit_verdict:
+        en, ru = VERDICT[fit_verdict]
+        say(tr("fit", "влезет?"), tr(en, ru) + (st.faint(f"  {i18n.gib(need)} @ 8k") if need else ""), width=11)
     if free is not None:
-        ui.kv(tr("disk", "диск"), tr(f"{i18n.gib(total)} of {i18n.gib(free)} free", f"{i18n.gib(total)} из {i18n.gib(free)} свободных"), width=11)
-        if total > free:
-            ui.err(tr("svoya: not enough disk space in the store", "svoya: не хватает места в хранилище"))
-            return 1
-    if fit_res is not None and fit_res.verdict == "no" and not ui.confirm(
-            tr("It will not fit your GPU. Download anyway?", "В видеокарту не влезет. Всё равно скачать?"), assume=True if args.yes else None):
-        return 1
-    if args.dry_run:
-        ui.note(tr("dry run: nothing downloaded", "пробный запуск: ничего не скачано"))
-        return 0
-    if not args.yes and not ui.confirm(tr("Download?", "Скачать?"), default=True):
-        return 1
+        say(tr("disk", "диск"), tr(f"{i18n.gib(total)} of {i18n.gib(free)} free", f"{i18n.gib(total)} из {i18n.gib(free)} свободных"), width=11)
 
-    # 5. download into the HF cache layout
+    if args.dry_run:
+        ev("done", ok=True, dryRun=True)
+        if not ev.enabled:
+            ui.note(tr("dry run: nothing downloaded", "пробный запуск: ничего не скачано"))
+        return 0
+    if status == "no" and not args.accept_license:
+        if not ev.enabled:
+            ui.note(tr("not downloading. If your use is covered (e.g. personal, outside the region), add --accept-license",
+                       "не скачиваю. Если ваше использование разрешено (например, личное или вне региона) — добавьте --accept-license"))
+        return fail(reason, 3) if ev.enabled else 3
+    if free is not None and total > free:
+        return fail(tr("not enough disk space in the store", "не хватает места в хранилище"))
+    if fit_verdict == "no" and not args.yes:
+        if ev.enabled or not ui.confirm(tr("It will not fit your GPU. Download anyway?", "В видеокарту не влезет. Всё равно скачать?")):
+            return fail(tr("does not fit; add --yes to download anyway", "не влезет; добавьте --yes, чтобы скачать всё равно"), 3)
+    if not args.yes:
+        if ev.enabled:
+            return fail(tr("add --yes to download", "добавьте --yes, чтобы скачать"), 3)
+        if not ui.confirm(tr("Download?", "Скачать?"), default=True):
+            return 1
+
     hub = root / "hub"
-    env = {**ctx.env, "HF_HOME": str(root)}
-    if ctx.runner.which("hf"):
-        rc = ctx.runner.stream(["hf", "download", ref.repo, *files, "--revision", ref.revision], env=env)
+    if ctx.runner.which("hf") and not ev.enabled:
+        env = {**ctx.env, "HF_HOME": str(root)}
+        rc = ctx.runner.stream(["hf", "download", repo, *files, "--revision", revision], env=env)
         if rc != 0:
-            ui.err(tr("svoya: hf download failed", "svoya: hf download завершился с ошибкой"))
-            return rc
+            return fail(tr("hf download failed", "hf download завершился с ошибкой"), rc)
     else:
         for f in files:
-            url = remote.HFRef(ref.repo, f, ref.revision).url()
+            url = remote.HFRef(repo, f, revision).url()
             try:
                 meta = remote.head(url, token)
-                etag = meta.etag or (siblings[f].get("lfs") or {}).get("sha256") or siblings[f].get("blobId")
-                commit = meta.commit or info.get("sha") or ref.revision
-                dest = hfcache.blob_dest(hub, ref.repo, etag)
-                ui.note(f"↓ {f}")
-                done = remote.download(url, dest, token=token, expected_size=meta.size,
-                                       expected_sha256=etag if etag and len(etag) == 64 else None)
-                hfcache.add_file(hub, ref.repo, commit, f, done, etag, ref.revision)
+                etag = meta.etag or (siblings.get(f, {}).get("lfs") or {}).get("sha256") or siblings.get(f, {}).get("blobId")
+                if not etag:
+                    return fail(f"{f}: no etag from the Hub")
+                commit = meta.commit or info.get("sha") or revision
+                dest = hfcache.blob_dest(hub, repo, etag)
+                if not ev.enabled:
+                    ui.note(f"↓ {f}")
+                ev("file", file=f, totalBytes=meta.size or sizes.get(f))
+                done = dest if dest.exists() else remote.download(
+                    url, dest, token=token, expected_size=meta.size or sizes.get(f) or None,
+                    expected_sha256=etag if len(etag) == 64 else None,
+                    progress=lambda d, t, _f=f: ev.progress(_f, d, t))
+                hfcache.add_file(hub, repo, commit, f, done, etag, revision)
+                ev("file-done", file=f)
             except remote.RemoteError as e:
-                ui.err(f"svoya: {f}: {e}")
-                return 1
+                return fail(f"{f}: {e}")
     reg = _open_registry(ctx)
-    sync_registry(reg, [c for c in hfcache.scan(hub) if c.repo == ref.repo and c.filename in files], iso(ctx.now()))
+    sync_registry(reg, [c for c in hfcache.scan(hub) if c.repo == repo and c.filename in files], iso(ctx.now()))
     if reg:
         reg.close()
-    ui.head(tr("done · `svoya models views` updates llama.cpp/ComfyUI/Ollama views",
-               "готово · `svoya models views` обновит представления llama.cpp/ComfyUI/Ollama"))
+    ev("done", ok=True, repo=repo, files=files)
+    head(tr("done · `sos models views` updates the llama.cpp/ComfyUI/Ollama views",
+            "готово · `sos models views` обновит представления llama.cpp/ComfyUI/Ollama"))
+    return 0
+
+
+# ---------------------------------------------------------------- serve
+
+SERVE_UNIT = "svoya-llm.service"
+
+
+def _healthy(url: str) -> bool:
+    import urllib.request
+    try:
+        with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(f"{url}/health", timeout=1) as r:
+            return r.status == 200
+    except OSError:
+        return False
+
+
+def cmd_serve(args, ctx: Ctx) -> int:
+    """Start/stop the local OpenAI-compatible server Jackson uses (llama.cpp router, localhost only)."""
+    url = f"http://127.0.0.1:{args.port}"
+    r = ctx.runner
+    has_unit = bool(r.which("systemctl")) and r.run(["systemctl", "--user", "cat", SERVE_UNIT], timeout=5).ok
+    running = _healthy(url)
+    if args.status or args.json and not args.stop:
+        info = {"running": running, "url": f"{url}/v1", "unit": SERVE_UNIT if has_unit else None}
+        if args.json:
+            ui.print_json(info)
+        else:
+            ui.head((tr("running", "работает") if running else tr("stopped", "остановлен")) + ui.style().faint(f" · {url}/v1"))
+        if args.status:
+            return 0 if running else 1
+    if args.stop:
+        if has_unit:
+            r.run(["systemctl", "--user", "stop", SERVE_UNIT], timeout=30, mutating=True)
+        else:
+            r.run(["pkill", "-f", f"llama-server .*--port {args.port}"], timeout=5, mutating=True)
+        ui.head(tr("local model server stopped", "локальный сервер моделей остановлен"))
+        return 0
+    if running:
+        ui.head(tr(f"already running · {url}/v1", f"уже работает · {url}/v1"))
+        return 0
+    views_dir = ctx.paths.ai_root / "views" / "llama.cpp"
+    if has_unit and not args.foreground:
+        res = r.run(["systemctl", "--user", "start", SERVE_UNIT], timeout=60, mutating=True)
+        if not res.ok:
+            ui.err(f"sos: {res.err.strip()[:300]}")
+            return 1
+    elif r.which("llama-server"):
+        from types import SimpleNamespace
+        cmd_views(SimpleNamespace(out=None, json=False, quiet=True), ctx)
+        argv = ["llama-server", "--host", "127.0.0.1", "--port", str(args.port), "--models-dir", str(views_dir),
+                "--models-max", "2", "--jinja"]
+        if args.foreground and not ctx.dry_run:
+            os.execvp(argv[0], argv)
+        r.spawn(argv)
+    else:
+        ui.err(tr("sos: no local model server yet — sos install llm-local", "sos: локального сервера моделей ещё нет — sos install llm-local"))
+        return 2
+    ui.head(tr(f"local models at {url}/v1", f"локальные модели на {url}/v1") + ui.style().faint(" · OpenAI/Anthropic API, localhost"))
+    if not any(views_dir.glob("*")) if views_dir.is_dir() else True:
+        ui.note(tr("no models yet — sos models suggest", "моделей пока нет — sos models suggest"))
+    return 0
+
+
+# ---------------------------------------------------------------- suggest
+
+def cmd_suggest(args, ctx: Ctx) -> int:
+    from . import suggest as suggest_mod
+    res = suggest_mod.suggest(ctx)
+    if args.json:
+        ui.print_json(res)
+        return 0
+    st = ui.style()
+    hw = res["hardware"]
+    if hw["backend"] == "cpu":
+        where = tr(f"CPU only · {i18n.gib(hw['ramTotalBytes'])} RAM", f"только процессор · ОЗУ {i18n.gib(hw['ramTotalBytes'])}")
+    else:
+        where = f"{hw['gpu']} · {i18n.gib(hw['memoryBytes'])}" + (tr(" unified", " общей памяти") if hw["unified"] else "")
+    ui.head(tr("local model · ", "локальная модель · ") + where
+            + (st.faint(f"  · {res['tierName']}") if hw["backend"] != "cpu" else ""))
+    d = res["default"]
+    ui.out(f"  {st.accent('●')} {d['name']} {st.faint(d['quant'])}  {i18n.gib(d['sizeBytes'])}  "
+           f"{st.faint(suggest_mod.describe(d))}")
+    ui.note(f"{d['note']} · {d['license']}" + (tr(" · sees images", " · понимает картинки") if d["vision"] else ""), indent=4)
+    ui.note(d["pull"], indent=4)
+    for a in res["alternatives"]:
+        ui.out(f"  {st.faint('○')} {a['name']} {st.faint(a['quant'])}  {i18n.gib(a['sizeBytes'])}  "
+               f"{st.faint(suggest_mod.describe(a))}")
+        ui.note(a["pull"], indent=4)
     return 0
 
 
@@ -449,7 +602,7 @@ def cmd_rm(args, ctx: Ctx) -> int:
                   [f for f in files if f.sha256 == t or str(f.snapshot_path) == str(p)]
         whole_repo = False
     if not victims:
-        ui.err(tr(f"svoya: nothing matches {t}", f"svoya: ничего не найдено по {t}"))
+        ui.err(tr(f"sos: nothing matches {t}", f"sos: ничего не найдено по {t}"))
         return 1
     size = sum(f.size for f in {f.blob_path: f for f in victims}.values())
     ui.head(tr(f"remove {len(victims)} file(s), {i18n.gib(size)}", f"удалить {len(victims)} файл(ов), {i18n.gib(size)}"))
@@ -511,8 +664,8 @@ def cmd_dedup(args, ctx: Ctx) -> int:
     for r in results:
         ui.note(("✓ " if r["ok"] else "× ") + r["path"] + (f" — {r['message']}" if r["message"] else ""))
     if groups and not args.apply:
-        ui.note(tr("`svoya models dedup --apply` shares the blocks on btrfs (reflink); files stay independent",
-                   "`svoya models dedup --apply` разделит блоки на btrfs (reflink); файлы остаются независимыми"))
+        ui.note(tr("`sos models dedup --apply` shares the blocks on btrfs (reflink); files stay independent",
+                   "`sos models dedup --apply` разделит блоки на btrfs (reflink); файлы остаются независимыми"))
     return 0
 
 
@@ -529,6 +682,8 @@ def cmd_views(args, ctx: Ctx) -> int:
         reports[name] = views.apply(plan, d, dry_run=ctx.dry_run)
     if args.json:
         ui.print_json({"out": str(out), "views": reports, "dryRun": ctx.dry_run})
+        return 0
+    if getattr(args, "quiet", False):
         return 0
     st = ui.style()
     ui.head(tr(f"views in {out}", f"представления в {out}") + (st.faint(tr(" · dry run", " · пробный запуск")) if ctx.dry_run else ""))
@@ -551,7 +706,5 @@ def main(args, ctx: Ctx | None = None) -> int:
     if cmd == "list" and not hasattr(args, "catalog"):
         args.catalog, args.all, args.kind, args.json = False, False, None, False
     return {"list": cmd_list, "fit": cmd_fit, "pull": cmd_pull, "rm": cmd_rm, "dedup": cmd_dedup,
-            "views": cmd_views}[cmd](args, ctx)
+            "views": cmd_views, "suggest": cmd_suggest, "serve": cmd_serve}[cmd](args, ctx)
 
-
-__all__ = ["main", "gpu_budget", "load_local", "load_remote", "amd_db"]

@@ -1,0 +1,121 @@
+{
+ "desktop-login": {
+  "seconds": 2.072,
+  "lufs": -17.9,
+  "truePeakDb": -11.7,
+  "target": -18.0,
+  "note": "The mark in sound: ··· ——— ··· at 50 ms per Morse unit. First S on A5, the O as three warm E5 tones, the last S climbing A5–C♯6–E6 and ringing out: an A-major greeting, never a distress beep."
+ },
+ "desktop-logout": {
+  "seconds": 1.018,
+  "lufs": -17.9,
+  "truePeakDb": -12.4,
+  "target": -18.0,
+  "note": "C♯6 · A5 · E5 — the greeting folded back down; the last note long and soft."
+ },
+ "message-new-instant": {
+  "seconds": 0.407,
+  "lufs": -18.0,
+  "truePeakDb": -8.6,
+  "target": -18.0,
+  "note": "One soft tick on E6 with an E5 undertone. The only notification sound."
+ },
+ "bell": {
+  "seconds": 0.357,
+  "lufs": -17.9,
+  "truePeakDb": -8.4,
+  "target": -18.0,
+  "note": "Terminal/console bell: a short, round E5, darker than a notification."
+ },
+ "complete": {
+  "seconds": 0.737,
+  "lufs": -17.9,
+  "truePeakDb": -11.0,
+  "target": -18.0,
+  "note": "A job finished: E5–A5–E6, three quick rising notes."
+ },
+ "dialog-information": {
+  "seconds": 0.447,
+  "lufs": -17.9,
+  "truePeakDb": -9.2,
+  "target": -18.0,
+  "note": "A single A5. Neutral."
+ },
+ "dialog-warning": {
+  "seconds": 0.497,
+  "lufs": -17.9,
+  "truePeakDb": -11.1,
+  "target": -18.0,
+  "note": "Two even E5 blips: attention, not alarm."
+ },
+ "dialog-error": {
+  "seconds": 0.537,
+  "lufs": -17.9,
+  "truePeakDb": -11.2,
+  "target": -18.0,
+  "note": "Two low, dark A4 blips."
+ },
+ "device-added": {
+  "seconds": 0.462,
+  "lufs": -17.9,
+  "truePeakDb": -11.1,
+  "target": -18.0,
+  "note": "Plugged in: E5 → B5, a rising fifth."
+ },
+ "device-removed": {
+  "seconds": 0.462,
+  "lufs": -17.9,
+  "truePeakDb": -10.8,
+  "target": -18.0,
+  "note": "Unplugged: B5 → E5, the same fifth falling."
+ },
+ "audio-volume-change": {
+  "seconds": 0.219,
+  "lufs": -21.0,
+  "truePeakDb": -7.7,
+  "target": -21.0,
+  "note": "A 70 ms C♯6 tick that repeats cleanly while the volume moves; 3 dB quieter than the rest."
+ },
+ "camera-shutter": {
+  "seconds": 0.24,
+  "lufs": -18.3,
+  "truePeakDb": -5.2,
+  "target": -18.0,
+  "note": "Two filtered noise clicks 75 ms apart with a soft body: a small leaf shutter."
+ },
+ "screen-capture": {
+  "seconds": 0.387,
+  "lufs": -18.0,
+  "truePeakDb": -10.2,
+  "target": -18.0,
+  "note": "A short airy sweep and an E6 ping: the screen was captured."
+ },
+ "jackson-listen": {
+  "seconds": 0.422,
+  "lufs": -17.9,
+  "truePeakDb": -10.4,
+  "target": -18.0,
+  "note": "Jackson starts listening: E5 → A5, rising fourth, quick."
+ },
+ "jackson-done": {
+  "seconds": 0.517,
+  "lufs": -17.9,
+  "truePeakDb": -9.5,
+  "target": -18.0,
+  "note": "Jackson finished: A5 → E5, the listening motif turned down."
+ },
+ "jackson-error": {
+  "seconds": 0.527,
+  "lufs": -17.9,
+  "truePeakDb": -11.3,
+  "target": -18.0,
+  "note": "Jackson could not do it: A4 → E4, a low, dark double."
+ },
+ "jackson-thinking": {
+  "seconds": 0.065,
+  "lufs": -31.9,
+  "truePeakDb": -25.6,
+  "target": -32.0,
+  "note": "Optional: an almost inaudible A6 tick for long waits (−32 LUFS)."
+ }
+}

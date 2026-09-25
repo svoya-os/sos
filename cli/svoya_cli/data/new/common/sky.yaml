@@ -1,0 +1,10 @@
+# SkyPilot task (module cloud-burst): sky launch sky.yaml
+name: {{ project.name }}
+resources:
+  accelerators: {{ cloud.accelerators }}
+workdir: .
+setup: |
+  python3 -m pip install --user uv
+  ~/.local/bin/uv sync
+run: |
+  ~/.local/bin/uv run python {{ run.entry }}

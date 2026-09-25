@@ -1,0 +1,45 @@
+Source: quickshell
+Section: x11
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake,
+               ninja-build,
+               pkgconf,
+               qt6-base-dev,
+               qt6-base-private-dev,
+               qt6-declarative-dev,
+               qt6-declarative-private-dev,
+               qt6-shadertools-dev,
+               qt6-wayland-dev,
+               libcli11-dev,
+               libdrm-dev,
+               libegl-dev,
+               libgbm-dev,
+               libglib2.0-dev,
+               libjemalloc-dev,
+               libpam0g-dev,
+               libpipewire-0.3-dev,
+               libpolkit-agent-1-dev,
+               libpolkit-gobject-1-dev,
+               libvulkan-dev,
+               libwayland-dev,
+               libwayland-bin,
+               libxcb1-dev,
+               spirv-tools,
+               wayland-protocols
+Standards-Version: 4.7.0
+Homepage: https://quickshell.org
+Vcs-Browser: https://git.outfoxxed.me/quickshell/quickshell
+Rules-Requires-Root: no
+
+Package: quickshell
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${qt6:PrivateDepends}, qt6-wayland, qml6-module-qtquick
+Recommends: qt6-svg-plugins
+Description: flexible QtQuick based desktop shell toolkit
+ Quickshell is a toolkit for building status bars, widgets, lock screens and
+ other desktop components with QtQuick. It is the runtime of the SOS Shell.
+ .
+ Built by SOS from a pinned upstream release. Quickshell uses private Qt
+ APIs, so this package is tied to the exact Qt release it was built with.

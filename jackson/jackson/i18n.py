@@ -54,6 +54,8 @@ def fmt_latency(ms: float, lang: str) -> str:
     lang = norm_lang(lang)
     sec = max(0.0, ms / 1000.0)
     unit_s = "с" if lang == "ru" else "s"
+    if ms < 100:
+        return f"{int(round(max(0.0, ms)))} {'мс' if lang == 'ru' else 'ms'}"
     if sec < 10:
         return f"{fmt_number(sec, lang, 1)} {unit_s}"
     if sec < 60:
@@ -178,20 +180,20 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "No model available: {why}",
     },
     "route.why.offline": {
-        "ru": "включён офлайн-режим, а локальная модель не отвечает. Запусти её: `svoya models serve`",
-        "en": "offline mode is on and the local model is not answering. Start it: `svoya models serve`",
+        "ru": "включён офлайн-режим, а локальная модель не отвечает. Запусти её: `sos models serve`",
+        "en": "offline mode is on and the local model is not answering. Start it: `sos models serve`",
     },
     "route.why.local_only": {
         "ru": "политика «только локально», а локальная модель не отвечает ({detail}). "
-              "Запусти её (`svoya models serve`) или разреши облако: `jackson route set policy any`",
+              "Запусти её (`sos models serve`) или разреши облако: `jackson route set policy any`",
         "en": "the policy is “local only” and the local model is not answering ({detail}). "
-              "Start it (`svoya models serve`) or allow the cloud: `jackson route set policy any`",
+              "Start it (`sos models serve`) or allow the cloud: `jackson route set policy any`",
     },
     "route.why.no_cloud": {
         "ru": "облачных провайдеров с ключом нет. Добавь ключ: "
-              "`secret-tool store --label='Svoya: anthropic' service svoya provider anthropic`",
+              "`secret-tool store --label='SOS: anthropic' service svoya provider anthropic`",
         "en": "no cloud provider has a key. Add one: "
-              "`secret-tool store --label='Svoya: anthropic' service svoya provider anthropic`",
+              "`secret-tool store --label='SOS: anthropic' service svoya provider anthropic`",
     },
     "route.why.budget": {
         "ru": "дневной бюджет на облако исчерпан ({budget}), а локальная модель не отвечает",
@@ -205,7 +207,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ru": "ни один провайдер не отвечает ({detail})",
         "en": "no provider is answering ({detail})",
     },
-    # turn / daemon
+    # turns
     "err.busy": {
         "ru": "Уже отвечаю на предыдущий запрос. Дождись ответа или отмени его.",
         "en": "Still answering the previous request. Wait for it or cancel it.",
@@ -259,7 +261,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     "undo.exists": {"ru": "{path} снова существует — не перезаписываю", "en": "{path} exists again — not overwriting it"},
     "undo.missing": {"ru": "{path} уже нет", "en": "{path} is gone"},
     "undo.hash": {"ru": "восстановил {path}, но содержимое не совпало с ожидаемым", "en": "restored {path}, but its content does not match"},
-    "undo.no_system": {"ru": "системный откат недоступен (нет svoya/snapper)", "en": "system undo is unavailable (no svoya/snapper)"},
+    "undo.no_system": {"ru": "системный откат недоступен (нет sos/snapper)", "en": "system undo is unavailable (no sos/snapper)"},
     "undo.system_failed": {"ru": "откат снимка не удался: {why}", "en": "snapshot rollback failed: {why}"},
 }
 

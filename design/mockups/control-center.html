@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>Svoya OS — control center</title>
+<title>SOS — control center</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="desktop.css">
@@ -103,7 +103,7 @@
   <div class="wallpaper">
     <svg class="signal"></svg>
     <div class="grain"></div>
-    <div class="colophon"><b>Svoya OS</b> 26.10 · первый сигнал</div>
+    <div class="colophon"><b>SOS</b> 26.10 · первый сигнал</div>
   </div>
 
   <header class="bar"></header>
@@ -192,7 +192,7 @@
       </div>
       <div class="nt">
         <span class="ico"><svg data-i="refresh"></svg></span>
-        <div><div class="h"><b>Обновления</b>17:05</div><div class="b">Svoya OS 26.10.1 — 3 пакета. <span>Сначала снимок</span></div></div>
+        <div><div class="h"><b>Обновления</b>17:05</div><div class="b">SOS 26.10.1 — 3 пакета. <span>Сначала снимок</span></div></div>
       </div>
       <div class="nt">
         <span class="ico"><svg data-i="download"></svg></span>
@@ -206,7 +206,7 @@
   // the segment that matches the rendered theme is the selected one
   const t = document.documentElement.dataset.theme;
   document.querySelector(t === 'paper' ? '.t-p' : '.t-g').classList.add('on');
-  Svoya.init({ bar: { pressed: true, jackson: 'idle' } });
+  SOS.init({ bar: { pressed: true, jackson: 'idle' } });
 </script>
 </body>
 </html>

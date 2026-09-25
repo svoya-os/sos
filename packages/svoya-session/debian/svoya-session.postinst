@@ -1,0 +1,23 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+set -e
+case "$1" in
+    configure)
+        if ! getent passwd svoya-greeter >/dev/null; then
+            if command -v systemd-sysusers >/dev/null 2>&1; then
+                systemd-sysusers /usr/lib/sysusers.d/svoya-greeter.conf
+            else
+                useradd --system --home-dir /var/lib/svoya-greeter --shell /usr/sbin/nologin \
+                    --comment "SOS greeter" --user-group svoya-greeter
+            fi
+        fi
+        for g in video render; do
+            if getent group "$g" >/dev/null; then usermod -a -G "$g" svoya-greeter || true; fi
+        done
+        if command -v systemd-tmpfiles >/dev/null 2>&1; then
+            systemd-tmpfiles --create /usr/lib/tmpfiles.d/svoya-greeter.conf || true
+        fi
+        ;;
+esac
+#DEBHELPER#
+exit 0

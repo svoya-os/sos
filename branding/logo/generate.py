@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Svoya OS logo system: Morse mark, wordmarks, lockups and the app/distro icon.
+"""SOS logo system («СОС» — Своя Операционная Система): Morse mark, wordmarks, lockups, icon.
 
 All SVGs are self-contained: text is converted to outlines from IBM Plex (fontTools), so they
 render identically without the fonts installed. Colors come from themes/*.toml.
@@ -7,13 +7,14 @@ render identically without the fonts installed. Colors come from themes/*.toml.
     python3 branding/logo/generate.py            # SVGs + icon PNGs + previews in branding/out/logo
 
 Outputs
-    branding/logo/svg/svoya-<piece>-<variant>.svg      variant: on-dark | on-light | mono-black | mono-white
-    branding/logo/icon/svoya.svg                       scalable icon (512 master geometry)
-    branding/logo/icon/svoya-symbolic.svg              16px single-color icon for panels
-    branding/logo/icon/src/svoya-<n>.svg               pixel-snapped source for each PNG size
-    branding/logo/icon/png/svoya-<n>.png               16 24 32 48 64 128 256 512
+    branding/logo/svg/sos-<piece>-<variant>.svg      variant: on-dark | on-light | mono-black | mono-white
+    branding/logo/icon/sos.svg                       scalable icon (512 master geometry); icon name `sos`
+    branding/logo/icon/sos-symbolic.svg              16px single-color icon for panels
+    branding/logo/icon/src/sos-<n>.svg               pixel-snapped source for each PNG size
+    branding/logo/icon/png/sos-<n>.png               16 24 32 48 64 128 256 512
 
-SPDX-License-Identifier: Apache-2.0 (code) · artwork CC BY-SA 4.0
+SPDX-License-Identifier: Apache-2.0
+The artwork it produces is licensed CC BY-SA 4.0.
 """
 from __future__ import annotations
 
@@ -43,8 +44,8 @@ VARIANTS = {
 
 # Typography of the wordmarks
 WORD_SIZE = 100.0                 # master units: font size 100
-RU_TEXT, RU_TRACK = "СОС", 0.20   # IBM Plex Sans SemiBold, generous tracking
-EN_TEXT, EN_TRACK = "Svoya OS", 0.0
+RU_TEXT, RU_TRACK = "СОС", 0.20   # IBM Plex Sans SemiBold, generous tracking (Cyrillic)
+EN_TEXT, EN_TRACK = "SOS", 0.20   # the same word in Latin; same weight and tracking
 CAP = face("sans", 600).cap_height / face("sans", 600).upm * WORD_SIZE   # 69.8
 
 # Lockup rules (relative to the cap height of the wordmark)
@@ -52,7 +53,7 @@ H_DOT = 0.18 * CAP            # horizontal lockup: dot diameter
 H_GAP = 0.62 * CAP            # horizontal lockup: mark → wordmark ink
 S_GAP = 0.46 * CAP            # stacked lockup: mark → cap line
 
-LICENSE_NOTE = ("Svoya OS brand artwork · CC BY-SA 4.0 · outlines from IBM Plex Sans "
+LICENSE_NOTE = ("SOS brand artwork · CC BY-SA 4.0 · outlines from IBM Plex Sans "
                 "(SIL OFL 1.1, © IBM Corp.)")
 
 
@@ -140,13 +141,13 @@ def wordmark(text: str, tracking: float, ink: str, title: str) -> str:
 
 def mark_svg(ink: str, signal: str, d: float = 16.0) -> str:
     w = MARK.width * d
-    return svg_doc(w, d, mark_body(d, 0, 0, ink, signal), "Svoya OS — ··· ——— ···")
+    return svg_doc(w, d, mark_body(d, 0, 0, ink, signal), "SOS — ··· ——— ···")
 
 
 def folded_svg(ink: str, signal: str) -> str:
     f = Folded(d=16, dash=40, gap=12, row_gap=20)
     return svg_doc(f.width, f.height, folded_body(f, f.width / 2, f.height / 2, ink, signal),
-                   "Svoya OS — mark, folded (С / О / С)")
+                   "SOS — mark, folded (С / О / С)")
 
 
 def lockup_horizontal(text: str, tracking: float, ink: str, signal: str, title: str) -> str:
@@ -210,7 +211,7 @@ def icon_spec(n: int) -> IconSpec:
     return hand[n]
 
 
-def icon_svg(spec: IconSpec, title: str = "Svoya OS") -> str:
+def icon_svg(spec: IconSpec, title: str = "SOS") -> str:
     n = spec.canvas
     t = n - 2 * spec.inset
     x = y = spec.inset
@@ -248,14 +249,14 @@ def icon_svg(spec: IconSpec, title: str = "Svoya OS") -> str:
         body.append('  <g filter="url(#glow)" opacity=".5">' + "".join(glow) + "</g>\n")
     body.append(folded_body(f, n / 2, n / 2, ink, signal))
     return svg_doc(n, n, "".join(body), title,
-                   "Svoya OS icon · graphite tile with the mark folded into С / О / С · CC BY-SA 4.0")
+                   "SOS icon · graphite tile with the mark folded into С / О / С · CC BY-SA 4.0")
 
 
 def symbolic_svg() -> str:
     f = Folded(2, 4, 1, 2, round=False)
     items = "".join(pill(x, y, w, h, "#2e3436", 0) for x, y, w, h, _ in f.elements(8, 8))
-    return svg_doc(16, 16, f"  <g>{items}</g>\n", "Svoya OS",
-                   "Symbolic (single-color) Svoya OS mark for panels and menus · CC BY-SA 4.0")
+    return svg_doc(16, 16, f"  <g>{items}</g>\n", "SOS",
+                   "Symbolic (single-color) SOS mark for panels and menus · CC BY-SA 4.0")
 
 
 # ───────────────────────────── build ─────────────────────────────
@@ -263,13 +264,12 @@ def symbolic_svg() -> str:
 PIECES = {
     "mark": lambda ink, sig: mark_svg(ink, sig),
     "mark-folded": lambda ink, sig: folded_svg(ink, sig),
-    "wordmark-sos": lambda ink, sig: wordmark(RU_TEXT, RU_TRACK, ink, "СОС — Своя Операционная Система"),
-    "wordmark-svoya-os": lambda ink, sig: wordmark(EN_TEXT, EN_TRACK, ink, "Svoya OS"),
+    "wordmark-ru": lambda ink, sig: wordmark(RU_TEXT, RU_TRACK, ink, "СОС — Своя Операционная Система"),
+    "wordmark-en": lambda ink, sig: wordmark(EN_TEXT, EN_TRACK, ink, "SOS — Svoya Operating System"),
     "lockup-horizontal-ru": lambda ink, sig: lockup_horizontal(RU_TEXT, RU_TRACK, ink, sig, "СОС"),
-    "lockup-horizontal-en": lambda ink, sig: lockup_horizontal(EN_TEXT, EN_TRACK, ink, sig, "Svoya OS"),
+    "lockup-horizontal-en": lambda ink, sig: lockup_horizontal(EN_TEXT, EN_TRACK, ink, sig, "SOS"),
     "lockup-stacked-ru": lambda ink, sig: lockup_stacked(RU_TEXT, RU_TRACK, ink, sig, "СОС"),
-    "lockup-stacked-en": lambda ink, sig: lockup_stacked(EN_TEXT, EN_TRACK, ink, sig, "Svoya OS",
-                                                          match_width=False, dot=0.155 * CAP),
+    "lockup-stacked-en": lambda ink, sig: lockup_stacked(EN_TEXT, EN_TRACK, ink, sig, "SOS"),
 }
 
 ICON_SIZES = [16, 24, 32, 48, 64, 128, 256, 512]
@@ -279,11 +279,11 @@ def build_svgs() -> list[pathlib.Path]:
     written = []
     for piece, fn in PIECES.items():
         for variant, (ink, sig, _bg) in VARIANTS.items():
-            written.append(brand.write(SVG_DIR / f"svoya-{piece}-{variant}.svg", fn(ink, sig)))
-    written.append(brand.write(ICON_DIR / "svoya.svg", icon_svg(icon_spec(512))))
-    written.append(brand.write(ICON_DIR / "svoya-symbolic.svg", symbolic_svg()))
+            written.append(brand.write(SVG_DIR / f"sos-{piece}-{variant}.svg", fn(ink, sig)))
+    written.append(brand.write(ICON_DIR / "sos.svg", icon_svg(icon_spec(512))))
+    written.append(brand.write(ICON_DIR / "sos-symbolic.svg", symbolic_svg()))
     for n in ICON_SIZES:
-        written.append(brand.write(ICON_DIR / "src" / f"svoya-{n}.svg", icon_svg(icon_spec(n))))
+        written.append(brand.write(ICON_DIR / "src" / f"sos-{n}.svg", icon_svg(icon_spec(n))))
     return written
 
 
@@ -297,12 +297,12 @@ def svg_size(path: pathlib.Path) -> tuple[float, float]:
 
 def render_pngs(r: brand.Renderer) -> None:
     for n in ICON_SIZES:
-        svg = (ICON_DIR / "src" / f"svoya-{n}.svg").read_text(encoding="utf-8")
-        r.svg(svg, n, n, ICON_DIR / "png" / f"svoya-{n}.png")
+        svg = (ICON_DIR / "src" / f"sos-{n}.svg").read_text(encoding="utf-8")
+        r.svg(svg, n, n, ICON_DIR / "png" / f"sos-{n}.png")
     # previews of every lockup on its intended background (2x, generous clear space)
     for piece in PIECES:
         for variant, (_ink, _sig, bg) in VARIANTS.items():
-            path = SVG_DIR / f"svoya-{piece}-{variant}.svg"
+            path = SVG_DIR / f"sos-{piece}-{variant}.svg"
             w, h = svg_size(path)
             target_h = 120 if piece.startswith("mark") else 160
             k = target_h / h if h > 40 else 36 / h
@@ -314,7 +314,7 @@ def render_pngs(r: brand.Renderer) -> None:
                    f'display:grid;place-items:center"><img src="{path.as_uri()}" '
                    f'style="width:{W:.1f}px;height:{H:.1f}px"></div>')
             r.html(f"<!doctype html><body style='margin:0'>{doc}</body>", int(W + 2 * pad), int(H + 2 * pad),
-                   PREVIEW_DIR / f"svoya-{piece}-{variant}.png", scale=2)
+                   PREVIEW_DIR / f"sos-{piece}-{variant}.png", scale=2)
 
 
 def main() -> None:

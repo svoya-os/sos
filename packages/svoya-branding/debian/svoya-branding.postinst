@@ -1,0 +1,22 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+set -e
+THEME=/usr/share/plymouth/themes/svoya-signal/svoya-signal.plymouth
+case "$1" in
+    configure)
+        if [ -f "$THEME" ]; then
+            update-alternatives --install /usr/share/plymouth/themes/default.plymouth \
+                default.plymouth "$THEME" 150
+            update-alternatives --set default.plymouth "$THEME" || true
+            # plymouthd.conf wins over the alternative on some plymouth builds
+            mkdir -p /etc/plymouth
+            if [ ! -f /etc/plymouth/plymouthd.conf ] || ! grep -q '^Theme=' /etc/plymouth/plymouthd.conf; then
+                printf '[Daemon]\nTheme=svoya-signal\nShowDelay=0\n' >/etc/plymouth/plymouthd.conf
+            else
+                sed -i 's/^Theme=.*/Theme=svoya-signal/' /etc/plymouth/plymouthd.conf
+            fi
+        fi
+        ;;
+esac
+#DEBHELPER#
+exit 0

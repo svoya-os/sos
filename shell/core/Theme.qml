@@ -3,11 +3,12 @@ pragma Singleton
 // Svoya Shell design tokens (design/DESIGN.md, themes/*.toml).
 //
 // Source of truth at runtime: ~/.local/state/svoya/theme.json, written by
-// `svoya theme apply` (docs/ARCHITECTURE.md §4.1) and hot-reloaded here.
-// The file may be nested ({"color": {"wall": ...}, "font": {...}}) or flat
-// ({"wall": ..., "sans": ...}); both are accepted, missing keys fall back to
-// the built-in Graphite defaults below (themes/graphite.toml). Colors arrive as
-// #RRGGBB or #AARRGGBB (alpha first), which QML parses natively.
+// `sos theme apply` (docs/ARCHITECTURE.md §4.1, cli/svoya_cli/theme/apply.py)
+// and hot-reloaded here. The CLI writes flat JSON ({"id", "mode", "pair",
+// "nameEn", "nameRu", "choice", "wall": "#AARRGGBB", …, "sans", "radius",
+// "fast", "grain", …}); a nested layout ({"color": {...}}) is accepted too.
+// Missing keys fall back to the built-in Graphite defaults below
+// (themes/graphite.toml). QML parses #AARRGGBB (alpha first) natively.
 
 import QtQuick
 import Quickshell
@@ -74,11 +75,14 @@ Singleton {
         JsonAdapter {
             id: adapter
 
-            // nested sections (themes/*.toml layout)
-            property var name
+            // meta (flat, as written by `sos theme apply`)
             property string mode
             property string pair
-            property bool auto
+            property string choice    // "auto" when the day/night switch is on
+            property string nameEn
+            property string nameRu
+            // nested sections (themes/*.toml layout, accepted as well)
+            property var name
             property var color
             property var font
             property var shape
@@ -137,8 +141,10 @@ Singleton {
     readonly property string mode: adapter.mode.length > 0 ? adapter.mode : root.defaults.mode
     readonly property bool isDark: root.mode !== "light"
     readonly property string pair: adapter.pair.length > 0 ? adapter.pair : root.defaults.pair
-    readonly property bool autoMode: adapter.auto
+    readonly property bool autoMode: adapter.choice === "auto"
     readonly property string displayName: {
+        if (adapter.nameEn.length > 0 || adapter.nameRu.length > 0)
+            return (Strings.ru ? adapter.nameRu : adapter.nameEn) || adapter.nameEn || root.themeId;
         const n = adapter.name ? adapter.name : root.defaults.name;
         return (Strings.ru ? n.ru : n.en) || root.themeId;
     }

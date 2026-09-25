@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "rocm"
+name = { en = "AMD ROCm", ru = "AMD ROCm" }
+summary = { en = "ROCm 7.1 from the engine archive for RDNA3/RDNA4/Strix Halo, GPU access groups, memory advice for APUs.", ru = "ROCm 7.1 из архива движка для RDNA3/RDNA4/Strix Halo, группы доступа, советы по памяти для APU." }
+category = "system"
+profiles = []            # via "@gpu" on AMD machines
+requires = []
+hardware = ["amd"]
+apt = ["rocminfo", "rocm-smi", "hipcc", "libamdhip64-dev", "mesa-vulkan-drivers"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 3.0
+vram_gb_min = 0
+aliases = ["amd", "hip"]
+options.lact = { en = "LACT: fan curves, power limits, undervolt (Flathub, MIT)", ru = "LACT: кривые вентиляторов, лимиты мощности, андервольт (Flathub, MIT)", disk_gb = 0.3 }
+license_note = { en = "ROCm: MIT/Apache-2.0 components. PyTorch ROCm wheels bring their own runtime per project.", ru = "ROCm — компоненты MIT/Apache-2.0. Колёса PyTorch для ROCm несут свой рантайм в каждом проекте." }

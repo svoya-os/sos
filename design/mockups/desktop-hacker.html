@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — layout preset «Хакер» (tiling)</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  /* slim bar */
+  .bar.slim { height: 24px; font-size: 11px; padding: 0 12px 0 8px; }
+  .bar.slim .bar-left, .bar.slim .bar-right { gap: 14px; }
+  .bar.slim .mark { height: 18px; padding: 0 6px; }
+  .bar.slim .ws span { width: 16px; height: 16px; border-radius: 4px; font-size: 10px; }
+  .bar.slim .win-title { font-size: 12px; }
+  .bar.slim .jack-mini { padding: 2px 5px; }
+  .bar.slim .ico svg { width: 14px; height: 14px; }
+  .lay { font: 500 11px/1 "Plex Mono"; color: var(--text-faint); letter-spacing: 0.02em; }
+
+  /* tiles */
+  .tile-w { position: absolute; border-radius: 11px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+  .tile-w.active { border-color: var(--accent); }
+
+  /* editor */
+  .ed-tabs { height: 34px; display: flex; align-items: flex-end; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--bar-bg); }
+  .ed-tabs span { height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 7px 7px 0 0; font: 400 12px/1 "Plex Mono"; color: var(--text-faint); }
+  .ed-tabs span.on { background: var(--surface); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); clip-path: inset(-1px -1px 0 -1px); }
+  .ed-tabs span i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .code { display: grid; grid-template-columns: 44px 1fr; padding-top: 10px; font: 400 12.5px/20px "Plex Mono"; }
+  .code .ln { text-align: right; padding-right: 14px; color: var(--text-faint); opacity: 0.8; white-space: pre; }
+  .code .src { white-space: pre; color: var(--text); overflow: hidden; }
+  .code .ln b { color: var(--text-dim); font-weight: 400; opacity: 1; }
+  .src .y-k { color: var(--accent); }
+  .src .y-s { color: var(--ok); }
+  .src .y-n { color: var(--cloud); }
+  .src .y-c { color: var(--text-faint); }
+  .src .y-f { color: var(--text); font-weight: 500; }
+  .curline { background: var(--hover); display: inline-block; width: 100%; }
+  .cursor { display: inline-block; width: 2px; height: 16px; background: var(--accent); vertical-align: -3px; }
+  .status {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 26px; display: flex; align-items: center; gap: 14px; padding: 0 10px 0 6px;
+    border-top: 1px solid var(--line); background: var(--bar-bg); font: 400 11px/1 "Plex Mono"; color: var(--text-dim);
+  }
+  .status .mode { height: 18px; padding: 0 7px; display: flex; align-items: center; border-radius: 4px; background: var(--accent); color: var(--accent-ink); font-weight: 600; letter-spacing: 0.06em; }
+  .status .r { margin-left: auto; display: flex; gap: 14px; }
+  .status .f { color: var(--text-faint); }
+
+  /* browser chrome (ComfyUI) */
+  .urlbar { height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--bar-bg); }
+  .urlbar .nav { display: flex; gap: 2px; color: var(--text-faint); }
+  .urlbar .nav svg.i { width: 14px; height: 14px; stroke-width: 1.8; }
+  .urlbar .url { flex: 1; height: 24px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: 7px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 400 11.5px/1 "Plex Mono"; color: var(--text-dim); }
+  .urlbar .url b { color: var(--text); font-weight: 400; }
+  .urlbar .url svg.i { width: 12px; height: 12px; color: var(--ok); stroke-width: 2; }
+  .urlbar .q { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); white-space: nowrap; }
+  .urlbar .q b { color: var(--accent); font-weight: 500; }
+  .cf { position: absolute; left: 0; right: 0; top: 36px; bottom: 0; }
+
+  /* training terminal */
+  .tt { padding: 12px 16px; font: 400 12px/19px "Plex Mono"; color: var(--text); white-space: pre; }
+  .tt .d { color: var(--text-faint); } .tt .m { color: var(--text-dim); } .tt .a { color: var(--accent); } .tt .g { color: var(--ok); } .tt .c { color: var(--cloud); }
+  .gpuline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--bar-bg); }
+  .gpuline div { display: flex; flex-direction: column; gap: 7px; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .gpuline div b { font-weight: 500; color: var(--text); font-size: 12px; }
+  .gpuline .meter { width: 100%; height: 3px; }
+  .tt .cur { display: inline-block; width: 7px; height: 14px; background: var(--text); vertical-align: -2px; opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+  </div>
+
+  <header class="bar slim"></header>
+
+  <!-- master: editor (active) -->
+  <section class="tile-w active" style="left:8px; top:32px; width:704px; height:860px;">
+    <div class="ed-tabs"><span class="on"><i></i>train.py</span><span>data.py</span><span>eval.py</span><span>pyproject.toml</span></div>
+    <div class="code">
+<div class="ln"></div><div class="src"><span class="y-k">from</span> pathlib <span class="y-k">import</span> Path
+
+<span class="y-k">import</span> torch
+<span class="y-k">from</span> torch.utils.data <span class="y-k">import</span> DataLoader
+<span class="y-k">import</span> trackio
+<span class="y-k">from</span> peft <span class="y-k">import</span> LoraConfig, get_peft_model
+<span class="y-k">from</span> transformers <span class="y-k">import</span> AutoModel, get_cosine_schedule_with_warmup
+
+<span class="y-k">from</span> data <span class="y-k">import</span> VoiceDataset, collate
+
+RUN = Path(<span class="y-s">"runs"</span>) / <span class="y-s">"0924-1832"</span>
+CFG = dict(lr=<span class="y-n">2e-4</span>, epochs=<span class="y-n">3</span>, batch=<span class="y-n">16</span>, rank=<span class="y-n">16</span>, warmup=<span class="y-n">100</span>)
+
+
+<span class="y-k">def</span> <span class="y-f">main</span>() -> <span class="y-k">None</span>:
+    model = AutoModel.from_pretrained(<span class="y-s">"qwen3-tts-0.6b"</span>, dtype=torch.bfloat16)
+    lora = LoraConfig(r=<span class="y-n">16</span>, lora_alpha=<span class="y-n">32</span>, target_modules=[<span class="y-s">"q_proj"</span>, <span class="y-s">"v_proj"</span>])
+    model = get_peft_model(model, lora).to(<span class="y-s">"cuda"</span>)
+
+    data = VoiceDataset(<span class="y-s">"~/ai/datasets/ru-voice"</span>, split=<span class="y-s">"train"</span>)
+    loader = DataLoader(data, CFG[<span class="y-s">"batch"</span>], shuffle=<span class="y-k">True</span>, collate_fn=collate)
+    opt = torch.optim.AdamW(model.parameters(), lr=CFG[<span class="y-s">"lr"</span>])
+    total = CFG[<span class="y-s">"epochs"</span>] * len(loader)
+    sched = get_cosine_schedule_with_warmup(opt, CFG[<span class="y-s">"warmup"</span>], total)
+    trackio.init(project=<span class="y-s">"tts-finetune"</span>, config=CFG)
+
+    step = <span class="y-n">0</span>
+    <span class="y-k">for</span> epoch <span class="y-k">in</span> range(CFG[<span class="y-s">"epochs"</span>]):
+        <span class="y-k">for</span> batch <span class="y-k">in</span> loader:
+            loss = model(**batch.to(<span class="y-s">"cuda"</span>)).loss
+            loss.backward()
+            opt.step(); sched.step(); opt.zero_grad()
+            trackio.log({<span class="y-s">"loss"</span>: loss.item(), <span class="y-s">"lr"</span>: sched.get_last_lr()[<span class="y-n">0</span>]})
+            step += <span class="y-n">1</span>
+            <span class="y-k">if</span> step % <span class="y-n">600</span> == <span class="y-n">0</span>:
+                model.save_pretrained(RUN / <span class="y-s">f"step-</span>{step}<span class="y-s">"</span>)
+
+    model.save_pretrained(RUN / <span class="y-s">"final"</span>)
+<span class="curline">    trackio.finish()  <span class="y-c"># потом: sos run eval.py --ckpt final</span><span class="cursor"></span></span>
+
+<span class="y-k">if</span> __name__ == <span class="y-s">"__main__"</span>:</div>
+    </div>
+    <div class="status">
+      <span class="mode">NOR</span>
+      <span>train.py</span>
+      <span class="f">~/ai/projects/tts-finetune</span>
+      <span class="r"><span class="f">main ↑1</span><span>python · uv</span><span id="pos">38:52</span></span>
+    </div>
+  </section>
+
+  <!-- ComfyUI in the browser -->
+  <section class="tile-w" style="left:720px; top:32px; width:712px; height:452px;">
+    <div class="urlbar">
+      <span class="nav"><svg data-i="chevronRight" style="transform:scaleX(-1)"></svg><svg data-i="chevronRight"></svg></span>
+      <span class="url"><svg data-i="lock"></svg><b>localhost:8188</b> · ComfyUI · reels_wan22_i2v.json</span>
+      <span class="q">очередь <b>2</b></span>
+    </div>
+    <div class="cf"><div class="comfy" id="graph"></div></div>
+  </section>
+
+  <!-- training terminal -->
+  <section class="tile-w" style="left:720px; top:492px; width:712px; height:400px;">
+    <div class="gpuline">
+      <div>ГП · RTX 4090<b>93%</b><span class="meter acc"><i style="width:93%"></i></span></div>
+      <div>видеопамять<b>11,2 / 24 ГБ</b><span class="meter"><i style="width:46.7%"></i></span></div>
+      <div>температура<b>64°</b><span class="meter"><i style="width:64%"></i></span></div>
+      <div>мощность<b>301 Вт</b><span class="meter"><i style="width:67%"></i></span></div>
+    </div>
+<pre class="tt"><span class="a">›</span> sos run train.py <span class="d"># окружение проекта: uv · torch 2.13 · CUDA 13.0</span>
+<span class="d">[18:41:02]</span> шаг 1760  loss 0.421  lr 1.83e-4  <span class="d">3,1 шаг/с</span>
+<span class="d">[18:41:15]</span> шаг 1770  loss 0.418  lr 1.82e-4  <span class="d">3,1 шаг/с</span>
+<span class="d">[18:41:28]</span> шаг 1780  loss 0.416  lr 1.82e-4  <span class="d">3,0 шаг/с</span>
+<span class="d">[18:41:41]</span> шаг 1790  loss 0.414  lr 1.81e-4  <span class="d">3,1 шаг/с</span>
+<span class="d">[18:41:54]</span> шаг 1800  loss 0.412  lr 1.80e-4  <span class="d">3,1 шаг/с</span>
+<span class="d">[18:41:55]</span> <span class="g">•</span> чекпойнт <span class="m">runs/0924-1832/step-1800</span> <span class="d">· 312 МБ</span>
+<span class="d">[18:42:08]</span> шаг 1810  loss 0.409  lr 1.80e-4  <span class="d">3,1 шаг/с</span>
+
+<span class="m">эпоха 2/3</span>  <span class="a">████████████████░░░░░░░░░</span>  62%  <span class="d">ещё</span> 18 мин
+<span class="cur"></span></pre>
+  </section>
+
+</div>
+<script>
+  SOS.comfy(document.getElementById('graph'), {
+    nodes: [
+      { id: 'img', x: 12, y: 16, w: 172, title: 'Загрузить изображение', outs: [['IMAGE', 'image']], img: 'photo', imgH: 62 },
+      { id: 'model', x: 12, y: 170, w: 172, title: 'WanVideoModelLoader', outs: [['MODEL', 'model']], widgets: [['model', 'wan2.2_5B']] },
+      { id: 'text', x: 12, y: 268, w: 172, title: 'TextEncode', outs: [['text', 'text']], widgets: [['prompt', 'закат, 35 мм']] },
+      { id: 'samp', x: 210, y: 56, w: 178, title: 'WanVideoSampler', state: 'running', badge: '18/30', ins: [['model', 'model'], ['text', 'text'], ['image', 'image']], outs: [['samples', 'latent']], widgets: [['steps', '30'], ['seed', '42']] },
+      { id: 'dec', x: 414, y: 56, w: 118, title: 'Decode', ins: [['samples', 'latent']], outs: [['video', 'video']] },
+      { id: 'out', x: 556, y: 56, w: 142, title: 'Сохранить видео', ins: [['video', 'video']], img: 'video', imgH: 84 },
+      { id: 'note', x: 414, y: 250, w: 284, title: 'Заметка', state: 'note', body: 'reels · 5 с · 720p · seed 42 · 24 к/с', bodyH: 26 },
+    ],
+    links: [['model', 0, 'samp', 0], ['text', 0, 'samp', 1], ['img', 0, 'samp', 2], ['samp', 0, 'dec', 0], ['dec', 0, 'out', 0]],
+  });
+  SOS.init({ bar: { ws: [[1, 'on'], [2, ''], [3, ''], [4, 'empty']], title: ['Редактор', 'train.py'], extraRight: '', gpu: ['64°', '11,2/24 ГБ'] } });
+  // gutter numbers follow the real code lines; the cursor line is emphasised
+  (function () {
+    const src = document.querySelector('.code .src');
+    const lines = src.innerHTML.split('\n');
+    const cur = lines.findIndex((l) => l.includes('class="curline"')) + 1;
+    document.querySelector('.code .ln').innerHTML = lines.map((_, i) => (i + 1 === cur ? `<b>${String(i + 1).padStart(2)}</b>` : String(i + 1).padStart(2))).join('\n');
+    document.getElementById('pos').textContent = `${cur}:52`;
+  })();
+  // tiling layout indicator after the title
+  document.querySelector('.bar .ws').insertAdjacentHTML('afterend', '<span class="lay">[]=</span>');
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# SOS Studio — ComfyUI (GPL-3.0) in a container. Built locally by `sos-studio build`.
+# GPU: NVIDIA via CDI (--device nvidia.com/gpu=all), AMD via /dev/kfd + /dev/dri.
+FROM docker.io/library/python:3.12-slim
+ARG TORCH_BACKEND=cpu
+ARG COMFY_REF=master
+RUN apt-get update && apt-get install -y --no-install-recommends git ffmpeg libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+RUN git clone --depth 1 --branch "${COMFY_REF}" https://github.com/comfyanonymous/ComfyUI /opt/ComfyUI
+RUN uv pip install --system --torch-backend="${TORCH_BACKEND}" torch torchvision torchaudio \
+    && uv pip install --system -r /opt/ComfyUI/requirements.txt
+COPY entrypoint.sh /usr/local/bin/sos-studio-entrypoint
+RUN useradd --create-home --uid 1000 studio && chown -R studio /opt/ComfyUI
+USER studio
+WORKDIR /opt/ComfyUI
+EXPOSE 8188
+ENTRYPOINT ["/usr/local/bin/sos-studio-entrypoint"]

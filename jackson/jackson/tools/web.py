@@ -23,8 +23,18 @@ from .base import T0, T2, Assessment, Tool, ToolContext, ToolResult, obj
 
 MAX_BYTES = 2 * 1024 * 1024
 MAX_TEXT = 20_000
-UA = "Mozilla/5.0 (X11; Linux x86_64) Jackson/0.1 (Svoya OS assistant)"
+UA = "Mozilla/5.0 (X11; Linux x86_64) Jackson/0.1 (SOS assistant)"
 SEND_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def _is_loopback(host: str) -> bool:
+    host = (host or "").strip("[]").lower()
+    if host == "localhost" or host.endswith(".localhost"):
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 def is_private_host(host: str) -> bool:
@@ -147,6 +157,7 @@ def fetch(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     opener = urllib.request.build_opener(_SafeRedirect(allow_private=is_private_host(host)))
     taint = f"web:{host}"
+    dest = None if _is_loopback(host) else host  # loopback never leaves the machine
     try:
         with opener.open(req, timeout=15) as resp:
             raw = resp.read(MAX_BYTES + 1)
@@ -155,10 +166,10 @@ def fetch(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
             status = resp.status
     except urllib.error.HTTPError as exc:
         return ToolResult(False, f"HTTP {exc.code} from {host}: {exc.reason}", f"{host}: HTTP {exc.code}",
-                          taint=taint, left_to=host)
+                          taint=taint, left_to=dest)
     except (urllib.error.URLError, OSError, ValueError) as exc:
         reason = getattr(exc, "reason", exc)
-        return ToolResult(False, f"cannot fetch {url}: {reason}", f"{host}: {reason}", left_to=host)
+        return ToolResult(False, f"cannot fetch {url}: {reason}", f"{host}: {reason}", left_to=dest)
     truncated = len(raw) > MAX_BYTES
     charset = "utf-8"
     m = re.search(r"charset=([\w-]+)", ctype)
@@ -185,7 +196,7 @@ def fetch(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
     note = "\n[truncated]" if truncated or cut else ""
     summary = f"{method} {host} · {fmt_bytes(len(raw), ctx.lang)}" + (f" · {title[:60]}" if title else "")
     return ToolResult(200 <= status < 400, header + "\n" + text + note, summary, verified=True, taint=taint,
-                      left_to=host)
+                      left_to=dest)
 
 
 def tools() -> list[Tool]:

@@ -19,9 +19,9 @@ Schema v1 (one file per job, written atomically; unknown keys must be ignored by
       "exitCode": null
     }
 
-Anyone may create a job file (a training script, Jackson, ``svoya run``); ``svoya status`` lists
+Anyone may create a job file (a training script, Jackson, ``sos run``); ``sos status`` lists
 running jobs whose pid is alive and derives ``etaSec`` from progress when the writer gave none.
-Progress updates: ``svoya job progress <id> <0..1> [--eta S] [--message ...]``.
+Progress updates: ``sos job progress <id> <0..1> [--eta S] [--message ...]``.
 """
 from __future__ import annotations
 

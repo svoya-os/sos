@@ -1,0 +1,25 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# "Install SOS" in the live session: runs the installer as root on the user's Wayland display.
+set -uo pipefail
+
+if [ ! -e /etc/svoya/live ]; then
+    echo "sos-install: this is not the SOS live session." >&2
+    exit 1
+fi
+
+sudo env \
+    WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}" \
+    XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+    XDG_SESSION_TYPE=wayland \
+    QT_QPA_PLATFORM="wayland;xcb" \
+    QT_WAYLAND_DISABLE_WINDOWDECORATION=0 \
+    LANG="${LANG:-en_US.UTF-8}" \
+    XCURSOR_THEME="${XCURSOR_THEME:-}" XCURSOR_SIZE="${XCURSOR_SIZE:-24}" \
+    /usr/lib/svoya/installer/launch "$@"
+rc=$?
+if [ "$rc" -ne 0 ] && command -v notify-send >/dev/null; then
+    notify-send -a "SOS" "SOS installer / Установщик СОС" \
+        "The installer stopped (code $rc). Log: /root/.cache/calamares/session.log"
+fi
+exit "$rc"

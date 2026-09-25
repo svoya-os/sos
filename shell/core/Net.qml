@@ -17,7 +17,7 @@ Singleton {
     property bool hasWifiDevice: false
     property string kind: "none"       // "wifi" | "ethernet" | "none"
     property string ssid: ""
-    property int signal: 0             // 0..100 for the active Wi-Fi
+    property int strength: 0             // 0..100 for the active Wi-Fi
     property var networks: []          // [{ssid, signal, secure, active, known}]
     property var saved: []             // saved Wi-Fi connection names
     property string busySsid: ""       // network being connected right now
@@ -27,7 +27,7 @@ Singleton {
         if (root.kind === "ethernet")
             return "svoya-ethernet";
         if (root.kind === "wifi")
-            return root.signal >= 60 ? "svoya-wifi" : (root.signal >= 35 ? "wifi-high" : "wifi-low");
+            return root.strength >= 60 ? "svoya-wifi" : (root.strength >= 35 ? "wifi-high" : "wifi-low");
         return "wifi-off";
     }
 
@@ -66,7 +66,7 @@ Singleton {
         let hasWifi = false;
         let kind = "none";
         let ssid = "";
-        let signal = 0;
+        let sig = 0;
         const saved = [];
         const nets = {};
         const lines = out.split("\n");
@@ -110,7 +110,7 @@ Singleton {
                 if (!nets[name] || entry.active || (!nets[name].active && entry.signal > nets[name].signal))
                     nets[name] = entry;
                 if (entry.active)
-                    signal = entry.signal;
+                    sig = entry.signal;
             }
         }
         const list = Object.keys(nets).map(k => {
@@ -123,7 +123,7 @@ Singleton {
         root.hasWifiDevice = hasWifi;
         root.kind = kind;
         root.ssid = ssid;
-        root.signal = kind === "wifi" ? signal : 0;
+        root.strength = kind === "wifi" ? sig : 0;
         root.saved = saved;
         root.networks = list;
     }

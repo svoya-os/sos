@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<title>Svoya OS — first run · 3/7 look</title>
+<title>SOS — first run · 3/7 look</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="desktop.css">
@@ -79,7 +79,7 @@
     <div class="wz-body">
       <div class="wz-eyebrow">Оформление</div>
       <h1 class="wz-h">Как будет выглядеть система?</h1>
-      <p class="wz-sub">Тема применяется сразу — прямо на этом экране. Передумать можно когда угодно: в центре управления или командой <code>svoya theme</code>.</p>
+      <p class="wz-sub">Тема применяется сразу — прямо на этом экране. Передумать можно когда угодно: в центре управления или командой <code>sos theme</code>.</p>
 
       <div class="themes">
         <div class="card" data-pick="graphite">
@@ -167,10 +167,10 @@
   document.querySelectorAll('[data-mini]').forEach((pv) => {
     pv.innerHTML = MINI(pv.dataset.mini) + (pv.dataset.day ? MINI(pv.dataset.day).replace('class="mini"', 'class="mini day"') : '');
   });
-  document.querySelectorAll('.mini header.bar').forEach((el) => Svoya.bar({ el }));
+  document.querySelectorAll('.mini header.bar').forEach((el) => SOS.bar({ el }));
   const t = document.documentElement.dataset.theme;
   document.querySelector(`[data-pick="${t}"]`)?.classList.add('on');
-  Svoya.init({ bar: false });
+  SOS.init({ bar: false });
 </script>
 </body>
 </html>

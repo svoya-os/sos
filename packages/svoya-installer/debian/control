@@ -1,0 +1,27 @@
+Source: svoya-installer
+Section: admin
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/sos
+Rules-Requires-Root: no
+
+Package: svoya-installer
+Architecture: all
+Depends: ${misc:Depends},
+         btrfs-progs,
+         calamares (>= 3.3.14~),
+         cryptsetup,
+         dosfstools,
+         efibootmgr,
+         python3,
+         rsync,
+         squashfs-tools,
+         sudo-rs | sudo
+Description: SOS installer (Calamares configuration and branding)
+ Calamares settings for installing SOS from the live medium: btrfs with
+ subvolumes (@, @home, @snapshots, @var_log, @var_cache, @containers,
+ @swap, @ai), optional LUKS2 encryption, signed shim/GRUB, dracut, offline
+ GPU drivers from the medium's pool, snapper and the first-run flag.
+ Only installed in the live image; the installer removes itself.

@@ -1,8 +1,8 @@
 """Snapper wrapper: pre/post pairs with descriptions, cleanup algorithm ``number``.
 
-``svoya snapshot create|list`` and the building block for modules, update, doctor --fix and undo.
+``sos snapshot create|list`` and the building block for modules, update, doctor --fix and undo.
 Every snapshot svoya takes carries ``--userdata svoya=1`` and is also recorded in
-``/var/lib/svoya/history.json`` (read instantly by ``svoya status``).
+``/var/lib/svoya/history.json`` (read instantly by ``sos status``).
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
-from . import i18n, ui
+from . import ui
 from .context import Ctx
 from .i18n import tr
 from .util import iso, read_json, write_json
@@ -33,7 +33,7 @@ class Snapshot:
 
     @property
     def is_svoya(self) -> bool:
-        return self.userdata.get("svoya") == "1" or self.description.startswith("svoya")
+        return self.userdata.get("svoya") == "1" or self.description.startswith(("sos:", "svoya"))
 
     def as_json(self) -> dict:
         return {"number": self.number, "type": self.type, "preNumber": self.pre_number,
@@ -191,7 +191,7 @@ def record_history(ctx: Ctx, entry: dict) -> None:
 
 
 class Guard:
-    """``with Guard(ctx, "svoya: modules add llm-local") as g:`` → pre snapshot, post on exit.
+    """``with Guard(ctx, "sos: modules add llm-local") as g:`` → pre snapshot, post on exit.
 
     If snapshots are unavailable the guard records why (``g.reason``) and the caller decides
     whether to continue; nothing is silently skipped.
@@ -210,7 +210,10 @@ class Guard:
         if not self.snapper.available():
             self.reason = self.snapper.why_unavailable()
             return self
-        self.pre = self.snapper.create(self.description, kind="pre", userdata=self.userdata)
+        try:
+            self.pre = self.snapper.create(self.description, kind="pre", userdata=self.userdata)
+        except RuntimeError as e:          # e.g. snapperd refuses a user outside ALLOW_USERS/GROUPS
+            self.reason = str(e) or "snapper failed"
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
@@ -226,7 +229,7 @@ class Guard:
 
 def main(args, ctx: Ctx | None = None) -> int:
     ctx = ctx or Ctx()
-    sn = Snapper(ctx)
+    sn = Snapper(ctx, getattr(args, "config", None) or "root")
     if args.snapshot_cmd == "list":
         snaps = sn.list()
         if not args.all:
@@ -246,24 +249,35 @@ def main(args, ctx: Ctx | None = None) -> int:
         return 0
     if args.snapshot_cmd == "create":
         if not sn.available():
-            ui.err(f"svoya: {sn.why_unavailable()}")
+            if args.json:
+                ui.print_json({"id": None, "error": sn.why_unavailable()})
+            else:
+                ui.err(f"sos: {sn.why_unavailable()}")
             return 2
-        desc = args.description or "svoya: manual snapshot"
-        if not desc.startswith("svoya"):
-            desc = f"svoya: {desc}"
-        if not ctx.is_root and not ctx.dry_run:
-            from .runner import svoya_argv
+        desc = args.description or "sos: manual snapshot"
+        if not desc.startswith(("sos", "svoya")):
+            desc = f"sos: {desc}"
+        try:
+            # snapperd lets members of ALLOW_USERS/ALLOW_GROUPS snapshot without root (Jackson's T1 path)
+            num = sn.create(desc, kind="single")
+        except RuntimeError as e:
             import os
-            argv = ["pkexec", *svoya_argv(), "snapshot", "create", "--description", desc]
-            os.execvp("pkexec", argv)
-        num = sn.create(desc, kind="single")
+            import sys
+            if ctx.is_root or ctx.dry_run or not sys.stdin.isatty():
+                if args.json:
+                    ui.print_json({"id": None, "error": str(e)})
+                else:
+                    ui.err(f"sos: {e}")
+                return 1
+            from .runner import svoya_argv
+            os.execvp("pkexec", ["pkexec", *svoya_argv(), "snapshot", "create", "--config", sn.config,
+                                 "--description", desc] + (["--json"] if args.json else []))
         if args.json:
-            ui.print_json({"number": num, "description": desc, "dryRun": ctx.dry_run})
+            ui.print_json({"id": str(num) if num is not None else None, "number": num, "config": sn.config,
+                           "description": desc, "dryRun": ctx.dry_run})
         else:
             ui.head(tr(f"snapshot {num if num is not None else '(dry run)'} created",
                        f"снимок {num if num is not None else '(пробный запуск)'} создан") + f" · {desc}")
         return 0
     return 2
 
-
-__all__ = ["Snapper", "Snapshot", "Guard", "parse_snapper_json", "parse_info_xml", "i18n"]

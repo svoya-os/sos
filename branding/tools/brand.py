@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Svoya OS branding toolkit: shared constants and helpers for every generator in branding/.
+"""SOS (Svoya Operating System) branding toolkit: shared constants and helpers for every generator
+in branding/.
 
 * tokens      read from themes/*.toml (single source of truth, never duplicated here)
 * Morse mark  geometry of `··· ——— ···` (the mark, the burst on the wallpaper, the stacked icon form)
@@ -24,7 +25,11 @@ FONTS = ROOT / "design" / "fonts"
 THEMES_DIR = ROOT / "themes"
 OUT = BRANDING / "out"
 
-MORSE = ["...", "---", "..."]          # С О С — identical in Russian and international Morse
+MORSE = ["...", "---", "..."]          # С О С / S O S — identical in Russian and international Morse
+NAME = "SOS"                           # product name (Latin)
+NAME_RU = "СОС"                        # product name (Cyrillic)
+TAGLINE_EN = "Svoya Operating System"
+TAGLINE_RU = "Своя Операционная Система"
 VERSION = "26.10"
 CODENAME_RU = "Первый сигнал"
 CODENAME_EN = "First Signal"

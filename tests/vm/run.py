@@ -1,0 +1,332 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+"""Boot the SOS ISO in QEMU and follow a test plan (tests/vm/plan.json): wait for serial markers,
+press keys over QMP, take screenshots at milestones.
+
+    python3 tests/vm/run.py --iso dist/iso/sos-26.10-amd64.iso --firmware uefi --out out/vm-uefi
+    python3 tests/vm/run.py --iso x.iso --dry-run          # print the QEMU command, validate plan
+
+Firmware: uefi (OVMF), uefi-sb (OVMF with Secure Boot + Microsoft keys), bios (SeaBIOS).
+The VM identifies itself with SMBIOS product "sos-vm-test": the ISO's GRUB then mirrors its menu to
+the serial port and the live image's sos-vm-test.service writes "SOS-MARK <uptime> <event>" lines.
+Outputs in --out: screens/*.png, serial.log, report.json, report.md (for GITHUB_STEP_SUMMARY).
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+
+import image  # noqa: E402
+import keys  # noqa: E402
+from qmp import QMPClient, QMPError, QMPTimeout  # noqa: E402
+
+ACTIONS = {"sleep", "screenshot", "wait_screen", "wait_serial", "key", "type"}
+OVMF_DIRS = ["/usr/share/OVMF", "/usr/share/ovmf", "/usr/share/edk2/ovmf", "/usr/share/edk2-ovmf/x64",
+             "/usr/share/qemu"]
+OVMF_SETS = {
+    "uefi": [("OVMF_CODE_4M.fd", "OVMF_VARS_4M.fd"), ("OVMF_CODE.fd", "OVMF_VARS.fd")],
+    "uefi-sb": [("OVMF_CODE_4M.secboot.fd", "OVMF_VARS_4M.ms.fd"), ("OVMF_CODE.secboot.fd", "OVMF_VARS.ms.fd")],
+}
+
+
+class StepFailed(Exception):
+    pass
+
+
+# ---------------------------------------------------------------------------------------------------
+# plan
+# ---------------------------------------------------------------------------------------------------
+def load_plan(path: pathlib.Path) -> dict:
+    plan = json.loads(path.read_text(encoding="utf-8"))
+    validate_plan(plan)
+    return plan
+
+
+def validate_plan(plan: dict) -> None:
+    if not isinstance(plan.get("steps"), list) or not plan["steps"]:
+        raise ValueError("plan needs a non-empty 'steps' list")
+    names = set()
+    for n, step in enumerate(plan["steps"], 1):
+        action = step.get("action")
+        if action not in ACTIONS:
+            raise ValueError(f"step {n}: unknown action {action!r}")
+        if action == "screenshot":
+            name = step.get("name")
+            if not name or not re.fullmatch(r"[A-Za-z0-9._-]+", name):
+                raise ValueError(f"step {n}: screenshot needs a file-safe 'name'")
+            if name in names:
+                raise ValueError(f"step {n}: duplicate screenshot name {name}")
+            names.add(name)
+        if action == "key":
+            keys.parse_combo(step.get("keys", []))
+        if action == "type":
+            keys.text_to_combos(step.get("text", ""))
+        if action == "wait_serial":
+            re.compile(step["pattern"])
+            if "fail_pattern" in step:
+                re.compile(step["fail_pattern"])
+        if action == "sleep" and not isinstance(step.get("seconds"), (int, float)):
+            raise ValueError(f"step {n}: sleep needs 'seconds'")
+
+
+# ---------------------------------------------------------------------------------------------------
+# QEMU
+# ---------------------------------------------------------------------------------------------------
+def find_ovmf(kind: str) -> tuple[str, str] | None:
+    for code, varsf in OVMF_SETS[kind]:
+        for d in OVMF_DIRS:
+            c, v = os.path.join(d, code), os.path.join(d, varsf)
+            if os.path.exists(c) and os.path.exists(v):
+                return c, v
+    return None
+
+
+def kvm_usable() -> bool:
+    return os.access("/dev/kvm", os.R_OK | os.W_OK)
+
+
+def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_copy: str | None,
+                 code: str | None) -> list[str]:
+    vm = plan.get("vm", {})
+    accel = args.accel if args.accel != "auto" else ("kvm" if kvm_usable() else "tcg")
+    xres, yres = vm.get("resolution", [1440, 900])
+    machine = "q35" + (",smm=on" if args.firmware == "uefi-sb" else "")
+    cmd = [args.qemu, "-name", "sos-vm-test", "-machine", f"{machine},accel={accel}",
+           "-cpu", "host" if accel == "kvm" else "max",
+           "-smp", str(args.smp or vm.get("smp", 4)), "-m", str(args.memory or vm.get("memory_mib", 6144)),
+           "-smbios", f"type=1,manufacturer=SOS,product={vm.get('smbios_product', 'sos-vm-test')}",
+           "-vga", "none", "-device", f"virtio-vga,xres={xres},yres={yres}",
+           "-display", "none",
+           "-drive", f"file={args.iso},media=cdrom,if=none,id=cd0,readonly=on",
+           "-device", "ide-cd,drive=cd0,bus=ide.0,bootindex=0",
+           "-device", "qemu-xhci", "-device", "usb-tablet",
+           "-nic", "user,model=virtio-net-pci",
+           "-serial", f"file:{out / 'serial.log'}",
+           "-qmp", f"unix:{out / 'qmp.sock'},server=on,wait=off",
+           "-no-reboot"]
+    if args.firmware in ("uefi", "uefi-sb"):
+        cmd += ["-drive", f"if=pflash,format=raw,unit=0,readonly=on,file={code}",
+                "-drive", f"if=pflash,format=raw,unit=1,file={vars_copy}"]
+        if args.firmware == "uefi-sb":
+            cmd += ["-global", "driver=cfi.pflash01,property=secure,value=on"]
+    return cmd
+
+
+# ---------------------------------------------------------------------------------------------------
+# runner
+# ---------------------------------------------------------------------------------------------------
+class Runner:
+    def __init__(self, qmp: QMPClient, out: pathlib.Path, scale: float, proc: subprocess.Popen | None):
+        self.qmp = qmp
+        self.out = out
+        self.scale = scale
+        self.proc = proc
+        self.shots: dict[str, image.Image] = {}
+        self.results: list[dict] = []
+        (out / "screens").mkdir(parents=True, exist_ok=True)
+
+    def serial(self) -> str:
+        try:
+            return (self.out / "serial.log").read_text(encoding="utf-8", errors="replace")
+        except FileNotFoundError:
+            return ""
+
+    def grab(self) -> image.Image:
+        ppm = self.out / "screen.ppm"
+        self.qmp.screendump(str(ppm))
+        for _ in range(50):  # QEMU writes the file asynchronously on some versions
+            if ppm.exists() and ppm.stat().st_size > 0:
+                break
+            time.sleep(0.1)
+        img = image.parse_ppm(ppm.read_bytes())
+        ppm.unlink(missing_ok=True)
+        return img
+
+    def poll_interval(self) -> float:
+        return min(1.0, max(0.05, self.scale))
+
+    def alive(self) -> None:
+        if self.proc is not None and self.proc.poll() is not None:
+            raise StepFailed(f"QEMU exited with code {self.proc.returncode}")
+
+    # -- actions ----------------------------------------------------------------------------------
+    def do_sleep(self, step: dict) -> str:
+        time.sleep(step["seconds"] * (self.scale if step.get("scale", True) else 1))
+        return f"slept {step['seconds']}s"
+
+    def do_screenshot(self, step: dict) -> str:
+        img = self.grab()
+        name = step["name"]
+        path = self.out / "screens" / f"{name}.png"
+        how = image.write_png(img, str(path))
+        self.shots[name] = img
+        note = f"{img.width}x{img.height} ({how})"
+        if step.get("assert") == "not_blank" and image.is_blank(img):
+            raise StepFailed(f"{name}: the screen is blank")
+        ref = step.get("expect_change_from")
+        if ref and ref in self.shots:
+            d = image.difference(self.shots[ref], img)
+            note += f", {d:.1%} changed vs {ref}"
+            if d < step.get("min_change", 0.005):
+                msg = f"{name}: screen did not change after the key press (vs {ref})"
+                if step.get("strict", False):
+                    raise StepFailed(msg)
+                note += " — WARNING: " + msg
+        return note
+
+    def do_wait_screen(self, step: dict) -> str:
+        time.sleep(step.get("min_delay_s", 0) * self.scale)
+        deadline = time.monotonic() + step.get("timeout_s", 60) * self.scale
+        while time.monotonic() < deadline:
+            self.alive()
+            img = self.grab()
+            if not image.is_blank(img):
+                return f"screen has content ({1 - image.dominant_fraction(img):.1%} non-background)"
+            time.sleep(self.poll_interval())
+        raise StepFailed("timed out waiting for the screen to show something")
+
+    def do_wait_serial(self, step: dict) -> str:
+        pat = re.compile(step["pattern"])
+        fail = re.compile(step["fail_pattern"]) if step.get("fail_pattern") else None
+        deadline = time.monotonic() + step.get("timeout_s", 300) * self.scale
+        while time.monotonic() < deadline:
+            self.alive()
+            text = self.serial()
+            m = pat.search(text)
+            if m:
+                return f"matched {m.group(0)!r}"
+            if fail and fail.search(text):
+                raise StepFailed(f"serial reported failure: {fail.pattern}")
+            time.sleep(self.poll_interval())
+        raise StepFailed(f"timed out waiting for serial pattern {pat.pattern!r}")
+
+    def do_key(self, step: dict) -> str:
+        combo = keys.parse_combo(step["keys"])
+        self.qmp.send_key(combo, step.get("hold_ms", 100))
+        return "+".join(combo)
+
+    def do_type(self, step: dict) -> str:
+        for combo in keys.text_to_combos(step["text"]):
+            self.qmp.send_key(combo, 50)
+            time.sleep(0.05)
+        return f"typed {len(step['text'])} characters"
+
+    def run(self, steps: list[dict]) -> bool:
+        ok = True
+        for n, step in enumerate(steps, 1):
+            action = step["action"]
+            started = time.monotonic()
+            entry = {"n": n, "id": step.get("id", action), "action": action, "optional": bool(step.get("optional"))}
+            try:
+                self.alive()
+                entry["detail"] = getattr(self, f"do_{action}")(step)
+                entry["status"] = "ok"
+            except (StepFailed, QMPError, QMPTimeout, ConnectionError, ValueError, OSError) as exc:
+                entry["status"] = "skipped" if step.get("optional") else "failed"
+                entry["detail"] = str(exc)
+                if not step.get("optional"):
+                    ok = False
+                    self.evidence(f"fail-{n:02d}-{entry['id']}")
+            entry["seconds"] = round(time.monotonic() - started, 1)
+            self.results.append(entry)
+            print(f"[{entry['status']:>7}] {n:2d} {entry['id']:<12} {action:<11} {entry['detail']}", flush=True)
+            if not ok and not step.get("continue_on_failure"):
+                break
+        return ok
+
+    def evidence(self, name: str) -> None:
+        try:
+            image.write_png(self.grab(), str(self.out / "screens" / f"{name}.png"))
+        except Exception as exc:  # noqa: BLE001 - best effort, the VM may be gone
+            print(f"(no failure screenshot: {exc})", file=sys.stderr)
+
+
+def write_reports(out: pathlib.Path, meta: dict, results: list[dict], ok: bool) -> None:
+    (out / "report.json").write_text(json.dumps({**meta, "ok": ok, "steps": results}, indent=1) + "\n")
+    lines = [f"### VM test: {meta['plan']} ({meta['firmware']}, {meta['accel']}) — {'passed' if ok else 'FAILED'}",
+             "", "| # | step | action | status | time | detail |", "|---|---|---|---|---|---|"]
+    for r in results:
+        detail = str(r.get("detail", "")).replace("|", "\\|")[:160]
+        lines.append(f"| {r['n']} | {r['id']} | {r['action']} | {r['status']} | {r['seconds']}s | {detail} |")
+    (out / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description="Boot the SOS ISO in QEMU and run a screenshot plan.")
+    ap.add_argument("--iso", required=True)
+    ap.add_argument("--plan", default=str(HERE / "plan.json"))
+    ap.add_argument("--firmware", choices=("uefi", "uefi-sb", "bios"), default="uefi")
+    ap.add_argument("--out", default="dist/vm")
+    ap.add_argument("--accel", choices=("auto", "kvm", "tcg"), default="auto")
+    ap.add_argument("--memory", type=int)
+    ap.add_argument("--smp", type=int)
+    ap.add_argument("--qemu", default="qemu-system-x86_64")
+    ap.add_argument("--timeout-scale", type=float, default=None,
+                    help="multiply waits/timeouts (default 1 with KVM, 4 with TCG)")
+    ap.add_argument("--dry-run", action="store_true", help="validate the plan and print the QEMU command")
+    args = ap.parse_args(argv)
+
+    plan_path = pathlib.Path(args.plan)
+    plan = load_plan(plan_path)
+    out = pathlib.Path(args.out).resolve()
+    out.mkdir(parents=True, exist_ok=True)
+
+    code = vars_copy = None
+    if args.firmware != "bios":
+        found = find_ovmf(args.firmware)
+        if found is None and not args.dry_run:
+            print(f"OVMF firmware for {args.firmware} not found (apt install ovmf)", file=sys.stderr)
+            return 2
+        code, varsf = found or ("OVMF_CODE.fd", "OVMF_VARS.fd")
+        vars_copy = str(out / "OVMF_VARS.fd")
+        if found:
+            shutil.copyfile(varsf, vars_copy)
+    cmd = qemu_command(args, plan, out, vars_copy, code)
+    accel = "kvm" if "accel=kvm" in " ".join(cmd) else "tcg"
+    scale = args.timeout_scale or (1.0 if accel == "kvm" else 4.0)
+    if args.dry_run:
+        print(" ".join(cmd))
+        print(f"plan {plan_path.name}: {len(plan['steps'])} steps ok; timeout scale {scale}")
+        return 0
+    if not os.path.exists(args.iso):
+        print(f"ISO not found: {args.iso}", file=sys.stderr)
+        return 2
+
+    (out / "serial.log").write_text("")
+    (out / "qemu-command.txt").write_text(" ".join(cmd) + "\n")
+    qemu_log = open(out / "qemu.log", "w")
+    proc = subprocess.Popen(cmd, stdout=qemu_log, stderr=subprocess.STDOUT)
+    ok = False
+    runner = None
+    try:
+        qmp = QMPClient.connect_unix(str(out / "qmp.sock"), timeout=30, wait=30)
+        qmp.negotiate()
+        runner = Runner(qmp, out, scale, proc)
+        ok = runner.run(plan["steps"])
+        qmp.quit()
+    finally:
+        try:
+            proc.wait(timeout=20)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+        qemu_log.close()
+        meta = {"plan": plan.get("name", plan_path.stem), "firmware": args.firmware, "accel": accel,
+                "iso": os.path.basename(args.iso)}
+        write_reports(out, meta, runner.results if runner else [], ok)
+    print(f"{'PASSED' if ok else 'FAILED'} — screenshots in {out / 'screens'}")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

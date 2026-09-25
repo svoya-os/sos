@@ -12,9 +12,9 @@ import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from fnmatch import fnmatchcase
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from .config import Config, ProviderConfig
 from .i18n import fmt_cost, fmt_number, t
@@ -155,12 +155,12 @@ def order_local_models(models: list[str], task: str, pcfg: ProviderConfig) -> li
 
 class Router:
     def __init__(self, config: Config, providers: dict[str, Provider], health: HealthCache,
-                 spend: SpendLedger, has_key: dict[str, bool] | None = None) -> None:
+                 spend: SpendLedger, key_check: Callable[[str], bool] | None = None) -> None:
         self.config = config
         self.providers = providers
         self.health = health
         self.spend = spend
-        self.has_key = has_key or {}
+        self.key_check = key_check or (lambda name: bool(providers[name].api_key) or not providers[name].cfg.needs_key)
 
     # ------------------------------------------------------------------
     def classify(self, text: str, context: dict[str, Any] | None = None, has_images: bool = False,
@@ -179,7 +179,7 @@ class Router:
         prov = self.providers.get(name)
         if prov is None or not prov.cfg.enabled:
             return False, "disabled"
-        if prov.cfg.needs_key and not self.has_key.get(name):
+        if prov.cfg.needs_key and not self.key_check(name):
             return False, "no key"
         if prov.cfg.local:
             h = self.health.get(name)
@@ -236,7 +236,7 @@ class Router:
         est = int(chars / 3.5) + 3000  # + system prompt and tool schemas
         task = self.classify(text, context, has_images, est)
 
-        # Health of local providers first (cached; the daemon keeps it warm).
+        # Health of local providers first (cached; the background service keeps it warm).
         local_names = [n for n, p in self.providers.items() if p.cfg.local and p.cfg.enabled]
         local_status = {n: self.provider_ready(n) for n in local_names}
         pairs = self._ordered_pairs(task)

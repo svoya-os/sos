@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "cuda-devel"
+name = { en = "CUDA toolkit (compilers)", ru = "CUDA для разработки" }
+summary = { en = "nvcc and headers for compiling CUDA code (flash-attn, custom kernels, llama.cpp builds). PyTorch does not need it.", ru = "nvcc и заголовки для сборки CUDA-кода (flash-attn, свои ядра, сборка llama.cpp). PyTorch это не нужно." }
+category = "dev"
+profiles = []
+requires = ["nvidia"]
+hardware = ["nvidia"]
+apt = ["nvidia-cuda-toolkit", "build-essential", "cmake", "ninja-build"]
+flatpak = []
+scripts = {}
+disk_gb = 7.0
+vram_gb_min = 0
+aliases = ["cuda-toolkit", "nvcc"]
+license_note = { en = "CUDA Toolkit: NVIDIA EULA (from the engine archive, not redistributed by SOS). Each project still brings its own CUDA runtime via uv.", ru = "CUDA Toolkit — лицензия NVIDIA (из архива движка, SOS его не распространяет). Каждый проект по-прежнему берёт свой CUDA через uv." }

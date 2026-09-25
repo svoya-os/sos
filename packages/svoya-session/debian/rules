@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/svoya-session
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 $(PKG)/usr/bin/svoya-session $(PKG)/usr/lib/svoya/greeter-session $(PKG)/usr/lib/svoya/session-keyboard

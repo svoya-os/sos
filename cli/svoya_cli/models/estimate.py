@@ -10,8 +10,12 @@ Formula (bytes)::
              MLA models (DeepSeek-style, kv_lora_rank > 0): n_ctx × n_layers × (kv_lora_rank + rope_dim) × b
              layers with n_kv_heads = 0 (recurrent layers of hybrid models) add nothing;
              sliding-window layers are counted at full n_ctx, so this is an upper bound for Gemma-style models.
-  compute  = n_ubatch × 4 × (n_vocab + 8 × n_embd)                      logits + activations (f32)
-           + (no flash attention: n_ubatch × n_ctx × n_head × 4)         KQ scores
+  compute  = max(A, S) + 0.1 × min(A, S)                                 llama.cpp reuses graph buffers
+             A = n_ubatch × 32 × n_embd × 4                              activations (f32)
+             S = flash attention ? 0 : n_ubatch × n_ctx × n_head × 4      KQ scores
+             (+ n_vocab × 4 × 8: logits are computed only for the few tokens that need them)
+             calibrated on llama.cpp's reported CUDA compute buffer for an 8B model at 8k context
+             (≈ 256 MiB with flash attention, ≈ 560 MiB without) — a heuristic, not a measurement
   runtime  = 400 MiB for CUDA/ROCm (context + BLAS workspace), 256 MiB for Vulkan
   total    = weights + kv + compute + runtime
 
@@ -106,6 +110,11 @@ def shape_from_headers(headers: list[GGUFHeader], file_sizes: list[int]) -> Mode
     n_head = max(heads) if heads else 0
     kv_raw = h.arch_get("attention.head_count_kv")
     kv_heads = _per_layer(kv_raw if kv_raw is not None else h.arch_get("attention.head_count"), n_layers, n_head)
+    # hybrid models (Qwen3-Next/Qwen3.5): only every N-th layer is full attention; the rest are
+    # linear-attention (recurrent) layers with a small constant state and no KV cache
+    interval = _int(h.arch_get("full_attention_interval"))
+    if interval > 1:
+        kv_heads = [kv if (i + 1) % interval == 0 else 0 for i, kv in enumerate(kv_heads)]
     d_default = n_embd // n_head if n_head else 0
     d_k = _int(h.arch_get("attention.key_length"), d_default)
     d_v = _int(h.arch_get("attention.value_length"), d_k or d_default)
@@ -183,9 +192,9 @@ def estimate(s: ModelShape, n_ctx: int = 8192, kv_type: str = "f16", *, flash_at
     compute = 0
     if s.is_llm:
         ub = min(n_ubatch, n_ctx)
-        compute = ub * 4 * (s.n_vocab + 8 * s.n_embd)
-        if not flash_attn:
-            compute += ub * n_ctx * s.n_head * 4
+        act = ub * 32 * s.n_embd * 4
+        scores = 0 if flash_attn else ub * n_ctx * s.n_head * 4
+        compute = max(act, scores) + min(act, scores) // 10 + s.n_vocab * 4 * 8
     return Estimate(weights=s.weights, kv=sum(kv_layers), compute=compute, runtime=RUNTIME.get(backend, RUNTIME["cuda"]),
                     n_ctx=n_ctx, kv_type=kv_type, flash_attn=flash_attn, kv_layers=kv_layers)
 

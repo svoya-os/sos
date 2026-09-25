@@ -1,6 +1,6 @@
 # Svoya theme templates → files.  SPDX-License-Identifier: Apache-2.0
 #
-# `svoya theme apply` renders every [[target]] with the tokens of the chosen theme.
+# `sos theme apply` renders every [[target]] with the tokens of the chosen theme.
 # Path placeholders: {config} = $XDG_CONFIG_HOME (~/.config), {state} = ~/.local/state, {home} = $HOME.
 #
 #   template       file in this directory (syntax: see cli/README.md → "Template language")
@@ -10,7 +10,7 @@
 #                  right after our header, so the user's own settings survive and our colors win.
 #   merge          "ini" | "keyvalue": update only our keys inside the user's file (backup once);
 #                  used for files other programs also write (qt6ct.conf, btop.conf).
-#   reload         live-reload hint handled by svoya: hyprland | kitty
+#   reload         live-reload hint handled by sos: hyprland | kitty
 #
 # Users can opt out per target in ~/.config/svoya/svoya.toml:   [theme] skip = ["kitty", "fastfetch"]
 

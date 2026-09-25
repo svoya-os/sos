@@ -20,7 +20,8 @@ from .paths import Paths
 
 POLICIES = ("local-only", "eu", "any")
 ROUTES = ("auto", "local", "cloud")
-PERSONAS = ("sysop", "dispatcher", "pirate")
+PERSONAS = ("kent", "sysop", "dispatcher", "pirate")
+AVATARS = ("auto", "imp", "cat", "none")
 TASKS = ("chat", "code", "vision", "long")
 
 # Prices are EUR per 1M tokens (input, output), converted at ≈0.86 €/$ on 2026-09-24
@@ -45,7 +46,9 @@ FALLBACK_PRICE = [2.0, 10.0]
 DEFAULTS: dict[str, Any] = {
     "language": "ru",
     "address": "ty",            # ty | vy — informal «ты» by default (DESIGN.md §8)
-    "persona": "sysop",
+    "persona": "kent",          # kent («Кент из нулевых») | sysop | dispatcher | pirate
+    "humor": 1,                 # 0 none · 1 occasional (default) · 2 more
+    "avatar": "auto",           # mascot hint for the shell: auto | imp | cat | none
     "allowed_roots": ["~"],
     "max_steps": 8,
     "route": {
@@ -106,7 +109,10 @@ DEFAULTS: dict[str, Any] = {
         },
     },
     "pricing": {},
-    "memory": {"enabled": True, "journal": True, "git": True, "snippets": 4, "max_chars": 1500},
+    # dir: where USER.md / MEMORY.md / journal/ live. Point it into an Obsidian vault (e.g. "~/Obsidian/SOS")
+    # and Jackson writes Obsidian-friendly notes there and never touches the rest of the vault unless allowed.
+    "memory": {"enabled": True, "dir": "", "obsidian": "auto", "journal": True, "git": True, "snippets": 4,
+               "max_chars": 1500},
     "tools": {
         "web_fetch": True, "shell": True, "shell_timeout": 60, "max_read_bytes": 200_000,
         "approval_timeout": 600,
@@ -184,6 +190,8 @@ class McpServerConfig:
 @dataclass
 class MemoryConfig:
     enabled: bool = True
+    dir: str = ""              # empty = ~/.local/share/svoya/jackson/memory
+    obsidian: str = "auto"     # auto | on | off
     journal: bool = True
     git: bool = True
     snippets: int = 4
@@ -209,7 +217,9 @@ class SnapshotConfig:
 class Config:
     language: str = "ru"
     address: str = "ty"
-    persona: str = "sysop"
+    persona: str = "kent"
+    humor: int = 1
+    avatar: str = "auto"
     allowed_roots: list[str] = field(default_factory=lambda: ["~"])
     max_steps: int = 8
     route: RouteConfig = field(default_factory=RouteConfig)
@@ -324,7 +334,9 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
     lang = str(data.get("language", "ru"))[:2].lower()
     cfg.language = lang if lang in ("ru", "en") else "en"
     cfg.address = _choice(data.get("address"), ("ty", "vy"), "ty", "address", warnings)
-    cfg.persona = _choice(data.get("persona"), PERSONAS, "sysop", "persona", warnings)
+    cfg.persona = _choice(data.get("persona"), PERSONAS, "kent", "persona", warnings)
+    cfg.humor = int(_as_num(data.get("humor"), 1, 0, 2))
+    cfg.avatar = _choice(data.get("avatar"), AVATARS, "auto", "avatar", warnings)
     cfg.allowed_roots = _as_str_list(data.get("allowed_roots")) or ["~"]
     cfg.max_steps = int(_as_num(data.get("max_steps"), 8, 1, 64))
 
@@ -381,8 +393,13 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
             warnings.append(f"pricing.{key}: expected [input, output] EUR per 1M tokens")
 
     m = data.get("memory") or {}
+    obsidian = m.get("obsidian", "auto")
+    if isinstance(obsidian, bool):
+        obsidian = "on" if obsidian else "off"
     cfg.memory = MemoryConfig(
-        enabled=_as_bool(m.get("enabled"), True), journal=_as_bool(m.get("journal"), True),
+        enabled=_as_bool(m.get("enabled"), True), dir=str(m.get("dir") or ""),
+        obsidian=_choice(obsidian, ("auto", "on", "off"), "auto", "memory.obsidian", warnings),
+        journal=_as_bool(m.get("journal"), True),
         git=_as_bool(m.get("git"), True), snippets=int(_as_num(m.get("snippets"), 4, 0, 20)),
         max_chars=int(_as_num(m.get("max_chars"), 1500, 0, 20000)),
     )
@@ -454,12 +471,30 @@ def set_toml_value(path: Path, table: str, key: str, value: Any) -> None:
     literal = f"{key} = {_toml_literal(value)}"
     key_re = re.compile(rf"^\s*{re.escape(key)}\s*=")
     start = None
-    for i, line in enumerate(lines):
-        m = _HEADER.match(line)
-        if m and m.group(1).strip() == table:
-            start = i
-            break
-    if start is None:
+    if not table:  # top-level key: lives before the first [table] header
+        first = next((i for i, line in enumerate(lines) if _HEADER.match(line) or line.lstrip().startswith("[[")),
+                     len(lines))
+        for j in range(first):
+            if key_re.match(lines[j]):
+                lines[j] = literal
+                break
+        else:
+            insert_at = first
+            while insert_at > 0 and not lines[insert_at - 1].strip():
+                insert_at -= 1
+            lines.insert(insert_at, literal)
+            if insert_at < len(lines) - 1 and lines[insert_at + 1].strip():
+                lines.insert(insert_at + 1, "")
+        start = -1
+    else:
+        for i, line in enumerate(lines):
+            m = _HEADER.match(line)
+            if m and m.group(1).strip() == table:
+                start = i
+                break
+    if start == -1:
+        pass
+    elif start is None:
         if lines and lines[-1].strip():
             lines.append("")
         lines += [f"[{table}]", literal]
@@ -481,7 +516,7 @@ def set_toml_value(path: Path, table: str, key: str, value: Any) -> None:
     new_text = "\n".join(lines) + "\n"
     parsed = tomllib.loads(new_text)  # raises on a broken result
     node: Any = parsed
-    for part in table.split("."):
+    for part in [p for p in table.split(".") if p]:
         node = node.get(part, {}) if isinstance(node, dict) else {}
     if not isinstance(node, dict) or node.get(key) != value:
         raise ValueError(f"could not set {table}.{key} in {path}")

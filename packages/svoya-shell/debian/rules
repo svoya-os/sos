@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/svoya-shell
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+
+override_dh_gencontrol:
+	dh_gencontrol -- -Vsvoya:QmlDepends="$$(cat debian/qml-deps 2>/dev/null)"

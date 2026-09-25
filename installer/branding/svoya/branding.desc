@@ -1,0 +1,40 @@
+# SOS installer branding (Calamares 3.3). SPDX-License-Identifier: Apache-2.0
+# Graphite palette and IBM Plex from design/DESIGN.md.
+---
+componentName: svoya
+
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+windowExpanding: normal
+windowSize: 1040px,680px
+windowPlacement: center
+sidebar: widget
+navigation: widget
+
+strings:
+    productName:         "SOS"
+    shortProductName:    "SOS"
+    version:             "26.10"
+    shortVersion:        "26.10"
+    versionedName:       "SOS 26.10 «Первый сигнал»"
+    shortVersionedName:  "SOS 26.10"
+    bootloaderEntryName: "SOS"
+    productUrl:          "https://github.com/svoya-os/sos"
+    supportUrl:          "https://github.com/svoya-os/sos/discussions"
+    knownIssuesUrl:      "https://github.com/svoya-os/sos/issues"
+    releaseNotesUrl:     "https://github.com/svoya-os/sos/blob/main/CHANGELOG.md"
+    donateUrl:           ""
+
+images:
+    productLogo:         "logo.png"
+    productIcon:         "icon.png"
+    productWelcome:      "welcome.png"
+
+style:
+    SidebarBackground:        "#0e0f11"
+    SidebarText:              "#9d9a92"
+    SidebarTextCurrent:       "#1b1204"
+    SidebarBackgroundCurrent: "#ffb547"
+
+slideshow:    "show.qml"
+slideshowAPI: 1

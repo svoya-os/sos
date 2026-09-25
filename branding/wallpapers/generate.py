@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Svoya OS wallpapers — «Сигнал / Signal»: a quiet horizon line that carries one Morse «СОС».
+"""SOS wallpapers — «Сигнал / Signal»: a quiet horizon line that carries one Morse «СОС».
 
 Reproduces the wallpaper of the approved mockup (design/mockups/desktop.{html,css}) exactly — same
 gradients, grain filter, horizon fade, burst geometry, colophon — for every target size:
@@ -15,7 +15,8 @@ gradients, grain filter, horizon fade, burst geometry, colophon — for every ta
     python3 branding/wallpapers/generate.py graphite 1920x1080
     python3 branding/wallpapers/generate.py --html          # dump the HTML sources for a browser
 
-SPDX-License-Identifier: Apache-2.0 (code) · the images are CC BY-SA 4.0
+SPDX-License-Identifier: Apache-2.0
+The images it produces are licensed CC BY-SA 4.0.
 """
 from __future__ import annotations
 
@@ -34,7 +35,7 @@ THEMES = ["graphite", "paper", "phosphor"]
 SIZES = [(1920, 1080), (2560, 1440), (2880, 1800), (3840, 2160)]
 UNIT_H = 900                               # the mockup's CSS height
 NAME = {"en": "Signal", "ru": "Сигнал"}
-AUTHOR = "Svoya OS design team"
+AUTHOR = "SOS design team (Svoya Operating System)"
 LICENSE = "CC-BY-SA-4.0"
 
 # Signal geometry from design/mockups/desktop.html (1440×900 space): y = 700, u = 6.5, h = 14, x0 = 1030
@@ -78,24 +79,28 @@ GRAIN_SVG = ("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' wi
              "</filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")
 
 
-def page_html(theme_id: str, width_units: float, dpr: float, lock: bool) -> str:
+ALL_LAYERS = frozenset({"surface", "base", "pulse", "tick", "grain", "colophon"})
+
+
+def page_html(theme_id: str, width_units: float, dpr: float, lock: bool, layers=ALL_LAYERS) -> str:
+    """layers: which parts to draw (the GRUB theme renders the surface and the signal separately)."""
     t = brand.theme(theme_id)
     c = t["color"]
     y, u, h = SIGNAL_Y, SIGNAL_U, SIGNAL_H
     x0 = SIGNAL_X0_REL * width_units
     d, x_end = brand.burst_path(x0, y, u, h, SIGNAL_LEAD)
-    colophon = "" if lock else (
-        f'<div class="colophon"><b>Svoya OS</b> {brand.VERSION} · {brand.CODENAME_RU.lower()}</div>')
+    colophon = "" if lock or "colophon" not in layers else (
+        f'<div class="colophon"><b>{brand.NAME}</b> {brand.VERSION} · {brand.CODENAME_RU.lower()}</div>')
     return f"""<!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
-<title>Svoya OS wallpaper — {theme_id}{' lock' if lock else ''}</title>
+<title>SOS wallpaper — {theme_id}{' lock' if lock else ''}</title>
 <style>
 {brand.font_face_css()}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: {width_units:.4f}px; height: {UNIT_H}px; overflow: hidden; background: {c['wall']}; }}
+html, body {{ width: {width_units:.4f}px; height: {UNIT_H}px; overflow: hidden; background: {c['wall'] if 'surface' in layers else 'transparent'}; }}
 body {{ -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; font-feature-settings: "ss02", "zero"; }}
 .wallpaper {{ position: absolute; inset: 0; background:
-    {surface_css(theme_id, dpr)}; }}
+    {surface_css(theme_id, dpr) if 'surface' in layers else 'transparent'}; }}
 svg.signal {{ position: absolute; inset: 0; width: {width_units:.4f}px; height: {UNIT_H}px; }}
 .signal .base {{ fill: none; stroke-width: 1; opacity: {BASE_OPACITY[theme_id]}; }}
 .signal .pulse {{ fill: none; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; opacity: 0.9; filter: {GLOW[theme_id]}; }}
@@ -122,11 +127,11 @@ svg.signal {{ position: absolute; inset: 0; width: {width_units:.4f}px; height: 
       <stop offset="1" stop-color="{c['accent']}" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <path class="base" d="M 0 {y} L {width_units:.4f} {y}" stroke="url(#fade)"/>
-  <path class="pulse" d="{d}" stroke="url(#burst)"/>
-  <text class="tick" x="{x0:.3f}" y="{y + 26}">··· ——— ···</text>
+  {f'<path class="base" d="M 0 {y} L {width_units:.4f} {y}" stroke="url(#fade)"/>' if "base" in layers else ""}
+  {f'<path class="pulse" d="{d}" stroke="url(#burst)"/>' if "pulse" in layers else ""}
+  {f'<text class="tick" x="{x0:.3f}" y="{y + 26}">··· ——— ···</text>' if "tick" in layers else ""}
 </svg>
-<div class="grain"></div>
+{'<div class="grain"></div>' if "grain" in layers else ""}
 {colophon}
 </div></body></html>
 """

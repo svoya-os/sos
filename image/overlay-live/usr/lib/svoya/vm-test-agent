@@ -1,0 +1,32 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# SOS VM test agent (live image only). Writes "SOS-MARK <uptime> <event>" lines to the first serial
+# port and mirrors the journal there, so tests/vm can wait for milestones and keep a boot log.
+set -uo pipefail
+tty=/dev/ttyS0
+[ -w "$tty" ] || exit 0
+stty -F "$tty" 115200 2>/dev/null || true
+
+mark() { printf 'SOS-MARK %s %s\n' "$(cut -d' ' -f1 /proc/uptime)" "$*" >"$tty"; }
+
+mark agent-start
+journalctl -b -f -o short-monotonic --no-hostname >"$tty" 2>&1 &
+
+user=${1:-svoya}
+deadline=$((SECONDS + 900))
+greetd_seen=0
+while [ "$SECONDS" -lt "$deadline" ]; do
+    if [ "$greetd_seen" = 0 ] && systemctl is-active --quiet greetd.service; then
+        mark greetd-active
+        greetd_seen=1
+    fi
+    if pgrep -u "$user" -x Hyprland >/dev/null && pgrep -u "$user" -x 'quickshell|qs' >/dev/null; then
+        # the shell needs a moment to map its surfaces
+        sleep 5
+        mark desktop-ready
+        break
+    fi
+    sleep 1
+done
+[ "$SECONDS" -lt "$deadline" ] || mark desktop-timeout
+wait

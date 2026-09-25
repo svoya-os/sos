@@ -1,5 +1,9 @@
-"""``svoya`` — argument parsing and dispatch. Command modules are imported lazily so that the
-hot path (``svoya status --json``, polled every 2 s) loads as little Python as possible."""
+"""``sos`` (alias ``svoya``) — argument parsing and dispatch.
+
+Command modules are imported lazily so the hot path (``sos status --json``, polled every 2 s)
+loads as little Python as possible. Friendly forms (``sos fix``, ``sos тема ночь``,
+``sos установить obsidian``) are rewritten by ``commands.normalize`` before argparse sees them.
+"""
 from __future__ import annotations
 
 import argparse
@@ -12,10 +16,28 @@ from .i18n import tr
 
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="svoya",
-        description=tr("Svoya OS system tool: GPU Doctor, modules, models, themes, updates.",
-                       "Системный инструмент Svoya OS: доктор ГП, модули, модели, темы, обновления."))
-    p.add_argument("--version", action="version", version=f"svoya {__version__}")
+        prog="sos",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=tr("SOS — Svoya Operating System. `sos` alone opens the menu.",
+                       "СОС — Своя Операционная Система. Просто `sos` открывает меню."),
+        epilog=tr(
+            "everyday:\n"
+            "  sos install obsidian | llm-local | qwen3.5-9b   install an app, a module or a model\n"
+            "  sos remove <thing>                            remove it again\n"
+            "  sos fix · sos gpu                             repair · check the graphics card\n"
+            "  sos update · sos undo                         update (with a snapshot) · roll back\n"
+            "  sos theme night|day|auto                      switch the theme\n"
+            "  sos models suggest                            the best local model for this machine\n"
+            "Russian works too: sos установить, удалить, починить, видеокарта, обновить, откатить, тема, модели.",
+            "каждый день:\n"
+            "  sos установить obsidian | llm-local | qwen3.5-9b   приложение, модуль или модель\n"
+            "  sos удалить <что>                                 удалить обратно\n"
+            "  sos починить · sos видеокарта                     починить · проверить видеокарту\n"
+            "  sos обновить · sos откатить                       обновить (со снимком) · откатить\n"
+            "  sos тема ночь|день|авто                           сменить тему\n"
+            "  sos модели подобрать                              лучшая локальная модель для этой машины\n"
+            "По-английски тоже можно: sos install, remove, fix, gpu, update, undo, theme, models."))
+    p.add_argument("--version", action="version", version=f"sos {__version__}")
     p.add_argument("--no-color", action="store_true", help=tr("plain output", "без цвета"))
     sub = p.add_subparsers(dest="cmd", metavar="<command>")
 
@@ -61,6 +83,7 @@ def _parser() -> argparse.ArgumentParser:
         ma.add_argument("--force", action="store_true")
         ma.add_argument("--show-scripts", action="store_true")
         ma.add_argument("--no-snapshot", action="store_true")
+        ma.add_argument("--root-only", action="store_true", help=argparse.SUPPRESS)
         if verb == "add":
             ma.add_argument("--with", dest="options", action="append", default=[], metavar="OPTION")
             ma.add_argument("--profile")
@@ -69,10 +92,26 @@ def _parser() -> argparse.ArgumentParser:
     mp.add_argument("--json", action="store_true")
     mp.add_argument("--offline", action="store_true")
 
+    # install / remove (anything: module, app, model)
+    ins = cmd("install", "install a module, an app (Flathub) or a model", "установить модуль, приложение (Flathub) или модель")
+    ins.add_argument("things", nargs="+", metavar="thing")
+    ins.add_argument("--dry-run", action="store_true")
+    ins.add_argument("--yes", "-y", action="store_true")
+    ins.add_argument("--json", action="store_true")
+    rem = cmd("remove", "remove a module, an app or a model", "удалить модуль, приложение или модель")
+    rem.add_argument("things", nargs="+", metavar="thing")
+    rem.add_argument("--dry-run", action="store_true")
+    rem.add_argument("--yes", "-y", action="store_true")
+    rem.add_argument("--json", action="store_true")
+    cmd("menu", "interactive menu (same as plain `sos`)", "интерактивное меню (как просто `sos`)")
+
     # models
     mo = cmd("models", "shared model store /srv/ai: fit, licenses, dedup, views",
              "общее хранилище моделей /srv/ai: влезет ли, лицензии, дубликаты, представления")
-    mosub = mo.add_subparsers(dest="models_cmd", metavar="<list|pull|fit|rm|dedup|views>")
+    mosub = mo.add_subparsers(dest="models_cmd", metavar="<list|suggest|pull|fit|serve|rm|dedup|views>")
+    mos = mosub.add_parser("suggest", help=tr("best local model for this machine (+2 alternatives)",
+                                              "лучшая локальная модель для этой машины (+2 варианта)"))
+    mos.add_argument("--json", action="store_true")
     mol = mosub.add_parser("list", help=tr("installed models (or --catalog)", "установленные модели (или --catalog)"))
     mol.add_argument("--catalog", action="store_true")
     mol.add_argument("--all", action="store_true", help=tr("include models your region/use may not allow",
@@ -88,7 +127,7 @@ def _parser() -> argparse.ArgumentParser:
     mof.add_argument("--revision", default="main")
     mof.add_argument("--json", action="store_true")
     mop = mosub.add_parser("pull", help=tr("download into the store (HF cache layout)", "скачать в хранилище (формат кэша HF)"))
-    mop.add_argument("repo", help="org/repo[/file] ")
+    mop.add_argument("repo", help="org/repo[/file] | id from `sos models suggest`")
     mop.add_argument("files", nargs="*")
     mop.add_argument("--revision", default="main")
     mop.add_argument("--include", action="append", default=[])
@@ -96,6 +135,7 @@ def _parser() -> argparse.ArgumentParser:
     mop.add_argument("--yes", "-y", action="store_true")
     mop.add_argument("--accept-license", action="store_true")
     mop.add_argument("--dry-run", action="store_true")
+    mop.add_argument("--json", action="store_true", help=tr("progress as JSON lines", "прогресс строками JSON"))
     mor = mosub.add_parser("rm", help=tr("remove from the store", "удалить из хранилища"))
     mor.add_argument("target", help="org/repo | path | sha256")
     mor.add_argument("--dry-run", action="store_true")
@@ -110,6 +150,15 @@ def _parser() -> argparse.ArgumentParser:
     mov.add_argument("--out", help=tr("views root (default /srv/ai/views)", "корень представлений (по умолчанию /srv/ai/views)"))
     mov.add_argument("--dry-run", action="store_true")
     mov.add_argument("--json", action="store_true")
+    mov.add_argument("--quiet", "-q", action="store_true")
+    mse = mosub.add_parser("serve", help=tr("start the local model server (llama.cpp, 127.0.0.1:8080)",
+                                            "запустить локальный сервер моделей (llama.cpp, 127.0.0.1:8080)"))
+    mse.add_argument("--stop", action="store_true")
+    mse.add_argument("--status", action="store_true")
+    mse.add_argument("--foreground", action="store_true")
+    mse.add_argument("--port", type=int, default=8080)
+    mse.add_argument("--json", action="store_true")
+    mse.add_argument("--dry-run", action="store_true")
 
     # theme
     t = cmd("theme", "themes: graphite, paper, phosphor, auto", "темы: графит, бумага, фосфор, авто")
@@ -141,21 +190,24 @@ def _parser() -> argparse.ArgumentParser:
     u.add_argument("--yes", "-y", action="store_true")
     u.add_argument("--json", action="store_true")
     u.add_argument("--no-flatpak", action="store_true")
-    un = cmd("undo", "undo a change svoya made (snapshot pair)", "отменить изменение svoya (пара снимков)")
+    un = cmd("undo", "undo a change sos made (snapshot pair)", "отменить изменение sos (пара снимков)")
     un.add_argument("n", nargs="?", type=int, help=tr("pair number from --list (default: latest)",
                                                      "номер пары из --list (по умолчанию последняя)"))
     un.add_argument("--list", action="store_true")
     un.add_argument("--dry-run", action="store_true")
     un.add_argument("--yes", "-y", action="store_true")
     un.add_argument("--json", action="store_true")
+    un.add_argument("--config", default="root", help=tr("snapper config (root, home…)", "конфигурация snapper (root, home…)"))
     sn = cmd("snapshot", "btrfs snapshots via snapper", "снимки btrfs через snapper")
     snsub = sn.add_subparsers(dest="snapshot_cmd", metavar="<create|list>")
     snc = snsub.add_parser("create")
-    snc.add_argument("--description", "-d")
+    snc.add_argument("--description", "--reason", "-d", dest="description")
+    snc.add_argument("--config", default="root", help=tr("snapper config (root, home…)", "конфигурация snapper (root, home…)"))
     snc.add_argument("--dry-run", action="store_true")
     snc.add_argument("--json", action="store_true")
     snl = snsub.add_parser("list")
     snl.add_argument("--all", action="store_true")
+    snl.add_argument("--config", default="root")
     snl.add_argument("--json", action="store_true")
 
     # run / job
@@ -192,6 +244,25 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     i18n.set_lang(i18n.detect_lang())
+    argv = list(sys.argv[1:] if argv is None else argv)
+    from . import commands
+    if argv[:1] == ["__complete"]:
+        for w in commands.complete(argv[1:] or [""]):
+            print(w)
+        return 0
+    flags = [a for a in argv if a in ("--no-color",)]
+    rest = [a for a in argv if a not in flags]
+    rest = commands.normalize(rest)
+    argv = flags + rest
+    first = next((a for a in rest if not a.startswith("-")), None)
+    if first is not None and first not in commands.COMMANDS and not rest[0].startswith("-"):
+        hints = commands.suggest(first)
+        msg = tr(f"sos: unknown command '{first}'.", f"sos: неизвестная команда «{first}».")
+        if hints:
+            msg += " " + tr("Did you mean: ", "Может быть: ") + ", ".join(hints) + "?"
+        print(msg, file=sys.stderr)
+        print(tr("  sos help — all commands · sos — menu", "  sos help — все команды · sos — меню"), file=sys.stderr)
+        return 2
     parser = _parser()
     args = parser.parse_args(argv)
     if args.no_color:
@@ -199,6 +270,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd is None:
         parser.print_help()
         return 0
+    if args.cmd == "menu":
+        from . import menu
+        return menu.main()
     dry = bool(getattr(args, "dry_run", False))
     from . import ui
     from .context import make
@@ -216,6 +290,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "models":
             from .models import cli as models_cli
             return models_cli.main(args, ctx)
+        if args.cmd in ("install", "remove"):
+            from . import install
+            return install.main(args, ctx)
         if args.cmd == "theme":
             from .theme import cli as theme_cli
             return theme_cli.main(args, ctx)

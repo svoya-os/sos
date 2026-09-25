@@ -1,0 +1,173 @@
+# SPDX-License-Identifier: Apache-2.0
+# SOS local-model ladder for `sos models suggest` (first-run wizard: one click to install).
+# Rules: license-safe (Apache-2.0 / MIT only), good Russian, GGUF for llama.cpp, verified on the Hub.
+# Verified 2026-09-25 against the Hugging Face API (repo trees, sizes, licenses, config.json):
+#   Qwen3.5 4B/9B/27B/35B-A3B/122B-A10B — Apache-2.0, image-text-to-text, hybrid attention
+#   (1 full-attention layer in 4; the others are linear attention with a constant-size state);
+#   gpt-oss 20b/120b — Apache-2.0, MoE, sliding-window attention on half of the layers.
+#
+# arch.* feeds the fit estimator (models/estimate.py): layers, full-attention layers, embedding
+# size, heads, KV heads, head dim, vocab. sizes are exact byte counts from the Hub.
+
+[[model]]
+id = "qwen3.5-4b"
+name = "Qwen3.5 4B"
+repo = "unsloth/Qwen3.5-4B-GGUF"
+license = "Apache-2.0"
+params_b = 4
+active_b = 4
+vision = true
+mmproj = { file = "mmproj-F16.gguf", size = 672423616 }
+arch = { name = "qwen35", layers = 32, attn_every = 4, embd = 2560, heads = 16, kv_heads = 4, head_dim = 256, vocab = 248320, ctx_train = 262144 }
+quants = [
+  { name = "Q4_K_M", file = "Qwen3.5-4B-Q4_K_M.gguf", size = 2740937888 },
+  { name = "Q8_0", file = "Qwen3.5-4B-Q8_0.gguf", size = 4482403488 },
+]
+note = { en = "Small and quick; fine for everyday chat, summaries, simple code.", ru = "Маленькая и быстрая: повседневный чат, пересказы, простой код." }
+
+[[model]]
+id = "qwen3.5-9b"
+name = "Qwen3.5 9B"
+repo = "unsloth/Qwen3.5-9B-GGUF"
+license = "Apache-2.0"
+params_b = 9
+active_b = 9
+vision = true
+mmproj = { file = "mmproj-F16.gguf", size = 918166080 }
+arch = { name = "qwen35", layers = 32, attn_every = 4, embd = 4096, heads = 16, kv_heads = 4, head_dim = 256, vocab = 248320, ctx_train = 262144 }
+quants = [
+  { name = "Q4_K_M", file = "Qwen3.5-9B-Q4_K_M.gguf", size = 5680522464 },
+  { name = "Q6_K", file = "Qwen3.5-9B-Q6_K.gguf", size = 7458301152 },
+  { name = "Q8_0", file = "Qwen3.5-9B-Q8_0.gguf", size = 9527502048 },
+]
+note = { en = "Best quality per GB for 8–12 GB cards; sees images.", ru = "Лучшее качество на гигабайт для карт 8–12 ГБ; понимает картинки." }
+
+[[model]]
+id = "qwen3.5-27b"
+name = "Qwen3.5 27B"
+repo = "unsloth/Qwen3.5-27B-GGUF"
+license = "Apache-2.0"
+params_b = 27
+active_b = 27
+vision = true
+mmproj = { file = "mmproj-F16.gguf", size = 927607040 }
+arch = { name = "qwen35", layers = 64, attn_every = 4, embd = 5120, heads = 24, kv_heads = 4, head_dim = 256, vocab = 248320, ctx_train = 262144 }
+quants = [
+  { name = "Q3_K_M", file = "Qwen3.5-27B-Q3_K_M.gguf", size = 13505116064 },
+  { name = "Q4_K_M", file = "Qwen3.5-27B-Q4_K_M.gguf", size = 16740812704 },
+  { name = "Q8_0", file = "Qwen3.5-27B-Q8_0.gguf", size = 28595763104 },
+]
+note = { en = "Dense 27B: the strongest all-rounder that fits one consumer GPU.", ru = "Плотная 27B: самая сильная универсальная модель для одной видеокарты." }
+
+[[model]]
+id = "qwen3.5-35b-a3b"
+name = "Qwen3.5 35B-A3B"
+repo = "unsloth/Qwen3.5-35B-A3B-GGUF"
+license = "Apache-2.0"
+params_b = 35
+active_b = 3
+experts = 256
+vision = true
+mmproj = { file = "mmproj-F16.gguf", size = 899283648 }
+arch = { name = "qwen35moe", layers = 40, attn_every = 4, embd = 2048, heads = 16, kv_heads = 2, head_dim = 256, vocab = 248320, ctx_train = 262144 }
+quants = [
+  { name = "Q4_K_M", file = "Qwen3.5-35B-A3B-Q4_K_M.gguf", size = 22016023168 },
+  { name = "Q6_K", file = "Qwen3.5-35B-A3B-Q6_K.gguf", size = 28852861568 },
+  { name = "Q8_0", file = "Qwen3.5-35B-A3B-Q8_0.gguf", size = 36903139968 },
+]
+note = { en = "MoE with 3B active: very fast; experts can live in RAM on smaller cards.", ru = "MoE, 3B активных: очень быстрая; эксперты могут жить в ОЗУ на небольших картах." }
+
+[[model]]
+id = "qwen3.5-122b-a10b"
+name = "Qwen3.5 122B-A10B"
+repo = "unsloth/Qwen3.5-122B-A10B-GGUF"
+license = "Apache-2.0"
+params_b = 122
+active_b = 10
+experts = 256
+vision = true
+mmproj = { file = "mmproj-F16.gguf", size = 908724960 }
+arch = { name = "qwen35moe", layers = 48, attn_every = 4, embd = 3072, heads = 32, kv_heads = 2, head_dim = 256, vocab = 248320, ctx_train = 262144 }
+quants = [
+  { name = "UD-Q2_K_XL", file = "Qwen3.5-122B-A10B-UD-Q2_K_XL.gguf", size = 41845347520 },
+  { name = "UD-Q4_K_XL", files = [
+      { file = "UD-Q4_K_XL/Qwen3.5-122B-A10B-UD-Q4_K_XL-00001-of-00003.gguf", size = 10943552 },
+      { file = "UD-Q4_K_XL/Qwen3.5-122B-A10B-UD-Q4_K_XL-00002-of-00003.gguf", size = 49640779424 },
+      { file = "UD-Q4_K_XL/Qwen3.5-122B-A10B-UD-Q4_K_XL-00003-of-00003.gguf", size = 27378273056 },
+    ] },
+]
+note = { en = "Frontier-class at home: for 64 GB+ or 96–128 GB unified memory (Strix Halo).", ru = "Почти флагман дома: для 64 ГБ+ или 96–128 ГБ общей памяти (Strix Halo)." }
+
+[[model]]
+id = "gpt-oss-20b"
+name = "gpt-oss 20B"
+repo = "ggml-org/gpt-oss-20b-GGUF"
+license = "Apache-2.0"
+params_b = 21
+active_b = 3.6
+experts = 32
+vision = false
+arch = { name = "gpt-oss", layers = 24, attn_every = 1, embd = 2880, heads = 64, kv_heads = 8, head_dim = 64, vocab = 201088, ctx_train = 131072 }
+quants = [
+  { name = "MXFP4", file = "gpt-oss-20b-MXFP4.gguf", size = 12109566624 },
+]
+note = { en = "Fast reasoning MoE; Russian is decent, English is stronger.", ru = "Быстрая рассуждающая MoE; русский неплохой, английский сильнее." }
+
+[[model]]
+id = "gpt-oss-120b"
+name = "gpt-oss 120B"
+repo = "ggml-org/gpt-oss-120b-GGUF"
+license = "Apache-2.0"
+params_b = 117
+active_b = 5.1
+experts = 128
+vision = false
+arch = { name = "gpt-oss", layers = 36, attn_every = 1, embd = 2880, heads = 64, kv_heads = 8, head_dim = 64, vocab = 201088, ctx_train = 131072 }
+quants = [
+  { name = "MXFP4", file = "gpt-oss-120b-MXFP4.gguf", size = 63387346208 },
+]
+note = { en = "Very fast for its size (5B active); great on unified-memory APUs.", ru = "Очень быстрая для своего размера (5B активных); отлично на APU с общей памятью." }
+
+# Tiers by usable memory (GiB): dedicated VRAM, or VRAM+GTT on unified-memory APUs, or RAM without a GPU.
+# The first pick that fits (at 8k context) becomes the default; the others are alternatives.
+[[tier]]
+id = "cpu"
+name = { en = "CPU only (8–16 GB RAM)", ru = "Только процессор (8–16 ГБ ОЗУ)" }
+min_gb = 0
+picks = ["qwen3.5-4b:Q4_K_M", "qwen3.5-9b:Q4_K_M", "gpt-oss-20b:MXFP4"]
+
+[[tier]]
+id = "gpu6"
+name = { en = "6–8 GB", ru = "6–8 ГБ" }
+min_gb = 5
+picks = ["qwen3.5-9b:Q4_K_M", "qwen3.5-4b:Q8_0", "qwen3.5-35b-a3b:Q4_K_M"]
+
+[[tier]]
+id = "gpu10"
+name = { en = "10–12 GB", ru = "10–12 ГБ" }
+min_gb = 9
+picks = ["qwen3.5-9b:Q8_0", "qwen3.5-9b:Q6_K", "qwen3.5-35b-a3b:Q4_K_M"]
+
+[[tier]]
+id = "gpu16"
+name = { en = "16 GB", ru = "16 ГБ" }
+min_gb = 14
+picks = ["qwen3.5-27b:Q3_K_M", "gpt-oss-20b:MXFP4", "qwen3.5-35b-a3b:Q4_K_M"]
+
+[[tier]]
+id = "gpu24"
+name = { en = "24 GB", ru = "24 ГБ" }
+min_gb = 20
+picks = ["qwen3.5-27b:Q4_K_M", "qwen3.5-35b-a3b:Q4_K_M", "gpt-oss-20b:MXFP4"]
+
+[[tier]]
+id = "gpu32"
+name = { en = "32–48 GB", ru = "32–48 ГБ" }
+min_gb = 28
+picks = ["qwen3.5-27b:Q8_0", "qwen3.5-35b-a3b:Q6_K", "qwen3.5-122b-a10b:UD-Q2_K_XL"]
+
+[[tier]]
+id = "big64"
+name = { en = "64 GB+ / unified 96–128 GB", ru = "64 ГБ+ / общая память 96–128 ГБ" }
+min_gb = 56
+picks = ["qwen3.5-122b-a10b:UD-Q4_K_XL", "gpt-oss-120b:MXFP4", "qwen3.5-122b-a10b:UD-Q2_K_XL"]

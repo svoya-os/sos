@@ -1,0 +1,33 @@
+# Must NOT be in the image: Ubuntu branding, nags, telemetry, snaps. hooks/70-debrand.sh purges
+# them if something pulled them in and fails the build if any remains. SPDX-License-Identifier: Apache-2.0
+snapd
+ubuntu-pro-client
+ubuntu-pro-client-l10n
+ubuntu-advantage-tools
+ubuntu-advantage-desktop-daemon
+landscape-common
+popularity-contest
+ubuntu-report
+apport
+apport-symptoms
+apport-core-dump-handler
+whoopsie
+motd-news-config
+ubuntu-release-upgrader-core
+update-manager-core
+update-notifier-common
+command-not-found
+plymouth-theme-ubuntu-logo
+plymouth-theme-ubuntu-text
+plymouth-theme-spinner
+yaru-theme-gtk
+yaru-theme-icon
+yaru-theme-sound
+yaru-theme-gnome-shell
+ubuntu-wallpapers
+ubuntu-docs
+ubuntu-session
+ubuntu-settings
+fonts-ubuntu
+lxd-installer
+sosreport

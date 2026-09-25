@@ -24,8 +24,8 @@ from typing import Any
 from ..i18n import fmt_bytes, norm_lang
 from ..sandbox import SECRET_PATHS
 from ..trash import Trash
-from ..undo import file_sha256
-from .base import T0, T1, T4, Assessment, Tool, ToolContext, ToolResult, UndoSpec, obj
+from ..fileutil import file_sha256
+from .base import T0, T1, T2, T4, Assessment, Tool, ToolContext, ToolResult, UndoSpec, obj
 
 SECRET_NAME_RE = re.compile(r"^(id_(rsa|dsa|ecdsa|ed25519)(_sk)?(\.pub)?|\.env(\..+)?|.*\.kdbx|credentials(\.json)?"
                             r"|\.netrc|\.pgpass|\.git-credentials|secrets\.env)$")
@@ -95,7 +95,7 @@ def secret_reason(ctx: ToolContext, path: Path) -> str | None:
 
 
 def protected_reason(ctx: ToolContext, path: Path) -> str | None:
-    for p, what in ((ctx.paths.config_dir, "Svoya config"), (ctx.paths.data_dir, "Jackson state"),
+    for p, what in ((ctx.paths.config_dir, "SOS settings"), (ctx.paths.data_dir, "Jackson state"),
                     (ctx.paths.trash_dir, "trash")):
         try:
             rp = real(p)
@@ -124,7 +124,22 @@ def check(ctx: ToolContext, path: Path, write: bool) -> Assessment:
     if secret:
         why = f"секреты: {secret}" if lang == "ru" else f"secrets: {secret}"
         return Assessment(T4, reasons=[why], scope=f"path:{path}")
+    if write:
+        guard = vault_guard(ctx, path)
+        if guard is not None:
+            return guard
     return Assessment(T1 if write else T0, scope=f"path:{path}")
+
+
+def vault_guard(ctx: ToolContext, path: Path) -> Assessment | None:
+    """In an Obsidian vault Jackson writes only inside its own folder unless the user allows more."""
+    mem = ctx.memory
+    if mem is None or not mem.obsidian or not mem.in_vault(path) or mem.inside(path):
+        return None
+    ru = norm_lang(ctx.lang) == "ru"
+    why = (f"хранилище Obsidian вне папки Джексона ({display(ctx, mem.dir)})" if ru
+           else f"Obsidian vault outside Jackson's folder ({display(ctx, mem.dir)})")
+    return Assessment(T2, reasons=[why], scope=f"vault:{mem.vault}")
 
 
 def downloaded_from(ctx: ToolContext, path: Path) -> str | None:
@@ -381,23 +396,22 @@ def _umask() -> int:
     return mask
 
 
-def fs_write(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
-    path = real(expand(ctx, args.get("path", "")), keep_link=True)
+def write_reversible(ctx: ToolContext, path: Path, text: str) -> ToolResult:
+    """Write *text* to *path*: previous version copied to the trash, result verified, undo recorded."""
     trash = Trash(ctx.paths.trash_dir)
-    old, new = _new_content(ctx, path, args)
-    data = new.encode("utf-8")
+    existed = path.exists()
+    data = text.encode("utf-8")
     prev_entry = None
     prev_sha = None
-    if old is not None:
+    if existed:
         prev_sha = file_sha256(path)
         prev_entry = trash.put(path, copy=True)  # keep the previous version in the trash
     _atomic_write(path, data)
-    written = file_sha256(path)
     expected = hashlib.sha256(data).hexdigest()
-    verified = written == expected
+    verified = file_sha256(path) == expected
     ru = _ru(ctx)
     shown = display(ctx, path)
-    if old is None:
+    if not existed:
         spec = UndoSpec("fs.create", (f"создал {shown}" if ru else f"created {shown}"),
                         {"path": str(path), "sha256": expected})
     else:
@@ -407,8 +421,14 @@ def fs_write(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
     size = fmt_bytes(len(data), ctx.lang)
     summary = f"{shown} · {size}" + (" · проверено" if ru and verified else " · verified" if verified else "")
     content = (f"wrote {shown} ({len(data)} bytes); verified by re-reading: {verified}"
-               + (f"; previous version kept in the trash" if prev_entry else ""))
+               + ("; previous version kept in the trash" if prev_entry else ""))
     return ToolResult(verified, content, summary, undo=[spec], verified=verified)
+
+
+def fs_write(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
+    path = real(expand(ctx, args.get("path", "")), keep_link=True)
+    _old, new = _new_content(ctx, path, args)
+    return write_reversible(ctx, path, new)
 
 
 # ---------------------------------------------------------------------------

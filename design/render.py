@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render Svoya OS design mockups to PNG with headless Chromium (Playwright).
+"""Render SOS design mockups to PNG with headless Chromium (Playwright).
 
 Usage:
     python3 design/render.py                      # all themes of desktop.html

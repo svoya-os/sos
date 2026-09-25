@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "dev"
+name = { en = "Developer tools", ru = "Инструменты разработчика" }
+summary = { en = "Compilers, CMake/Ninja, gh, direnv, shellcheck, ripgrep, fd, just, distrobox.", ru = "Компиляторы, CMake/Ninja, gh, direnv, shellcheck, ripgrep, fd, just, distrobox." }
+category = "dev"
+profiles = ["ml", "agent", "hacker"]
+requires = []
+apt = ["build-essential", "cmake", "ninja-build", "pkg-config", "python3-dev", "gh", "direnv", "shellcheck", "ripgrep", "fd-find", "just", "distrobox", "podman"]
+flatpak = []
+scripts = {}
+disk_gb = 1.5
+vram_gb_min = 0
+aliases = ["developer", "разработка"]
+license_note = { en = "Free software from the engine archive (GPL/MIT/Apache).", ru = "Свободное ПО из архива движка (GPL/MIT/Apache)." }

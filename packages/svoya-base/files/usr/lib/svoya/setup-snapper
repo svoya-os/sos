@@ -1,0 +1,72 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Configure snapper for "/" on btrfs (idempotent; run by the installer, safe to re-run).
+#
+# Layout created by the installer: @ -> /, @snapshots -> /.snapshots (flat layout, so rolling back @
+# never loses the snapshot history), @home, @var_log, @var_cache, @containers, @swap, @ai -> /srv/ai.
+#   setup-snapper [--no-first-snapshot] [--description TEXT]
+set -euo pipefail
+
+first=1
+desc="SOS installed · Установка SOS"
+while [ "$#" -gt 0 ]; do
+    case $1 in
+        --no-first-snapshot) first=0; shift ;;
+        --description) desc=$2; shift 2 ;;
+        *) echo "usage: setup-snapper [--no-first-snapshot] [--description TEXT]" >&2; exit 2 ;;
+    esac
+done
+
+fstype=$(findmnt -no FSTYPE / || true)
+if [ "$fstype" != btrfs ]; then
+    echo "setup-snapper: / is ${fstype:-unknown}, not btrfs; snapshots are not available"
+    exit 0
+fi
+if ! command -v snapper >/dev/null; then
+    echo "setup-snapper: snapper is not installed" >&2
+    exit 1
+fi
+if ! mountpoint -q /.snapshots; then
+    echo "setup-snapper: /.snapshots is not a mounted subvolume (@snapshots missing from fstab?)" >&2
+    exit 1
+fi
+
+install -d -m 0755 /etc/snapper/configs
+if [ ! -f /etc/snapper/configs/root ]; then
+    install -m 0640 /usr/share/snapper/config-templates/svoya /etc/snapper/configs/root
+fi
+
+# Register the config (Debian keeps the list in /etc/default/snapper).
+conf=/etc/default/snapper
+touch "$conf"
+current=$(sed -n 's/^SNAPPER_CONFIGS="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$conf" | tail -n1)
+case " $current " in
+    *" root "*) ;;
+    *)
+        new=$(echo "$current root" | xargs)
+        if grep -q '^SNAPPER_CONFIGS=' "$conf"; then
+            sed -i "s/^SNAPPER_CONFIGS=.*/SNAPPER_CONFIGS=\"$new\"/" "$conf"
+        else
+            echo "SNAPPER_CONFIGS=\"$new\"" >>"$conf"
+        fi
+        ;;
+esac
+
+chmod 0750 /.snapshots
+if getent group sudo >/dev/null; then
+    chgrp sudo /.snapshots
+fi
+
+if command -v systemctl >/dev/null; then
+    for unit in snapper-timeline.timer snapper-cleanup.timer grub-btrfsd.service; do
+        if systemctl cat "$unit" >/dev/null 2>&1; then
+            systemctl enable "$unit" >/dev/null 2>&1 || true
+        fi
+    done
+fi
+
+if [ "$first" = 1 ]; then
+    snapper --no-dbus -c root create --type single --cleanup-algorithm number \
+        --userdata important=yes --description "$desc"
+fi
+echo "setup-snapper: snapper config 'root' ready"

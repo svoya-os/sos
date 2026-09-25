@@ -1,0 +1,85 @@
+# SOS desktop (Hyprland + SOS Shell). SPDX-License-Identifier: Apache-2.0
+# Firefox is installed from Mozilla's APT repository by hooks/20-firefox.sh.
+
+# --- SOS ----------------------------------------------------------------------------------------
+svoya-session
+svoya-shell
+svoya-branding
+svoya-fonts
+svoya-cli
+svoya-jackson
+quickshell
+
+# --- compositor and portals (Hyprland 0.53.3 + hyprbars 0.53.0 from the archive) ---------------
+hyprland
+hyprland-plugin-hyprbars
+?hyprland-qtutils
+?hypridle
+?hyprpolkitagent
+greetd
+xwayland
+xdg-desktop-portal
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+qt6-wayland
+?qt6-svg-plugins
+
+# --- graphics (NVIDIA comes from the ISO pool / ubuntu-drivers at install time) ------------------
+libgl1-mesa-dri
+mesa-vulkan-drivers
+?mesa-va-drivers
+
+# --- audio --------------------------------------------------------------------------------------
+pipewire
+pipewire-pulse
+pipewire-alsa
+wireplumber
+libspa-0.2-bluetooth
+pavucontrol
+
+# --- fonts and icons ----------------------------------------------------------------------------
+fonts-noto-core
+fonts-noto-color-emoji
+fonts-dejavu-core
+papirus-icon-theme
+adwaita-icon-theme
+
+# --- applications -------------------------------------------------------------------------------
+kitty
+thunar
+?thunar-archive-plugin
+?tumbler
+mousepad
+ristretto
+file-roller
+?papers
+?gnome-calculator
+btop
+fuzzel
+fastfetch
+?qt6ct
+?nm-connection-editor
+
+# --- screenshots, clipboard, OCR (Super+Shift+S, Super+V) ---------------------------------------
+grim
+slurp
+wl-clipboard
+cliphist
+?hyprpicker
+tesseract-ocr
+tesseract-ocr-eng
+tesseract-ocr-rus
+
+# --- desktop plumbing ---------------------------------------------------------------------------
+gvfs
+gvfs-backends
+udisks2
+xdg-user-dirs
+xdg-utils
+gnome-keyring
+libpam-gnome-keyring
+libsecret-tools
+libnotify-bin
+playerctl
+brightnessctl
+flatpak                  # Flathub is configured system-wide by hooks/35-flatpak.sh; nothing preinstalled

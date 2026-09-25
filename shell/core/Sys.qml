@@ -12,13 +12,22 @@ Singleton {
 
     // Optional tools detected at startup: { name: true } for every tool found.
     property var has: ({})
-    readonly property var tools: ["svoya", "hyprctl", "cliphist", "wl-copy", "wl-paste", "grim", "slurp", "tesseract", "brightnessctl", "nmcli", "bluetoothctl", "rfkill", "pw-play", "gdbus", "systemd-inhibit", "secret-tool", "xdg-terminal-exec", "kitty", "foot", "alacritty", "ghostty", "gnome-terminal", "ptyxis", "konsole", "x-terminal-emulator", "hyprshutdown", "loginctl", "systemctl", "xdg-open", "notify-send", "python3"]
+    readonly property var tools: ["sos", "svoya", "j", "jackson", "hyprctl", "cliphist", "wl-copy", "wl-paste", "grim", "slurp", "tesseract", "brightnessctl", "nmcli", "bluetoothctl", "rfkill", "pw-play", "gdbus", "systemd-inhibit", "secret-tool", "xdg-terminal-exec", "kitty", "foot", "alacritty", "ghostty", "gnome-terminal", "ptyxis", "konsole", "x-terminal-emulator", "hyprshutdown", "loginctl", "systemctl", "xdg-open", "notify-send", "python3"]
 
     readonly property string runtimeDir: {
         const r = Quickshell.env("XDG_RUNTIME_DIR");
         return (r && r.length > 0 ? r : "/tmp") + "/svoya";
     }
     readonly property string home: Quickshell.env("HOME")
+
+    // SOS release from /etc/os-release (VERSION_ID, e.g. "26.10") when the file
+    // describes SOS; the engine's own release is never shown.
+    readonly property string osVersion: {
+        const t = osRelease.text();
+        const ours = /^(ID|NAME)="?[^"\n]*(sos|svoya)/im.test(t);
+        const m = /^VERSION_ID="?([^"\n]+)"?/m.exec(t);
+        return ours && m ? m[1] : "26.10";
+    }
     readonly property string user: Quickshell.env("USER") || Quickshell.env("LOGNAME") || ""
 
     // Run argv, then cb(exitCode, stdout, stderr). stdin (optional) is written and closed.
@@ -35,6 +44,15 @@ Singleton {
     // Run through /bin/sh -c. Extra args become $1, $2… (never interpolate user text).
     function sh(script, args, cb, stdin) {
         return root.run(["sh", "-c", script, "sh"].concat(args || []), cb, stdin);
+    }
+
+    // Run the system CLI (`sos`, alias `svoya` on older images) with args.
+    function sos(args, cb, stdin) {
+        return root.run(["sh", "-c", 'c=$(command -v sos || command -v svoya) || exit 127; exec "$c" "$@"', "sh"].concat(args), cb, stdin);
+    }
+
+    function detachSos(args) {
+        root.detach(["sh", "-c", 'c=$(command -v sos || command -v svoya) || exit 127; exec "$c" "$@"', "sh"].concat(args));
     }
 
     function detach(argv) {
@@ -142,6 +160,13 @@ Singleton {
                 root.has = found;
             }
         }
+    }
+
+    FileView {
+        id: osRelease
+
+        path: "/etc/os-release"
+        printErrors: false
     }
 
     Component.onCompleted: root.mkdirRuntime()

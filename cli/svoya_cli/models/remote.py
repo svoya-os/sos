@@ -29,15 +29,21 @@ class RemoteError(Exception):
     pass
 
 
+def hub_endpoint() -> str:
+    """``HF_ENDPOINT`` (as honoured by huggingface_hub, e.g. for mirrors) or huggingface.co."""
+    return (os.environ.get("HF_ENDPOINT") or DEFAULT_ENDPOINT).rstrip("/")
+
+
 @dataclass
 class HFRef:
     repo: str
     filename: str | None
     revision: str = "main"
 
-    def url(self, endpoint: str = DEFAULT_ENDPOINT) -> str:
+    def url(self, endpoint: str | None = None) -> str:
         if not self.filename:
             raise RemoteError("no file in reference")
+        endpoint = endpoint or hub_endpoint()
         return (f"{endpoint.rstrip('/')}/{self.repo}/resolve/{urllib.parse.quote(self.revision, safe='')}/"
                 f"{urllib.parse.quote(self.filename)}")
 
@@ -238,9 +244,10 @@ def head(url: str, token: str | None = None, *, op: urllib.request.OpenerDirecto
                     commit=hdrs.get("X-Repo-Commit"))
 
 
-def api_model(repo: str, revision: str = "main", token: str | None = None, *, endpoint: str = DEFAULT_ENDPOINT,
+def api_model(repo: str, revision: str = "main", token: str | None = None, *, endpoint: str | None = None,
               op: urllib.request.OpenerDirector | None = None, timeout: float = 30) -> dict:
     """``/api/models/{repo}/revision/{rev}?blobs=true`` → commit sha, files (size, lfs.sha256), card data."""
+    endpoint = endpoint or hub_endpoint()
     url = f"{endpoint.rstrip('/')}/api/models/{repo}/revision/{urllib.parse.quote(revision, safe='')}?blobs=true"
     req = urllib.request.Request(url, headers=_headers(token))
     try:

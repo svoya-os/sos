@@ -1,0 +1,3 @@
+# SOS: PyTorch wheels for this machine's GPU (from `sos doctor`); `sos run` exports these.
+UV_TORCH_BACKEND={{ gpu.backend }}
+HF_HOME={{ paths.ai }}

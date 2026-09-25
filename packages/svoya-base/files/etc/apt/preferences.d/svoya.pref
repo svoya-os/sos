@@ -1,0 +1,23 @@
+# SOS APT policy (svoya-base). SPDX-License-Identifier: Apache-2.0
+
+# SOS does not use snaps.
+Package: snapd
+Pin: release a=*
+Pin-Priority: -10
+
+# Ubuntu's "firefox" is a transitional package that installs the snap. SOS uses Mozilla's
+# APT repository (packages.mozilla.org, pinned to 1000 by /etc/apt/preferences.d/mozilla.pref).
+Package: firefox firefox-l10n-*
+Pin: release o=Ubuntu
+Pin-Priority: -1
+
+# /usr/bin/sos is the SOS system tool; Ubuntu's sosreport ships a command with the same name.
+Package: sosreport
+Pin: release a=*
+Pin-Priority: -1
+
+# The SOS Shell, its Hyprland config and the hyprbars plugin target the Hyprland 0.53 series.
+# Point releases (0.53.x) are allowed; a jump to 0.54+ needs a new SOS release.
+Package: hyprland hyprland-dev hyprland-backgrounds hyprland-plugin-*
+Pin: version 0.53.*
+Pin-Priority: 1001

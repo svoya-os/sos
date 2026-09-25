@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "ml-lab"
+name = { en = "ML Lab", ru = "ML-лаборатория" }
+summary = { en = "JupyterLab, marimo, TensorBoard, MLflow, Trackio (local W&B-compatible tracking), nvitop; pixi locked to conda-forge.", ru = "JupyterLab, marimo, TensorBoard, MLflow, Trackio (локальный трекинг, совместимый с W&B), nvitop; pixi только с conda-forge." }
+category = "ml"
+profiles = ["ml"]
+requires = ["base-ai"]
+apt = []
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 3.0
+vram_gb_min = 0
+aliases = ["ml", "jupyter", "lab", "лаборатория"]
+options.label-studio = { en = "Label Studio (Apache-2.0) for data labeling", ru = "Label Studio (Apache-2.0) для разметки данных", disk_gb = 1.5 }
+license_note = { en = "All tools are Apache-2.0/BSD/MIT. pixi never uses Anaconda `defaults` (paid for organisations over 200 people).", ru = "Все инструменты — Apache-2.0/BSD/MIT. pixi никогда не использует канал Anaconda `defaults` (платный для организаций больше 200 человек)." }

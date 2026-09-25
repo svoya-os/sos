@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@ --buildsystem=cmake+ninja
+
+# CRASH_HANDLER needs cpptrace, which is not in the Ubuntu 26.04 archive.
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DDISTRIBUTOR="SOS (github.com/svoya-os/sos)" \
+		-DCRASHREPORT_URL=https://github.com/svoya-os/sos/issues \
+		-DCRASH_HANDLER=OFF \
+		-DBUILD_TESTING=OFF
+
+override_dh_auto_test:
+
+override_dh_gencontrol:
+	dh_gencontrol -- -Vqt6:PrivateDepends="$$(sh debian/qt-private-deps)"

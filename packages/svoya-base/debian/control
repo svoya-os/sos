@@ -1,0 +1,26 @@
+Source: svoya-base
+Section: admin
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/sos
+Rules-Requires-Root: no
+
+Package: svoya-base
+Architecture: all
+Depends: ${misc:Depends},
+         acl,
+         adduser,
+         base-files,
+         btrfs-progs,
+         passwd,
+         snapper,
+         systemd,
+         systemd-zram-generator
+Recommends: grub-btrfs, polkitd
+Description: SOS base system configuration
+ System identity (os-release, lsb-release, issue), sysctl and udev tuning,
+ zram swap, snapper defaults, polkit rules, APT policy (no snaps, Hyprland
+ kept on the 0.53 series), the shared model store /srv/ai with the "ai"
+ group, and systemd presets for SOS, the Svoya Operating System.

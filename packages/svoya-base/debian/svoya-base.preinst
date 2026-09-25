@@ -1,0 +1,17 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Take over the distribution identity files from base-files (and motd help text) via diversions.
+set -e
+
+DIVERTED="/usr/lib/os-release /etc/lsb-release /etc/issue /etc/issue.net /etc/update-motd.d/10-help-text"
+
+case "$1" in
+    install|upgrade)
+        for f in $DIVERTED; do
+            dpkg-divert --package svoya-base --add --rename --divert "$f.ubuntu" "$f"
+        done
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

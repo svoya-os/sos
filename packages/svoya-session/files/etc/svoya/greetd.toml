@@ -1,0 +1,8 @@
+# SOS greetd configuration (svoya-session). greetd.service is pointed at this file by
+# /usr/lib/systemd/system/greetd.service.d/50-svoya.conf; /etc/greetd/config.toml is not used.
+[terminal]
+vt = 7
+
+[default_session]
+command = "/usr/lib/svoya/greeter-session"
+user = "svoya-greeter"

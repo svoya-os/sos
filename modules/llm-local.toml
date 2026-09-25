@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "llm-local"
+name = { en = "Local LLMs", ru = "Локальные модели" }
+summary = { en = "llama.cpp server in router mode over /srv/ai (OpenAI- and Anthropic-compatible API on localhost). Starts only when you or Jackson ask.", ru = "Сервер llama.cpp в режиме роутера поверх /srv/ai (API как у OpenAI и Anthropic, только localhost). Запускается только по вашей просьбе или Джексона." }
+category = "ai"
+profiles = ["newcomer", "creator", "ml", "agent", "hacker"]
+requires = ["base-ai"]
+apt = ["llama.cpp"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 1.2
+vram_gb_min = 0
+aliases = ["llm", "llama", "llama.cpp", "ллм"]
+options.ollama = { en = "Ollama (MIT) as a second engine, models kept in /srv/ai/ollama", ru = "Ollama (MIT) как второй движок, модели в /srv/ai/ollama", disk_gb = 4.0 }
+options.llama-swap = { en = "llama-swap (MIT): hot-swapping proxy for several engines", ru = "llama-swap (MIT): прокси с горячей сменой движков", disk_gb = 0.1 }
+options.vllm = { en = "vLLM (Apache-2.0) for batch serving; NVIDIA Turing+ or ROCm", ru = "vLLM (Apache-2.0) для пакетной раздачи; NVIDIA Turing+ или ROCm", disk_gb = 9.0 }
+options.open-webui = { en = "Open WebUI chat in the browser (BSD-3 with a branding clause since 0.6.6)", ru = "Open WebUI — чат в браузере (BSD-3 с условием о брендинге с 0.6.6)", disk_gb = 2.5 }
+license_note = { en = "llama.cpp: MIT. Model licenses are checked separately by `sos models`.", ru = "llama.cpp — MIT. Лицензии моделей проверяет `sos models`." }

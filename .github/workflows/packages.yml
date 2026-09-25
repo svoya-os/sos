@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: Apache-2.0
+# Build every SOS .deb (svoya-*, quickshell, uv, grub-btrfs) in ubuntu:26.04 and publish the flat
+# APT repository as the "sos-repo" artifact. Called by iso.yml; also runs when packaging inputs change.
+name: Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/**"
+      - "shell/**"
+      - "jackson/**"
+      - "cli/**"
+      - "modules/**"
+      - "themes/**"
+      - "branding/**"
+      - "installer/**"
+      - "image/config.env"
+      - "scripts/lib/**"
+      - ".github/workflows/packages.yml"
+  pull_request:
+    paths:
+      - "packages/**"
+      - "installer/**"
+      - ".github/workflows/packages.yml"
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      artifact:
+        description: Name of the artifact with the APT repository
+        value: ${{ jobs.build.outputs.artifact }}
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build .deb packages (ubuntu:26.04)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    outputs:
+      artifact: sos-repo
+    env:
+      EXTERNAL: quickshell,uv,grub-btrfs
+      OURS: svoya-base,svoya-fonts,svoya-branding,svoya-cli,svoya-jackson,svoya-shell,svoya-session,svoya-installer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # package versions are derived from git describe / commit time
+
+      - name: Restore third-party builds (pinned, rarely change)
+        id: external
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: dist/external-cache
+          key: external-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
+
+      - name: Build
+        env:
+          SVOYA_REPO_SIGNING_KEY: ${{ secrets.SOS_REPO_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist/repo/pool
+          if [ "${{ steps.external.outputs.cache-hit }}" = "true" ]; then
+            cp dist/external-cache/*.deb dist/repo/pool/
+            packages/build-all.sh --only "$OURS"
+          else
+            packages/build-all.sh
+            mkdir -p dist/external-cache
+            for p in ${EXTERNAL//,/ }; do cp dist/repo/pool/"${p}"_*.deb dist/external-cache/; done
+          fi
+          ls -la dist/repo/pool
+          {
+            echo "### SOS packages"
+            echo '```'
+            (cd dist/repo/pool && ls -1 *.deb)
+            echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Save third-party builds
+        if: steps.external.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: dist/external-cache
+          key: external-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
+
+      - name: Upload repository
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sos-repo
+          path: dist/repo
+          retention-days: 14
+          if-no-files-found: error

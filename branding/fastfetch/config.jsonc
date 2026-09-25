@@ -1,0 +1,35 @@
+// fastfetch — SOS (Svoya Operating System). Installed as /usr/share/svoya/fastfetch/config.jsonc and
+// used via `fastfetch -c /usr/share/svoya/fastfetch/config.jsonc` (or copied to ~/.config/fastfetch/).
+// Colors are ANSI palette slots, not RGB: 39 = the terminal's own foreground, 33 = yellow, which the SOS
+// terminal themes map to the signal color (amber on Graphite, dark amber on Paper), so the logo is right
+// on any theme. The logo is the mark folded into three lines (С / О / С) over the word «СОС».
+// SPDX-License-Identifier: Apache-2.0
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "file",
+    "source": "/usr/share/svoya/fastfetch/logo.txt",
+    "color": { "1": "39", "2": "33" },
+    "padding": { "top": 1, "left": 3, "right": 4 }
+  },
+  "display": {
+    "separator": "  ",
+    "color": { "keys": "33", "title": "39" },
+    "key": { "width": 10 }
+  },
+  "modules": [
+    "title",
+    "break",
+    { "type": "os", "key": "система" },
+    { "type": "kernel", "key": "ядро" },
+    { "type": "uptime", "key": "в работе" },
+    { "type": "packages", "key": "пакеты" },
+    { "type": "wm", "key": "оболочка" },
+    { "type": "terminal", "key": "терминал" },
+    "break",
+    { "type": "cpu", "key": "цп" },
+    { "type": "gpu", "key": "гп" },
+    { "type": "memory", "key": "озу" },
+    { "type": "disk", "key": "диск" }
+  ]
+}

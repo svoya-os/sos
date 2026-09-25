@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — layout preset «Классика»</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  /* ── bottom taskbar (Classic preset replaces the top bar) ── */
+  .tb {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 44px; z-index: 5;
+    display: flex; align-items: center; gap: 6px; padding: 0 16px 0 8px;
+    background: var(--bar-bg); border-top: 1px solid var(--line);
+    font: 500 11.5px/1 "Plex Mono"; letter-spacing: 0.02em; color: var(--text-dim);
+  }
+  .start {
+    height: 32px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 11px; border-radius: 9px;
+    background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--text);
+    font: 600 12px/1 "Plex Mono"; letter-spacing: 0.08em;
+  }
+  .search {
+    height: 32px; width: 264px; display: flex; align-items: center; gap: 9px; padding: 0 6px 0 11px; border-radius: 9px; white-space: nowrap;
+    background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); margin-left: 2px;
+    font: 400 12.5px/1 "Plex Sans"; letter-spacing: 0; color: var(--text-faint);
+  }
+  .search svg.i { width: 15px; height: 15px; }
+  .search .keys { margin-left: auto; }
+  .search kbd { font-size: 10px; padding: 2px 5px 3px; }
+  .vsep { width: 1px; height: 20px; background: var(--line); margin: 0 6px; }
+  .task {
+    position: relative; height: 32px; max-width: 214px; display: flex; align-items: center; gap: 9px; padding: 0 12px; border-radius: 8px;
+    font: 400 12.5px/1 "Plex Sans"; letter-spacing: 0; color: var(--text-dim); white-space: nowrap;
+  }
+  .task svg.i { width: 15px; height: 15px; stroke-width: 1.7; flex: none; }
+  .task span { overflow: hidden; text-overflow: ellipsis; }
+  .task.on { background: var(--surface-3); color: var(--text); }
+  .task.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 1px; background: var(--accent); }
+  .task.run::after { content: ""; position: absolute; left: 50%; bottom: 1px; width: 4px; height: 2px; margin-left: -2px; border-radius: 1px; background: var(--text-faint); }
+  .tray { margin-left: auto; display: flex; align-items: center; gap: 16px; height: 100%; flex: none; }
+  .tray .ico { display: flex; gap: 12px; }
+  .tray .ico svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .tray .jack-mini { padding: 3px 6px; }
+  .clock2 { text-align: right; line-height: 15px; white-space: nowrap; }
+  .clock2 b { display: block; font-weight: 500; font-size: 12.5px; color: var(--text); }
+  .clock2 span { font-weight: 400; font-size: 11px; color: var(--text-faint); }
+
+  /* ── Files window ── */
+  .files .content { display: grid; grid-template-columns: 196px 1fr; }
+  .side { background: var(--bar-bg); border-right: 1px solid var(--line); padding: 10px 8px; }
+  .side .caps { padding: 12px 10px 7px; }
+  .side .caps:first-child { padding-top: 6px; }
+  .side .it { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border-radius: 7px; font: 400 13px/1 "Plex Sans"; color: var(--text-dim); white-space: nowrap; }
+  .side .it svg.i { width: 15px; height: 15px; stroke-width: 1.6; color: var(--text-faint); }
+  .side .it.on { background: var(--surface-3); color: var(--text); }
+  .side .it.on svg.i { color: var(--accent); }
+  .side .it small { margin-left: auto; font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .ftb { height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 10px; border-bottom: 1px solid var(--line); }
+  .ftb .nav { display: flex; gap: 2px; color: var(--text-dim); }
+  .ftb .nav span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; }
+  .ftb .nav svg.i { width: 15px; height: 15px; stroke-width: 1.8; }
+  .ftb .nav span.off { color: var(--text-faint); opacity: 0.6; }
+  .crumbs { display: flex; align-items: center; gap: 6px; font: 400 13px/1 "Plex Sans"; color: var(--text-dim); }
+  .crumbs i { font-style: normal; color: var(--text-faint); }
+  .crumbs b { font-weight: 500; color: var(--text); }
+  .ftb .r { margin-left: auto; display: flex; gap: 4px; color: var(--text-dim); }
+  .ftb .r span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; }
+  .ftb .r span.on { background: var(--surface-3); color: var(--text); }
+  .ftb .r svg.i { width: 15px; height: 15px; }
+  .fl { flex: 1; padding: 6px 8px; }
+  .fl .hdr, .fl .r { display: grid; grid-template-columns: 1fr 120px 136px; align-items: center; gap: 12px; padding: 0 10px; }
+  .fl .hdr { height: 28px; font: 500 11px/1 "Plex Mono"; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+  .fl .r { height: 32px; border-radius: 7px; font: 400 13px/1 "Plex Sans"; color: var(--text); }
+  .fl .r .n { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+  .fl .r .n svg.i { width: 16px; height: 16px; stroke-width: 1.5; color: var(--text-dim); }
+  .fl .r .n svg.i.dir { color: var(--accent); }
+  .fl .r .n small { font: 400 11px/1 "Plex Mono"; color: var(--text-faint); margin-left: 4px; }
+  .fl .r .s, .fl .r .d { font: 400 11.5px/1 "Plex Mono"; color: var(--text-dim); }
+  .fl .r .s { text-align: right; }
+  .fl .r.on { background: var(--accent-soft); }
+  .fl .r.on .n svg.i { color: var(--accent); }
+  .fst { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-top: 1px solid var(--line); font: 400 11px/1 "Plex Mono"; color: var(--text-faint); }
+  .fst b { font-weight: 400; color: var(--text-dim); }
+  .fst span.snap { display: flex; align-items: center; gap: 7px; }
+  .fst svg.i { width: 13px; height: 13px; }
+  .term-body .ok2 { color: var(--ok); }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="wallpaper">
+    <svg class="signal"></svg>
+    <div class="grain"></div>
+  </div>
+
+  <!-- terminal (inactive, behind) -->
+  <section class="window" style="left:904px; top:292px; width:488px; height:306px;">
+    <div class="titlebar">
+      <div class="t"><span class="glyph"></span><b>Терминал</b>~ · sos doctor</div>
+      <i data-ctl></i>
+    </div>
+<pre class="term-body"><span class="a">›</span> sos doctor
+<span class="m">  драйвер     </span>595.58 <span class="d">·</span> подписан <span class="d">·</span> Secure Boot  <span class="ok2">ок</span>
+<span class="m">  CUDA        </span>13.0 <span class="d">·</span> в проектах: 12.8, 13.0    <span class="ok2">ок</span>
+<span class="m">  PyTorch     </span>2.13 видит RTX 4090 <span class="d">·</span> 24 ГБ      <span class="ok2">ок</span>
+<span class="m">  сон         </span>nvidia-suspend включён           <span class="ok2">ок</span>
+<span class="m">  контейнеры  </span>GPU доступна в podman            <span class="ok2">ок</span>
+<span class="m">  /srv/ai     </span>412 ГБ <span class="d">·</span> общие файлы −38 ГБ      <span class="ok2">ок</span>
+
+<span class="d">всё в порядке за 1,2 с · чинить нечего:</span> sos fix
+<span class="a">›</span> <span class="cur"></span></pre>
+  </section>
+
+  <!-- files (active) -->
+  <section class="window active files" style="left:72px; top:48px; width:808px; height:508px;">
+    <div class="titlebar">
+      <div class="t"><svg data-i="folder"></svg><b>Файлы</b>~/ai/datasets/ru-voice</div>
+      <i data-ctl></i>
+    </div>
+    <div class="content">
+      <aside class="side">
+        <div class="caps">Места</div>
+        <div class="it"><svg data-i="home"></svg>Домашняя</div>
+        <div class="it"><svg data-i="download"></svg>Загрузки</div>
+        <div class="it"><svg data-i="book"></svg>Заметки</div>
+        <div class="caps">ИИ</div>
+        <div class="it"><svg data-i="folder"></svg>Проекты</div>
+        <div class="it on"><svg data-i="database"></svg>Датасеты</div>
+        <div class="it"><svg data-i="box"></svg>Модели<small>/srv/ai</small></div>
+        <div class="caps">Снимки</div>
+        <div class="it"><svg data-i="history"></svg>сегодня, 18:02</div>
+        <div class="it"><svg data-i="history"></svg>вчера, 21:40</div>
+      </aside>
+      <div class="main">
+        <div class="ftb">
+          <div class="nav"><span><svg data-i="chevronRight" style="transform:scaleX(-1)"></svg></span><span class="off"><svg data-i="chevronRight"></svg></span></div>
+          <div class="crumbs">ai<i>/</i>datasets<i>/</i><b>ru-voice</b></div>
+          <div class="r"><span><svg data-i="search"></svg></span><span class="on"><svg data-i="sliders"></svg></span><span><svg data-i="grid"></svg></span></div>
+        </div>
+        <div class="fl">
+          <div class="hdr"><span>Имя</span><span style="text-align:right">Размер</span><span>Изменён</span></div>
+          <div class="r"><span class="n"><svg class="dir" data-i="folder"></svg>wavs<small>48 213 файлов</small></span><span class="s">6,1 ГБ</span><span class="d">сегодня, 14:02</span></div>
+          <div class="r on"><span class="n"><svg data-i="fileText"></svg>metadata.csv</span><span class="s">3,8 МБ</span><span class="d">сегодня, 14:05</span></div>
+          <div class="r"><span class="n"><svg data-i="fileCode"></svg>train.jsonl</span><span class="s">9,2 МБ</span><span class="d">сегодня, 14:06</span></div>
+          <div class="r"><span class="n"><svg data-i="fileCode"></svg>val.jsonl</span><span class="s">1,1 МБ</span><span class="d">сегодня, 14:06</span></div>
+          <div class="r"><span class="n"><svg data-i="fileCode"></svg>speakers.json</span><span class="s">12 КБ</span><span class="d">вчера, 22:10</span></div>
+          <div class="r"><span class="n"><svg data-i="fileText"></svg>README.md</span><span class="s">4 КБ</span><span class="d">вчера, 22:14</span></div>
+          <div class="r"><span class="n"><svg data-i="file"></svg>LICENSE</span><span class="s">1 КБ</span><span class="d">20 сен</span></div>
+        </div>
+        <div class="fst"><span>7 объектов · выбран <b>metadata.csv</b>, 3,8 МБ</span><span class="snap"><svg data-i="history"></svg>снимок сегодня в 18:02 · <b>Super+Z</b></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- taskbar -->
+  <footer class="tb">
+    <div class="start"><svg class="morse"></svg>СОС</div>
+    <div class="search"><svg data-i="search"></svg>Найти или спросить<span class="keys"><kbd>Super</kbd><kbd>Space</kbd></span></div>
+    <span class="vsep"></span>
+    <div class="task on"><svg data-i="folder"></svg><span>Файлы — ru-voice</span></div>
+    <div class="task run"><svg data-i="terminal"></svg><span>Терминал</span></div>
+    <div class="task run"><svg data-i="workflow"></svg><span>ComfyUI</span></div>
+    <div class="task run"><svg data-i="activity"></svg><span>Trackio</span></div>
+    <div class="tray">
+      <div class="seg"><span class="dot"></span><span>обучение</span><span class="meter acc"><i style="width:62%"></i></span><span>62%</span></div>
+      <div class="ico" id="trayico"></div>
+      <div class="seg">RU</div>
+      <div class="jack-mini"><svg class="scope" data-kind="answer" data-amp="4" data-freq="1.6" data-seed="0.2" width="22" height="10"></svg></div>
+      <div class="clock2"><b>18:42</b><span>Чт, 24 сен</span></div>
+    </div>
+  </footer>
+
+</div>
+<script>
+  document.getElementById('trayico').innerHTML = ['wifi', 'volume', 'battery'].map((k) => `<svg viewBox="0 0 24 24">${SOS.ICONS[k]}</svg>`).join('');
+  SOS.init({ bar: false });
+</script>
+</body>
+</html>

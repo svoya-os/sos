@@ -1,0 +1,10 @@
+{
+  "root": [
+    {"subvolume": "/", "number": 0, "default": false, "active": false, "type": "single", "pre-number": null, "date": "", "user": "root", "cleanup": "", "description": "current", "userdata": null},
+    {"subvolume": "/", "number": 1, "default": true, "active": true, "type": "single", "pre-number": null, "date": "2026-09-01 10:00:00", "user": "root", "cleanup": "", "description": "first root filesystem", "userdata": null},
+    {"subvolume": "/", "number": 41, "default": false, "active": false, "type": "pre", "pre-number": null, "date": "2026-09-24 18:00:05", "user": "root", "cleanup": "number", "description": "sos: modules add llm-local", "userdata": {"svoya": "1"}},
+    {"subvolume": "/", "number": 42, "default": false, "active": false, "type": "post", "pre-number": 41, "date": "2026-09-24 18:02:11", "user": "root", "cleanup": "number", "description": "sos: modules add llm-local", "userdata": {"svoya": "1"}},
+    {"subvolume": "/", "number": 43, "default": false, "active": false, "type": "pre", "pre-number": null, "date": "2026-09-24 18:10:00", "user": "root", "cleanup": "number", "description": "zypp(apt)", "userdata": null},
+    {"subvolume": "/", "number": 44, "default": false, "active": false, "type": "post", "pre-number": 43, "date": "2026-09-24 18:11:00", "user": "root", "cleanup": "number", "description": "zypp(apt)", "userdata": null}
+  ]
+}

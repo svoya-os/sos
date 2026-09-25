@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/svoya-fonts
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+	mkdir -p $(PKG)/etc/fonts/conf.d
+	ln -sf ../../../usr/share/fontconfig/conf.avail/60-svoya-fonts.conf $(PKG)/etc/fonts/conf.d/60-svoya-fonts.conf

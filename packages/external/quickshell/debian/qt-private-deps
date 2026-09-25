@@ -1,0 +1,15 @@
+#!/bin/sh
+# Print a strict dependency on the Qt libraries quickshell was built against: Quickshell uses private
+# Qt APIs (QuickPrivate), which change between Qt patch releases.
+set -e
+ma=$(dpkg-architecture -qDEB_HOST_MULTIARCH)
+out=""
+for lib in libQt6Core.so.6 libQt6Gui.so.6 libQt6Qml.so.6 libQt6Quick.so.6; do
+    pkg=$(dpkg-query -S "/usr/lib/$ma/$lib" 2>/dev/null | head -n1 | cut -d: -f1)
+    [ -n "$pkg" ] || continue
+    ver=$(dpkg-query -W -f='${Version}' "$pkg")
+    up=$(echo "$ver" | sed -e 's/^[0-9]*://' -e 's/[+~-].*//')
+    next=$(echo "$up" | awk -F. '{printf "%d.%d.%d", $1, $2, $3 + 1}')
+    out="$out${out:+, }$pkg (>= $up), $pkg (<< $next~)"
+done
+echo "$out"

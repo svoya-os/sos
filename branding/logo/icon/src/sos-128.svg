@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="SOS">
+  <title>SOS</title>
+  <desc>SOS icon · graphite tile with the mark folded into С / О / С · CC BY-SA 4.0</desc>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d1f23"/><stop offset="1" stop-color="#101114"/></linearGradient>
+    <linearGradient id="signal-edge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb547" stop-opacity="0"/><stop offset=".5" stop-color="#ffb547" stop-opacity=".55"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></linearGradient>
+    <filter id="glow" x="-30%" y="-150%" width="160%" height="400%"><feGaussianBlur stdDeviation="3.6"/></filter>
+  </defs>
+  <rect x="4.5" y="4.5" width="119" height="119" rx="22" fill="url(#tile)" stroke="#2d3036" stroke-width="1"/>
+  <rect x="30.4" y="4" width="67.2" height="1" fill="url(#signal-edge)"/>
+  <g filter="url(#glow)" opacity=".5"><rect x="24.5" y="60" width="22" height="8" rx="4" fill="#ffb547"/><rect x="53" y="60" width="22" height="8" rx="4" fill="#ffb547"/><rect x="81.5" y="60" width="22" height="8" rx="4" fill="#ffb547"/></g>
+  <g id="mark">
+    <rect x="31.5" y="41" width="8" height="8" rx="4" fill="#ebe8e1"/>
+    <rect x="60" y="41" width="8" height="8" rx="4" fill="#ebe8e1"/>
+    <rect x="88.5" y="41" width="8" height="8" rx="4" fill="#ebe8e1"/>
+    <rect x="24.5" y="60" width="22" height="8" rx="4" fill="#ffb547"/>
+    <rect x="53" y="60" width="22" height="8" rx="4" fill="#ffb547"/>
+    <rect x="81.5" y="60" width="22" height="8" rx="4" fill="#ffb547"/>
+    <rect x="31.5" y="79" width="8" height="8" rx="4" fill="#ebe8e1"/>
+    <rect x="60" y="79" width="8" height="8" rx="4" fill="#ebe8e1"/>
+    <rect x="88.5" y="79" width="8" height="8" rx="4" fill="#ebe8e1"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "codecs"
+name = { en = "Media codecs", ru = "Медиакодеки" }
+summary = { en = "FFmpeg with extra codecs, GStreamer plugins and hardware video decoding for your GPU.", ru = "FFmpeg с дополнительными кодеками, плагины GStreamer и аппаратное декодирование видео для вашей карты." }
+category = "media"
+profiles = ["newcomer", "creator"]
+requires = []
+apt = ["ffmpeg", "libavcodec-extra", "gstreamer1.0-plugins-good", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-ugly", "gstreamer1.0-libav", "mesa-va-drivers"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 0.4
+vram_gb_min = 0
+aliases = ["codec", "кодеки"]
+license_note = { en = "Some codecs are patent-encumbered in some countries; you decide whether to install them.", ru = "Некоторые кодеки в ряде стран защищены патентами; ставить ли их — решаете вы." }

@@ -1,0 +1,11 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+set -e
+case "$1" in
+    remove|deconfigure)
+        update-alternatives --remove default.plymouth \
+            /usr/share/plymouth/themes/svoya-signal/svoya-signal.plymouth || true
+        ;;
+esac
+#DEBHELPER#
+exit 0

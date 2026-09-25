@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>SOS — Jackson mascot in context</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="components.css">
+<script src="shell.js"></script>
+<style>
+  .grid { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .cell { position: relative; overflow: hidden; background: var(--wall); color: var(--text); }
+  .cell + .cell { box-shadow: inset 1px 0 0 var(--line); }
+  .lbl { position: absolute; left: 40px; top: 24px; z-index: 3; display: flex; gap: 10px; align-items: center; }
+  .lbl b { font: 500 13px/1 "Plex Sans"; letter-spacing: 0; text-transform: none; color: var(--text); }
+  img.px { display: block; image-rendering: pixelated; }
+
+  .ava { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex: none; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .ava img { width: 32px; height: 32px; }
+
+  .jp { left: 40px; top: 60px; width: 560px; }
+  .jh { display: flex; align-items: center; gap: 12px; padding: 14px 16px 0; }
+  .jh .nm b { display: block; font: 500 13px/16px "Plex Sans"; color: var(--text); }
+  .jh .nm span { display: flex; align-items: center; gap: 6px; font: 400 11px/15px "Plex Mono"; color: var(--text-faint); }
+  .jh .nm .dot { width: 6px; height: 6px; }
+  .jh .scope { filter: var(--glow); }
+  .ji { padding: 14px 16px 14px; font: 400 18px/26px "Plex Sans"; letter-spacing: -0.005em; color: var(--text); }
+  .ji .caret { display: inline-block; width: 2px; height: 21px; background: var(--accent); vertical-align: -4px; margin-left: 2px; }
+  .ja { border-top: 1px solid var(--line); padding: 12px 16px 16px; }
+  .ja p { font: 400 13.5px/1.6 "Plex Sans"; color: var(--text); }
+  .ja p .dim { color: var(--text-dim); }
+
+  .toast.tt { position: absolute; left: auto; right: 40px; top: 282px; width: 340px; display: flex; gap: 12px; padding: 13px 14px 14px 13px; border-color: var(--line-strong); }
+  .toast.tt .h { height: 16px; }
+  .toast.tt .h .x { width: 12px; height: 12px; color: var(--text-faint); stroke-width: 2; }
+  .toast.tt .b { margin-top: 5px; }
+  .toast.tt > div:last-child { flex: 1; min-width: 0; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+  const CELLS = [
+    { theme: 'graphite', kind: 'imp', name: 'А · «Чёрт»', panel: 'talk1', toast: 'happy' },
+    { theme: 'graphite', kind: 'cat', name: 'Б · «Кот»', panel: 'talk1', toast: 'happy' },
+    { theme: 'paper', kind: 'imp', name: 'А · «Чёрт»', panel: 'listening', toast: 'happy' },
+    { theme: 'paper', kind: 'cat', name: 'Б · «Кот»', panel: 'listening', toast: 'happy' },
+  ];
+  const THEME_RU = { graphite: 'Графит', paper: 'Бумага' };
+  document.getElementById('grid').innerHTML = CELLS.map((c) => {
+    const talking = c.panel.startsWith('talk');
+    return `
+    <div class="cell" data-theme="${c.theme}">
+      <div class="wallpaper"><div class="grain"></div></div>
+      <div class="lbl caps"><b>${c.name}</b>${THEME_RU[c.theme]}</div>
+      <section class="panel jp">
+        <div class="jh">
+          <span class="ava"><img class="px" src="../mascot/out/${c.kind}-${c.panel}.png" alt=""></span>
+          <div class="nm"><b>Джексон</b><span><i class="dot ${talking ? 'ok' : ''}"></i>${talking ? 'в сети · локально' : 'слушаю тебя'}</span></div>
+          <span class="spacer"></span>
+          <svg class="scope" data-kind="${talking ? 'answer' : 'voice'}" ${talking ? '' : 'data-period="4"'} width="72" height="18"></svg>
+          <span class="keys"><kbd>Super</kbd><kbd>J</kbd></span>
+        </div>
+        ${talking
+          ? `<div class="ji">Как там обучение?</div>
+             <div class="ja"><p>Идёт вторая эпоха, 62%. Loss 0.412 и&nbsp;падает. <span class="dim">Позову минут через 18.</span></p></div>`
+          : `<div class="ji">Найди вчерашний датасет с&nbsp;голосами<span class="caret"></span></div>
+             <div class="ja"><p><span class="dim">Слушаю · русский · звук не&nbsp;покидает компьютер</span></p></div>`}
+      </section>
+      <div class="toast tt">
+        <span class="ava"><img class="px" src="../mascot/out/${c.kind}-${c.toast}.png" alt=""></span>
+        <div>
+          <div class="h"><b>Джексон</b>сейчас<span class="spacer"></span><svg class="x" data-i="x"></svg></div>
+          <div class="b">Обучение завершено — loss <b>0.298</b>.<br>Запустить оценку?</div>
+          <div class="acts"><button class="btn sm primary">Запустить</button><button class="btn sm">Позже</button></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  Promise.all([...document.images].map((im) => (im.complete ? 0 : new Promise((r) => { im.onload = im.onerror = r; }))))
+    .then(() => SOS.init({ bar: false }));
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "studio"
+name = { en = "Studio (image & video)", ru = "Студия (картинки и видео)" }
+summary = { en = "ComfyUI in a sandbox: container, localhost only, models read-only from /srv/ai, a snapshot before every custom-node install.", ru = "ComfyUI в песочнице: контейнер, только localhost, модели из /srv/ai только для чтения, снимок перед каждой установкой узлов." }
+category = "media"
+profiles = ["creator"]
+requires = ["base-ai"]
+apt = ["podman", "ffmpeg"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 12.0
+vram_gb_min = 6
+aliases = ["comfyui", "comfy", "студия"]
+license_note = { en = "ComfyUI: GPL-3.0. Custom nodes are third-party code (some have shipped malware) — they run inside the container and are audited with `uv audit`.", ru = "ComfyUI — GPL-3.0. Пользовательские узлы — сторонний код (бывало и вредоносное) — работают в контейнере и проверяются `uv audit`." }

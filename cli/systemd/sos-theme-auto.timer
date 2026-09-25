@@ -1,0 +1,13 @@
+# SOS: check every 15 minutes whether sunrise/sunset switched the automatic theme (cheap: files are
+# rewritten and apps reloaded only when the theme actually changes). Enable: systemctl --user enable --now sos-theme-auto.timer
+[Unit]
+Description=SOS: automatic theme switching
+
+[Timer]
+OnStartupSec=2min
+OnCalendar=*:0/15
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

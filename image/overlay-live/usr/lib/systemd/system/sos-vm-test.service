@@ -1,0 +1,15 @@
+# SOS live image: milestone markers on the serial port for tests/vm (QEMU/QMP screenshots).
+# Runs only when the VM's SMBIOS product name is "sos-vm-test" (set by tests/vm/run.py).
+[Unit]
+Description=SOS VM test agent (serial milestones)
+ConditionFirmware=smbios-field(product_name = sos-vm-test)
+After=systemd-user-sessions.service
+DefaultDependencies=yes
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/svoya/vm-test-agent
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

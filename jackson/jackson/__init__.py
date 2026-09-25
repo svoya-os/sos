@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Jackson (Джексон) — the assistant layer of Svoya OS.
+"""Jackson (Джексон) — the assistant of SOS («СОС — Своя Операционная Система»).
 
 Jackson routes requests to local or cloud models, runs tools and agents inside
 sandboxes, asks before anything risky with an exact preview, keeps a

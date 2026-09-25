@@ -34,7 +34,7 @@ chevron-down settings package zap terminal folder file file-text cpu monitor
 keyboard undo-2 stethoscope cloud cloud-off shield-check eye mic app-window
 layout-grid panel-bottom hard-drive download arrow-right corner-down-left
 refresh-cw triangle-alert circle-alert info user image trash sparkles clock
-globe list box circle-check circle-x
+globe list box circle-check circle-x chevron-left plus
 """.split()
 
 # Custom glyphs, drawn exactly as in design/mockups/desktop.html (bar icons,
@@ -59,6 +59,37 @@ CUSTOM = {
     "svoya-grip": """<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
       <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
       <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>""",
+    # greeter, lock and first-run wizard glyphs (design/mockups/shell.js)
+    "svoya-accessibility": """
+      <circle cx="12" cy="4.6" r="1.6"/><path d="M4.8 8.6 12 10l7.2-1.4M12 10v5.2M8.6 21l3.4-5.8 3.4 5.8"/>""",
+    "svoya-gpu": """
+      <rect x="2.5" y="6" width="19" height="11" rx="1.8"/><circle cx="9" cy="11.5" r="2.8"/>
+      <path d="M14.5 9.5h4M14.5 13.5h4M5 17v2.2M8 17v2.2"/>""",
+    "svoya-play": """<path d="M7.5 4.8v14.4L19 12z"/>""",
+    "svoya-flask": """
+      <path d="M9 3h6M10 3v6.2L4.8 18.3A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.7L14 9.2V3"/>
+      <path d="M7.4 15h9.2"/>""",
+    "svoya-nodes": """
+      <circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="5.8" r="2.6"/><circle cx="18" cy="18.2" r="2.6"/>
+      <path d="m8.3 10.8 7.4-3.8M8.3 13.2l7.4 3.8"/>""",
+    "svoya-compass": """<circle cx="12" cy="12" r="8.8"/><path d="m15.6 8.4-2.2 5-5 2.2 2.2-5z"/>""",
+    "svoya-aperture": """
+      <circle cx="12" cy="12" r="8.8"/>
+      <path d="m14.2 7.9 5 8.6M9.8 7.9h9.9M7.6 12l5-8.6M9.8 16.1l-5-8.6M14.2 16.1H4.3M16.4 12l-5 8.6"/>""",
+    "svoya-tiles": """
+      <rect x="3" y="3.5" width="9.5" height="17" rx="1.8"/><rect x="15" y="3.5" width="6" height="7.3" rx="1.6"/>
+      <rect x="15" y="13.2" width="6" height="7.3" rx="1.6"/>""",
+    "svoya-windows": """
+      <rect x="3" y="6.5" width="13" height="10" rx="1.8"/>
+      <path d="M7.5 6.5V5.2A1.7 1.7 0 0 1 9.2 3.5h10.1A1.7 1.7 0 0 1 21 5.2v8.1a1.7 1.7 0 0 1-1.7 1.7H16"/>
+      <path d="M3 20.5h18"/>""",
+    "svoya-restart": """<path d="M20 12a8 8 0 1 1-2.35-5.65L20 8.7"/><path d="M20 3.8v4.9h-4.9"/>""",
+    "svoya-shield": """<path d="M12 3 5 6v5.2c0 4.3 2.9 7.9 7 9.8 4.1-1.9 7-5.5 7-9.8V6z"/>""",
+    "svoya-key": """
+      <circle cx="8" cy="15.5" r="4.4"/><path d="m11.2 12.4 8.3-8.3M16.4 7.2l2.6 2.6M14 9.6l2 2"/>""",
+    "svoya-globe": """
+      <circle cx="12" cy="12" r="8.8"/>
+      <path d="M3.2 12h17.6M12 3.2c2.5 2.4 3.8 5.3 3.8 8.8s-1.3 6.4-3.8 8.8c-2.5-2.4-3.8-5.3-3.8-8.8S9.5 5.6 12 3.2z"/>""",
 }
 
 NUM = r"-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"

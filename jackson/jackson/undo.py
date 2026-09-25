@@ -3,13 +3,12 @@
 
 Records are kept in ``actions.jsonl`` (append-only). File actions keep the trash location of
 the previous version and content hashes, so an undo never clobbers a file the user changed
-afterwards. System-level undo goes through ``svoya undo`` (or snapper).
+afterwards. System-level undo goes through ``sos undo`` (or snapper).
 """
 
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import json
 import os
 import secrets
@@ -19,21 +18,13 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+from .fileutil import file_sha256
 from .i18n import t
 from .svoya import Snapshot, SvoyaCli
 from .tools.base import UndoSpec
 from .trash import Trash, TrashEntry
 
 
-def file_sha256(path: Path) -> str | None:
-    try:
-        h = hashlib.sha256()
-        with open(path, "rb") as fh:
-            for chunk in iter(lambda: fh.read(1 << 16), b""):
-                h.update(chunk)
-        return h.hexdigest()
-    except (OSError, IsADirectoryError):
-        return None
 
 
 @dataclass

@@ -137,9 +137,18 @@ class FakeRunner(Runner):
             return f"/usr/bin/{name}"
         return None
 
+    @staticmethod
+    def _elem_match(key: str, arg: str) -> bool:
+        """``--query-gpu`` matches ``--query-gpu=index,…``; ``foo*`` matches any ``foo…``."""
+        if key == arg:
+            return True
+        if key.endswith("*"):
+            return arg.startswith(key[:-1])
+        return key.startswith("-") and arg.startswith(key + "=")
+
     def _lookup(self, argv: list[str]) -> Result:
         for prefix, resp in self._table:
-            if argv[: len(prefix)] == prefix:
+            if len(argv) >= len(prefix) and all(self._elem_match(k, a) for k, a in zip(prefix, argv)):
                 if callable(resp):
                     return resp(argv)
                 if isinstance(resp, str):
@@ -185,8 +194,9 @@ def as_root(argv: Sequence[str], is_root: bool | None = None) -> list[str]:
 
 
 def svoya_argv() -> list[str]:
-    """How to re-invoke this very program (for pkexec re-exec and background refreshes)."""
+    """How to re-invoke this very program (pkexec re-exec, background refreshes): the ``sos`` (or
+    ``svoya``) entry script when we were started through it, else ``python -m svoya_cli``."""
     exe = os.path.abspath(sys.argv[0]) if sys.argv and sys.argv[0] else ""
-    if exe.endswith("/svoya") or os.path.basename(exe) == "svoya":
+    if os.path.basename(exe) in ("sos", "svoya") and os.path.isfile(exe):
         return [exe]
     return [sys.executable, "-m", "svoya_cli"]

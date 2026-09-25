@@ -1,0 +1,16 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+set -e
+
+DIVERTED="/usr/lib/os-release /etc/lsb-release /etc/issue /etc/issue.net /etc/update-motd.d/10-help-text"
+
+case "$1" in
+    remove|abort-install|disappear)
+        for f in $DIVERTED; do
+            dpkg-divert --package svoya-base --remove --rename --divert "$f.ubuntu" "$f"
+        done
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

@@ -1,0 +1,12 @@
+// SOS polkit rules (svoya-base). SPDX-License-Identifier: Apache-2.0
+// System changes made through the SOS tools (org.svoya.*) are tier T3 (ARCHITECTURE §4.4):
+// administrators in an active local session authenticate once and are not asked again for a while.
+polkit.addRule(function (action, subject) {
+    if (action.id.indexOf("org.svoya.") === 0) {
+        if (subject.local && subject.active && subject.isInGroup("sudo")) {
+            return polkit.Result.AUTH_ADMIN_KEEP;
+        }
+        return polkit.Result.AUTH_ADMIN;
+    }
+    return polkit.Result.NOT_HANDLED;
+});

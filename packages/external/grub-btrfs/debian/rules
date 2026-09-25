@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/grub-btrfs
+
+%:
+	dh $@
+
+# Upstream's Makefile insists on running as root; install the handful of files directly.
+override_dh_auto_build:
+
+override_dh_auto_install:
+	install -Dm0755 41_snapshots-btrfs $(PKG)/etc/grub.d/41_snapshots-btrfs
+	install -Dm0644 config $(PKG)/etc/default/grub-btrfs/config
+	install -Dm0755 grub-btrfsd $(PKG)/usr/bin/grub-btrfsd
+	install -Dm0644 grub-btrfsd.service $(PKG)/usr/lib/systemd/system/grub-btrfsd.service
+	install -Dm0644 manpages/grub-btrfs.8.man $(PKG)/usr/share/man/man8/grub-btrfs.8
+	install -Dm0644 manpages/grub-btrfsd.8.man $(PKG)/usr/share/man/man8/grub-btrfsd.8
+
+# enabled by /usr/lib/svoya/setup-snapper on installed systems, never in the live session
+override_dh_installsystemd:
+	dh_installsystemd --no-enable --no-start

@@ -39,7 +39,7 @@ class Color:
     # ---- formats ----
     @property
     def a8(self) -> int:
-        return max(0, min(255, round(self.a * 255)))
+        return max(0, min(255, int(self.a * 255 + 0.5)))
 
     @property
     def hex(self) -> str:
@@ -79,7 +79,7 @@ class Color:
     def mix(self, other: "Color", t: float) -> "Color":
         """Linear blend: ``t=0`` → self, ``t=1`` → other."""
         t = max(0.0, min(1.0, float(t)))
-        f = lambda x, y: round(x + (y - x) * t)  # noqa: E731
+        f = lambda x, y: int(x + (y - x) * t + 0.5)  # half up (round() is banker's)  # noqa: E731
         return Color(f(self.r, other.r), f(self.g, other.g), f(self.b, other.b), self.a + (other.a - self.a) * t)
 
     def over(self, bg: "Color") -> "Color":
@@ -92,7 +92,7 @@ class Color:
     @classmethod
     def from_hls(cls, h: float, l: float, s: float, a: float = 1.0) -> "Color":  # noqa: E741
         r, g, b = colorsys.hls_to_rgb(h % 1.0, max(0.0, min(1.0, l)), max(0.0, min(1.0, s)))
-        return cls(round(r * 255), round(g * 255), round(b * 255), a)
+        return cls(int(r * 255 + 0.5), int(g * 255 + 0.5), int(b * 255 + 0.5), a)
 
     def lighten(self, amount: float) -> "Color":
         h, l, s = self.hls()  # noqa: E741

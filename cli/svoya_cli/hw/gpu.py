@@ -1,6 +1,6 @@
 """GPU inventory (what is installed) and live stats (what it is doing right now).
 
-Live stats feed ``svoya status`` (polled every 2 s), so they avoid slow probes:
+Live stats feed ``sos status`` (polled every 2 s), so they avoid slow probes:
 NVIDIA → one ``nvidia-smi --query-gpu`` call; AMD → sysfs reads only.
 """
 from __future__ import annotations
@@ -124,7 +124,7 @@ def amd_stats(ctx) -> list[dict]:
 
 
 def live_stats(ctx) -> list[dict]:
-    """GPU list for ``svoya status``: NVIDIA (nvidia-smi order) then AMD (card order)."""
+    """GPU list for ``sos status``: NVIDIA (nvidia-smi order) then AMD (card order)."""
     gpus = list(nvidia_stats(ctx) or [])
     for g in amd_stats(ctx):
         g["index"] = len(gpus)

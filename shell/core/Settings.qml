@@ -35,6 +35,7 @@ Singleton {
     property alias terminal: adapter.terminal             // "" = xdg-terminal-exec / fallbacks
     property alias kbLayouts: adapter.kbLayouts           // e.g. "us,ru"
     property alias kbSwitch: adapter.kbSwitch             // xkb option, e.g. grp:alt_shift_toggle
+    property alias kbCustom: adapter.kbCustom             // true once the wizard/user picked layouts
     property alias tiledWorkspaces: adapter.tiledWorkspaces // workspace ids that differ from the preset default
 
     FileView {
@@ -67,6 +68,7 @@ Singleton {
             property string terminal: ""
             property string kbLayouts: "us,ru"
             property string kbSwitch: "grp:alt_shift_toggle"
+            property bool kbCustom: false
             property var tiledWorkspaces: []
         }
     }

@@ -202,3 +202,46 @@ greetd → svoya greeter (Hyprland + quickshell -p /usr/share/svoya/shell/greete
 * User-facing strings: English + Russian (`en`, `ru`); UI copy is short, calm, and never nags.
 * No telemetry. No network call happens without the user having enabled the feature that needs it.
 * Licenses: code Apache-2.0; artwork/docs CC BY-SA 4.0; fonts OFL/MIT (see `LICENSES/`).
+
+## 8. Contract details agreed during v0.1 integration
+
+These refine §3–§5; where they differ, this section wins.
+
+**Secrets (§3).** API keys: `secret-tool store --label='SOS: <name>' service svoya provider <name>`,
+read with `secret-tool lookup service svoya provider <name>`. The first-run wizard writes keys to the
+keyring through stdin; Jackson re-reads the keyring when a key is missing.
+
+**theme.json (§4.1).** Flat object: `id, mode, pair, nameEn, nameRu, choice, appliedAt`, every `[color]`
+token as `#AARRGGBB`, every `[font] [shape] [motion] [effects]` key with its TOML type.
+`sos theme apply` also writes `~/.config/hypr/svoya-colors.conf` (colors + hyprbars buttons).
+
+**Status (§4.2).** Optional extras: `ts`, `updates.checkedAt`, `gpu[].integrated|gttUsedMiB|gttTotalMiB`,
+`ai.enabled|todayCostEur|todayCloudRequests`. Jackson writes `$XDG_RUNTIME_DIR/svoya/ai.json`
+`{local, cloudActiveSince}`. `sos status --json --watch 2` streams one JSON line per interval.
+Jobs are `~/.local/state/svoya/jobs/<id>.json` (schema v1, see cli/README.md), updated with
+`sos job progress <id> <0..1>`.
+
+**Jackson protocol (§4.3).** Clients and the daemon ignore unknown message/event types and fields.
+`status` is answered with a `status` event (route, spend, pending approvals, turns, models) and a
+`state` event. `undo` may carry `id` and is answered with `tool`/`token`/`done {undone}` or `error`.
+`ask` may carry `new: true` and `refines` (id of the turn being refined); `route` also accepts
+`provider/model`. `approval` carries `decisions` (T3/T4 and tainted turns offer only `once`/`deny`).
+`welcome` and `state` carry `persona`, `avatar`, `mood`. Voice (v0.2): when `welcome.capabilities`
+contains `voice`, clients may send `listen {action: start|stop}`.
+
+**Snapshots and undo.** `sos snapshot create --reason TEXT --json` prints `{"id": …}`;
+`sos undo [<id>] --yes` reverts it non-interactively (callers without a TTY must pass `--yes`).
+The snapper configs `root`/`home` set `ALLOW_GROUPS` so Jackson can snapshot without a password.
+
+**Modules (§4.5).** Optional keys: `aliases`, `hardware`, `options.<name> = {en, ru, disk_gb}`,
+`user_scripts`, `proprietary`; apt placeholders `{nvidia.branch}` `{nvidia.open}` `{kernel.flavor}`;
+category `apps`; profiles live in `modules/profiles.toml` (`jackson_route` → the wizard runs
+`jackson route set default <route>`), where `@gpu` means the driver module for this machine.
+`sos modules profiles --json`, `sos models suggest --json`, `sos models pull <id> --yes --json` feed the wizard.
+
+**Session (§5).** `/usr/bin/svoya-session` exports the session environment (incl.
+`QT_QPA_PLATFORMTHEME=qt6ct`, NVIDIA hints when the proprietary driver is loaded), pre-creates every
+file `hyprland.conf` sources (`svoya-colors.conf` via `sos theme apply auto`, `svoya-shell.conf`,
+`user.conf`, `~/.local/state/svoya/hypr/input.conf`) and starts Hyprland. `sos session-start` runs
+`dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE`.
+`/etc/svoya/live` marks the live session (show "Install", skip the wizard).

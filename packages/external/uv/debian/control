@@ -1,0 +1,18 @@
+Source: uv
+Section: python
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/astral-sh/uv
+Rules-Requires-Root: no
+
+Package: uv
+Architecture: amd64
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: extremely fast Python package and project manager
+ uv installs Python versions and packages and manages per-project virtual
+ environments. SOS uses it so that every project owns its CUDA/PyTorch
+ stack while the OS owns only the driver.
+ .
+ Repackaged by SOS from the official, checksum-verified release binaries.
