@@ -118,8 +118,8 @@ def build_context(ctx: Ctx, name: str, template: str) -> tuple[dict, dict]:
 def render_tree(src: Path, variables: dict) -> list[tuple[str, str, int]]:
     out = []
     for p in sorted(src.rglob("*")):
-        if not p.is_file():
-            continue
+        if not p.is_file() or "__pycache__" in p.parts or p.suffix in (".pyc", ".pyo"):
+            continue  # stray byte-code caches must never end up in a new project
         rel = str(p.relative_to(src)).replace("__package__", variables["project"]["package"])
         rel = DOTFILES.get(rel, rel)
         text = engine.render(p.read_text(encoding="utf-8"), variables, f"new/{src.name}/{rel}")
