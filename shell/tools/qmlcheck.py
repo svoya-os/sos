@@ -262,12 +262,39 @@ def singleton_members(path: pathlib.Path) -> set[str]:
 IMPORT_RE = re.compile(r"^\s*import\s+(\"[^\"]+\"|[\w.]+)(?:\s+[\d.]+)?(?:\s+as\s+(\w+))?", re.M)
 
 
+# JavaScript globals that QML forbids as ids, property/alias names, signal names and method names
+# ("Illegal method name", "Illegal signal name", …): Qt 6.10 src/qml/compiler/qv4codegen.cpp
+# s_globalNames, checked in qqmlirbuilder.cpp. One such name makes the whole file — and every root
+# that imports it — fail to load: `signal escape` in TextField.qml stopped the shell in CI run #2.
+JS_GLOBAL_NAMES = frozenset(
+    "Array ArrayBuffer Atomics Boolean DOMException DataView Date Error EvalError Function Infinity JSON Map "
+    "Math NaN Number Object Promise Proxy QT_TRANSLATE_NOOP QT_TRID_NOOP QT_TR_NOOP Qt RangeError "
+    "ReferenceError Reflect RegExp SQLException Set SharedArrayBuffer String Symbol SyntaxError TypeError "
+    "URIError URL URLSearchParams WeakMap WeakSet XMLHttpRequest console decodeURI decodeURIComponent "
+    "encodeURI encodeURIComponent escape eval gc isFinite isNaN parseFloat parseInt print qsTr qsTrId "
+    "qsTranslate undefined unescape".split())
+RESERVED_DECL_RE = re.compile(
+    r"^[ \t]*(?:(?:readonly|required|default|final|virtual|override)\s+)*"
+    r"(?:property\s+[\w.<>]+\s+(?P<prop>\w+)|signal\s+(?P<sig>\w+)|function\s+(?P<fn>\w+)\s*\(|id\s*:\s*(?P<id>\w+))",
+    re.M)
+
+
+def check_reserved_names(text: str, rel: str, errors: list[str]) -> None:
+    for m in RESERVED_DECL_RE.finditer(text):
+        kind, name = next((k, v) for k, v in m.groupdict().items() if v)
+        if name in JS_GLOBAL_NAMES:
+            line = text.count("\n", 0, m.start()) + 1
+            what = {"prop": "property", "sig": "signal", "fn": "function", "id": "id"}[kind]
+            errors.append(f"{rel}:{line}: {what} `{name}` is a JavaScript global — QML refuses to load the file")
+
+
 def check_file(path: pathlib.Path, rel: str, ctx: dict, errors: list[str]) -> None:
     text = path.read_text(encoding="utf-8")
     toks = tokenize(text, rel, errors)
     check_balance(toks, rel, errors)
     if path.suffix == ".js":
         return
+    check_reserved_names(text, rel, errors)
 
     # imports
     modules, qualifiers = set(), set()

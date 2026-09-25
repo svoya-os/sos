@@ -98,7 +98,7 @@ PanelFrame {
                 placeholder: Strings.clipboardPlaceholder
                 onTextChanged: root.query = text
                 onAccepted: root.copy(root.selected)
-                onEscape: Ui.hide()
+                onEscapePressed: Ui.hide()
                 onUpPressed: root.move(-1)
                 onDownPressed: root.move(1)
                 onDeletePressed: root.forget(root.selected)

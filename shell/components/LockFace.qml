@@ -147,7 +147,7 @@ Item {
             textFormat: Text.StyledText
             text: {
                 if (root.message.length > 0)
-                    return "<font color=\"" + (root.error ? Theme.bad : Theme.textDim) + "\">" + Fmt.escape(root.message) + "</font>";
+                    return "<font color=\"" + (root.error ? Theme.bad : Theme.textDim) + "\">" + Fmt.escapeHtml(root.message) + "</font>";
                 const parts = [];
                 if (Hypr.layoutCode.length > 0)
                     parts.push(Strings.layoutWord + " " + Hypr.layoutCode);

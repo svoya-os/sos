@@ -217,7 +217,7 @@ Item {
             textFormat: Text.StyledText
             text: {
                 if (root.greeter.message.length > 0)
-                    return "<font color=\"" + (root.greeter.failed ? Theme.bad : Theme.textDim) + "\">" + Fmt.escape(root.greeter.message) + "</font>";
+                    return "<font color=\"" + (root.greeter.failed ? Theme.bad : Theme.textDim) + "\">" + Fmt.escapeHtml(root.greeter.message) + "</font>";
                 const parts = [];
                 const last = root.user ? root.greeter.lastLoginText(root.user.name, clock.date) : "";
                 if (last.length > 0)

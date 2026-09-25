@@ -15,7 +15,7 @@ Item {
     property bool mono: false          // Plex Mono (hex values, paths)
 
     signal accepted
-    signal escape
+    signal escapePressed
     signal upPressed
     signal downPressed
     signal tabPressed
@@ -53,7 +53,7 @@ Item {
         }
         Keys.onReturnPressed: root.accepted()
         Keys.onEnterPressed: root.accepted()
-        Keys.onEscapePressed: root.escape()
+        Keys.onEscapePressed: root.escapePressed()
         Keys.onUpPressed: root.upPressed()
         Keys.onDownPressed: root.downPressed()
         Keys.onTabPressed: root.tabPressed()

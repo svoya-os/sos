@@ -747,7 +747,7 @@ PanelFrame {
                                         nameCommit.restart();
                                 }
                                 onAccepted: root.commitName()
-                                onEscape: Ui.hide()
+                                onEscapePressed: Ui.hide()
                             }
                         }
 

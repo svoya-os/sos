@@ -250,7 +250,7 @@ Column {
                 placeholder: "7b61ff"
                 onTextChanged: root.hexEdited(hexField.text)
                 onAccepted: root.hexAccepted()
-                onEscape: root.hexCancelled()
+                onEscapePressed: root.hexCancelled()
             }
 
             // live contrast badge: ok tag «✓ AA · 4,9 : 1» or a line tag «поправили · 4,6 : 1»

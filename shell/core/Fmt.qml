@@ -58,8 +58,8 @@ Singleton {
         return Math.round((Number(fraction) || 0) * 100) + "%";
     }
 
-    // plain text → safe inside Text.StyledText
-    function escape(text) {
+    // plain text → safe inside Text.StyledText (not `escape`: a JS global, illegal as a QML name)
+    function escapeHtml(text) {
         return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 

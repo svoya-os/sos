@@ -528,7 +528,7 @@ Item {
                                         password: true
                                         placeholder: prow.modelData.name + " · " + Strings.wzPasteKey
                                         onAccepted: saveBtn.clicked()
-                                        onEscape: prow.adding = false
+                                        onEscapePressed: prow.adding = false
                                     }
                                 }
                                 Button {

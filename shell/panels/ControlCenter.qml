@@ -295,7 +295,7 @@ PanelFrame {
                                     pw.text = "";
                                     root.passwordFor = "";
                                 }
-                                onEscape: root.passwordFor = ""
+                                onEscapePressed: root.passwordFor = ""
                                 onVisibleChanged: if (visible) Qt.callLater(pw.focusInput)
                             }
                         }

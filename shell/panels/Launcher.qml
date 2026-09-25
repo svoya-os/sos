@@ -279,7 +279,7 @@ PanelFrame {
                 placeholder: Strings.launcherPlaceholder
                 onTextChanged: root.query = text
                 onAccepted: root.activate(root.selected)
-                onEscape: Ui.hide()
+                onEscapePressed: Ui.hide()
                 onUpPressed: root.move(-1)
                 onDownPressed: root.move(1)
                 onTabPressed: root.toJackson()

@@ -438,7 +438,7 @@ Item {
                                         root.commitName();
                                         root.wizard.next();
                                     }
-                                    onEscape: root.wizard.back()
+                                    onEscapePressed: root.wizard.back()
                                 }
                             }
 
