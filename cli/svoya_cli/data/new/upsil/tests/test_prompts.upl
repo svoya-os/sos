@@ -1,0 +1,17 @@
+// upsil test запускает функции test_... из файлов test_*.upl; модель для них не нужна.
+import json
+import "../prompts.upl"
+
+fun test_prompt_names_the_topic() {
+    assert "Rust" in prompts.plan_prompt("Rust")
+}
+
+fun test_render_numbers_the_steps() {
+    val plan = json.parse(r"""{"title": "Rust", "steps": ["книга", "задачи"], "hours": 20}""")
+    assert prompts.render(plan) == "Rust\n1. книга\n2. задачи\n≈ 20 ч"
+}
+
+fun test_hours_are_optional() {
+    val plan = json.parse(r"""{"title": "Go", "steps": ["тур"]}""")
+    assert prompts.render(plan) == "Go\n1. тур"
+}

@@ -27,12 +27,16 @@ cd sos
 ## Build the packages and the ISO
 
 ```sh
-packages/build-all.sh      # every .deb (svoya-*, quickshell, uv, grub-btrfs) → dist/repo
+packages/build-all.sh      # every .deb (svoya-*, quickshell, uv, grub-btrfs, upsil) → dist/repo
 image/docker-build.sh      # the ISO → dist/iso/sos-26.10-amd64.iso
 # or: just all
 ```
 
 The first package build takes 30–60 minutes (Quickshell is compiled), the ISO another 40–70.
+UpsiL (the `upsil` package) comes from the commit of [svoya-os/upsil](https://github.com/svoya-os/upsil)
+pinned in `packages/versions.env`; it is optional, so if that commit cannot be fetched the build warns
+and the ISO goes without it. `UPSIL_SRC_DIR=../upsil packages/build-all.sh --only upsil` packages a
+local checkout instead.
 `image/README.md` explains the pipeline, the build switches (archive snapshot, NVIDIA driver pool,
 compression) and the offline driver pool; `packages/` has one directory per package.
 

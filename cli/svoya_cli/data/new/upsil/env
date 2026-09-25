@@ -1,0 +1,6 @@
+# SOS: `sos run` exports these to the program.
+UV_TORCH_BACKEND={{ gpu.backend }}
+HF_HOME={{ paths.ai }}
+# UpsiL talks to `sos models serve` and its first model; to choose (sos run shows it in the header):
+# UPSIL_LLM_MODEL=qwen3.5-4b
+# UPSIL_LLM_URL=http://127.0.0.1:8080/v1

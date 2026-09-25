@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import tomllib
+import unittest
 from pathlib import Path
 
 from svoya_cli import i18n, new, run
@@ -66,6 +67,42 @@ class NewTest(SandboxTest):
         self.assertEqual(new.main(args, ctx), 0)
         compile((sb2 / "helper/src/helper/agent.py").read_text(), "agent.py", "exec")
 
+    def test_upsil_program(self):
+        p, ctx = self.make("upsil", backend="cu126")
+        for rel in ("main.upl", "prompts.upl", "tests/test_prompts.upl", "README.md", "pyproject.toml",
+                    ".gitignore", ".env", "svoya.toml"):
+            self.assertTrue((p / rel).is_file(), rel)
+        for rel in ("src", "sky.yaml", "Containerfile", ".python-version", "notebooks"):
+            self.assertFalse((p / rel).exists(), rel)       # not a Python project tree
+        py = tomllib.loads((p / "pyproject.toml").read_text())
+        self.assertEqual(py["project"]["dependencies"], [])  # torch only when `uv add torch`
+        self.assertEqual(py["tool"]["uv"]["index"][0]["url"], "https://download.pytorch.org/whl/cu126")
+        self.assertNotIn("build-system", py)                 # uv never builds or installs it
+        man = tomllib.loads((p / "svoya.toml").read_text())
+        self.assertEqual(man["run"]["entry"], "main.upl")
+        self.assertEqual(man["project"]["template"], "upsil")
+        for key in ("tracking", "cloud", "datasets", "models"):
+            self.assertNotIn(key, man)
+        self.assertEqual(man["run"]["model"], "—")          # UpsiL asks the server's model
+        self.assertIn("UV_TORCH_BACKEND=cu126", (p / ".env").read_text())
+        for rel in ("main.upl", "prompts.upl", "tests/test_prompts.upl", "README.md"):
+            text = (p / rel).read_text()
+            self.assertNotIn("{{", text, rel)
+        self.assertIn("tts-finetune", (p / "main.upl").read_text())
+        self.assertEqual(os.readlink(p / "models"), str(ctx.paths.ai_root))
+
+    @unittest.skipUnless(run.upsil_home(), "UpsiL is not installed")
+    def test_upsil_program_compiles_and_its_tests_pass(self):
+        p, _ = self.make("upsil")
+        env = dict(os.environ, UPSIL_LANG="en")
+        r = subprocess.run([sys.executable, "-m", "upsil", "check", "main.upl", "prompts.upl"], cwd=p, env=env,
+                           capture_output=True, text=True, timeout=60)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        r = subprocess.run([sys.executable, "-m", "upsil", "test"], cwd=p, env=env,
+                           capture_output=True, text=True, timeout=60)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("3 tests", r.stdout)
+
     def test_refuses_non_empty_dir_and_bad_names(self):
         (self.sb.dir / "x").mkdir()
         (self.sb.dir / "x" / "f").write_text("")
@@ -112,8 +149,96 @@ class RunHeaderTest(SandboxTest):
         self.assertEqual(run.build_command("go.sh", [], proj, which), ["bash", "go.sh"])
         self.assertEqual(run.build_command("train.py", [], None, which), ["python3", "train.py"])
 
+    def test_upsil_command(self):
+        proj = self.sb.dir / "u"
+        proj.mkdir()
+        (proj / "svoya.toml").write_text("[run]\nentry = 'main.upl'\n")
+        on_path = lambda n: f"/usr/bin/{n}" if n == "upsil" else None  # noqa: E731
+        nowhere = lambda n: None  # noqa: E731
+        shim = "/usr/lib/upsil/path"
+        self.assertEqual(run.upsil_command("main.upl", ["a"], proj, on_path, shim), ["upsil", "run", "main.upl", "a"])
+        self.assertEqual(run.upsil_command("main.upl", [], proj, nowhere, shim), [sys.executable, "-m", "upsil", "run", "main.upl"])
+        self.assertIsNone(run.upsil_command("main.upl", [], proj, nowhere, None))
+        (proj / ".venv/bin").mkdir(parents=True)
+        (proj / ".venv/bin/python").write_text("")
+        self.assertEqual(run.upsil_command("main.upl", [], proj, on_path, shim),
+                         [str(proj / ".venv/bin/python"), "-m", "upsil", "run", "main.upl"])
+        # without a way to put upsil on the venv's path, the system upsil runs it
+        self.assertEqual(run.upsil_command("main.upl", [], proj, on_path, None), ["upsil", "run", "main.upl"])
+        self.assertEqual(run.build_command("main.upl", [], None, on_path), ["upsil", "run", "main.upl"])
+
+    def test_upsil_pythonpath_exposes_only_upsil(self):
+        site = self.sb.dir / "site"
+        (site / "upsil").mkdir(parents=True)
+        (site / "upsil" / "__init__.py").write_text('__version__ = "0.3.0"\n')
+        (site / "numpy").mkdir()
+        self.assertEqual(run.upsil_version(site / "upsil"), "0.3.0")
+        self.assertIsNone(run.upsil_version(None))
+        cache = self.sb.dir / "cache"
+        path = Path(run.upsil_pythonpath(site / "upsil", cache))
+        self.assertEqual(sorted(x.name for x in path.iterdir()), ["upsil"])
+        self.assertEqual((path / "upsil").resolve(), (site / "upsil").resolve())
+        self.assertEqual(run.upsil_pythonpath(site / "upsil", cache), str(path))   # reused
+        other = self.sb.dir / "other" / "upsil"
+        other.mkdir(parents=True)
+        self.assertEqual((Path(run.upsil_pythonpath(other, cache)) / "upsil").resolve(), other.resolve())
+
+    def test_header_names_upsil(self):
+        rows = run.header("main.upl", {}, (None, None), None, None, upsil="0.3.0")
+        self.assertEqual([(strip_ansi(a), strip_ansi(b)) for a, b in rows], [("среда", "upsil 0.3.0")])
+        rows = run.header("main.upl", {}, ("2.13", "CUDA 13.0"), None, None, upsil="0.3.0")
+        self.assertEqual(strip_ansi(rows[0][1]), "upsil 0.3.0 · torch 2.13 · CUDA 13.0")
+
+
+FAKE_UPSIL_MAIN = """import os, sys
+import upsil
+job = os.environ.get("SVOYA_JOB_FILE", "")
+print("upsil", upsil.__version__, sys.argv[1:], "via", "shim" if "upsil-path" in upsil.__file__ else "site",
+      "job" if job.endswith(".json") else "no-job")
+"""
+
 
 class RunEndToEndTest(SandboxTest):
+    def run_upl(self, proj: Path, site: Path, *args: str):
+        env = dict(self.sb.env(), PYTHONPATH=os.pathsep.join([str(REPO_ROOT / "cli"), str(site)]),
+                   NO_COLOR="1", SVOYA_LANG="en", PATH="/usr/bin:/bin")
+        return subprocess.run([sys.executable, "-m", "svoya_cli", "run", *args], cwd=proj, env=env,
+                              capture_output=True, text=True, timeout=60)
+
+    def test_sos_run_upl(self):
+        site = self.sb.dir / "site"
+        (site / "upsil").mkdir(parents=True)
+        (site / "upsil" / "__init__.py").write_text('__version__ = "0.3.0"\n')
+        (site / "upsil" / "__main__.py").write_text(FAKE_UPSIL_MAIN)
+        proj = self.sb.dir / "prog"
+        proj.mkdir()
+        (proj / "svoya.toml").write_text('[run]\nentry = "main.upl"\n')
+        (proj / "main.upl").write_text('print("hi")\n')
+        (proj / ".env").write_text("UPSIL_LLM_MODEL=qwen3.5-4b\n")
+        r = self.run_upl(proj, site, "main.upl", "rust")
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertIn("› sos run main.upl rust", r.stdout)
+        self.assertIn("env      upsil 0.3.0", r.stdout)
+        self.assertIn("model    qwen3.5-4b", r.stdout)
+        self.assertIn("upsil 0.3.0 ['run', 'main.upl', 'rust'] via", r.stdout)
+        self.assertIn("job", r.stdout.split("['run', 'main.upl', 'rust'] via")[1])
+        # with a project venv the program runs there, seeing upsil through a folder that holds only it
+        (proj / ".venv/bin").mkdir(parents=True)
+        (proj / ".venv/bin/python").symlink_to(sys.executable)
+        r = self.run_upl(proj, site, "--no-job", "main.upl")
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertIn("upsil 0.3.0 ['run', 'main.upl'] via shim no-job", r.stdout)
+
+    def test_sos_run_upl_without_upsil(self):
+        proj = self.sb.dir / "prog"
+        proj.mkdir()
+        (proj / "main.upl").write_text('print("hi")\n')
+        r = self.run_upl(proj, self.sb.dir / "empty", "main.upl")
+        if run.upsil_home() is not None or subprocess.run(["which", "upsil"], capture_output=True).returncode == 0:
+            self.skipTest("UpsiL is installed here")
+        self.assertEqual(r.returncode, 127, r.stderr + r.stdout)
+        self.assertIn("UpsiL is not installed: sudo apt install upsil", r.stderr)
+
     def test_sos_run_registers_a_job_and_reports_progress(self):
         proj = self.sb.dir / "proj"
         proj.mkdir()

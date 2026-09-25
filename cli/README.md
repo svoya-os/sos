@@ -40,8 +40,8 @@ colors follow the applied theme, truecolor when `COLORTERM=truecolor`, none with
 | `sos theme list|current|apply [<id>|auto] [--system]` | Render every template, write `theme.json`, reload Hyprland/kitty, set GTK color scheme and accent. An explicit choice is remembered in `~/.config/svoya/svoya.toml` and is undoable (`sos undo`). |
 | `sos theme accent [<id|name|#hex>] [--undo] [--system] [--dry-run] [--json]` · `sos theme accents [--json]` | The accent color (below). One calm line: `› accent Lilac · undo: sos undo`. `--dry-run --json` previews (the swatch hover); `--system` also writes `/etc/svoya/theme.json` for the login screen (pkexec). `sos accent …` is short for it. |
 | `sos ai off|on|status [--system] [--json]` | The AI switch (WORKFLOWS §8, below). |
-| `sos new <name> [--template torch|llm-finetune|comfy-node|agent]` | uv project wired to the store, PyTorch index chosen by GPU Doctor. |
-| `sos run <script> [args]` · `sos job progress|done|start|list` | Environment header (as in the design mockup) + a job the bar shows. |
+| `sos new <name> [--template torch|llm-finetune|comfy-node|agent|upsil]` | uv project wired to the store, PyTorch index chosen by GPU Doctor; `upsil` is an UpsiL program with tests. |
+| `sos run <script> [args]` · `sos job progress|done|start|list` | Environment header (as in the design mockup) + a job the bar shows; `.py`, `.sh` and UpsiL `.upl` (in the project's `.venv` when there is one). |
 | `sos update [--dry-run]` · `sos undo [--list|<id>] [--yes]` · `sos snapshot create|list [--config root|home]` | snapper pre/post pairs (`--cleanup-algorithm number`, userdata `svoya=1`). `sos undo` takes the **newest change**: a look change (theme/accent, from the journal — instant, no password) or an sos snapshot pair. `undo <n>` reverts a pair (`pre..post`) or everything since a single snapshot (`n..0`; `7`, `#7`, `snap-7`); `undo look-3` a look change. Snapshot undos without a TTY need `--yes`. |
 | `sos session-start` | Hyprland `exec-once` (§5): theme → export `WAYLAND_DISPLAY`/`HYPRLAND_INSTANCE_SIGNATURE` to systemd/D-Bus → jacksond → shell → first-run wizard. Idempotent, never blocks; log in `~/.local/state/svoya/session.log`. |
 
@@ -73,7 +73,8 @@ All `--json` outputs are UTF-8 JSON on stdout; human text goes to stdout only wi
 `state`: running | done | failed | cancelled. `progress` 0..1 or null. `etaSec` is optional (valid at
 `updatedAt`); without it status extrapolates from progress. Jobs whose `pid` died are not shown.
 `sos run` exports `SVOYA_JOB_ID` and `SVOYA_JOB_FILE`; scripts call `sos job progress $SVOYA_JOB_ID 0.5`
-(or the dependency-free `sos_progress.report()` that `sos new` puts in every project).
+(or the dependency-free `sos_progress.report()` that `sos new` puts in every project); UpsiL programs
+report with `sys.progress(0.5)`, and `nn.fit` / `m.ask_all` do it themselves.
 
 **`~/.local/state/svoya/theme.json`** — flat: `id`, `mode`, `pair`, `nameEn`, `nameRu`, `choice`
 (`auto` or an id), every `[color]` token as `#AARRGGBB` (alpha first, QML-ready: `accent` `#ffffb547`,

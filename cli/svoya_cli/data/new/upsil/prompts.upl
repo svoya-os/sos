@@ -1,0 +1,20 @@
+// Вопросы к модели и разбор ответов. Они в отдельном файле, чтобы проверять их тестами без модели.
+
+// Форма ответа: если модель пришлёт другой JSON, UpsiL переспросит её сам.
+val PLAN = {"title": str, "steps": [str], "hours?": int}
+
+fun plan_prompt(topic) {
+    return "Составь короткий план изучения темы «{topic}»: название и от трёх до пяти шагов."
+}
+
+// ответ модели — запись: plan.title — то же, что plan["title"]
+fun render(plan) {
+    val lines = [plan.title]
+    for (i, step) in enumerate(plan.steps, 1) {
+        lines.append("{i}. {step}")
+    }
+    if "hours" in plan {
+        lines.append("≈ {plan.hours} ч")
+    }
+    return "\n".join(lines)
+}

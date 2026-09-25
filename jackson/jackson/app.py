@@ -67,7 +67,8 @@ class Jackson:
                              local_starter=self.start_local_models, local_installed=self.has_local_model)
         self.grants = Grants(self.paths.grants_file)
         self.permissions = Permissions(self.grants)
-        self.skills = Skills(self.paths.skills_dir, self.config.skills_max_active)
+        self.skills = Skills(self.paths.skills_dir, self.config.skills_max_active,
+                             system_dirs=[self.paths.system_skills_dir])
         self.osc = OsControl(self.runner, self.paths, self.svoya)
         self.mcp = McpManager(self.config, self.paths, self.sandbox, self.registry, self.audit,
                               key_lookup_from(self.keys))
@@ -202,6 +203,7 @@ class Jackson:
                 setattr(self.config, attr, getattr(new, attr))
                 changed.append(attr)
         self.config.warnings = new.warnings
+        self.skills.max_active = self.config.skills_max_active
         if new.memory != self.config.memory or new.mcp_servers != self.config.mcp_servers \
                 or new.providers != self.config.providers:
             changed.append("restart needed for memory/mcp/providers changes")

@@ -239,7 +239,7 @@ def _parser() -> argparse.ArgumentParser:
     # new
     n = cmd("new", "new AI project (uv) wired to the model store", "новый ИИ-проект (uv), связанный с хранилищем моделей")
     n.add_argument("name")
-    n.add_argument("--template", default="torch", choices=["torch", "llm-finetune", "comfy-node", "agent"])
+    n.add_argument("--template", default="torch", choices=["torch", "llm-finetune", "comfy-node", "agent", "upsil"])
     n.add_argument("--dir", help=tr("parent directory (default: current)", "родительская папка (по умолчанию текущая)"))
     n.add_argument("--no-git", action="store_true")
     n.add_argument("--dry-run", action="store_true")
@@ -273,8 +273,8 @@ def _parser() -> argparse.ArgumentParser:
     snl.add_argument("--json", action="store_true")
 
     # run / job
-    r = cmd("run", "run a script with its environment header and a job for the bar",
-            "запустить скрипт с заголовком окружения и задачей для панели")
+    r = cmd("run", "run a script (.py, .sh, UpsiL .upl) with its environment header and a job for the bar",
+            "запустить скрипт (.py, .sh, UpsiL .upl) с заголовком окружения и задачей для панели")
     r.add_argument("--label")
     r.add_argument("--no-job", action="store_true")
     r.add_argument("--no-header", action="store_true")

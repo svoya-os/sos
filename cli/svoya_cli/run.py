@@ -12,6 +12,10 @@ Values come from the project's ``svoya.toml`` ([run], [[datasets]], [tracking]),
 (torch version read from its dist-info — no slow ``import torch``) and live GPU stats. Then the script
 runs (``uv run python`` in uv projects) with ``UV_TORCH_BACKEND``/``HF_HOME`` from ``.env``, and a job
 file lets the bar show progress (``SVOYA_JOB_ID``/``SVOYA_JOB_FILE`` are exported for the script).
+
+UpsiL programs (``*.upl``, package ``upsil``) run with ``upsil run``; when the project has a ``.venv``
+(``uv add torch`` for ``nn``), they run in it, with only the ``upsil`` package added to its path.
+UpsiL's ``sys.progress``, ``nn.fit`` and ``ask_all`` write the job file, so the bar shows them.
 """
 from __future__ import annotations
 
@@ -103,12 +107,12 @@ def python_version(project: Path | None) -> str | None:
 
 
 def header(script: str, manifest: dict, torch: tuple[str | None, str | None], gpu: dict | None,
-           project_python: str | None = None) -> list[tuple[str, str]]:
+           project_python: str | None = None, upsil: str | None = None) -> list[tuple[str, str]]:
     """(label, rendered value) rows; empty rows are left out."""
     st = ui.style()
     dot = f" {st.faint('·')} "
     rows: list[tuple[str, str]] = []
-    env = []
+    env = [f"upsil {upsil}"] if upsil else []
     if torch[0]:
         env.append(f"torch {torch[0]}")
     if torch[1]:
@@ -118,7 +122,7 @@ def header(script: str, manifest: dict, torch: tuple[str | None, str | None], gp
         if gpu.get("vramTotalMiB"):
             g += " " + st.faint(f"{i18n.smart(gpu['vramTotalMiB'] / 1024)} {tr('GB', 'ГБ')}")
         env.append(g)
-    elif not torch[0]:
+    elif not torch[0] and not upsil:
         env.append(f"python {project_python or f'{sys.version_info.major}.{sys.version_info.minor}'}")
     rows.append((tr("env", "среда"), dot.join(env)))
     run = manifest.get("run") or {}
@@ -140,8 +144,68 @@ def header(script: str, manifest: dict, torch: tuple[str | None, str | None], gp
     return rows
 
 
+UPSIL_PATH = Path("/usr/lib/upsil/path")   # the upsil package ships a folder holding only `upsil`
+
+
+def upsil_home() -> Path | None:
+    """The installed ``upsil`` package folder, found without importing it."""
+    import importlib.util
+    try:
+        spec = importlib.util.find_spec("upsil")
+    except (ImportError, ValueError):
+        return None
+    if spec is None or not spec.origin or not spec.origin.endswith("__init__.py"):
+        return None
+    return Path(spec.origin).parent
+
+
+def upsil_version(home: Path | None) -> str | None:
+    if home is None:
+        return None
+    try:
+        m = re.search(r'^__version__\s*=\s*"([^"]+)"', (home / "__init__.py").read_text(encoding="utf-8"), re.M)
+    except OSError:
+        return None
+    return m.group(1) if m else None
+
+
+def upsil_pythonpath(home: Path, cache: Path) -> str | None:
+    """A PYTHONPATH entry that adds only ``upsil`` to a project venv (never all of dist-packages,
+    which would shadow the venv's own torch or numpy)."""
+    try:
+        if (UPSIL_PATH / "upsil").resolve() == home.resolve():
+            return str(UPSIL_PATH)
+        shim = cache / "upsil-path"
+        link = shim / "upsil"
+        if link.is_symlink() and link.resolve() == home.resolve():
+            return str(shim)
+        shim.mkdir(parents=True, exist_ok=True)
+        if link.is_symlink() or link.exists():
+            link.unlink()
+        link.symlink_to(home, target_is_directory=True)
+        return str(shim)
+    except OSError:
+        return None
+
+
+def upsil_command(script: str, args: list[str], project: Path | None, which,
+                  pythonpath: str | None) -> list[str] | None:
+    """``upsil run`` in the project venv when there is one (and ``upsil`` can be put on its path),
+    else the system ``upsil``; None when UpsiL is not installed."""
+    venv = project / ".venv" / "bin" / "python" if project is not None else None
+    if venv is not None and venv.exists() and pythonpath:
+        return [str(venv), "-m", "upsil", "run", script, *args]
+    if which("upsil"):
+        return ["upsil", "run", script, *args]
+    if pythonpath:
+        return [sys.executable, "-m", "upsil", "run", script, *args]
+    return None
+
+
 def build_command(script: str, args: list[str], project: Path | None, which) -> list[str]:
     p = Path(script)
+    if p.suffix == ".upl":
+        return upsil_command(script, args, project, which, None) or ["upsil", "run", script, *args]
     if p.suffix == ".py":
         if project is not None and (project / "pyproject.toml").is_file() and which("uv"):
             return ["uv", "run", "python", script, *args]
@@ -153,24 +217,57 @@ def build_command(script: str, args: list[str], project: Path | None, which) -> 
     return [str(p if p.is_absolute() or "/" in script else Path(".") / p), *args]
 
 
+def upsil_cli_version(ctx: Ctx) -> str | None:
+    """``upsil version`` (an ``upsil`` on PATH that this Python cannot import, e.g. from pipx)."""
+    try:
+        r = ctx.runner.run(["upsil", "version"], timeout=10)
+    except OSError:
+        return None
+    m = re.search(r"(\d+\.\d+(?:\.\d+)?\S*)", r.out or "")
+    return m.group(1) if r.ok and m else None
+
+
 def main(args, ctx: Ctx | None = None) -> int:
     ctx = ctx or Ctx()
     cwd = Path.cwd()
     project = find_project(cwd)
     manifest = read_manifest(project)
+    is_upl = Path(args.script).suffix == ".upl"
+    dotenv = read_dotenv(project)
+    upsil_env: dict[str, str] = {}
+    upsil_ver = None
+    if is_upl:
+        home = upsil_home()
+        upsil_ver = upsil_version(home)
+        pythonpath = upsil_pythonpath(home, ctx.paths.cache_dir) if home is not None else None
+        cmd = upsil_command(args.script, list(args.args), project, ctx.runner.which, pythonpath)
+        if cmd is None:
+            ui.err(tr("sos: UpsiL is not installed: sudo apt install upsil",
+                      "sos: UpsiL не установлен: sudo apt install upsil"))
+            return 127
+        if cmd[1:3] == ["-m", "upsil"] and pythonpath:
+            upsil_env["PYTHONPATH"] = os.pathsep.join(filter(None, [pythonpath, os.environ.get("PYTHONPATH")]))
+        if cmd[0] == "upsil" and not upsil_ver:
+            upsil_ver = upsil_cli_version(ctx)
+        chosen = dotenv.get("UPSIL_LLM_MODEL") or os.environ.get("UPSIL_LLM_MODEL")
+        run_sec = manifest.get("run") or {}
+        if chosen and run_sec.get("model") in (None, "", "—"):
+            manifest = {**manifest, "run": {**run_sec, "model": chosen}}   # the model UpsiL will ask
+    else:
+        cmd = build_command(args.script, list(args.args), project, ctx.runner.which)
     if not args.no_header:
         from .hw import gpu as gpu_mod
         stats = gpu_mod.live_stats(ctx)
         gpu = max(stats, key=lambda g: g.get("vramTotalMiB") or 0) if stats else None
         shown = " ".join([Path(args.script).name if "/" not in args.script else args.script, *map(shlex.quote, args.args)])
         ui.head(f"sos run {shown}")
-        for label, value in header(args.script, manifest, torch_info(project), gpu, python_version(project)):
+        for label, value in header(args.script, manifest, torch_info(project), gpu, python_version(project),
+                                   upsil=upsil_ver):
             ui.kv(label, value, width=9)
         ui.out("")
-    cmd = build_command(args.script, list(args.args), project, ctx.runner.which)
     env = dict(os.environ)
-    dotenv = read_dotenv(project)
     env.update(dotenv)
+    env.update(upsil_env)
     backend = (manifest.get("gpu") or {}).get("backend")
     if backend and "UV_TORCH_BACKEND" not in dotenv:
         env["UV_TORCH_BACKEND"] = backend

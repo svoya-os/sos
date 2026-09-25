@@ -23,6 +23,7 @@ class Paths:
     state_home: Path    # $XDG_STATE_HOME
     runtime_base: Path  # $XDG_RUNTIME_DIR (or a private fallback)
     system_config: Path = Path("/etc/svoya")
+    system_data: Path = Path("/usr/share/svoya")
 
     # --- construction -------------------------------------------------
     @classmethod
@@ -55,6 +56,7 @@ class Paths:
             state_home=root / "home" / ".local" / "state",
             runtime_base=root / "run",
             system_config=root / "etc" / "svoya",
+            system_data=root / "usr" / "share" / "svoya",
         )
 
     # --- svoya-wide ----------------------------------------------------
@@ -136,6 +138,11 @@ class Paths:
     @property
     def skills_dir(self) -> Path:
         return self.data_dir / "skills"
+
+    @property
+    def system_skills_dir(self) -> Path:
+        """Skills installed by packages (read-only; e.g. the UpsiL skill from the upsil package)."""
+        return self.system_data / "jackson" / "skills"
 
     @property
     def mcp_pins(self) -> Path:

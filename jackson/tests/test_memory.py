@@ -178,6 +178,28 @@ class SkillsTest(unittest.TestCase):
         self.assertIn("grant no permissions", block)
         self.assertIn("Check VRAM", block)
 
+    def test_system_skills_aliases_and_user_override(self):
+        system = self.root / "usr" / "share" / "svoya" / "jackson" / "skills"
+        (system / "upsil").mkdir(parents=True)
+        (system / "upsil" / "SKILL.md").write_text(
+            "---\nname: upsil\ndescription: Write and run UpsiL programs (.upl) for AI scripts\n"
+            "aliases: упсил, upsil\n---\nRun with sos run main.upl\n", encoding="utf-8")
+        (system / "video-render").mkdir()
+        (system / "video-render" / "SKILL.md").write_text(
+            "---\nname: video-render\ndescription: the packaged one\n---\nOLD\n", encoding="utf-8")
+        skills = Skills(self.root / "skills", system_dirs=[system, self.root / "missing"])
+        loaded = {s.name: s for s in skills.load()}
+        self.assertEqual(sorted(loaded), ["upsil", "video-render"])
+        self.assertEqual(loaded["upsil"].aliases, ["упсил", "upsil"])
+        self.assertIn("Check VRAM", loaded["video-render"].body)      # the user's skill wins
+        # a Cyrillic spelling in any case form activates it through the alias
+        self.assertEqual([s.name for s in skills.relevant("Что такое упсиль?")], ["upsil"])
+        self.assertEqual([s.name for s in skills.relevant("напиши на упсиле")], ["upsil"])
+        block = skills.prompt_block("напиши на упсиле скрипт", "ru")
+        self.assertIn("системные и пользователя", block)
+        self.assertIn("Run with sos run main.upl", block)
+        self.assertNotIn("OLD", block)
+
 
 if __name__ == "__main__":
     unittest.main()

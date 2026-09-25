@@ -178,7 +178,7 @@ def complete(words: list[str]) -> list[str]:
     elif cmd in ("install", "remove"):
         pool = _module_ids() + _app_names() + _ladder_ids()
     elif cmd == "new":
-        pool = ["--template", "torch", "llm-finetune", "comfy-node", "agent"]
+        pool = ["--template", "torch", "llm-finetune", "comfy-node", "agent", "upsil"]
     elif cmd == "snapshot":
         pool = ["create", "list"]
     elif cmd == "job":

@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0
+PKG := debian/upsil
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_build:
+
+override_dh_auto_install:
+	mkdir -p $(PKG)
+	cp -a files/. $(PKG)/
+
+# programs and documents are read as they are: never gzip them
+override_dh_compress:
+	dh_compress -X.upl -X.md -X.csv -X.log -X.txt
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 $(PKG)/usr/bin/upsil

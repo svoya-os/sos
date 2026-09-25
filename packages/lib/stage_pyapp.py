@@ -5,7 +5,8 @@
     stage_pyapp.py --src jackson --package jackson --dest DEST_ROOT
 
 Finds the importable package inside SRC (SRC/<pkg>/__init__.py, SRC/src/<pkg>/__init__.py or
-SRC/__init__.py) and copies it to DEST_ROOT/usr/lib/svoya/<pkg>, leaving out tests, caches and
+SRC/__init__.py) and copies it to DEST_ROOT/usr/lib/svoya/<pkg> (or DEST_ROOT/<--libdir>/<pkg>, e.g.
+usr/lib/python3/dist-packages for a public module such as upsil), leaving out tests, caches and
 build junk. Prints the staged path.
 
 Test and build directories are skipped only at the top level of the package: deeper down they are
@@ -50,9 +51,9 @@ def _ignorer(top: pathlib.Path):
     return _ignore
 
 
-def stage(src: pathlib.Path, name: str, dest_root: pathlib.Path) -> pathlib.Path:
+def stage(src: pathlib.Path, name: str, dest_root: pathlib.Path, libdir: str = "usr/lib/svoya") -> pathlib.Path:
     pkg = find_package(src, name)
-    dest = dest_root / "usr" / "lib" / "svoya" / name
+    dest = dest_root / libdir.strip("/") / name
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(pkg, dest, ignore=_ignorer(pkg))
@@ -64,8 +65,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--src", required=True, type=pathlib.Path)
     ap.add_argument("--package", required=True)
     ap.add_argument("--dest", required=True, type=pathlib.Path)
+    ap.add_argument("--libdir", default="usr/lib/svoya", help="where the package goes under DEST")
     ns = ap.parse_args(argv)
-    print(stage(ns.src, ns.package, ns.dest))
+    print(stage(ns.src, ns.package, ns.dest, ns.libdir))
     return 0
 
 

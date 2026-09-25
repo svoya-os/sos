@@ -1,10 +1,13 @@
-"""``sos new <name> [--template torch|llm-finetune|comfy-node|agent]`` — a uv project wired to SOS.
+"""``sos new <name> [--template torch|llm-finetune|comfy-node|agent|upsil]`` — a uv project wired to SOS.
 
 Creates pyproject.toml (PyTorch index chosen by GPU Doctor — ``uv --torch-backend=auto`` ignores
 the GPU generation), svoya.toml (GPU needs, backend, models/datasets by hash, tracker, cloud target),
 src/, notebooks/, configs/, scripts/, tests/, ``data → /srv/ai/datasets`` and ``models → /srv/ai``
 links, a dev container (GPU optional), a Containerfile, a SkyPilot task and a README; ``.env`` sets
 ``UV_TORCH_BACKEND``. Templates: ``svoya_cli/data/new/{common,<template>}``.
+
+``upsil`` is an UpsiL program instead (main.upl, prompts.upl, tests for ``upsil test``): no Python
+tree, and a ``pyproject.toml`` only so that ``uv add torch`` finds this machine's PyTorch wheels.
 """
 from __future__ import annotations
 
@@ -19,7 +22,7 @@ from .i18n import tr
 from .theme import engine
 from .util import read_json, toml_dumps
 
-TEMPLATES = ("torch", "llm-finetune", "comfy-node", "agent")
+TEMPLATES = ("torch", "llm-finetune", "comfy-node", "agent", "upsil")
 DOTFILES = {"gitignore": ".gitignore", "python-version": ".python-version", "env": ".env", "envrc": ".envrc"}
 INDEX = {"cu130": "https://download.pytorch.org/whl/cu130", "cu126": "https://download.pytorch.org/whl/cu126",
          "xpu": "https://download.pytorch.org/whl/xpu", "cpu": "https://download.pytorch.org/whl/cpu"}
@@ -35,6 +38,10 @@ SPEC = {
                    "model": "—", "dataset": "—", "min_vram": 6, "accel": "L4:1"},
     "agent": {"description": "Tool-using agent for the local model server", "deps": [], "torch": False,
               "entry": "src/{pkg}/agent.py", "model": "", "dataset": "—", "min_vram": 0, "accel": "L4:1"},
+    # torch: the index only (`uv add torch` when the program needs `import nn`), not a dependency
+    # model: whatever `sos models serve` offers first, or UPSIL_LLM_MODEL in .env (sos run shows it)
+    "upsil": {"description": "UpsiL program", "deps": [], "torch": True, "entry": "main.upl", "model": "—",
+              "dataset": "—", "min_vram": 0, "accel": "L4:1", "common": False},
 }
 
 
@@ -112,6 +119,9 @@ def build_context(ctx: Ctx, name: str, template: str) -> tuple[dict, dict]:
         "tracking": {"tool": "trackio", "url": "http://localhost:7860"},
         "cloud": {"target": "skypilot", "config": "sky.yaml", "accelerators": spec["accel"]},
     }
+    if not spec.get("common", True):     # no sky.yaml, tracker, dataset or pinned model in a bare program
+        for key in ("datasets", "tracking", "cloud", "models"):
+            manifest.pop(key)
     return variables, manifest
 
 
@@ -139,7 +149,8 @@ def main(args, ctx: Ctx | None = None) -> int:
         return 2
     variables, manifest = build_context(ctx, name, args.template)
     data = ctx.paths.data_dir / "new"
-    files = render_tree(data / "common", variables) + render_tree(data / args.template, variables)
+    common = render_tree(data / "common", variables) if SPEC[args.template].get("common", True) else []
+    files = common + render_tree(data / args.template, variables)
     if args.template == "comfy-node":      # a node is loaded from its folder root, not from src/
         files = [f for f in files if not f[0].startswith("src/") or f[0].endswith(("__init__.py", "sos_progress.py"))]
     files.append(("svoya.toml", "# SOS project manifest — read by `sos run`, Jackson and the bar.\n" + toml_dumps(manifest), 0o644))
@@ -171,8 +182,19 @@ def main(args, ctx: Ctx | None = None) -> int:
         return 0
     st = ui.style()
     ui.head(tr(f"project {name}", f"проект {name}") + st.faint(f" · {args.template} · {dest}"))
-    ui.kv(tr("torch", "torch"), f"{variables['gpu']['backend']} " + st.faint(f"({variables['gpu']['detected']})"), width=9)
+    if args.template == "upsil":
+        from . import run
+        ver = run.upsil_version(run.upsil_home())
+        ui.kv("upsil", ver or st.warn(tr("not installed: sudo apt install upsil", "не установлен: sudo apt install upsil")),
+              width=9)
+    torch_row = f"{variables['gpu']['backend']} " + st.faint(f"({variables['gpu']['detected']})")
+    if args.template == "upsil":
+        torch_row = "uv add torch " + st.faint(f"→ {variables['gpu']['backend']} ({variables['gpu']['detected']})")
+    ui.kv(tr("torch", "torch"), torch_row, width=9)
     ui.kv(tr("data", "данные"), f"data → {ctx.paths.ai_root}/datasets", width=9)
     ui.kv(tr("models", "модели"), f"models → {ctx.paths.ai_root}", width=9)
-    ui.note(f"cd {name} && uv sync && sos run {variables['run']['entry']}")
+    if args.template == "upsil":
+        ui.note(f"cd {name} && sos run {variables['run']['entry']} && upsil test")
+    else:
+        ui.note(f"cd {name} && uv sync && sos run {variables['run']['entry']}")
     return 0

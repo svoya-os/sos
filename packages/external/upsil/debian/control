@@ -1,0 +1,26 @@
+Source: upsil
+Section: interpreters
+Priority: optional
+Maintainer: SOS developers <sos@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), dh-python, python3:any
+Standards-Version: 4.7.0
+Homepage: https://github.com/svoya-os/upsil
+Rules-Requires-Root: no
+
+Package: upsil
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3 (>= 3.10)
+Suggests: python3-tk
+Description: UpsiL, a small language for AI scripts
+ UpsiL has a Kotlin-like syntax and compiles to readable Python. Language
+ models, document search and PyTorch networks are part of the language:
+ [m] => "question" asks a model, -> json(shape) returns checked data,
+ vector_store searches notes, model blocks are PyTorch modules and
+ nn.fit trains them. On SOS it talks to the local model server
+ (sos models serve), shows training progress in the bar and takes
+ PyTorch from the project's environment (uv add torch; sos run uses it).
+ .
+ This package ships the "upsil" command (run, check, build, test, repl),
+ syntax highlighting for Mousepad, GNOME Text Editor and Kate, the
+ documentation and examples in /usr/share/doc/upsil, and a skill that
+ teaches the assistant Jackson to write UpsiL.

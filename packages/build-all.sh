@@ -23,8 +23,10 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 ALL_PACKAGES=(
     svoya-base svoya-fonts svoya-branding svoya-cli svoya-jackson
     svoya-shell svoya-session svoya-installer
-    quickshell uv grub-btrfs
+    quickshell uv grub-btrfs upsil
 )
+# A failed optional package is reported and skipped; the image lists it as ?name.
+OPTIONAL_PACKAGES=(upsil)
 
 OUT="$ROOT/dist/repo"
 ONLY=""
@@ -78,6 +80,12 @@ pkg_dir() {
     fi
 }
 
+is_optional() {
+    local o
+    for o in "${OPTIONAL_PACKAGES[@]}"; do [ "$o" = "$1" ] && return 0; done
+    return 1
+}
+
 selected_packages() {
     if [ -z "$ONLY" ]; then
         printf '%s\n' "${ALL_PACKAGES[@]}"
@@ -127,6 +135,7 @@ pkg_version() {
         quickshell) printf '%s-0svoya1' "$QUICKSHELL_VERSION" ;;
         uv) printf '%s-0svoya1' "$UV_VERSION" ;;
         grub-btrfs) printf '%s-0svoya1' "$GRUB_BTRFS_VERSION" ;;
+        upsil) printf '%s-0svoya1' "$UPSIL_VERSION" ;;
         *) printf '%s' "$SVOYA_VERSION_STR" ;;
     esac
 }
@@ -268,11 +277,18 @@ run_in_docker() {
     [ -n "$ONLY" ] && args+=(--only "$ONLY")
     [ "$KEEP" = 1 ] && args+=(--keep)
     case $OUT in "$ROOT"/*) ;; *) die "--out must be inside the repository when using docker" ;; esac
+    # a local UpsiL checkout is mounted read-only where the container can see it
+    local upsil=()
+    if [ -n "${UPSIL_SRC_DIR:-}" ]; then
+        [ -d "$UPSIL_SRC_DIR" ] || die "UPSIL_SRC_DIR=$UPSIL_SRC_DIR is not a directory"
+        upsil=(-v "$(cd "$UPSIL_SRC_DIR" && pwd):/upsil-src:ro" -e UPSIL_SRC_DIR=/upsil-src)
+    fi
     log "Running in $BUILD_IMAGE"
     docker run --rm "${tty[@]}" \
-        -v "$ROOT:/src" -w /src \
+        -v "$ROOT:/src" -w /src "${upsil[@]}" \
         -e SOURCE_DATE_EPOCH="$SDE" -e SVOYA_VERSION_STR="$SVOYA_VERSION_STR" \
         -e SNAPSHOT -e SVOYA_PKG_VERSION -e UV_SHA256_X86_64 -e GITHUB_ACTIONS \
+        -e UPSIL_COMMIT \
         -e SVOYA_REPO_SIGNING_KEY -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
         "$BUILD_IMAGE" bash /src/packages/build-all.sh "${args[@]}"
 }
@@ -301,7 +317,24 @@ main() {
     setup_build_host
     for p in "${PKGS[@]}"; do validate_one "$p"; done
     mkdir -p "$OUT/pool"
-    for p in "${PKGS[@]}"; do build_one "$p"; done
+    local rc
+    for p in "${PKGS[@]}"; do
+        if is_optional "$p"; then
+            # errexit is switched back on inside the subshell (a subshell started under `set +e`,
+            # or as part of `||`, would otherwise run past a failed step)
+            set +e
+            (set -e; build_one "$p")
+            rc=$?
+            set -e
+            if [ "$rc" != 0 ]; then
+                warn "optional package $p was not built (exit $rc); the image goes without it"
+                [ -n "${GITHUB_ACTIONS:-}" ] && echo "::warning::optional package $p was not built (exit $rc)"
+                rm -rf "${BUILD_ROOT:?}/$p"
+            fi
+        else
+            build_one "$p"
+        fi
+    done
     index_repo
     if [ -n "${HOST_UID:-}" ]; then
         chown -R "$HOST_UID:${HOST_GID:-$HOST_UID}" "$OUT"

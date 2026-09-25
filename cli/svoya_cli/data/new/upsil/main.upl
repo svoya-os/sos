@@ -1,0 +1,20 @@
+// {{ project.name }}: программа на UpsiL, языке СОС для работы с нейросетями.
+// Запуск: sos run main.upl "тема"      Проверки: upsil test      Без запуска: upsil check main.upl
+// Нужна локальная модель: sos models serve (UpsiL сам найдёт её сервер).
+import llm
+import sys
+import prompts
+
+val topic = if (len(sys.args) > 0) " ".join(sys.args) else "нейросети"
+llm m = llm.Model(temperature = 0.2)
+
+try {
+    val plan = [m] => prompts.plan_prompt(topic) -> json(prompts.PLAN)
+    print(prompts.render(plan))
+} catch (e: llm.FormatError) {
+    print("Модель так и не ответила по форме: {e}")
+    sys.exit(1)
+} catch (e: llm.Error) {
+    print(e)
+    sys.exit(1)
+}

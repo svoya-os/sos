@@ -227,8 +227,10 @@ exactly why and what to do (`sos models serve`, `jackson route set policy any`, 
   definition (name + description + input schema) pinned by SHA-256 on first sight — a changed
   definition is blocked until `jackson mcp trust <server>`; descriptions with injected instructions or
   mentions of other tools (shadowing) are blocked; output taints by default.
-* **Skills** (`~/.local/share/svoya/jackson/skills/*/SKILL.md`): catalogue in the prompt, bodies of the
-  best matches added per turn; they are guidance only and grant nothing.
+* **Skills** (`~/.local/share/svoya/jackson/skills/*/SKILL.md`, plus system skills from packages in
+  `/usr/share/svoya/jackson/skills`, e.g. UpsiL's; a user skill of the same name wins): catalogue in the
+  prompt, bodies of the best matches added per turn (the name or an `aliases:` spelling in the request
+  counts extra); they are guidance only and grant nothing.
 * **Audit**: `audit.jsonl`, one JSON object per line, `prev` = SHA-256 of the previous line's bytes,
   plus `audit.head` (last seq + hash) to catch truncation; `flock`-serialized across processes,
   fsync'ed; long values stored as digests, secret-looking keys masked. `jackson audit verify`.

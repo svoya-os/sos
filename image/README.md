@@ -8,7 +8,7 @@ container, so the tools (mmdebstrap, GRUB, squashfs-tools, xorriso) match the ta
 ## Pipeline
 
 ```
-packages/build-all.sh ──► dist/repo (flat APT repo: svoya-*, quickshell, uv, grub-btrfs)
+packages/build-all.sh ──► dist/repo (flat APT repo: svoya-*, quickshell, uv, grub-btrfs, upsil)
                                │
 image/build-iso.sh             ▼
   mmdebstrap --variant=minbase resolute   (snapshot.ubuntu.com/ubuntu/$SNAPSHOT, SOURCE_DATE_EPOCH)

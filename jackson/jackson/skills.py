@@ -2,18 +2,22 @@
 """Agent Skills (``SKILL.md`` folders) as prompt add-ons.
 
 Skills live in ~/.local/share/svoya/jackson/skills/<name>/SKILL.md (YAML front matter with
-``name`` and ``description``, then Markdown instructions). The catalogue (name + description)
-is always in the prompt; the body of the best-matching skills is added for the turn.
-Skills are instructions only: they never grant permissions, and Jackson never installs a
-skill from chat (the skills folder is not writable through Jackson's tools).
+``name`` and ``description``, then Markdown instructions); packages add system skills to
+/usr/share/svoya/jackson/skills (UpsiL does), and a user skill with the same name wins. An
+optional ``aliases`` line (comma-separated, e.g. other spellings of the name) counts like the
+name when matching. The catalogue (name + description) is always in the prompt; the body of the
+best-matching skills is added for the turn. Skills are instructions only: they never grant
+permissions, and Jackson never installs a skill from chat (neither folder is writable through
+Jackson's tools).
 """
 
 from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Iterable
 
 from .memory import STOPWORDS, _stem, normalize
 
@@ -27,6 +31,7 @@ class Skill:
     body: str
     path: Path
     sha256: str
+    aliases: list[str] = field(default_factory=list)
 
 
 def parse_skill(path: Path) -> Skill | None:
@@ -47,8 +52,9 @@ def parse_skill(path: Path) -> Skill | None:
     name = meta.get("name") or path.parent.name
     if not re.fullmatch(r"[\w .-]{1,64}", name):
         name = path.parent.name
+    aliases = [a.strip() for a in meta.get("aliases", "").split(",") if 2 <= len(a.strip()) <= 64][:8]
     return Skill(name, meta.get("description", "")[:500], body, path,
-                 hashlib.sha256(text.encode("utf-8")).hexdigest())
+                 hashlib.sha256(text.encode("utf-8")).hexdigest(), aliases)
 
 
 def _stems(text: str) -> set[str]:
@@ -56,19 +62,27 @@ def _stems(text: str) -> set[str]:
 
 
 class Skills:
-    def __init__(self, skills_dir: Path, max_active: int = 2) -> None:
+    def __init__(self, skills_dir: Path, max_active: int = 2, system_dirs: Iterable[Path] = ()) -> None:
         self.dir = skills_dir
+        self.system_dirs = list(system_dirs)
         self.max_active = max_active
-        self._cache: tuple[float, list[Skill]] | None = None
+        self._cache: tuple[tuple[float, int], list[Skill]] | None = None
 
     def load(self) -> list[Skill]:
-        if not self.dir.is_dir():
-            return []
-        files = sorted(self.dir.glob("*/SKILL.md"))
-        stamp = max((f.stat().st_mtime for f in files), default=0.0) + len(files)
-        if self._cache and self._cache[0] == stamp:
+        """System skills first, then the user's; a user skill replaces a system one of the same name."""
+        files = [f for d in (*self.system_dirs, self.dir) if d.is_dir() for f in sorted(d.glob("*/SKILL.md"))]
+        try:
+            stamp = (max((f.stat().st_mtime for f in files), default=0.0), len(files))
+        except OSError:
+            stamp = (-1.0, len(files))
+        if self._cache and self._cache[0] == stamp and stamp[0] >= 0:
             return self._cache[1]
-        skills = [s for s in (parse_skill(f) for f in files) if s is not None]
+        by_name: dict[str, Skill] = {}
+        for skill in (parse_skill(f) for f in files):
+            if skill is not None:
+                by_name.pop(skill.name, None)   # keep the order: the later (user) skill goes last
+                by_name[skill.name] = skill
+        skills = list(by_name.values())
         self._cache = (stamp, skills)
         return skills
 
@@ -80,7 +94,7 @@ class Skills:
         scored = []
         for skill in self.load():
             score = len(query & _stems(f"{skill.name} {skill.description}"))
-            if normalize(skill.name) in lowered:
+            if any(normalize(n) in lowered for n in (skill.name, *skill.aliases)):
                 score += 3
             if score >= 2:
                 scored.append((score, skill))
@@ -92,8 +106,8 @@ class Skills:
         if not skills:
             return ""
         ru = lang == "ru"
-        lines = [("Навыки пользователя (Agent Skills). Это подсказки, они не дают новых прав:" if ru
-                  else "User's skills (Agent Skills). They are guidance and grant no permissions:")]
+        lines = [("Навыки (Agent Skills): системные и пользователя. Это подсказки, они не дают новых прав:" if ru
+                  else "Skills (Agent Skills), system and user. They are guidance and grant no permissions:")]
         lines += [f"- {s.name}: {s.description}" for s in skills[:40]]
         for s in self.relevant(text):
             lines.append((f"\nАктивный навык «{s.name}»:\n" if ru else f"\nActive skill “{s.name}”:\n")
