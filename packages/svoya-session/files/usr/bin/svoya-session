@@ -68,8 +68,12 @@ source = $HOME/.config/hypr/user.conf
 EOF
 fi
 
+# Keep this boot's session output (Hyprland, and everything it starts) for `sos doctor` and bug reports.
+log="${XDG_RUNTIME_DIR:-/tmp}/sos-session.log"
+{ printf '== SOS session %s (config %s)\n' "$(date -Is 2>/dev/null)" "$conf"; } >>"$log" 2>/dev/null || log=/dev/null
+
 if command -v start-hyprland >/dev/null; then
     # Watchdog shipped with Hyprland 0.53: restarts the compositor in safe mode after a crash.
-    exec start-hyprland -- --config "$conf"
+    exec start-hyprland -- --config "$conf" >>"$log" 2>&1
 fi
-exec Hyprland --config "$conf"
+exec Hyprland --config "$conf" >>"$log" 2>&1

@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
-      contents: read
+      contents: write   # screenshots → ci-screens branch (viewable in the browser); main is never touched
       actions: read
     strategy:
       fail-fast: false
@@ -81,8 +81,56 @@ jobs:
       - name: Report
         if: always()
         run: |
-          cat "dist/vm-${{ matrix.firmware }}/report.md" >>"$GITHUB_STEP_SUMMARY" 2>/dev/null || true
-          tail -n 60 "dist/vm-${{ matrix.firmware }}/serial.log" 2>/dev/null || true
+          dir="dist/vm-${{ matrix.firmware }}"
+          cat "$dir/report.md" >>"$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          log="$dir/serial.log"
+          [ -f "$log" ] || exit 0
+          # milestones, diagnostics blocks and anything that looks like trouble
+          echo "::group::serial: SOS marks, diagnostics, errors"
+          awk '/SOS-DIAG begin/{d=1} d{print} /SOS-DIAG end/{d=0; next}
+               !d && /SOS-MARK|[Ee]rror|ERROR|[Ff]ail|FAIL|[Ww]arn|segfault|core dump|Hyprland|hyprland|quickshell|greetd|svoya|sos-/' "$log" \
+            | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' | tail -n 600
+          echo "::endgroup::"
+          echo "::group::serial: last 120 lines"
+          tail -n 120 "$log" | tr -d '\r'
+          echo "::endgroup::"
+
+      - name: Publish screenshots (ci-screens branch)
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+          FW: ${{ matrix.firmware }}
+        run: |
+          set -uo pipefail
+          dir="dist/vm-$FW"
+          ls "$dir"/screens/*.png >/dev/null 2>&1 || exit 0
+          work=$(mktemp -d)
+          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          if ! git clone -q --depth 1 --branch ci-screens "$url" "$work" 2>/dev/null; then
+              git init -q -b ci-screens "$work"
+              git -C "$work" remote add origin "$url"
+          fi
+          dest="$work/runs/$RUN/$FW"
+          mkdir -p "$dest"
+          cp "$dir"/screens/*.png "$dest"/
+          cp "$dir/report.md" "$dest/README.md" 2>/dev/null || true
+          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" add -A
+          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" \
+              commit -q -m "screens: run $RUN ($FW)" || exit 0
+          for i in 1 2 3 4 5; do
+              git -C "$work" pull -q --rebase origin ci-screens 2>/dev/null || true
+              git -C "$work" push -q origin HEAD:ci-screens && break
+              sleep $((i * 4))
+          done
+          {
+            echo "### Screenshots ($FW)"
+            for f in "$dest"/*.png; do
+              n=$(basename "$f")
+              echo "![${n}](https://github.com/${REPO}/raw/ci-screens/runs/${RUN}/${FW}/${n})"
+            done
+          } >>"$GITHUB_STEP_SUMMARY"
 
       - name: Upload screenshots and logs
         if: always()

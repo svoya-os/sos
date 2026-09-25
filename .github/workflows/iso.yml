@@ -135,7 +135,7 @@ jobs:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.vm_test }}
     uses: ./.github/workflows/vm-test.yml
     permissions:
-      contents: read
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
       actions: read
     with:
       artifact: sos-iso

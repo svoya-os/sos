@@ -2,31 +2,79 @@
 # SPDX-License-Identifier: Apache-2.0
 # SOS VM test agent (live image only). Writes "SOS-MARK <uptime> <event>" lines to the first serial
 # port and mirrors the journal there, so tests/vm can wait for milestones and keep a boot log.
+# When the desktop is late it also dumps "SOS-DIAG" blocks (processes, sessions, failed units, DRM,
+# greetd, the user's warnings, Hyprland and session logs) that CI prints into the job log.
 set -uo pipefail
 tty=/dev/ttyS0
 [ -w "$tty" ] || exit 0
 stty -F "$tty" 115200 2>/dev/null || true
 
+# The serial port belongs to this agent: a getty on ttyS0 hangs up every other writer (vhangup),
+# which silently ended the journal mirror in the first CI run.
+systemctl stop serial-getty@ttyS0.service 2>/dev/null || true
+
 mark() { printf 'SOS-MARK %s %s\n' "$(cut -d' ' -f1 /proc/uptime)" "$*" >"$tty"; }
 
 mark agent-start
-journalctl -b -f -o short-monotonic --no-hostname >"$tty" 2>&1 &
+cursor=/run/sos-vm-test.journal-cursor
+( while :; do
+      journalctl -b -f -o short-monotonic --no-hostname --cursor-file="$cursor" >"$tty" 2>&1
+      sleep 1
+  done ) &
 
 user=${1:-svoya}
+uid=$(id -u "$user" 2>/dev/null || echo 1000)
+
+diag() {
+    {
+        echo "SOS-DIAG begin $1"
+        echo "## processes"
+        ps -eo pid,user,etimes,args --sort=start_time 2>&1 | grep -Ev '\]$|ps -eo' | tail -n 70
+        echo "## sessions"
+        loginctl list-sessions --no-legend 2>&1
+        echo "## failed system units"
+        systemctl --failed --no-legend --plain 2>&1
+        echo "## drm"
+        ls -la /dev/dri 2>&1
+        for d in /sys/class/drm/card*; do [ -e "$d/status" ] && echo "$d: $(cat "$d/status")"; done
+        echo "## greetd"
+        journalctl -b -u greetd --no-pager -o short-monotonic 2>&1 | tail -n 30
+        echo "## user $user: warnings and errors"
+        journalctl -b "_UID=$uid" -p warning --no-pager -o short-monotonic 2>&1 | tail -n 80
+        for f in "/run/user/$uid/sos-session.log" /run/user/"$uid"/hypr/*/hyprland.log; do
+            [ -f "$f" ] && { echo "## $f (tail)"; tail -n 80 "$f"; }
+        done
+        for f in /home/"$user"/.cache/hyprland/hyprlandCrashReport*.txt \
+                 /home/"$user"/.local/share/hyprland/hyprlandCrashReport*.txt; do
+            [ -f "$f" ] && { echo "## $f"; head -n 60 "$f"; }
+        done
+        echo "SOS-DIAG end $1"
+    } >"$tty" 2>&1
+}
+
 deadline=$((SECONDS + 900))
 greetd_seen=0
+next_diag=60
 while [ "$SECONDS" -lt "$deadline" ]; do
     if [ "$greetd_seen" = 0 ] && systemctl is-active --quiet greetd.service; then
         mark greetd-active
         greetd_seen=1
     fi
-    if pgrep -u "$user" -x Hyprland >/dev/null && pgrep -u "$user" -x 'quickshell|qs' >/dev/null; then
+    if pgrep -u "$user" -x Hyprland >/dev/null; then
+        [ -n "${hypr_seen:-}" ] || { mark hyprland-running; hypr_seen=1; }
+    fi
+    if pgrep -u "$user" -x Hyprland >/dev/null && pgrep -u "$user" -f 'quickshell|/usr/bin/qs' >/dev/null; then
         # the shell needs a moment to map its surfaces
         sleep 5
         mark desktop-ready
+        diag ready
         break
+    fi
+    if [ "$SECONDS" -ge "$next_diag" ]; then
+        diag "t+${SECONDS}s"
+        next_diag=$((next_diag * 2))
     fi
     sleep 1
 done
-[ "$SECONDS" -lt "$deadline" ] || mark desktop-timeout
+[ "$SECONDS" -lt "$deadline" ] || { mark desktop-timeout; diag timeout; }
 wait
