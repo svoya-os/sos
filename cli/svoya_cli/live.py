@@ -24,8 +24,13 @@ exit 0
 '''
 
 
+LIVE_MARKER = "/etc/svoya/live"      # written by image/hooks/50-live.sh, removed by the installer
+
+
 def is_live(ctx: Ctx) -> bool:
-    """Booted from the live medium (``boot=casper`` on the kernel command line)."""
+    """Booted from the live medium: ``boot=casper`` on the kernel command line, or the image's marker."""
+    if ctx.sys(LIVE_MARKER).exists():
+        return True
     try:
         words = ctx.sys("/proc/cmdline").read_text(encoding="utf-8", errors="replace").split()
     except OSError:

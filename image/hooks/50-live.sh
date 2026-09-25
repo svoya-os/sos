@@ -54,8 +54,8 @@ EOF
 
 # --- live markers and permissions ------------------------------------------------------------------
 write_file "$root/etc/svoya/live" 0644 <<'EOF'
-# This is the SOS live session. The shell shows "Install SOS" and skips the first-run wizard
-# while this file exists; the installer never copies it to the installed system.
+# This is the SOS live session. `sos session-start` skips the first-run wizard and Jackson offers
+# «Установить СОС» while this file exists (cli/svoya_cli/live.py); the installer removes it.
 EOF
 write_file "$root/etc/polkit-1/rules.d/49-svoya-live.rules" 0644 <<EOF
 // SOS live session only: the live user may administer the machine without a password.
