@@ -62,10 +62,11 @@ class RouteDecision:
 
 
 class RouteError(Exception):
-    def __init__(self, message: str, retryable: bool = True) -> None:
+    def __init__(self, message: str, retryable: bool = True, code: str = "") -> None:
         super().__init__(message)
         self.message = message
         self.retryable = retryable
+        self.code = code        # "no_local_model": a fresh system, the shell offers to pick one
 
 
 class HealthCache:
@@ -332,8 +333,10 @@ class Router:
         local_detail = "; ".join(f"{self.providers[n].cfg.display}: {why}" for n, (ok, why) in local_status.items()
                                  if not ok) or "—"
         if not available:
-            raise RouteError(self._why_none(lang, task, explicit_cloud, over_budget, dropped_capability,
-                                            local_detail, pairs, ready_cache))
+            message = self._why_none(lang, task, explicit_cloud, over_budget, dropped_capability,
+                                     local_detail, pairs, ready_cache)
+            no_model = t("route.why.no_local_model", lang) in message
+            raise RouteError(message, code="no_local_model" if no_model else "")
 
         chosen = available[0]
         reason = self._reason(lang, chosen, task, explicit, explicit_cloud, over_budget, local_capable,

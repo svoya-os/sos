@@ -58,6 +58,15 @@ class ConfigTest(unittest.TestCase):
         self.assertIn("anthropic/claude-sonnet-5", cfg.pricing)
         self.assertEqual(cfg.warnings, [])
 
+    def test_language_follows_the_session_unless_set(self) -> None:
+        self.assertEqual(load_config(self.paths, env={"LANG": "en_US.UTF-8"}).language, "en")    # the live ISO
+        self.assertEqual(load_config(self.paths, env={"LANG": "ru_RU.UTF-8"}).language, "ru")
+        self.assertEqual(load_config(self.paths, env={"LANG": "C.UTF-8"}).language, "ru")          # the default
+        self.assertEqual(load_config(self.paths, env={"LANGUAGE": "ru:en", "LANG": "en_US.UTF-8"}).language, "ru")
+        self.paths.config_dir.mkdir(parents=True)
+        self.paths.config_file.write_text('language = "ru"\n', encoding="utf-8")
+        self.assertEqual(load_config(self.paths, env={"LANG": "en_US.UTF-8"}).language, "ru")    # explicit wins
+
     def test_user_toml_overrides_and_warnings(self) -> None:
         self.paths.config_dir.mkdir(parents=True)
         self.paths.config_file.write_text(

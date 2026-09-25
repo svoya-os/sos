@@ -165,6 +165,24 @@ class PrepareScriptTests(unittest.TestCase):
             lockup = ROOT / "branding/out/logo/sos-lockup-stacked-en-on-dark.png"
             self.assertEqual(welcome.read_bytes(), lockup.read_bytes())
 
+    def test_jackson_ships_the_system_skills(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = self.prepare("svoya-jackson", tmp)
+            for name in ("sos", "games"):
+                skill = files / f"usr/share/svoya/jackson/skills/{name}/SKILL.md"
+                self.assertTrue(skill.is_file(), name)
+                self.assertLessEqual(len(skill.read_text(encoding="utf-8")), 4000 + 400)   # body cap + front matter
+
+    def test_grub_font_ranges_are_pairs(self):
+        # grub-mkfont reads --range as FROM-TO[,FROM-TO…]; a bare code point is "invalid font range"
+        # and the theme ships without fonts (theme-fonts=0 in the VM test).
+        text = (ROOT / "branding/grub/make-fonts.sh").read_text()
+        ranges = re.search(r'^ranges="([^"]+)"', text, re.M).group(1).split(",")
+        for part in ranges:
+            a, sep, b = part.partition("-")
+            self.assertEqual(sep, "-", part)
+            self.assertLessEqual(int(a, 0), int(b, 0), part)
+
     def test_cli_ships_the_complete_project_template(self):
         with tempfile.TemporaryDirectory() as tmp:
             files = self.prepare("svoya-cli", tmp)

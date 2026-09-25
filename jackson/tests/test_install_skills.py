@@ -62,6 +62,17 @@ class InstallTest(Base):
         self.assertIn("Пока не установлено. Открыл установку Prism Launcher", r.text)
 
 
+class ModelTest(Base):
+    def test_which_model_fits_without_a_model(self):
+        m, r = self.say("which model fits this computer")
+        self.assertEqual(m.intent.name, "model_suggest")
+        self.assertIn("Qwen3.5 4B (Q4_K_M, 3,2 ГБ, около 12 токенов в секунду на процессоре)", r.text)
+        self.assertIn("«установи модель»", r.text)
+        m, r = self.say("установи модель")
+        self.assertEqual(self.spawned()[0][-3:], ["sos", "install", "qwen3.5-4b:Q4_K_M"])
+        self.assertIn("Открыл установку Qwen3.5 4B (3,2 ГБ)", r.text)
+
+
 class NoTerminalTest(Base):
     extra = set()
 

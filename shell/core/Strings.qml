@@ -99,6 +99,8 @@ Singleton {
     // ---- Jackson -------------------------------------------------------------------------
     readonly property string jackson: root.t("Джексон", "Jackson")
     readonly property string jacksonPlaceholder: root.t("Спроси что-нибудь…", "Ask anything…")
+    readonly property string pickModel: root.t("Подобрать модель", "Pick a model")
+    readonly property string pickModelAsk: root.t("какая модель подойдёт этому компьютеру", "which model fits this computer")
     // the empty field suggests one thing he can do, a different one each time the panel opens
     readonly property var jacksonTips: root.ru ? ["подбрось монетку", "таймер на 5 минут", "установи телеграм", "расскажи анекдот", "кинь кубик d20", "тёмная тема", "морзянкой привет", "открой навыки", "громче", "пепе шнейне"] : ["flip a coin", "timer for 5 minutes", "install telegram", "tell me a joke", "roll a d20", "dark theme", "morse hello", "open skills", "louder"]
     function jacksonPlaceholderTip(i) {

@@ -69,8 +69,17 @@ def apply_fixes(ctx: Ctx, checks: list[Check], *, root: bool) -> list[str]:
     return log
 
 
+def _wrapped(text: str, indent: int, width: int) -> list[str]:
+    """*text* in lines that fit after an *indent*-column prefix; the first line goes right after it."""
+    import textwrap
+    if width <= 0 or indent + len(text) <= width:
+        return [text]
+    return textwrap.wrap(text, width=max(24, width - indent), break_on_hyphens=False) or [text]
+
+
 def render(checks: list[Check], rec: dict, gpu_only: bool) -> None:
     st = ui.style()
+    cols = ui.columns()
     L = 1 if lang() == "ru" else 0
     title = tr("doctor", "доктор") + (tr(" · GPU", " · видеокарта") if gpu_only else "")
     if rec.get("name"):
@@ -79,10 +88,17 @@ def render(checks: list[Check], rec: dict, gpu_only: bool) -> None:
     for c in sorted(checks, key=lambda c: ORDER[c.status]):
         if c.status == "skip":
             continue
-        ui.out(f"  {ui.mark(c.status)} {st.dim(c.title[L].ljust(20))} {c.msg[L]}")
+        # a narrow terminal (a floating window, Super+Esc) wraps under the message column, not at column 0
+        first, *more = _wrapped(c.msg[L], 25, cols)
+        ui.out(f"  {ui.mark(c.status)} {st.dim(c.title[L].ljust(20))} {first}")
+        for line in more:
+            ui.out(" " * 25 + line)
         if c.status in ("warn", "fail") and c.fix:
             for line in c.fix.lines():
-                ui.out(" " * 25 + (st.accent("$ ") if not c.fix.safe else st.ok("↻ ")) + st.faint(line))
+                head, *rest = _wrapped(line, 27, cols)
+                ui.out(" " * 25 + (st.accent("$ ") if not c.fix.safe else st.ok("↻ ")) + st.faint(head))
+                for part in rest:
+                    ui.out(" " * 27 + st.faint(part))
             if c.fix.note:
                 ui.note(c.fix.note[L], indent=25)
     s = summary(checks)

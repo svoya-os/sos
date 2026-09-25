@@ -593,6 +593,7 @@ HELP_RU = """Без модели, мгновенно:
 - «открой firefox», «открой загрузки», «заблокируй экран», «скриншот»
 - программы: «установи телеграм», «поставь стим», «установи майнкрафт» (установка откроется в терминале)
 - навыки: «открой навыки», «создай навык пицца»
+- своя модель: «какая модель подойдёт», «установи модель»
 - тема: «тёмная тема», «светлая тема», «тема авто», «включи бумагу/графит/фосфор»
 - цвет: «сделай акцент фиолетовым», «акцент сирень», «верни оранжевый», «без цвета»
 - мой вид: «стань котом/чёртом», «надень очки», «сними наушники», «капюшон долой»; имя: «тебя зовут Макс»
@@ -614,6 +615,7 @@ HELP_EN = """Instant, no model needed:
 - "open firefox", "open downloads", "lock the screen", "screenshot"
 - apps: "install telegram", "install steam", "install minecraft" (the install opens in a terminal)
 - skills: "open skills", "create skill pizza"
+- a model of my own: "which model fits", "install the model"
 - theme: "dark theme", "light theme", "auto theme", "switch to paper/graphite/phosphor"
 - color: "make the accent green", "lilac accent", "no color"
 - my look: "become a cat/imp", "put on glasses", "take off headphones", "hood off"; name: "your name is Max"
@@ -955,6 +957,49 @@ def h_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
     return FastResult(True, lead + what, f"sos install {key}", None)
 
 
+def _suggested(ctx: FastCtx) -> tuple[dict[str, Any], str, bool] | None:
+    """(the suggested model, its size, runs on a GPU) from `sos models suggest --json`."""
+    data = ctx.osc.svoya.models_suggest()
+    if data is None:
+        return None
+    d = data["default"]
+    gpu = (data.get("hardware") or {}).get("backend") not in (None, "cpu")
+    return d, fmt_bytes(d.get("sizeBytes") or 0, ctx.lang), gpu
+
+
+def h_model_suggest(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    """«какая модель подойдёт этому компьютеру»: answered by `sos models suggest`, before any model exists."""
+    got = _suggested(ctx)
+    if got is None:
+        return FastResult(False, ctx.say("Не смог подобрать: команда sos не ответила. В терминале: sos models suggest",
+                                         "Could not pick one: the sos command did not answer. In a terminal: "
+                                         "sos models suggest"), verified=False)
+    d, size, gpu = got
+    speed = d.get("tokensPerSecond")
+    pace = ctx.say(f", около {speed} токенов в секунду {'на видеокарте' if gpu else 'на процессоре'}" if speed else "",
+                   f", about {speed} tokens a second {'on the GPU' if gpu else 'on the CPU'}" if speed else "")
+    return FastResult(True, ctx.say(f"Этой машине подойдёт {d.get('name', d['id'])} ({d.get('quant', '')}, {size}{pace}). "
+                                    f"Поставить: «установи модель».",
+                                    f"This machine suits {d.get('name', d['id'])} ({d.get('quant', '')}, {size}{pace}). "
+                                    f"To install it: \"install the model\"."), d["id"], True)
+
+
+def h_model_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    got = _suggested(ctx)
+    if got is None:
+        return FastResult(False, ctx.say("Не смог подобрать модель: команда sos не ответила. В терминале: sos models suggest",
+                                         "Could not pick a model: the sos command did not answer. In a terminal: "
+                                         "sos models suggest"), verified=False)
+    d, size, _ = got
+    if not ctx.osc.open_terminal(["sos", "install", d["id"]]):
+        return FastResult(False, ctx.say(f"Не нашёл терминал. Поставь сам: sos install {d['id']}",
+                                         f"No terminal found. Install it yourself: sos install {d['id']}"), verified=False)
+    return FastResult(True, ctx.say(f"Открыл установку {d.get('name', d['id'])} ({size}) в терминале: подтверди там. "
+                                    f"Потом я отвечаю сам, без облака.",
+                                    f"Opened the {d.get('name', d['id'])} install ({size}) in a terminal: confirm there. "
+                                    f"Then I answer on my own, no cloud."), f"sos install {d['id']}", None)
+
+
 def _home_short(ctx: FastCtx, path: Path) -> str:
     home = str(ctx.osc.paths.home)
     return "~" + str(path)[len(home):] if str(path).startswith(home + "/") else str(path)
@@ -1181,6 +1226,17 @@ INTENTS: list[Intent] = [
            h_skills, T1),
     Intent("new_skill", _p(r"(создай|сделай|добавь|заведи)( новый| мне| свой)* навык (?P<name>[\w .-]{2,40})",
                            r"(create|make|add)( me)?( a)?( new)? skill (?P<name>[\w .-]{2,40})"), h_new_skill, T1),
+    Intent("model_suggest", _p(r"(какая|какую) (модель|нейросеть|нейронка|нейронку) (мне )?(подойдет|подходит|влезет|"
+                               r"поставить|выбрать|скачать|лучше)( для| на| в| к)?( этот| этого| этом| этому| мой| моего| "
+                               r"моем| моему| мою)?( компьютер\w*| комп\w*| машин\w*| ноутбук\w*| ноут\w*| пк)?",
+                               r"подбери (мне )?(модель|нейросеть|нейронку)", r"подобрать модель",
+                               r"(which|what) model (fits|would fit|should i (use|install|download|get)|is best)( on| for| in)?"
+                               r"( this| my)?( computer| machine| pc| laptop)?", r"(suggest|recommend|pick) (me )?(a )?model"),
+           h_model_suggest),
+    Intent("model_install", _p(r"(установи|поставь|скачай|загрузи)( мне)? (эту |ее |подходящую |рекомендованную |лучшую )?"
+                               r"(модель|нейросеть|нейронку)",
+                               r"(install|download|get)( me)? (the |that |this |a )?(recommended |suggested |best )?"
+                               r"(local )?model"), h_model_install, T1),
     Intent("install", _p(r"(установи|поставь|скачай|загрузи|инсталлируй)( мне)? (?P<app>[\w .+-]{2,40})",
                          r"(install|download|get me) (?P<app>[\w .+-]{2,40})"), h_install, T1),
     Intent("open_folder", _p(r"(открой|покажи) (мне )?(папку )?(?P<folder>загрузки|документы|изображения|картинки|"
@@ -1204,6 +1260,21 @@ def match(text: str, osc: OsControl | None = None, names: tuple[str, ...] = ()) 
     norm = normalize(text, names)
     if not norm:
         return None
+    found = _match(norm, text, osc, names)
+    if found is None:
+        # «привет, что ты умеешь» / "hi, what can you do": the greeting, then a command
+        rest = GREET_RE.sub("", norm, count=1)
+        if rest != norm:
+            found = _match(rest, text, osc, names)
+    return found
+
+
+# a greeting in front of a command (the greeting alone is the «hello» intent)
+GREET_RE = re.compile(r"^(привет|приветик|здарова|здорово|здравствуй|здравствуйте|салют|хай|йо|добрый день|доброе утро|"
+                      r"добрый вечер|hi|hello|hey|yo)( джексон| jackson)? (?=\S)")
+
+
+def _match(norm: str, text: str, osc: OsControl | None, names: tuple[str, ...]) -> FastMatch | None:
     for intent in INTENTS:
         for pattern in intent.patterns:
             m = pattern.fullmatch(norm)

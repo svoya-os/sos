@@ -205,7 +205,7 @@ class Engine:
             await self._done(turn, cancelled=True)
         except RouteError as exc:
             self.app.audit.append("route", turn=turn.id, ok=False, error=exc.message)
-            await self._error(turn, exc.message, exc.retryable)
+            await self._error(turn, exc.message, exc.retryable, **({"code": exc.code} if exc.code else {}))
         except ProviderError as exc:
             if exc.kind == "cancelled":
                 await self._done(turn, cancelled=True)

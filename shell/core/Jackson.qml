@@ -96,7 +96,7 @@ Singleton {
     property var approvals: []      // pending [{callId, name, preview, tier}]
     property var decisions: ({})    // callId -> "once" | "always-project" | "deny"
     property var result: null       // the `done` event
-    property var error: null        // {message, retryable}
+    property var error: null        // {message, retryable, code}: code "no_local_model" on a fresh system
     property bool busy: false
     property var suggestions: []    // optional done.suggestions: [{id, label, primary, prompt}]
     property string screenshot: ""  // path attached to the next ask
@@ -341,7 +341,7 @@ Singleton {
             break;
         case "error":
             if (!foreign) {
-                root.error = { message: msg.message || "", retryable: msg.retryable === true };
+                root.error = { message: msg.message || "", retryable: msg.retryable === true, code: msg.code || "" };
                 root.busy = false;
                 root.listening = false;
                 root.daemonState = "idle";

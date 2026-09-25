@@ -405,6 +405,10 @@ class FakeRunner(Runner):
                 elif a[1] == "on" and marker.exists():
                     marker.unlink()
                 return RunResult(0, f"ai {a[1]}\n")
+            if a[:3] == ["models", "suggest", "--json"]:
+                return RunResult(0, json.dumps({"hardware": {"backend": "cpu"}, "default": {
+                    "id": "qwen3.5-4b:Q4_K_M", "name": "Qwen3.5 4B", "quant": "Q4_K_M", "sizeBytes": 3413361504,
+                    "tokensPerSecond": 12}}))
             if a[:2] == ["apps", "--json"]:
                 return RunResult(0, json.dumps({"apps": [
                     {"key": "telegram", "name": "Telegram", "aliases": ["телеграм"], "installed": False},

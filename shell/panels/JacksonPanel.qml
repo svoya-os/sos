@@ -382,23 +382,35 @@ PanelFrame {
                         }
                     }
 
-                    // error, calm and concrete
+                    // error, calm and concrete. No model yet is not a failure on a fresh system: plain
+                    // text and one button that picks the model for this machine (the fast path answers)
                     Row {
+                        readonly property bool noModel: Jackson.error !== null && Jackson.error.code === "no_local_model"
+
                         visible: Jackson.error !== null
                         spacing: 12
 
                         SText {
                             anchors.verticalCenter: parent.verticalCenter
-                            width: Math.min(implicitWidth, answer.width - 120)
+                            width: Math.min(implicitWidth, answer.width - (parent.noModel ? 190 : 120))
                             wrapMode: Text.WordWrap
                             text: Jackson.error ? Jackson.error.message : ""
                             size: 13.5
-                            color: Theme.bad
+                            color: parent.noModel ? Theme.textDim : Theme.bad
                         }
 
                         Button {
                             anchors.verticalCenter: parent.verticalCenter
-                            visible: Jackson.error !== null && Jackson.error.retryable
+                            visible: parent.noModel
+                            small: true
+                            primary: true
+                            text: Strings.pickModel
+                            onClicked: Jackson.ask(Strings.pickModelAsk)
+                        }
+
+                        Button {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: Jackson.error !== null && Jackson.error.retryable && !parent.noModel
                             small: true
                             text: Strings.retry
                             onClicked: Jackson.retry()

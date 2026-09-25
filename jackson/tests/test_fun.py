@@ -94,7 +94,9 @@ class FunIntentTest(unittest.TestCase):
                   "пепе шнейне фа": "pepe", "превед медвед": "preved", "это фиаско, братан": "fiasco",
                   "Хьюстон, у нас проблемы": "houston", "кто молодец?": "good_job", "спасибо!": "thanks",
                   "как дела?": "how_are_you", "в чём смысл жизни": "answer42", "морзянкой привет": "morse",
-                  "Привет, Джексон!": "hello", "tell me a joke": "joke", "flip a coin": "coin"}
+                  "Привет, Джексон!": "hello", "tell me a joke": "joke", "flip a coin": "coin",
+                  "hi, what can you do": "help", "привет, подбрось монетку": "coin",   # a greeting, then a command
+                  "which model fits this computer": "model_suggest", "какую модель поставить": "model_suggest"}
         for text, name in expect.items():
             self.assertEqual(self.say(text)[0], name, text)
         for text in ("как сделать тёмную тему в VS Code", "выбери лучший ноутбук", "напиши анекдот про кота в стихах"):

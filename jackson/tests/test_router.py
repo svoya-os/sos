@@ -90,6 +90,7 @@ class RouterTest(unittest.TestCase):
             r.decide("привет", lang="ru")
         self.assertIn("пока нет своей модели", ctx.exception.message)
         self.assertIn("sos модели подобрать", ctx.exception.message)
+        self.assertEqual(ctx.exception.code, "no_local_model")      # the shell offers «Подобрать модель»
 
     def test_policy_any_falls_back_to_cloud_when_local_down(self):
         r, _ = make_router(self.root, route={"policy": "any"}, local_ok=False)

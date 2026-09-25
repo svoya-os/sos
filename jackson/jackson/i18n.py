@@ -188,10 +188,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "offline mode is on and the local model is not answering. Start it: `sos models serve`",
     },
     "route.why.no_local_model": {
-        "ru": "у меня пока нет своей модели. Поставь подходящую этому компьютеру одной командой: "
-              "`sos модели подобрать` (или «Модели» в настройках) — либо разреши облако: `j route set policy any`",
-        "en": "I don't have a model of my own yet. Install the one that fits this computer in one step: "
-              "`sos models suggest` (or Settings → Models) — or allow the cloud: `j route set policy any`",
+        "ru": "у меня пока нет своей модели. Скажи «какая модель подойдёт» — подберу под этот компьютер "
+              "(или `sos модели подобрать`), а «установи модель» её поставит. Облако: `j route set policy any`",
+        "en": "I don't have a model of my own yet. Say \"which model fits\" and I'll pick one for this computer "
+              "(or `sos models suggest`); \"install the model\" installs it. The cloud: `j route set policy any`",
     },
     "route.why.local_only": {
         "ru": "политика «только локально», а локальная модель не отвечает ({detail}). "

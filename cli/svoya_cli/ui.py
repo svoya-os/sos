@@ -156,8 +156,24 @@ def kv(label: str, value: str, width: int = 9, indent: int = 2) -> None:
     out(f"{' ' * indent}{st.dim(label)}{pad}{value}")
 
 
+def columns() -> int:
+    """The terminal's width, or 0 when output is not a terminal (then nothing is wrapped)."""
+    stream = style().stream
+    if not getattr(stream, "isatty", lambda: False)():
+        return 0
+    import shutil
+    return shutil.get_terminal_size((100, 24)).columns
+
+
 def note(text: str, indent: int = 2) -> None:
-    out(" " * indent + style().faint(text))
+    """A faint line; in a narrow terminal it wraps under its own indent instead of at column 0."""
+    width = columns()
+    lines = [text]
+    if width and "\x1b" not in text and indent + len(text) > width:
+        import textwrap
+        lines = textwrap.wrap(text, width=max(24, width - indent), break_on_hyphens=False) or [text]
+    for line in lines:
+        out(" " * indent + style().faint(line))
 
 
 MARKS = {"ok": "✓", "warn": "!", "fail": "×", "skip": "·", "info": "·"}

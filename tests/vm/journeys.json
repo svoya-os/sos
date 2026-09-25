@@ -164,6 +164,8 @@
     {"id": "lock", "action": "sleep", "seconds": 3},
     {"id": "lock", "action": "type", "text": "wrong-password\n", "continue_on_failure": true},
     {"id": "lock", "action": "sleep", "seconds": 2},
-    {"id": "lock", "action": "screenshot", "name": "13-lock-wrong-password", "continue_on_failure": true}
+    {"id": "lock", "action": "screenshot", "name": "13-lock-wrong-password", "continue_on_failure": true},
+    {"id": "lock", "action": "sleep", "seconds": 5},
+    {"id": "lock", "action": "screenshot", "name": "13b-lock-after-check", "continue_on_failure": true}
   ]
 }

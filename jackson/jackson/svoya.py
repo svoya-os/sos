@@ -188,6 +188,18 @@ class SvoyaCli:
         self._catalog = (now, items)
         return items
 
+    def models_suggest(self) -> dict[str, Any] | None:
+        """``sos models suggest --json``: the local model that fits this machine (no model needed to ask)."""
+        exe = self.binary
+        if exe is None:
+            return None
+        res = self.runner.run([exe, "models", "suggest", "--json"], timeout=20.0)
+        try:
+            data = json.loads(res.out) if res.ok else None
+        except ValueError:
+            return None
+        return data if isinstance(data, dict) and isinstance(data.get("default"), dict) else None
+
     def find_installable(self, word: str) -> dict[str, Any] | None:
         w = " ".join(word.lower().replace("ё", "е").split())
         if not w:

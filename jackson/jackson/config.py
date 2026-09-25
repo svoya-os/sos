@@ -14,7 +14,7 @@ import tempfile
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from .paths import Paths
 
@@ -280,22 +280,41 @@ def _read_toml(path: Path, warnings: list[str]) -> dict[str, Any] | None:
         return None
 
 
-def load_config(paths: Paths, override: dict[str, Any] | None = None) -> Config:
-    """Load and validate the configuration; problems become ``warnings``, never crashes."""
+def env_language(env: Mapping[str, str] | None = None) -> str | None:
+    """"ru" or "en" from the session locale ($LANGUAGE, $LC_ALL, $LC_MESSAGES, $LANG); None for C/POSIX
+    or nothing set, so the default stays."""
+    env = os.environ if env is None else env
+    for key in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        value = (env.get(key) or "").split(":")[0].lower()
+        if value.startswith("ru"):
+            return "ru"
+        if value.startswith("en"):
+            return "en"
+    return None
+
+
+def load_config(paths: Paths, override: dict[str, Any] | None = None,
+                env: Mapping[str, str] | None = None) -> Config:
+    """Load and validate the configuration; problems become ``warnings``, never crashes. Without an
+    explicit ``language``, Jackson speaks the session's language (the live ISO is English)."""
     warnings: list[str] = []
     sources: list[str] = []
     merged = copy.deepcopy(DEFAULTS)
+    explicit_lang = bool(override and "language" in override)
     for path in (paths.system_config_file, paths.config_file):
         data = _read_toml(path, warnings)
         if data is None:
             continue
         sources.append(str(path))
+        explicit_lang = explicit_lang or "language" in data
         for key in data:
             if key not in _TOP_KEYS:
                 warnings.append(f"{path}: unknown key {key!r}")
         merged = deep_merge(merged, data)
     if override:
         merged = deep_merge(merged, override)
+    if not explicit_lang:
+        merged["language"] = env_language(env) or merged["language"]
     return build_config(merged, warnings, sources)
 
 
