@@ -13,7 +13,8 @@ Tokens: `themes/*.toml` (single source of truth).
    the wallpaper only. This is our deliberate difference from Apple's Liquid Glass.
 3. **Type carries the brand.** IBM Plex Sans for reading, IBM Plex Mono for system facts, Departure Mono
    (pixel) only for tiny labels, boot and POST screens.
-4. **One signal.** One accent color per theme. Amber (Graphite), ink blue (Paper), phosphor green (Phosphor).
+4. **One signal.** One accent color, chosen by the user (§10), used sparingly (§11 accent budget). The brand
+   default «Сигнал» is amber by night and ink blue by day; Phosphor defaults to phosphor green.
    Everything else is neutral. Semantic colors (ok/warn/bad/cloud) only for state.
 5. **Retro in the details, not in the chrome.** The Morse mark `··· ——— ···`, the oscilloscope trace,
    mono metadata lines, keycaps, the colophon. Never bevels, neon overload or fake CRT on text.
@@ -61,8 +62,9 @@ Never pixel font for body text. Minimum text size 11px.
 ## 5. Components
 
 ### Bar (30px)
-Left → right: **Morse mark** (dots/dashes 3.2px high, the `———` in accent; opens the СОС menu) ·
-**workspaces** (19×19 squares, radius 5; active = accent fill + accentInk text; occupied = textDim;
+Left → right: **Morse mark** (dots/dashes 3.2px high, `text` color; the `———` light up in accent only while
+Jackson listens or works; opens the СОС menu) ·
+**workspaces** (19×19 squares, radius 5; active = `text` fill + `surface` text (neutral); occupied = textDim;
 empty = textFaint) · **window title** (Plex Sans 12.5, app name `text`, `/` separator `textFaint`, detail `textDim`).
 Right: **job** (dot + label + 34×4 meter + %) · **GPU** (`GPU 64° · 11,2/24 ГБ`) · icons (network, volume,
 battery; 15px, 1.5px stroke) · keyboard layout (`RU`) · **Jackson mini-scope** (22×10; tinted chip when
@@ -73,7 +75,7 @@ Segments hide gracefully when data is missing (no GPU → no GPU segment).
 36px title bar, `surface` color, 1px bottom `line`; title left-aligned (Plex Sans 12.5; app name 500 +
 detail `textDim`); buttons right: three 14px circles in `surface3` with 8px glyphs (minimize, maximize, close).
 Border 1px `line`, radius 11, inactive windows keep the same colors (no dimming), active window border
-`lineStrong`. Tiled layouts ("Hacker" preset) hide title bars and use a 1px accent border for the active window.
+`lineStrong`. Tiled layouts ("Hacker" preset) hide title bars and use a 1px `textDim` border for the active window.
 
 ### Jackson panel (Super+J)
 Width 704, top 118px, centered, radius 16, `surface2`, `lineStrong` border, top accent highlight.
@@ -140,5 +142,85 @@ Numbers use the locale (Russian: `11,2 ГБ`, thin spaces in thousands). Never n
 Jackson speaks in the second person informal (`ты`) in Russian by default (setting: `вы`).
 
 ## 9. Accessibility
-WCAG AA for all text tokens (checked). Focus ring: 2px accent outline, 2px offset. Reduce-motion and
+WCAG AA for all text tokens and every accent variant (checked). Focus ring: 2px `text` outline at 70%, 2px offset
+(text fields: 1px `text` border + 3px `line` halo). Reduce-motion and
 high-contrast variants of every theme. Everything reachable by keyboard; nothing requires a chord.
+
+
+## 10. Accent system (user-chosen color)
+
+The accent is independent from the base theme (Graphite / Paper / Phosphor). Canonical data: `themes/accents.toml`.
+Every accent has a dark-base and a light-base variant; both pass WCAG AA against surfaces (≥ 5:1) and for
+text on the accent fill (`accentInk`, ≥ 5.4:1).
+
+| id | RU | dark base | light base | ink |
+|---|---|---|---|---|
+| `signal` (default) | Сигнал | `#ffb547` (amber) | `#2b3af7` (ink) | auto |
+| `amber` | Янтарь | `#ffb547` | `#9a5200` | dark `#141518` · light `#ffffff` |
+| `ink` | Чернила | `#8f9dff` | `#2b3af7` | ″ |
+| `phosphor` | Фосфор | `#5cf08f` | `#0f7a3a` | ″ |
+| `ice` | Лёд | `#62d4f2` | `#006f8e` | ″ |
+| `lilac` | Сирень | `#bba4ff` | `#6a3fd6` | ″ |
+| `rose` | Роза | `#ff82b2` | `#b8185a` | ″ |
+| `mono` | Моно | `#ebe8e1` | `#151515` | ″ |
+| custom | Свой | any hex → lightness adjusted in OKLCH (hue and chroma kept) until contrast ≥ 4.5:1 | | auto |
+
+Derived tokens: `accentSoft` (dark 14% / light 9% alpha), `accentStrong` (hover/pressed: OKLCH lightness ±6%),
+`accentInk` (near-black or white, whichever contrasts more).
+
+How the user changes it (all live, 260 ms cross-fade, undoable):
+* Control center → «Оформление»: base theme segmented control + 8 swatches + «Свой…» (hex field with live
+  contrast badge). Two clicks from anywhere.
+* First-run wizard, step «Оформление»: same controls with a live full-size preview.
+* `sos theme accent <id|#hex>` (RU names accepted: `sos theme accent сирень`).
+* Jackson: «сделай акцент фиолетовым» / "make the accent violet" (fast path, T1, undoable).
+Everything follows at once: bar, panels, Jackson (scope + mascot outfit), windows (Hyprland borders, hyprbars),
+terminal (cursor/selection), GTK/Qt accent, wallpaper signal, lock screen. The login screen follows when
+«Использовать на экране входа» is on (the first user's choice is applied system-wide).
+
+Semantic colors never reuse the accent: ok green, warn yellow (`#f5cf52` dark / `#8a6100` light), bad red,
+cloud cyan — and always come with an icon + word, never color alone.
+
+## 11. Accent budget (the rule that keeps SOS calm)
+
+At rest a view may show **one** accent-colored element (normally the primary button) plus the **live signal**.
+The accent MAY color: the single primary action of a surface · the live signal (Jackson's scope, the Morse mark
+while Jackson is active, the wallpaper burst, progress of running jobs) · the text caret and text selection ·
+inline links.
+The accent MUST NOT color: selection rings, checkmarks, toggles, radio buttons, step indicators, eyebrow labels,
+headings, icons, active workspace, focus rings, borders. These use `text` (selected/on) and `line`/`lineStrong`
+(off). Eyebrow labels are `textFaint`.
+
+## 12. Pre-login surfaces are neutral
+
+GRUB, Plymouth and the POST screen use no accent: the signal line, Morse mark and wordmark are drawn in
+`text` (`#ebe8e1`) and `textFaint` on Graphite. They can never clash with whatever accent the user picks.
+The greeter uses the system accent (from `/etc/svoya/theme.json`) only for the caret and the wallpaper burst.
+
+## 13. Jackson's look (mascot system)
+
+Two characters, both always available: **«Чёрт»** (imp in a hoodie) and **«Кот»** (2000s cat). Sprites are
+32×32 palette-indexed grids (`shell/assets/jackson/<character>.json`: states × 32 rows of palette keys) drawn at
+integer scale by the shell, so recoloring is instant.
+
+Palette slots: `outline` · `skin` (+ shade, light) · `outfit` (+ shade, light) · `detail` (horns, LEDs,
+drawstrings: the accent) · `eyes` · `mouth` · `headphones` · `glasses`.
+
+Customization (`~/.config/svoya/avatar.json`, shared by the shell and Jackson):
+
+| key | values | default |
+|---|---|---|
+| `character` | `imp` · `cat` | `imp` |
+| `skin` | imp: `ember` (Огонь) · `wine` (Бордо) · `plum` (Слива) · `graphite` (Графит) · `mint` (Мята); cat: `blue` (Русский голубой) · `ginger` (Рыжий) · `black` (Чёрный) · `snow` (Снежный) · `siamese` (Сиамский) | `ember` / `blue` |
+| `outfit` | `accent` · any accent id · `#hex` | `accent` |
+| `style` | `hoodie` · `jacket` · `tee` | imp `hoodie`, cat `jacket` |
+| `headphones` | `true` · `false` | `true` |
+| `glasses` | `none` · `shades` · `round` | imp `none`, cat `shades` |
+| `hood` | `true` · `false` (imp only) | `true` |
+| `name` | any short name | `Джексон` |
+
+The outfit's three shades are derived from the chosen color (dark themes: lightness 0.32/0.25/0.40 in OKLCH;
+light themes: 0.45/0.36/0.56), `detail` = the accent itself, so the mascot always matches the system.
+Where: Jackson panel head (32 px, radius 8, `surface3` backing), toasts (24 px), the wizard (128 px intro),
+the customizer (192 px, animated states). Customizer entry points: right-click the mascot → «Настроить
+Джексона», Settings → Джексон, `j avatar …`, or ask Jackson («стань котом»).

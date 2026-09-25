@@ -1,0 +1,47 @@
+# SOS accent colors. SPDX-License-Identifier: Apache-2.0
+# The accent is independent from the base theme. Each accent has a variant for dark bases (Graphite,
+# Phosphor) and for light bases (Paper); all pass WCAG AA against surfaces and for text on the accent
+# fill. See design/DESIGN.md §10–§11. `ink` = "auto" picks near-black or white for the best contrast.
+default = "signal"
+
+[signal]
+name = { en = "Signal", ru = "Сигнал" }
+note = { en = "amber by night, ink blue by day", ru = "янтарь ночью, чернила днём" }
+dark = "#ffb547"
+light = "#2b3af7"
+
+[amber]
+name = { en = "Amber", ru = "Янтарь" }
+dark = "#ffb547"
+light = "#9a5200"
+
+[ink]
+name = { en = "Ink", ru = "Чернила" }
+dark = "#8f9dff"
+light = "#2b3af7"
+
+[phosphor]
+name = { en = "Phosphor", ru = "Фосфор" }
+dark = "#5cf08f"
+light = "#0f7a3a"
+
+[ice]
+name = { en = "Ice", ru = "Лёд" }
+dark = "#62d4f2"
+light = "#006f8e"
+
+[lilac]
+name = { en = "Lilac", ru = "Сирень" }
+dark = "#bba4ff"
+light = "#6a3fd6"
+
+[rose]
+name = { en = "Rose", ru = "Роза" }
+dark = "#ff82b2"
+light = "#b8185a"
+
+[mono]
+name = { en = "Mono", ru = "Моно" }
+note = { en = "no color at all", ru = "совсем без цвета" }
+dark = "#ebe8e1"
+light = "#151515"
