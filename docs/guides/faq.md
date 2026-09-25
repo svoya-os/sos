@@ -39,8 +39,9 @@ upsell inside the system.
 
 ### Is it ready to use?
 
-Not yet. SOS is pre-alpha, and there is no ISO to download. v0.1 «Первый сигнал» is being built;
-see the [roadmap](../ROADMAP.md).
+Not for daily work yet: SOS is pre-alpha, and v0.1 «Первый сигнал» is being built (see the
+[roadmap](../ROADMAP.md)). But you can try it: every build from `main` is boot-tested in CI, and the
+[install guide](install.md) shows how to download a test build and run it in a virtual machine.
 
 ### Who is behind it?
 

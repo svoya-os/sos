@@ -11,14 +11,13 @@ Your own OS for AI. Local-first. Under your control.<br>
 
 <br>
 
-<!-- Placeholder badges. Swap in the live CI badge once .github/workflows/ has a build
-     workflow, and the REUSE badge once the repository is registered at api.reuse.software:
-     [![CI](https://github.com/svoya-os/sos/actions/workflows/<workflow>.yml/badge.svg)](https://github.com/svoya-os/sos/actions)
+<!-- Add the REUSE badge once the repository is registered at api.reuse.software:
      [![REUSE](https://api.reuse.software/badge/github.com/svoya-os/sos)](https://api.reuse.software/info/github.com/svoya-os/sos) -->
 ![Status: pre-alpha](https://img.shields.io/badge/status-pre--alpha-ffb547?style=flat-square&labelColor=191b1f)
 [![Milestone: v0.1 First Signal](https://img.shields.io/badge/milestone-v0.1%20First%20Signal-ffb547?style=flat-square&labelColor=191b1f)](docs/ROADMAP.md)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-ebe8e1?style=flat-square&labelColor=191b1f)](LICENSE)
-![CI: not set up yet](https://img.shields.io/badge/CI-not%20set%20up%20yet-67655f?style=flat-square&labelColor=191b1f)
+[![CI](https://github.com/svoya-os/sos/actions/workflows/ci.yml/badge.svg)](https://github.com/svoya-os/sos/actions/workflows/ci.yml)
+[![ISO + VM test](https://github.com/svoya-os/sos/actions/workflows/iso.yml/badge.svg)](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
 
 <br><br>
 
@@ -49,8 +48,8 @@ This is the design. What works today is listed under [Status](#status).
   for offline installs, and GPU Doctor (`sos gpu`), which checks driver ↔ CUDA ↔ PyTorch,
   Secure Boot, suspend/resume and GPU access from containers; `sos fix` applies the safe fixes.
   The OS owns the driver; each project brings its own CUDA, so versions stop fighting.
-- **Jackson, a friendly guy who asks first.** Jackson («Джексон») comes from the 2000s internet:
-  cheeky, but he gets things done. He routes requests to local or cloud models and runs tools
+- **Jackson, a friendly guy who asks first.** Jackson («Джексон») is a laid-back dude from the
+  2000s internet who calls you «кентафурик» (buddy): cheeky, but he gets things done. He routes requests to local or cloud models and runs tools
   and other agents (Claude Code, Codex, OpenCode, goose…) in sandboxes. Before anything risky he
   shows the exact action, he keeps a tamper-evident log, and he can undo what he did. Call him
   with `Super+J`, or type `j` in a terminal: `j find my datasets`. His memory is plain Markdown,
@@ -99,8 +98,11 @@ wrong, please open an issue and we will fix it.</sub>
 
 ### Status
 
-**Pre-alpha.** Work on **v0.1 «Первый сигнал» (First Signal)** is in progress. There is no ISO
-to download yet, and nothing here is ready for daily use.
+**Pre-alpha.** Work on **v0.1 «Первый сигнал» (First Signal)** is in progress, and nothing here
+is ready for daily use yet. But the system boots: every change on `main` is built into an ISO and
+booted in a virtual machine by CI (BIOS, UEFI, UEFI with Secure Boot), which takes screenshots of
+the boot menu, the desktop, the launcher and Jackson. Those test builds can be tried today, see
+[Quick start](#quick-start).
 
 v0.1 is planned to include: a bootable ISO; Svoya Shell (bar, launcher, Jackson panel,
 notifications, lock screen, greeter); Jackson in text mode (local and cloud routing, tools,
@@ -130,9 +132,21 @@ Tried SOS on your machine? A
 
 ### Quick start
 
-**Download the ISO:** coming soon. The first image ships with v0.1 on GitHub Releases, with
-SHA-256 checksums and a signature. The [install guide](docs/guides/install.md) explains the
-steps.
+**Try it in a virtual machine** (about 15 minutes, nothing on your computer changes):
+
+1. Download a test build: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
+   → the top run with a green check → *Artifacts* → **sos-iso** (needs a GitHub account; releases
+   will be on [GitHub Releases](https://github.com/svoya-os/sos/releases)).
+2. Unzip it and join the parts. Windows (PowerShell):
+   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
+   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Check it against `SHA256SUMS`.
+3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB of memory, 4 CPUs, *Enable EFI*, graphics *VMSVGA*
+   with 3D on, start it with the ISO.
+4. You are on the desktop of the live session. Look around (`Super+K` shows every shortcut), then
+   press **«Install SOS»** in Jackson's greeting to put it on a disk.
+
+The [install guide](docs/guides/install.md) has every step, USB sticks, Hyper-V, QEMU and
+troubleshooting. The short version for both languages: [INSTALL.md](INSTALL.md).
 
 **Build from source:**
 
@@ -142,7 +156,8 @@ cd sos
 ```
 
 Then follow [docs/guides/build-from-source.md](docs/guides/build-from-source.md): building the
-ISO and packages, and running the shell, Jackson and the `sos` command from a checkout.
+packages and the ISO (Linux, or Windows with WSL2 and Docker), the tests, and running the shell,
+Jackson and the `sos` command from a checkout.
 
 After installing: [first steps](docs/guides/first-steps.md) · [FAQ](docs/guides/faq.md).
 
@@ -223,8 +238,8 @@ Svoya Shell, Джексон и команда `sos`.
   «драйвер ↔ CUDA ↔ PyTorch», Secure Boot, сон и пробуждение, доступ к GPU из контейнеров, а
   `sos fix` применяет безопасные исправления. Драйвер — забота системы, а CUDA у каждого проекта
   своя, поэтому версии больше не воюют между собой.
-- **Джексон — свой парень, который сначала спрашивает.** Он родом из интернета нулевых: с
-  шуточками, но дело делает. Джексон отправляет запросы локальным или облачным моделям,
+- **Джексон — свой в доску чувак, который сначала спрашивает.** Он родом из интернета нулевых,
+  зовёт тебя «кентафурик» и говорит «базару нет»: с шуточками, но дело делает. Джексон отправляет запросы локальным или облачным моделям,
   запускает инструменты и других агентов (Claude Code, Codex, OpenCode, goose…) в песочницах.
   Перед рискованным шагом показывает, что именно сделает, ведёт журнал, который нельзя незаметно
   подправить, и умеет отменять свои действия. Зови его по `Super+J` или прямо из терминала:
@@ -278,8 +293,11 @@ Svoya Shell, Джексон и команда `sos`.
 
 ### Статус
 
-**Пре-альфа.** Идёт работа над **v0.1 «Первый сигнал»**. Образа для скачивания пока нет, и для
-повседневной работы система не готова.
+**Пре-альфа.** Идёт работа над **v0.1 «Первый сигнал»**, и для повседневной работы система пока
+не готова. Но она уже загружается: каждое изменение в `main` CI собирает в ISO и запускает в
+виртуальной машине (BIOS, UEFI, UEFI с Secure Boot), снимая скриншоты меню загрузки, рабочего
+стола, поиска и Джексона. Такие тестовые сборки можно попробовать уже сейчас — см.
+[«Быстрый старт»](#быстрый-старт).
 
 В v0.1 должны войти: загрузочный ISO; Svoya Shell (панель, лаунчер, панель Джексона,
 уведомления, экран блокировки, экран входа); текстовый Джексон (локальные и облачные модели,
@@ -309,8 +327,21 @@ Svoya Shell, Джексон и команда `sos`.
 
 ### Быстрый старт
 
-**Скачать ISO** — скоро. Первый образ выйдет вместе с v0.1 на GitHub Releases, с контрольными
-суммами SHA-256 и подписью. Как ставить — в [руководстве по установке](docs/ru/install.md).
+**Попробовать в виртуальной машине** (минут 15, на компьютере ничего не поменяется):
+
+1. Скачай тестовую сборку: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
+   → верхний запуск с зелёной галочкой → *Artifacts* → **sos-iso** (нужен аккаунт GitHub; релизы
+   будут на [GitHub Releases](https://github.com/svoya-os/sos/releases)).
+2. Распакуй и склей части. Windows (PowerShell):
+   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
+   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Сверь с `SHA256SUMS`.
+3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 ГБ памяти, 4 ядра, «Включить EFI», графика *VMSVGA*
+   с 3D, запусти с этим ISO.
+4. Ты на рабочем столе живой сессии. Осмотрись (`Super+K` покажет все сочетания клавиш), а потом
+   нажми **«Установить СОС»** в приветствии Джексона, чтобы поставить систему на диск.
+
+Все шаги, флешки, Hyper-V, QEMU и решения проблем — в [руководстве по установке](docs/ru/install.md).
+Короткая версия на двух языках — [INSTALL.md](INSTALL.md).
 
 **Собрать из исходников:**
 
@@ -320,8 +351,8 @@ cd sos
 ```
 
 Дальше — по [docs/guides/build-from-source.md](docs/guides/build-from-source.md) (на
-английском): сборка ISO и пакетов, запуск оболочки, Джексона и команды `sos` прямо из
-репозитория.
+английском): сборка пакетов и ISO (Linux или Windows с WSL2 и Docker), тесты, запуск оболочки,
+Джексона и команды `sos` прямо из репозитория.
 
 После установки: [первые шаги](docs/ru/first-steps.md) · [вопросы и ответы](docs/ru/faq.md).
 
