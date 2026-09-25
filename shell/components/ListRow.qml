@@ -92,10 +92,23 @@ Rectangle {
     }
 
     MouseArea {
+        id: area
+
+        // The row under the pointer is selected only when the pointer really moves: a list that opens
+        // or re-filters under a resting cursor keeps its top hit (the VM bot's cursor sat over
+        // «Document Viewer», and Enter would have opened that instead of the first result).
+        property point last: Qt.point(-1, -1)
+
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onEntered: root.hovered()
+        onPositionChanged: mouse => {
+            const p = area.mapToItem(null, mouse.x, mouse.y);
+            if (area.last.x >= 0 && (Math.abs(p.x - area.last.x) > 0.5 || Math.abs(p.y - area.last.y) > 0.5))
+                root.hovered();
+            area.last = p;
+        }
+        onExited: area.last = Qt.point(-1, -1)
         onClicked: root.activated()
     }
 }
