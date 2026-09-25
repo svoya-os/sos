@@ -139,3 +139,19 @@ jobs:
       actions: read
     with:
       artifact: sos-iso
+
+  # A bot uses the live system like a new user (tests/vm/journeys.json): cheat sheet, search,
+  # terminal with sos commands, accent and undo, Jackson, control center, Doctor, lock screen.
+  # Screenshots and diagnostics land in ci-screens/runs/<run>/journeys-uefi. Not for releases.
+  journeys:
+    needs: iso
+    if: ${{ !inputs.release && (github.event_name != 'workflow_dispatch' || inputs.vm_test) }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
+      actions: read
+    with:
+      artifact: sos-iso
+      plan: tests/vm/journeys.json
+      firmwares: '["uefi"]'
+      label: journeys
