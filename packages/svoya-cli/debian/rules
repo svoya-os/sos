@@ -9,8 +9,11 @@ override_dh_auto_install:
 	mkdir -p $(PKG)
 	cp -a files/. $(PKG)/
 
+# The `sos new` project templates (svoya_cli/data/new/**.py) contain {{ placeholders }} and are not
+# valid Python: exclude them, or py3compile in the generated postinst exits 1 on the first
+# SyntaxError and the package fails to configure.
 override_dh_python3:
-	dh_python3 /usr/lib/svoya
+	dh_python3 /usr/lib/svoya -X '.*/svoya_cli/data/'
 
 override_dh_installsystemduser:
 	dh_installsystemduser --no-enable

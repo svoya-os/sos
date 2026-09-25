@@ -9,8 +9,7 @@ Rules-Requires-Root: no
 
 Package: grub-btrfs
 Architecture: all
-Depends: ${misc:Depends}, bash, btrfs-progs, gawk, grub-common
-Recommends: inotify-tools
+Depends: ${misc:Depends}, bash, btrfs-progs, gawk, grub-common, inotify-tools
 Description: GRUB boot menu entries for btrfs snapshots
  Adds a "snapshots" submenu to GRUB so any snapper snapshot of the root
  subvolume can be booted. grub-btrfsd regenerates the menu when snapshots

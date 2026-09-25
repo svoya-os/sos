@@ -43,7 +43,7 @@ Item {
         anchors.fill: parent
         visible: root.compact
         radius: 8
-        color: hover.containsMouse ? Theme.surface3 : "transparent"
+        color: hover.hovered ? Theme.surface3 : "transparent"
     }
 
     HoverHandler {

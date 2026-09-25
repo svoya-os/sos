@@ -38,6 +38,11 @@ else
     wrapper jackson.daemon "$files/usr/lib/svoya/jacksond"
 fi
 
+# jacksond.service: Documentation=file:///usr/share/doc/svoya-jackson/README.md
+if [ -f "$src/README.md" ]; then
+    install -D -m 0644 "$src/README.md" "$files/usr/share/doc/svoya-jackson/README.md"
+fi
+
 units=$(find "$src/systemd" -maxdepth 1 -type f \( -name '*.service' -o -name '*.socket' -o -name '*.timer' \) 2>/dev/null || true)
 if [ -n "$units" ]; then
     for u in $units; do install -m 0644 "$u" "$files/usr/lib/systemd/user/"; done

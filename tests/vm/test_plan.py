@@ -75,6 +75,20 @@ class QemuCommandTests(unittest.TestCase):
         self.assertNotIn("pflash", line)
         self.assertIn("bootindex=0", line)
 
+    def test_auto_accel_falls_back_to_tcg(self):
+        plan = run.load_plan(HERE / "plan.json")
+        args = self.args("uefi")
+        args.accel = "auto"
+        saved = run.kvm_usable
+        try:
+            run.kvm_usable = lambda: True
+            cmd = run.qemu_command(args, plan, pathlib.Path("/tmp/out"), "/tmp/out/VARS.fd", "/x/CODE.fd")
+        finally:
+            run.kvm_usable = saved
+        line = " ".join(cmd)
+        self.assertIn("q35,accel=kvm:tcg", line)
+        self.assertEqual(cmd[cmd.index("-cpu") + 1], "max")  # "host" would abort under the TCG fallback
+
 
 if __name__ == "__main__":
     unittest.main()

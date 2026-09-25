@@ -12,14 +12,15 @@ Architecture: all
 Depends: ${misc:Depends},
          quickshell (>= 0.3.1~),
          qml6-module-qtquick,
-         qml6-module-qtquick-controls,
+         qml6-module-qtquick-effects,
          qml6-module-qtquick-layouts,
          qml6-module-qtquick-shapes,
          qml6-module-qtquick-window,
          qml6-module-qtqml-workerscript,
          qt6-wayland,
+         qt6-svg-plugins,
          svoya-fonts
-Recommends: ${svoya:QmlDepends}, qt6-svg-plugins, papirus-icon-theme
+Recommends: ${svoya:QmlDepends}, papirus-icon-theme
 Description: SOS Shell (Quickshell/QML)
  The SOS desktop shell: bar, launcher, Jackson panel, notifications,
  control center, lock screen, greeter, first-run wizard and on-screen

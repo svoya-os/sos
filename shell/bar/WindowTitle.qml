@@ -10,6 +10,7 @@ Item {
     id: root
 
     property var screen: null
+    property real maxWidth: 480           // room left between the bar's groups (set by Bar)
     readonly property var toplevel: ToplevelManager.activeToplevel
     readonly property bool here: {
         const t = root.toplevel;
@@ -68,6 +69,7 @@ Item {
 
     implicitHeight: 18
     implicitWidth: row.implicitWidth
+    width: Math.min(root.implicitWidth, root.maxWidth)
     visible: root.here && root.appName.length > 0
     clip: true
 
@@ -86,6 +88,8 @@ Item {
         }
 
         SText {
+            id: sep
+
             visible: root.detail.length > 0
             leftPadding: 6
             rightPadding: 6
@@ -96,7 +100,9 @@ Item {
 
         SText {
             visible: root.detail.length > 0
-            width: Math.max(0, Math.min(implicitWidth, root.width - app.width - 20))
+            // from maxWidth, not root.width: root's width follows this row's implicit width, and
+            // "/" is narrower than the 20px this used to reserve, so the detail shrank every frame
+            width: Math.max(0, Math.min(implicitWidth, root.maxWidth - app.implicitWidth - sep.implicitWidth))
             text: root.detail
             size: Theme.fsWindowTitle
             color: Theme.textDim

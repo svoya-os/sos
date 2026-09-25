@@ -75,7 +75,7 @@ jobs:
           {
             echo "### SOS packages"
             echo '```'
-            (cd dist/repo/pool && ls -1 *.deb)
+            (cd dist/repo/pool && ls -1 -- *.deb)
             echo '```'
           } >>"$GITHUB_STEP_SUMMARY"
 

@@ -276,7 +276,8 @@ Item {
                 }
                 MText {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: root.wizard.suggest && root.wizard.suggest.hardware && root.wizard.suggest.hardware.diskFreeBytes
+                    // !!: `null && …` would assign null to a bool (binding error, stays visible)
+                    visible: !!(root.wizard.suggest && root.wizard.suggest.hardware && root.wizard.suggest.hardware.diskFreeBytes)
                     text: visible ? Strings.wzFreeOf(Fmt.bytes(root.wizard.suggest.hardware.diskFreeBytes)) : ""
                     size: 11
                     color: Theme.textFaint

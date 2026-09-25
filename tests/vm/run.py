@@ -98,10 +98,16 @@ def kvm_usable() -> bool:
 def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_copy: str | None,
                  code: str | None) -> list[str]:
     vm = plan.get("vm", {})
-    accel = args.accel if args.accel != "auto" else ("kvm" if kvm_usable() else "tcg")
+    if args.accel == "auto":
+        # /dev/kvm can be accessible and still fail to initialise (nested virtualisation off):
+        # "kvm:tcg" falls back instead of aborting; main() asks QEMU which one it got (query-kvm).
+        accel = "kvm:tcg" if kvm_usable() else "tcg"
+    else:
+        accel = args.accel
     xres, yres = vm.get("resolution", [1440, 900])
     machine = "q35" + (",smm=on" if args.firmware == "uefi-sb" else "")
     cmd = [args.qemu, "-name", "sos-vm-test", "-machine", f"{machine},accel={accel}",
+           # "host" needs KVM; "max" is the host model under KVM and everything TCG can emulate otherwise
            "-cpu", "host" if accel == "kvm" else "max",
            "-smp", str(args.smp or vm.get("smp", 4)), "-m", str(args.memory or vm.get("memory_mib", 6144)),
            "-smbios", f"type=1,manufacturer=SOS,product={vm.get('smbios_product', 'sos-vm-test')}",
@@ -311,6 +317,16 @@ def main(argv: list[str] | None = None) -> int:
     try:
         qmp = QMPClient.connect_unix(str(out / "qmp.sock"), timeout=30, wait=30)
         qmp.negotiate()
+        if accel == "kvm":
+            try:
+                kvm_enabled = bool((qmp.execute("query-kvm") or {}).get("enabled"))
+            except QMPError:
+                kvm_enabled = True  # cannot tell; keep the KVM timing
+            if not kvm_enabled:
+                accel = "tcg"
+                if args.timeout_scale is None:
+                    scale = 4.0
+                print(f"KVM did not initialise; running under TCG (timeout scale {scale})", flush=True)
         runner = Runner(qmp, out, scale, proc)
         ok = runner.run(plan["steps"])
         qmp.quit()

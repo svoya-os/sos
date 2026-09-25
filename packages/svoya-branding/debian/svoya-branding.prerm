@@ -7,5 +7,10 @@ case "$1" in
             /usr/share/plymouth/themes/svoya-signal/svoya-signal.plymouth || true
         ;;
 esac
+case "$1" in
+    remove)
+        rm -rf /boot/grub/themes/svoya
+        ;;
+esac
 #DEBHELPER#
 exit 0

@@ -14,7 +14,9 @@ Item {
 
     implicitWidth: row.implicitWidth
     implicitHeight: 15
-    visible: row.visibleChildren.length > 0
+    // Not `row.visibleChildren.length > 0`: visibleChildren counts *effective*
+    // visibility, so once this item is hidden its icons never count again (latch).
+    visible: Net.available || Audio.ready || root.hasBattery
 
     Row {
         id: row

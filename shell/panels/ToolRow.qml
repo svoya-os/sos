@@ -7,7 +7,8 @@ Row {
     id: root
 
     property var call: ({})
-    readonly property string state: root.call.state || "running"
+    // not `state`: that is Item.state (the States machinery)
+    readonly property string callState: root.call.state || "running"
 
     spacing: 8
 
@@ -17,10 +18,10 @@ Row {
 
         Dot {
             anchors.centerIn: parent
-            visible: root.state === "running"
+            visible: root.callState === "running"
             color: Theme.accent
             SequentialAnimation on opacity {
-                running: root.state === "running" && !Theme.reduceMotion
+                running: root.callState === "running" && !Theme.reduceMotion
                 loops: Animation.Infinite
                 NumberAnimation {
                     to: 0.3
@@ -35,11 +36,11 @@ Row {
 
         Icon {
             anchors.centerIn: parent
-            visible: root.state !== "running"
-            glyph: root.state === "done" ? "check" : "x"
+            visible: root.callState !== "running"
+            glyph: root.callState === "done" ? "check" : "x"
             size: 12
             stroke: 2.4
-            color: root.state === "done" ? Theme.ok : Theme.bad
+            color: root.callState === "done" ? Theme.ok : Theme.bad
         }
     }
 

@@ -66,7 +66,10 @@ polkit.addRule(function (action, subject) {
 EOF
 
 # --- live-only units: VM test agent (inert unless the SMBIOS product is sos-vm-test), user groups -----
-cp -a "$SVOYA_IMAGE/overlay-live/." "$root/"
+# Not `cp -a overlay/. root/`: that re-applies the checkout's owner (the CI runner's uid) and modes to
+# existing directories, including / and /usr. Files are root-owned; existing directories keep theirs.
+tar -C "$SVOYA_IMAGE/overlay-live" --owner=0 --group=0 --numeric-owner -cf - . |
+    tar -C "$root" --no-overwrite-dir -xf -
 in_chroot "$root" systemctl enable sos-vm-test.service sos-live-user.service
 
 # --- what the installer must not copy (Calamares unpackfs excludeFile, rsync syntax) ---------------

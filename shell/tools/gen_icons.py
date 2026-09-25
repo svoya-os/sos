@@ -148,10 +148,54 @@ def absolutize_leading_move(d: str) -> str:
     return f"{head} {rest}".strip()
 
 
+ARGS = {"m": 2, "l": 2, "h": 1, "v": 1, "c": 6, "s": 4, "q": 4, "t": 2, "a": 7, "z": 0}
+
+
+def svg_commands(d: str) -> list[tuple[str, list[str]]]:
+    """Split path data per the SVG grammar: arc flags are single characters, so
+    `a1.5 1.5 0 00-2.474-1.561` has flags 0 0 and the end point -2.474 -1.561."""
+    out: list[tuple[str, list[str]]] = []
+    i, n = 0, len(d)
+    while i < n:
+        c = d[i]
+        if c.isalpha():
+            out.append((c, []))
+            i += 1
+        elif c.isspace() or c == ",":
+            i += 1
+        else:
+            cmd, args = out[-1]
+            if cmd in "aA" and len(args) % 7 in (3, 4) and c in "01":
+                args.append(c)
+                i += 1
+                continue
+            m = re.match(NUM.replace("-?", "[-+]?"), d[i:])
+            if not m:
+                raise ValueError(f"bad path data near {d[i:i + 12]!r}")
+            args.append(m.group(0))
+            i += m.end()
+    return out
+
+
+def qt_safe_path(d: str) -> str:
+    """Qt's PathSvg reads numbers greedily (QQuickSvgParser::parseNumbersArray), so compact arc
+    flags (`0 00-2.4` meaning 0, 0, -2.4) come out as one number and break the path. When Qt
+    would split a command's arguments differently from the SVG grammar, spell them all out;
+    every other path stays byte-for-byte as it is."""
+    spec = svg_commands(d)
+    greedy = [(c, re.findall(NUM.replace("-?", "[-+]?"), body))
+              for c, body in re.findall(r"([A-Za-z])([^A-Za-z]*)", d)]
+    same = len(spec) == len(greedy) and all(
+        a[0] == b[0] and [float(x) for x in a[1]] == [float(x) for x in b[1]] for a, b in zip(spec, greedy))
+    if same:
+        return d
+    return " ".join(c + " ".join(args) for c, args in spec)
+
+
 def element_path(el: ET.Element) -> str:
     tag = el.tag.split("}")[-1]
     if tag == "path":
-        return absolutize_leading_move(" ".join(el.get("d", "").split()))
+        return qt_safe_path(absolutize_leading_move(" ".join(el.get("d", "").split())))
     if tag == "circle":
         r = f(el, "r")
         return circle_path(f(el, "cx"), f(el, "cy"), r, r)

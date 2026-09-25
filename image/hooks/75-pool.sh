@@ -100,7 +100,13 @@ log "Pool: offline self-test"
 mnt=$root/tmp/svoya-pool
 mkdir -p "$mnt" "$root/tmp/svoya-pool-lists/partial" "$root/tmp/svoya-pool-parts"
 mount --bind "$pool" "$mnt"
-trap 'umount "$mnt" 2>/dev/null || true; rm -rf "${root:?}/tmp/svoya-pool" "${root:?}/tmp/svoya-pool-lists" "${root:?}/tmp/svoya-pool-parts" "${root:?}/tmp/svoya-pool.list"' EXIT
+cleanup_pool_mount() {
+    umount "$mnt" 2>/dev/null || umount -l "$mnt" 2>/dev/null || true
+    # Never rm -rf through a bind mount that is still there: it would delete the pool itself.
+    if ! mountpoint -q "$mnt"; then rm -rf "${root:?}/tmp/svoya-pool"; fi
+    rm -rf "${root:?}/tmp/svoya-pool-lists" "${root:?}/tmp/svoya-pool-parts" "${root:?}/tmp/svoya-pool.list"
+}
+trap cleanup_pool_mount EXIT
 echo "deb [trusted=yes] file:/tmp/svoya-pool $SUITE ${components[*]}" >"$root/tmp/svoya-pool.list"
 popts=(-o Dir::Etc::SourceList=/tmp/svoya-pool.list -o Dir::Etc::SourceParts=/tmp/svoya-pool-parts
        -o Dir::State::Lists=/tmp/svoya-pool-lists -o Dir::Cache::pkgcache= -o Dir::Cache::srcpkgcache=)

@@ -80,8 +80,9 @@ EOF
 }
 
 mmdebstrap_args() {
+    # shellcheck disable=SC2054  # --include takes a comma-separated list
     MMDEBSTRAP_ARGS=(--mode=root --variant=minbase --arch="$ARCH" --format=directory
-        --include=ca-certificates,gpgv
+        --include=ca-certificates,gpgv,ubuntu-keyring
         --aptopt='Acquire::Retries "5"')
     if [ "$SNAPSHOT" != none ]; then
         MMDEBSTRAP_ARGS+=(--aptopt='Acquire::Check-Valid-Until "false"')
@@ -153,7 +154,9 @@ setup_container() {
     . "$ROOT/scripts/lib/apt-snapshot.sh"
     log "Preparing build tools (snapshot: $SNAPSHOT)"
     container_apt_setup "$SUITE" "$SNAPSHOT"
-    apt-get install -y -q mmdebstrap squashfs-tools xorriso mtools dosfstools grub-common \
+    # resolute: grub-mkimage and /usr/share/grub/unicode.pf2 are in grub2-common (grub-common is a
+    # dummy package depending on it; packages.ubuntu.com/resolute/grub-common).
+    apt-get install -y -q mmdebstrap squashfs-tools xorriso mtools dosfstools grub-common grub2-common \
         apt-utils ca-certificates gpg gpgv curl python3 zstd cpio file rsync ubuntu-keyring
 }
 
@@ -206,11 +209,15 @@ assemble_live() {
 }
 
 # Extract the boot binaries from the same packages the installer uses (pool), or download them.
+# resolute file lists: shim-signed has /usr/lib/shim/{shimx64.efi.dualsigned,shimx64.efi.signed.latest,
+# mmx64.efi}; grub-efi-amd64-signed has /usr/lib/grub/x86_64-efi-signed/gcdx64.efi.signed;
+# grub-pc-bin has /usr/lib/grub/i386-pc/{*.mod,*.lst,boot_hybrid.img}. (The "shim" package itself
+# only ships docs there.)
 boot_files() {
     local dest=$WORK/bootfiles pkg deb
     rm -rf "$dest" "$WORK/debs"
     mkdir -p "$dest" "$WORK/debs"
-    for pkg in shim-signed shim grub-efi-amd64-signed grub-pc-bin; do
+    for pkg in shim-signed grub-efi-amd64-signed grub-pc-bin; do
         deb=$(find "$POOL/pool/main" -name "${pkg}_*.deb" 2>/dev/null | sort -V | tail -n1)
         if [ -z "$deb" ]; then
             (cd "$WORK/debs" && apt-get download -q "$pkg")

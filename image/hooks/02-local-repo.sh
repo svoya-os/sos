@@ -10,7 +10,11 @@ root=$1
 [ -f "$SVOYA_REPO/Packages" ] || die "no package repository at $SVOYA_REPO (run packages/build-all.sh first)"
 rm -rf "$root/var/lib/svoya-build-repo"
 mkdir -p "$root/var/lib/svoya-build-repo"
-cp -a "$SVOYA_REPO/." "$root/var/lib/svoya-build-repo/"
+# Only what APT needs (not dbgsym/), readable by APT's unprivileged _apt user.
+cp -r --no-preserve=ownership "$SVOYA_REPO/pool" "$SVOYA_REPO/Packages" "$SVOYA_REPO/Release" \
+    "$root/var/lib/svoya-build-repo/"
+[ ! -f "$SVOYA_REPO/Packages.gz" ] || cp --no-preserve=ownership "$SVOYA_REPO/Packages.gz" "$root/var/lib/svoya-build-repo/"
+chmod -R a+rX "$root/var/lib/svoya-build-repo"
 
 write_file "$root/etc/apt/sources.list.d/svoya-build.list" 0644 <<'EOF'
 deb [trusted=yes] file:/var/lib/svoya-build-repo ./

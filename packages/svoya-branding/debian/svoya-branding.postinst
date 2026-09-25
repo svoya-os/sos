@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 set -e
 THEME=/usr/share/plymouth/themes/svoya-signal/svoya-signal.plymouth
+GRUB_THEME_SRC=/usr/share/grub/themes/svoya
 case "$1" in
     configure)
         if [ -f "$THEME" ]; then
@@ -15,6 +16,13 @@ case "$1" in
             else
                 sed -i 's/^Theme=.*/Theme=svoya-signal/' /etc/plymouth/plymouthd.conf
             fi
+        fi
+        # GRUB reads its theme from /boot, which stays readable when the root filesystem is
+        # encrypted (branding/README.md, /etc/default/grub.d/90-sos-theme.cfg).
+        if [ -f "$GRUB_THEME_SRC/theme.txt" ]; then
+            rm -rf /boot/grub/themes/svoya
+            mkdir -p /boot/grub/themes
+            cp -a "$GRUB_THEME_SRC" /boot/grub/themes/svoya
         fi
         ;;
 esac

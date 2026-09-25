@@ -2,7 +2,8 @@ Source: svoya-branding
 Section: misc
 Priority: optional
 Maintainer: SOS developers <sos@users.noreply.github.com>
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13),
+               grub2-common
 Standards-Version: 4.7.0
 Homepage: https://github.com/svoya-os/sos
 Rules-Requires-Root: no

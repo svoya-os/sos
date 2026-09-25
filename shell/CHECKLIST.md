@@ -2,8 +2,9 @@
 
 Nothing in `shell/` has run on a real compositor yet: the build machine has no Qt 6.10/Quickshell.
 What *was* checked: `python3 shell/tools/qmlcheck.py` (brackets, imports, singleton members, ids,
-qmldir, icon names, ambiguous types, and — with `node` — the JavaScript of every function, handler and
-binding) and the Hyprland option/dispatcher names against the 0.53 wiki and the 0.56.2 source.
+qmldir, icon names and paths, ambiguous types, IPC keybindings, the Quickshell/Qt API of every file —
+see "Pre-flight review" below — and, with `node`, the JavaScript of every function, handler and
+binding) and the Hyprland options/keywords/dispatchers against the 0.53.3 source (and 0.56.2).
 Work through the list top to bottom on the SOS ISO in a VM (virtio-gpu, 2 outputs if possible) and on
 one NVIDIA machine. Log: `quickshell log -p /usr/share/svoya/shell` (or run it in a terminal).
 
@@ -18,6 +19,53 @@ quickshell -p ~/sos/shell ipc show                      # list IPC targets and f
 # point the keybindings and `sos session-start` at the checkout (in ~/.config/hypr/user.conf):
 env = SVOYA_SHELL_DIR,/home/me/sos/shell
 ```
+
+## Pre-flight review (source-verified, 2026-09-25)
+
+Every Quickshell/Qt use was checked against the real sources: Quickshell **v0.3.1**, qtdeclarative
+**6.10.2**, Hyprland **v0.53.3**, hyprlang **0.6.7**, hyprland-plugins (hyprbars) **v0.53.0**.
+The `api` rule of qmlcheck makes that permanent: `tools/qmlapi.json` (generated) lists every
+QML type, property (type, writable, FINAL), signal, method, enum, default and attached property;
+`tools/qmlapi_check.py` parses each file and checks bindings, grouped/attached properties,
+handlers, `Connections` targets, enum values, singleton members, `id.a.b` chains, literal types,
+ReferenceErrors, assignments to read-only properties, IpcHandler signatures (typed args and return),
+delegate context (`modelData`/`index` vanish when a delegate has required properties) and
+Variants delegates. Regenerate after a Quickshell/Qt bump (clones of both at the new tags):
+
+```sh
+python3 shell/tools/gen_qmlapi.py ~/src/quickshell ~/src/qtdeclarative   # rewrites tools/qmlapi.json
+```
+
+Fixed by the review (would have failed or misbehaved on first boot):
+
+- `components/NotificationCard.qml` — `HoverHandler` has `hovered`, not `containsMouse` (hover
+  highlight never showed; "undefined" binding warnings).
+- `bar/StatusIcons.qml` — visibility came from `row.visibleChildren`, which counts *effective*
+  visibility: once hidden (e.g. before Pipewire is ready) the group could never reappear.
+- `bar/WindowTitle.qml` + `bar/Bar.qml` — the detail width was derived from the item's own width,
+  which follows the content: it shrank by ~4 px per polish until empty. Now clamped by `maxWidth`.
+- `panels/ToolRow.qml` — `property string state` shadowed `Item.state` (States machinery;
+  assigning an unknown state warns). Renamed `callState`.
+- `setup/StepProfile.qml` — `visible: a && a.b && …` assigned `null`/`undefined` to a bool when
+  `suggest` was missing (binding error, stayed visible). Now `!!(…)`.
+- `core/Strings.qml`, `greeter/Face.qml` — `override` is a QML keyword after Qt 6.10; renamed
+  `langOverride`.
+- `notifications/Toasts.qml` — `Notification.expireTimeout` is the D-Bus value in **milliseconds**
+  (notification.cpp:115; the "seconds" doc comment is wrong); `*1000` made every timed toast stay 20 s.
+- `core/Icons.qml` (`zap`) + `tools/gen_icons.py` — compact SVG arc flags (`0 00-2.474`) are
+  misread by Qt's PathSvg parser; the generator now re-emits such paths with separated flags.
+
+What static checks cannot settle — watch `quickshell log` on the first boot:
+
+1. Module loading through the explicit `qmldir` files (`module qs.core` …), also via the symlinked
+   `greeter/` and `setup/` configs (traced in Quickshell's scanner and URL interceptor, never run).
+2. The overlay changing `screen` (Ui.screen) while mapped recreates its layer surface; watch focus
+   hand-over overlay ↔ lock ↔ wizard (`WlrKeyboardFocus.Exclusive` on all three).
+3. `panels/Launcher.qml` list height follows `contentHeight` (converges; at worst a binding-loop
+   warning while typing).
+4. `core/Settings.qml` writes on every change: a change made before `shell.json` finished loading
+   (only possible by a user action in the first milliseconds) would overwrite the file.
+5. hyprbars plugin path (item 2 below) and every line of `hyprctl configerrors`.
 
 ## 1. Highest risk first
 
@@ -57,9 +105,10 @@ env = SVOYA_SHELL_DIR,/home/me/sos/shell
    (snapshot). «Начать работу» hides the wizard, writes `first-run-done`, a polkit prompt appears for
    `sos modules add … --yes`, and a notification reports the result. Super+Alt+A later → only the
    accessibility step.
-8. **NVIDIA.** On an NVIDIA box `hyprctl getoption cursor:no_hardware_cursors` → 2 from
-   `nvidia.conf` (gated on `__GLX_VENDOR_LIBRARY_NAME`, exported by svoya-session); no flicker in
-   Electron apps; cursor visible on all outputs.
+8. **NVIDIA.** On an NVIDIA box `hyprctl getoption cursor:no_hardware_cursors` → `int: 2` **and
+   `set: true`** from `nvidia.conf` (gated on `__GLX_VENDOR_LIBRARY_NAME`, exported by svoya-session;
+   2 is also the 0.53.3 default, so only `set: true` proves the gate); no flicker in Electron apps;
+   cursor visible on all outputs.
 
 ## 2. Look (compare with design/out/*.png at 1440×900, scale 1)
 
@@ -81,7 +130,8 @@ env = SVOYA_SHELL_DIR,/home/me/sos/shell
 - Launcher: apps (DesktopEntries), fuzzy ranking + launch counts, groups, `?text` or Tab → Jackson,
   settings/modules/actions modes from the СОС menu.
 - Notifications: `notify-send test body`; actions, history in the control center, DND and focus
-  modes (presentation also inhibits idle).
+  modes (presentation also inhibits idle). Timeouts: `notify-send -t 4000 a b` leaves after 4 s,
+  default/`-t 0` after 6 s (clamped 3–20 s; the history keeps it).
 - Control center: Wi-Fi list/connect (nmcli), Bluetooth, volume/brightness sliders, theme, focus
   mode, AI & privacy block (today's spend, cloud requests from `sos status`).
 - Media keys → wpctl/brightnessctl, OSD appears (volume via PipeWire; brightness via IPC).
@@ -109,5 +159,12 @@ mockups, needs playwright). Re-run them after changing the mockups.
 - **Polkit agent**: module installs from the wizard need one; `hyprpolkitagent` is optional in
   `image/packages/desktop.list` (the config starts it if present).
 - **Jackson key cache**: keys stored by the wizard are found only after jacksond re-reads the keyring.
+- **QtQuick.Effects is only recommended.** `packages/svoya-shell` puts `${svoya:QmlDepends}`
+  (→ `qml6-module-qtquick-effects`) in `Recommends`; `PanelFrame`, `SignalBurst`, `Toasts` and the
+  wizard import `QtQuick.Effects`, so after an install with `--no-install-recommends` shell.qml
+  and the wizard do not load at all ("module QtQuick.Effects is not installed"). Move it to `Depends`.
+  `qml6-module-qtquick-controls` in `Depends` is unused (nothing imports QtQuick.Controls).
+- **Jackson sprites** (`assets/jackson/<set>/<state>.png`) are not shipped: avatars fall back to
+  the scope (probing is lazy, so only visible avatars log one "Cannot open" per missing set).
 - **Hyprland > 0.56** (Lua): `hypr/*.conf` and `greeter/hyprland.conf` need a port; `core/Hypr.qml`
   already dispatches Lua syntax when `Hyprland.usingLua`.

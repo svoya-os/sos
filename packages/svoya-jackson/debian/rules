@@ -16,6 +16,10 @@ override_dh_python3:
 override_dh_installsystemduser:
 	dh_installsystemduser --no-enable
 
+# jacksond.service links file:///usr/share/doc/svoya-jackson/README.md: keep it uncompressed.
+override_dh_compress:
+	dh_compress -X README.md
+
 override_dh_fixperms:
 	dh_fixperms
 	chmod 0755 $(PKG)/usr/bin/jackson $(PKG)/usr/lib/svoya/jacksond

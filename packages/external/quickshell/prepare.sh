@@ -13,3 +13,5 @@ git_fetch_commit "$QUICKSHELL_REPO" "$QUICKSHELL_COMMIT" "$work/src"
 grep -q "VERSION \"$QUICKSHELL_VERSION\"" "$work/src/CMakeLists.txt" ||
     die "quickshell: CMakeLists.txt does not declare version $QUICKSHELL_VERSION"
 cp -a "$work/src/." "$PKG_DIR/"
+# src/build/CMakeLists.txt runs `git rev-parse HEAD` unless GIT_REVISION is given (debian/rules).
+printf '%s\n' "$QUICKSHELL_COMMIT" >"$PKG_DIR/debian/quickshell-git-revision"

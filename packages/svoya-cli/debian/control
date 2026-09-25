@@ -11,8 +11,8 @@ Package: svoya-cli
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, python3 (>= 3.12)
 Recommends: pciutils, snapper, flatpak
-Conflicts: sosreport
-Replaces: sosreport
+Conflicts: sos, sosreport
+Replaces: sos, sosreport
 Provides: svoya-theme
 Description: sos, the SOS system tool
  "sos" (alias "svoya") manages SOS: GPU doctor, modules, the model store,
@@ -20,4 +20,5 @@ Description: sos, the SOS system tool
  (/usr/share/svoya/modules), the theme tokens (/usr/share/svoya/themes) and
  the theme templates (/usr/share/svoya/templates).
  .
- It replaces Ubuntu's sosreport, which ships a different /usr/bin/sos.
+ It replaces Ubuntu's sos report tool (package "sos", formerly "sosreport"),
+ which ships a different /usr/bin/sos.

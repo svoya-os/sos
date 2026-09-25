@@ -11,8 +11,9 @@ Package: firefox firefox-l10n-*
 Pin: release o=Ubuntu
 Pin-Priority: -1
 
-# /usr/bin/sos is the SOS system tool; Ubuntu's sosreport ships a command with the same name.
-Package: sosreport
+# /usr/bin/sos is the SOS system tool; Ubuntu's sos report tool ships a command with the same name
+# (resolute: package "sos" 4.10 owns /usr/bin/sos, "sosreport" is its transitional package).
+Package: sos sosreport
 Pin: release a=*
 Pin-Priority: -1
 

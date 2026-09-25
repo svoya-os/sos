@@ -321,7 +321,7 @@ Item {
                     text: "RU"
                     selected: Strings.ru
                     onPicked: {
-                        Strings.override = "ru";
+                        Strings.langOverride = "ru";
                         field.focusField();
                     }
                 }
@@ -330,7 +330,7 @@ Item {
                     text: "EN"
                     selected: !Strings.ru
                     onPicked: {
-                        Strings.override = "en";
+                        Strings.langOverride = "en";
                         field.focusField();
                     }
                 }

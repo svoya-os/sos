@@ -78,9 +78,98 @@ class ControlTests(unittest.TestCase):
                                             "Standards-Version: 4.7.0\n\nPackage: y\nArchitecture: all\n"
                                             "Depends: foo (>> )\nDescription: s\n long\n"))
 
-    def test_cli_replaces_sosreport(self):
-        text = (ROOT / "packages/svoya-cli/debian/control").read_text()
-        self.assertIn("Conflicts: sosreport", text)
+    def test_cli_replaces_sos(self):
+        # resolute: /usr/bin/sos belongs to package "sos"; "sosreport" is its transitional package.
+        paras = check_control.parse_paragraphs((ROOT / "packages/svoya-cli/debian/control").read_text())
+        cli = next(p for p in paras if p.get("Package") == "svoya-cli")
+        for field in ("Conflicts", "Replaces"):
+            names = {x.strip().split()[0] for x in cli[field].split(",")}
+            self.assertLessEqual({"sos", "sosreport"}, names, field)
+
+    def test_cli_templates_are_not_byte_compiled(self):
+        # py3compile (postinst of dh_python3 packages) exits 1 on the first SyntaxError; the `sos new`
+        # templates contain {{ placeholders }}, so debian/rules must exclude them ...
+        rules = (ROOT / "packages/svoya-cli/debian/rules").read_text()
+        self.assertIn("-X '.*/svoya_cli/data/'", rules)
+        # ... and every other .py file shipped in /usr/lib/svoya must compile.
+        import py_compile
+        for pkg in (ROOT / "cli/svoya_cli", ROOT / "jackson/jackson"):
+            for py in sorted(pkg.rglob("*.py")):
+                if "__pycache__" in py.parts or re.search(r"/svoya_cli/data/", py.as_posix()):
+                    continue
+                with self.subTest(file=str(py.relative_to(ROOT))), tempfile.TemporaryDirectory() as tmp:
+                    py_compile.compile(str(py), cfile=str(pathlib.Path(tmp, "x.pyc")), doraise=True)
+
+
+class StagePyappTests(unittest.TestCase):
+    def test_nested_tests_dirs_are_package_data(self):
+        import stage_pyapp
+        with tempfile.TemporaryDirectory() as tmp:
+            src = pathlib.Path(tmp, "src")
+            for rel in ("pkg/__init__.py", "pkg/tests/test_x.py", "pkg/__pycache__/x.pyc",
+                        "pkg/data/new/common/tests/test_smoke.py", "pkg/data/build/keep.txt"):
+                p = src / rel
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text("")
+            dest = stage_pyapp.stage(src, "pkg", pathlib.Path(tmp, "dest"))
+            self.assertTrue((dest / "data/new/common/tests/test_smoke.py").is_file())
+            self.assertTrue((dest / "data/build/keep.txt").is_file())
+            self.assertFalse((dest / "tests").exists())
+            self.assertFalse((dest / "__pycache__").exists())
+
+
+class PrepareScriptTests(unittest.TestCase):
+    """The prepare.sh steps that need no network, run against the real component trees."""
+
+    def prepare(self, pkg: str, tmp: str) -> pathlib.Path:
+        pkg_dir = pathlib.Path(tmp, pkg)
+        (pkg_dir / "debian").mkdir(parents=True)
+        subprocess.run(["bash", str(ROOT / "packages" / pkg / "prepare.sh")], check=True, capture_output=True,
+                       env={"PATH": "/usr/bin:/bin", "SVOYA_SRC": str(ROOT), "PKG_DIR": str(pkg_dir)})
+        return pkg_dir / "files"
+
+    def test_base_identity_comes_from_branding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = self.prepare("svoya-base", tmp)
+            staged = (files / "usr/lib/os-release").read_text()
+            self.assertEqual(staged, (ROOT / "branding/os/root/usr/lib/os-release").read_text())
+            self.assertIn("UBUNTU_CODENAME=resolute", staged)
+            for rel in ("etc/lsb-release", "etc/issue", "etc/issue.net", "etc/upstream-release/lsb-release"):
+                self.assertTrue((files / rel).is_file(), rel)
+            self.assertTrue((files / "usr/share/svoya/motd").is_file())
+        preinst = (ROOT / "packages/svoya-base/debian/svoya-base.preinst").read_text()
+        for path in ("/usr/lib/os-release", "/etc/lsb-release", "/etc/issue", "/etc/issue.net"):
+            self.assertIn(path, preinst)
+
+    def test_branding_layout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = self.prepare("svoya-branding", tmp)
+            themes = sorted(p.name for p in (files / "usr/share/plymouth/themes").iterdir())
+            self.assertEqual(themes, ["svoya-signal"])  # not the preview frames or the test harness
+            for rel in ("usr/share/icons/hicolor/scalable/apps/sos.svg",
+                        "usr/share/icons/hicolor/symbolic/apps/sos-symbolic.svg",
+                        "usr/share/icons/hicolor/256x256/apps/sos.png",
+                        "usr/share/grub/themes/svoya/theme.txt",
+                        "etc/default/grub.d/90-sos-theme.cfg",
+                        "usr/share/sounds/svoya/index.theme",
+                        "usr/share/svoya/sounds/index.theme",          # ARCHITECTURE §3 path (link)
+                        "usr/share/svoya/wallpapers/wallpapers.json",
+                        "usr/share/svoya/fastfetch/logo.txt"):
+                self.assertTrue((files / rel).exists(), rel)
+            self.assertTrue((files / "usr/share/svoya/sounds").is_symlink())
+
+    def test_installer_branding_images(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = self.prepare("svoya-installer", tmp)
+            welcome = files / "etc/calamares/branding/svoya/welcome.png"
+            lockup = ROOT / "branding/out/logo/sos-lockup-stacked-en-on-dark.png"
+            self.assertEqual(welcome.read_bytes(), lockup.read_bytes())
+
+    def test_cli_ships_the_complete_project_template(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = self.prepare("svoya-cli", tmp)
+            self.assertTrue((files / "usr/lib/svoya/svoya_cli/data/new/common/tests/test_smoke.py").is_file())
+            self.assertTrue((files / "usr/bin/svoya").is_symlink())
 
 
 class ListsAndBootTests(unittest.TestCase):
@@ -96,8 +185,9 @@ class ListsAndBootTests(unittest.TestCase):
         self.assertIn("initramfs-tools", base)
         self.assertIn("casper", live)
         self.assertIn("flatpak", desktop)
-        self.assertFalse({"snapd", "sosreport"} & everything)
+        self.assertFalse({"snapd", "sos", "sosreport"} & everything)
         self.assertIn("sosreport", remove)
+        self.assertIn("sos", remove)
         for name in everything:
             self.assertRegex(name, r"^\??[a-z0-9][a-z0-9.+-]+$")
 

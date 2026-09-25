@@ -59,10 +59,16 @@ Item {
             scope.warmUp();
     }
 
+    // Probe only once shown: every notification card carries a hidden avatar, and each
+    // probe of a missing set logs "Cannot open …" (no sprites ship yet).
+    property bool probed: false
+
     implicitWidth: root.hasSprite ? root.size : root.scopeWidth
     implicitHeight: root.hasSprite ? root.size : root.scopeHeight
 
     onCandidatesChanged: root.candidate = 0
+    onVisibleChanged: if (visible) root.probed = true
+    Component.onCompleted: if (visible) root.probed = true
 
     // Existence probe for the chosen set (idle.png must exist).
     Image {
@@ -70,7 +76,7 @@ Item {
 
         visible: false
         asynchronous: true
-        source: root.spriteUrl(root.avatarName, "idle")
+        source: root.probed ? root.spriteUrl(root.avatarName, "idle") : ""
         onStatusChanged: {
             if (status === Image.Error && root.candidate < root.candidates.length)
                 root.candidate += 1;

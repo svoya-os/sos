@@ -66,7 +66,7 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 screen: bar.screen
                 visible: !bar.bottomBar && here && appName.length > 0
-                width: Math.max(0, Math.min(implicitWidth, content.width - right.width - 32 - x))
+                maxWidth: Math.max(0, content.width - right.width - 32 - x)
             }
         }
 

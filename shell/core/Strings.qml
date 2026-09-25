@@ -4,7 +4,7 @@ pragma Singleton
 // short, calm, concrete; lowercase in the bar, sentence case elsewhere; never nag).
 //
 // Language: Settings.language ("ru"/"en") if set, otherwise $LANGUAGE, $LC_ALL,
-// $LC_MESSAGES, $LANG. The greeter can switch it at runtime via `override`.
+// $LC_MESSAGES, $LANG. The greeter can switch it at runtime via `langOverride`.
 
 import QtQuick
 import Quickshell
@@ -12,7 +12,8 @@ import Quickshell
 Singleton {
     id: root
 
-    property string override: ""
+    // (not `override`: that becomes a QML keyword after Qt 6.10)
+    property string langOverride: ""
 
     readonly property string systemLang: {
         const vars = ["LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"];
@@ -23,7 +24,7 @@ Singleton {
         }
         return "en";
     }
-    readonly property string lang: root.override.length > 0 ? root.override : (Settings.language.length > 0 ? Settings.language : root.systemLang)
+    readonly property string lang: root.langOverride.length > 0 ? root.langOverride : (Settings.language.length > 0 ? Settings.language : root.systemLang)
     readonly property bool ru: root.lang === "ru"
     readonly property string locale: root.ru ? "ru_RU" : "en_US"
 

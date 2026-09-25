@@ -1,16 +1,23 @@
 #!/usr/bin/make -f
 # SPDX-License-Identifier: Apache-2.0
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+# Ubuntu turns LTO on by default (dpkg-buildflags); Quickshell (static QML plugin libraries, PCH) is
+# only built and tested upstream without it, and LTO multiplies link time and memory on CI runners.
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all optimize=-lto
 
 %:
 	dh $@ --buildsystem=cmake+ninja
 
 # CRASH_HANDLER needs cpptrace, which is not in the Ubuntu 26.04 archive.
+# Qt 6.10 (resolute): WaylandClient(Private), the qtwaylandscanner tool and the bundled ECM find
+# modules (FindWaylandScanner, FindXCB) come from qt6-base-dev/-dev-tools; VulkanHeadersConfig.cmake
+# from libvulkan-dev; qsb from qt6-shader-baker (a dependency of qt6-shadertools-dev).
+GIT_REVISION := $(shell cat debian/quickshell-git-revision 2>/dev/null)
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 		-DDISTRIBUTOR="SOS (github.com/svoya-os/sos)" \
 		-DCRASHREPORT_URL=https://github.com/svoya-os/sos/issues \
+		-DGIT_REVISION="$(GIT_REVISION)" \
 		-DCRASH_HANDLER=OFF \
 		-DBUILD_TESTING=OFF
 

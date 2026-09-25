@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Static checks for the build/CI side of the repository (also run by .github/workflows/ci.yml):
-# shellcheck, bash -n / sh -n, YAML (workflows, Calamares configs), JSON, Python byte-compilation.
+# syntax (bash -n / sh -n) and ShellCheck, YAML (workflows, Calamares configs), JSON, Python
+# byte-compilation. (A comment line must not start with the word "shellcheck": ShellCheck would
+# parse it as a directive and fail with SC1073.)
 set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT"

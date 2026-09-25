@@ -19,11 +19,20 @@ once, by real path):
             property (Process, Socket, IpcHandler, …) — a runtime error in QML
   qmldir    explicit qmldir files list every type of their directory, mark
             `pragma Singleton` files as singletons and name the right module
-  glyphs    `glyph: "name"` literals exist in the icon registry (core/Icons.qml)
+  glyphs    `glyph: "name"` literals exist in the icon registry (core/Icons.qml), and
+            every registry path parses in Qt's PathSvg (no compact arc flags)
   links     greeter/ and setup/ link core, components and assets correctly
+  ipc       every `$svoya_ipc <target> <fn>` keybinding in hypr/*.conf and every
+            `ipc call <target> <fn>` in QML names an IpcHandler function
   types     no object type is exported by two unqualified imports (ambiguous)
   js        (when `node` is on PATH) every function body, handler and binding
             parses as JavaScript
+  api       every property, grouped/attached property, handler, enum value,
+            singleton member and `id.member` exists in Quickshell 0.3.1 /
+            Qt 6.10 (tools/qmlapi.json, generated from their sources by
+            gen_qmlapi.py) or in the shell's own components; no read-only or
+            FINAL property is assigned/redeclared; children only go into types
+            with a default property (tools/qmlapi_check.py)
 
 Exit status 1 when anything is wrong. Output: one line per problem.
 """
@@ -430,6 +439,75 @@ def check_links(root: pathlib.Path, errors: list[str]) -> None:
                 errors.append(f"shell/{sub}/{link}: points to {os.readlink(p)}, expected ../{link}")
 
 
+def ipc_targets(qml: pathlib.Path) -> dict[str, set[str]]:
+    """IpcHandler target -> function names declared in one QML file."""
+    text = qml.read_text(encoding="utf-8")
+    out: dict[str, set[str]] = {}
+    for m in re.finditer(r"IpcHandler\s*\{", text):
+        depth, i = 0, m.end() - 1
+        for j in range(i, len(text)):
+            if text[j] == "{":
+                depth += 1
+            elif text[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+        body = text[i:j]
+        t = re.search(r'target:\s*"([^"]+)"', body)
+        if t:
+            out[t.group(1)] = set(re.findall(r"^\s*function\s+(\w+)\s*\(", body, re.M))
+    return out
+
+
+SVG_ARGS = {"m": 2, "l": 2, "h": 1, "v": 1, "c": 6, "s": 4, "q": 4, "t": 2, "a": 7, "z": 0}
+SVG_NUM = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+
+
+def check_icon_paths(root: pathlib.Path, errors: list[str]) -> None:
+    """Icon path data must survive Qt's greedy SVG number reader (QQuickSvgParser): compact arc
+    flags like `0 00-2.4` are read as one number and break the icon."""
+    reg = root / "core" / "Icons.qml"
+    if not reg.exists():
+        return
+    for n, line in enumerate(reg.read_text(encoding="utf-8").splitlines(), 1):
+        m = re.match(r'\s*"([\w-]+)":\s*\{ s: "([^"]*)", f: "([^"]*)"', line)
+        if not m:
+            continue
+        for d in m.group(2, 3):
+            for cmd, body in re.findall(r"([A-Za-z])([^A-Za-z]*)", d):
+                nums = SVG_NUM.findall(body)
+                want = SVG_ARGS.get(cmd.lower())
+                bad = want is None or (want and len(nums) % want) or (not want and nums)
+                if cmd in "aA" and not bad:
+                    bad = any(nums[i] not in ("0", "1") for i in range(len(nums)) if i % 7 in (3, 4))
+                if bad:
+                    errors.append(f"shell/core/Icons.qml:{n}: icon '{m.group(1)}': '{cmd}{body.strip()}' "
+                                  "does not parse in Qt's PathSvg (run tools/gen_icons.py)")
+                    break
+
+
+def check_ipc_binds(root: pathlib.Path, errors: list[str]) -> None:
+    """Every `$svoya_ipc <target> <fn>` in hypr/*.conf and `ipc call <target> <fn>` in QML exists."""
+    shell_targets = ipc_targets(root / "shell.qml")
+    setup_targets = ipc_targets(root / "setup" / "shell.qml") if (root / "setup" / "shell.qml").exists() else {}
+    for conf in sorted((root / "hypr").rglob("*.conf")):
+        for n, line in enumerate(conf.read_text(encoding="utf-8").splitlines(), 1):
+            for m in re.finditer(r"\$svoya_ipc\s+(\w+)\s+(\w+)", line):
+                tgt, fn = m.groups()
+                if fn not in shell_targets.get(tgt, set()):
+                    errors.append(f"{conf.relative_to(root.parent)}:{n}: ipc {tgt} {fn}: no such IpcHandler function "
+                                  "in shell.qml")
+    for qml in sorted(root.rglob("*.qml")):
+        if "tools" in qml.parts:
+            continue
+        for n, line in enumerate(qml.read_text(encoding="utf-8").splitlines(), 1):
+            for m in re.finditer(r"ipc call (\w+) (\w+)", line):
+                tgt, fn = m.groups()
+                known = setup_targets if tgt == "setup" else shell_targets
+                if fn not in known.get(tgt, set()):
+                    errors.append(f"{qml.relative_to(root.parent)}:{n}: ipc call {tgt} {fn}: no such IpcHandler function")
+
+
 # ----------------------------------------------------------------------------- main
 def build_context(config_root: pathlib.Path) -> dict:
     """Modules visible from one Quickshell config root (shell/, greeter/, setup/)."""
@@ -609,7 +687,12 @@ def main() -> int:
             checked.append((path, str(path.relative_to(SHELL.parent))))
     check_qmldirs(SHELL, errors)
     check_links(SHELL, errors)
+    check_ipc_binds(SHELL, errors)
+    check_icon_paths(SHELL, errors)
     js = check_js(checked, errors)
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import qmlapi_check
+    errors.extend(qmlapi_check.check(SHELL, [p for p, _ in checked]))
     for e in errors:
         print(e)
     print(f"qmlcheck: {count} files ({js}), {len(errors)} problem(s)", file=sys.stderr)

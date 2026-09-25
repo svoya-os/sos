@@ -24,10 +24,19 @@ tty=()
 env_args=()
 for v in SNAPSHOT SOURCE_DATE_EPOCH NVIDIA_BRANCHES POOL_STRICT SQUASHFS_COMP SQUASHFS_LEVEL \
          SOS_VERSION ISO_LABEL ISO_NAME SOS_APT_URL; do
-    if [ -n "${!v:-}" ]; then env_args+=(-e "$v"); fi
+    if [ -n "${!v:-}" ]; then env_args+=(-e "$v=${!v}"); fi
 done
+# Set but empty is meaningful here: no offline NVIDIA pool (iso.yml: nvidia_pool=none).
+if [ -n "${NVIDIA_BRANCHES+x}" ] && [ -z "$NVIDIA_BRANCHES" ]; then env_args+=(-e "NVIDIA_BRANCHES="); fi
+# The SOS APT key (hooks/85-final-sources.sh) is a host path: mount it into the container.
+mounts=()
+if [ -n "${SOS_APT_KEY_FILE:-}" ]; then
+    [ -f "$SOS_APT_KEY_FILE" ] || { echo "SOS_APT_KEY_FILE not found: $SOS_APT_KEY_FILE" >&2; exit 1; }
+    mounts+=(-v "$(realpath "$SOS_APT_KEY_FILE"):/run/sos-apt-key.asc:ro")
+    env_args+=(-e SOS_APT_KEY_FILE=/run/sos-apt-key.asc)
+fi
 
 exec docker run --rm "${tty[@]}" --privileged \
-    -v "$ROOT:/src" -v "$WORK:/work" -w /src \
+    -v "$ROOT:/src" -v "$WORK:/work" "${mounts[@]}" -w /src \
     -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" "${env_args[@]}" \
     "$BUILD_IMAGE" bash /src/image/build-iso.sh --work /work --out /src/dist/iso "$@"

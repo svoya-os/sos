@@ -1,5 +1,10 @@
 #!/bin/sh
-# SOS login message (replaces Ubuntu's help text; svoya-base).
+# SOS login message (replaces Ubuntu's help text; svoya-base). The text comes from the branding
+# component (branding/os/root/etc/motd, installed as /usr/share/svoya/motd).
+if [ -r /usr/share/svoya/motd ]; then
+    cat /usr/share/svoya/motd
+    exit 0
+fi
 printf '\n  SOS — https://github.com/svoya-os/sos\n'
 printf '  sos doctor   check drivers, GPU and snapshots\n'
 printf '  sos undo     revert the last system change\n\n'

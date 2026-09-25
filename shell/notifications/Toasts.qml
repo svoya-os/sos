@@ -52,7 +52,9 @@ PanelWindow {
                 readonly property bool critical: modelData.urgency === NotificationUrgency.Critical
                 readonly property real timeout: {
                     const n = modelData.n;
-                    const t = n && n.expireTimeout > 0 ? n.expireTimeout * 1000 : 6000;
+                    // already milliseconds: Quickshell stores the D-Bus expire_timeout
+                    // as-is (notification.cpp:115; its "seconds" doc comment is wrong)
+                    const t = n && n.expireTimeout > 0 ? n.expireTimeout : 6000;
                     return Math.max(3000, Math.min(20000, t));
                 }
 

@@ -173,10 +173,17 @@ validate_one() {
 setup_build_host() {
     # shellcheck source=scripts/lib/apt-snapshot.sh
     . "$ROOT/scripts/lib/apt-snapshot.sh"
-    log "Preparing build environment ($SUITE, snapshot: $SNAPSHOT)"
-    container_apt_setup "$SUITE" "$SNAPSHOT"
-    apt-get install -y -q build-essential debhelper dh-python dpkg-dev fakeroot git ca-certificates \
-        curl apt-utils python3 xz-utils zstd gnupg
+    if [ "$MODE" = container ]; then
+        log "Preparing build environment ($SUITE, snapshot: $SNAPSHOT)"
+        container_apt_setup "$SUITE" "$SNAPSHOT"
+    else
+        # Never rewrite the APT sources of a real machine (container_apt_setup deletes them).
+        warn "--no-container: using this host's APT sources as they are (snapshot $SNAPSHOT not applied)"
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update -q
+    fi
+    apt-get install -y -q --no-install-recommends build-essential debhelper dh-python dpkg-dev fakeroot \
+        git ca-certificates curl apt-utils python3 xz-utils zstd gnupg
     git config --global --add safe.directory "$ROOT"
 }
 
@@ -193,13 +200,14 @@ build_one() {
     if [ -d "$src/files" ]; then
         cp -a "$src/files" "$bdir/files"
     fi
+    write_changelog "$bdir" "$(sed -n 's/^Source: *//p' "$bdir/debian/control")" "$ver"
+    # Build dependencies first: some prepare.sh steps use them (svoya-branding: grub-mkfont).
+    apt-get build-dep -y -q "$bdir"
     if [ -f "$src/prepare.sh" ]; then
         info "prepare.sh"
         SVOYA_SRC=$ROOT PKG_DIR=$bdir PKG_VERSION=$ver SOURCE_DATE_EPOCH=$SDE \
             bash "$src/prepare.sh"
     fi
-    write_changelog "$bdir" "$(sed -n 's/^Source: *//p' "$bdir/debian/control")" "$ver"
-    apt-get build-dep -y -q "$bdir"
     (
         cd "$bdir"
         SOURCE_DATE_EPOCH=$SDE DEB_BUILD_OPTIONS="parallel=$JOBS nocheck" \
@@ -288,8 +296,10 @@ main() {
 
     [ "$(id -u)" = 0 ] || die "the build needs root (it installs build dependencies with apt)"
     grep -q "VERSION_CODENAME=$SUITE" /etc/os-release || warn "host is not Ubuntu $SUITE; results may differ from CI"
-    for p in "${PKGS[@]}"; do validate_one "$p"; done
+    # The stock ubuntu:26.04 image has no python3 (check_control.py) and no git: install the build
+    # tools first, then validate.
     setup_build_host
+    for p in "${PKGS[@]}"; do validate_one "$p"; done
     mkdir -p "$OUT/pool"
     for p in "${PKGS[@]}"; do build_one "$p"; done
     index_repo

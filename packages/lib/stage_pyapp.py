@@ -7,6 +7,9 @@
 Finds the importable package inside SRC (SRC/<pkg>/__init__.py, SRC/src/<pkg>/__init__.py or
 SRC/__init__.py) and copies it to DEST_ROOT/usr/lib/svoya/<pkg>, leaving out tests, caches and
 build junk. Prints the staged path.
+
+Test and build directories are skipped only at the top level of the package: deeper down they are
+package data (e.g. svoya_cli/data/new/common/tests/, the project template of `sos new`).
 """
 from __future__ import annotations
 
@@ -15,8 +18,9 @@ import pathlib
 import shutil
 import sys
 
-SKIP_DIRS = {"__pycache__", "tests", "test", ".pytest_cache", ".mypy_cache", ".ruff_cache",
-             "build", "dist", ".git"}
+SKIP_ANYWHERE = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".git"}
+SKIP_TOP_LEVEL = {"tests", "test", "build", "dist"}
+SKIP_DIRS = SKIP_ANYWHERE | SKIP_TOP_LEVEL  # kept for callers that import it
 SKIP_SUFFIXES = {".pyc", ".pyo", ".orig", ".rej", ".swp"}
 
 
@@ -29,15 +33,21 @@ def find_package(src: pathlib.Path, name: str) -> pathlib.Path:
     raise SystemExit(f"stage_pyapp: no importable package '{name}' under {src}")
 
 
-def _ignore(directory: str, names: list[str]) -> set[str]:
-    out = set()
-    for n in names:
-        p = pathlib.Path(directory, n)
-        if p.is_dir() and n in SKIP_DIRS:
-            out.add(n)
-        elif p.suffix in SKIP_SUFFIXES:
-            out.add(n)
-    return out
+def _ignorer(top: pathlib.Path):
+    top = top.resolve()
+
+    def _ignore(directory: str, names: list[str]) -> set[str]:
+        at_top = pathlib.Path(directory).resolve() == top
+        out = set()
+        for n in names:
+            p = pathlib.Path(directory, n)
+            if p.is_dir() and (n in SKIP_ANYWHERE or (at_top and n in SKIP_TOP_LEVEL)):
+                out.add(n)
+            elif p.suffix in SKIP_SUFFIXES:
+                out.add(n)
+        return out
+
+    return _ignore
 
 
 def stage(src: pathlib.Path, name: str, dest_root: pathlib.Path) -> pathlib.Path:
@@ -45,7 +55,7 @@ def stage(src: pathlib.Path, name: str, dest_root: pathlib.Path) -> pathlib.Path
     dest = dest_root / "usr" / "lib" / "svoya" / name
     if dest.exists():
         shutil.rmtree(dest)
-    shutil.copytree(pkg, dest, ignore=_ignore)
+    shutil.copytree(pkg, dest, ignore=_ignorer(pkg))
     return dest
 
 

@@ -57,13 +57,18 @@ jobs:
           set -euo pipefail
           scripts/split-artifact.sh join iso
           ls -la iso
-          echo "ISO=$(ls iso/*.iso | head -n1)" >>"$GITHUB_ENV"
+          isos=(iso/*.iso)
+          [ -f "${isos[0]}" ] || { echo "::error::no ISO in the artifact"; exit 1; }
+          echo "ISO=${isos[0]}" >>"$GITHUB_ENV"
 
       - name: Install QEMU and OVMF
         run: |
           set -euo pipefail
-          sudo apt-get update -q
-          sudo apt-get install -y -q --no-install-recommends qemu-system-x86 qemu-utils ovmf python3-pil
+          sudo apt-get -o Acquire::Retries=3 update -q
+          # noble: qemu-system-x86 Depends on seabios and ipxe-qemu (BIOS, virtio-net ROM); ovmf ships
+          # /usr/share/OVMF/OVMF_{CODE,VARS}_4M.fd, OVMF_CODE_4M.secboot.fd and OVMF_VARS_4M.ms.fd.
+          sudo apt-get -o Acquire::Retries=3 install -y -q --no-install-recommends \
+              qemu-system-x86 qemu-utils ovmf python3-pil
           qemu-system-x86_64 --version | head -n1
           ls /usr/share/OVMF
 
