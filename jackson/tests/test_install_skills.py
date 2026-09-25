@@ -103,6 +103,37 @@ class SkillsTest(Base):
         m, r = self.say("создай навык пицца")
         self.assertIn("уже есть", r.text)
 
+    def test_list_fits_a_narrow_terminal(self):
+        import io
+        import os
+        import re
+        import shutil
+        from unittest import mock
+        from jackson import cli
+        long = "Rolls dice, flips coins and keeps score for board games on a rainy evening, with house rules"
+        skills.new_skill(self.paths.skills_dir, self.paths.config_home, "board-games", "en")
+        path = self.paths.skills_dir / "board-games" / "SKILL.md"
+        path.write_text(path.read_text().replace("description:", f"description: {long}\nx-old:", 1))
+
+        class Tty(io.StringIO):
+            def isatty(self):
+                return True
+
+        env = {"HOME": str(self.paths.home), "XDG_DATA_HOME": str(self.paths.data_home),
+               "XDG_CONFIG_HOME": str(self.paths.config_home), "NO_COLOR": "1"}
+        for cols in (60, 200):
+            out = Tty()
+            with mock.patch.dict(os.environ, env), mock.patch("sys.stdout", out), \
+                    mock.patch.object(shutil, "get_terminal_size", return_value=os.terminal_size((cols, 24))):
+                self.assertEqual(cli.main(["--lang=en", "skills"]), 0)
+            lines = [re.sub(r"\x1b\[[0-9;]*m", "", ln) for ln in out.getvalue().splitlines()]
+            row = next(ln for ln in lines if "board-games" in ln)
+            if cols == 60:
+                self.assertTrue(all(len(ln) <= 60 for ln in lines if "board-games" in ln or "·" in ln[:4]), lines)
+                self.assertTrue(row.endswith("…"), row)
+            else:
+                self.assertIn("house rules", row)                    # a wide window shows it whole
+
     def test_readme_and_bookmark_only_once(self):
         folder, created = skills.init_dir(self.paths.skills_dir, self.paths.config_home, "en")
         self.assertTrue(created)

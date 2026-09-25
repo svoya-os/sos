@@ -139,6 +139,6 @@ def main_tea(args, ctx: Ctx) -> int:
     st = ui.style()
     ui.out(st.faint(TEAPOT.lstrip("\n")))
     ui.head(tr("418 I'm a teapot", "418: я чайник"))
-    ui.note(tr("SOS does not brew coffee. Tea, though: «j таймер на 3 минуты».",
+    ui.note(tr("SOS does not brew coffee. Tea, though: \"j timer 3 min\".",
                "СОС кофе не варит, а чай — пожалуйста: «j таймер на 3 минуты»."))
     return 0

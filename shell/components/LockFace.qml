@@ -113,7 +113,7 @@ Item {
         say: {
             if (root.busy)
                 return Strings.jChecking;
-            if (root.error && line.ghost > 0)
+            if (root.error && (line.ghost > 0 || line.length === 0))
                 return Strings.jWrong(line.capsOn, Hypr.layoutCode);
             if (root.job !== null && line.length === 0)
                 return Strings.whileAway + " " + (root.job.label || "") + (root.job.progress !== undefined ? " " + Math.round(root.job.progress * 100) + "%" : "");
@@ -122,7 +122,7 @@ Item {
         sayMeta: {
             if (root.busy)
                 return Strings.jSecond;
-            if (root.error && line.ghost > 0)
+            if (root.error && (line.ghost > 0 || line.length === 0))
                 return Strings.jAgain;
             if (root.job !== null && line.length === 0)
                 return root.job.etaSec ? Strings.left(root.job.etaSec) : Strings.jWorking;

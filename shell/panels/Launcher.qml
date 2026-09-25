@@ -189,8 +189,8 @@ PanelFrame {
             const m = root.modules[i];
             const name = m.name ? (Strings.ru ? m.name.ru : m.name.en) || m.id : m.id;
             const summary = m.summary ? (Strings.ru ? m.summary.ru : m.summary.en) || "" : "";
-            if (root.mode === "install" && m.installed)
-                continue;
+            if (root.mode === "install" && (m.installed || (m.id === "gaming" && q.length === 0)))
+                continue;                     // (Steam heads the «Игры» category instead)
             const sc = q.length === 0 ? 1 : Fuzzy.best(q, [name, m.id, summary, (m.aliases || []).join(" ")]);
             if (sc > 60 || q.length === 0)
                 out.push({ group: "modules", title: name, secondary: m.installed ? Strings.installed : "sos install " + m.id, glyph: m.id === "gaming" ? "gamepad-2" : "package", module: m, score: sc + (m.installed ? 0 : 1) });
@@ -231,6 +231,11 @@ PanelFrame {
         if (q.length > 0) {
             out.sort((a, b) => b.score - a.score);
         } else {
+            // Steam is a module (drivers, 32-bit libraries, a password), not a Flathub app;
+            // it still belongs at the top of the games, like in `sos apps`
+            const gaming = root.modules.find(m => m.id === "gaming" && !m.installed);
+            if (gaming)
+                out.push({ group: "cat:games", title: "Steam", secondary: Strings.steamModuleSub + " · sos install steam", glyph: "gamepad-2", module: gaming, score: 1, idx: -1 });
             // by category, in the catalog's order, so each caption comes once
             const order = root.catalogCats.map(c => c.id);
             const rank = g => {
@@ -268,7 +273,15 @@ PanelFrame {
             out = out.concat(root.staticRows("actions", root.actionEntries, q, m === "actions" ? 20 : (q.length ? 4 : 0)));
         if (q.length > 0 && Jackson.enabled)
             out.push({ group: "jackson", title: q, secondary: Strings.askJackson, glyph: "sparkles", ask: true });
-        return out;
+        // one row per thing: «apps» finds «Установить приложение» as a command and as an action
+        const seen = {};
+        return out.filter(r => {
+            const k = r.ask ? "?" + r.title : r.title + "\u0001" + r.secondary;
+            if (seen[k])
+                return false;
+            seen[k] = true;
+            return true;
+        });
     }
 
     function groupTitle(g) {

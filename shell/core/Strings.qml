@@ -161,6 +161,8 @@ Singleton {
         return root.t("Установить " + name, "Install " + name);
     }
     readonly property string installApps: root.t("Установить приложение", "Install an app")
+    // install list, first under «Игры»: the gaming module, as `sos apps` shows it
+    readonly property string steamModuleSub: root.t("+ GameMode, MangoHud, gamescope · модуль, спросит пароль", "+ GameMode, MangoHud, gamescope · a module, asks for the password")
     readonly property string jacksonSkills: root.t("Навыки Джексона", "Jackson's skills")
     readonly property string morseCallSign: root.t("Позывной СОС азбукой Морзе", "The SOS call sign in Morse code")
     readonly property string funCoin: root.t("Подбросить монетку", "Flip a coin")

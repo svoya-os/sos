@@ -110,7 +110,8 @@ def render(checks: list[Check], rec: dict, gpu_only: bool) -> None:
     ui.out("")
     ui.out("  " + tail)
     if rec.get("torchBackend"):
-        ui.note(f"UV_TORCH_BACKEND={rec['torchBackend']}" + (f" · {' '.join(rec['packages'])}" if rec.get("packages") else ""))
+        ui.note(tr("PyTorch for this machine: ", "PyTorch для этой машины: ") + f"UV_TORCH_BACKEND={rec['torchBackend']}"
+                + (f" · {' '.join(rec['packages'])}" if rec.get("packages") else ""))
 
 
 def main(args, ctx: Ctx | None = None) -> int:

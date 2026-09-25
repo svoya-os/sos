@@ -171,7 +171,7 @@ Item {
                 return Strings.jWelcome;
             if (root.greeter.busy)
                 return Strings.jChecking;
-            if (root.greeter.failed && line.ghost > 0)
+            if (root.greeter.failed && (line.ghost > 0 || line.length === 0))
                 return Strings.jWrong(line.capsOn, Hypr.layoutCode);
             if (root.greeter.askingName)
                 return Strings.jWho;
@@ -184,7 +184,7 @@ Item {
                 return Strings.jLoadingDesk;
             if (root.greeter.busy)
                 return Strings.jSecond;
-            if (root.greeter.failed && line.ghost > 0)
+            if (root.greeter.failed && (line.ghost > 0 || line.length === 0))
                 return Strings.jAgain;
             if (root.greeter.prompt.length > 0)
                 return Strings.jOneMoreStep;

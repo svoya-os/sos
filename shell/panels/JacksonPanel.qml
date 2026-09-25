@@ -32,9 +32,18 @@ PanelFrame {
         return Jackson.suggestions || out;
     }
 
+    // The last question stays in the field, selected: typing starts a new one, Enter repeats the
+    // primary action, Tab refines. Any other text keeps the caret at its end.
     function focusInput() {
         input.forceActiveFocus();
-        input.cursorPosition = input.length;
+        root.selectQuestion();
+    }
+
+    function selectQuestion() {
+        if (Jackson.question.length > 0 && input.text.trim() === Jackson.question)
+            input.selectAll();
+        else
+            input.cursorPosition = input.length;
     }
 
     function submit() {
@@ -115,6 +124,19 @@ PanelFrame {
         }
         function onTurnIdChanged() {
             root.reparse();
+        }
+        // A question asked from elsewhere (the launcher's «42», a coin, «Подобрать модель»)
+        // replaces whatever the field held, so the field always shows what was answered.
+        function onQuestionChanged() {
+            if (Jackson.question.length > 0 && input.text.trim() !== Jackson.question)
+                input.text = Jackson.question;
+        }
+        // The answer is in: select the question, so the next one can simply be typed (a field
+        // already edited meanwhile keeps its caret where it is).
+        function onBusyChanged() {
+            if (!Jackson.busy && root.shown && input.activeFocus && Jackson.question.length > 0
+                    && input.text.trim() === Jackson.question)
+                input.selectAll();
         }
     }
 

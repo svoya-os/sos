@@ -28,8 +28,9 @@ function score(query, text) {
     if (at > 0) {
         return (isBoundary(t, at) ? 800 : 600) - Math.min(100, at);
     }
-    // subsequence
-    let ti = 0, s = 0, run = 0;
+    // subsequence; letters strewn over a long description («minecraft» inside a module's
+    // summary) are not a match: every skipped stretch costs up to 30 points
+    let ti = 0, s = 0, run = 0, first = true;
     for (let qi = 0; qi < q.length; qi++) {
         const c = q[qi];
         if (c === " ")
@@ -45,6 +46,9 @@ function score(query, text) {
             return 0;
         run = found === ti ? run + 1 : 1;
         s += 10 + run * 5 + (isBoundary(t, found) ? 15 : 0);
+        if (!first)
+            s -= 3 * Math.min(10, found - ti);
+        first = false;
         ti = found + 1;
     }
     return Math.min(500, s - Math.min(60, t.length - q.length));

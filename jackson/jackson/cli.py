@@ -649,9 +649,15 @@ def cmd_skills(args: argparse.Namespace) -> int:
     shown = "~" + shown[len(home):] if shown.startswith(home + os.sep) else shown
     print(out.color("›", "accent") + say(lang, " навыки · ", " skills · ") + out.dim(shown))
     width = max([10] + [len(r["name"]) for r in rows])
+    # One line per skill: the description is cut to what is left of the terminal's width
+    # (a narrow window used to wrap it mid-word); piped output keeps 70 characters.
+    room = 70
+    if sys.stdout.isatty():
+        import shutil
+        room = max(16, shutil.get_terminal_size((100, 24)).columns - (2 + 2 + width + 2 + 9 + 2) - 1)
     for r in rows:
         kind = say(lang, "системный", "system") if r["system"] else say(lang, "твой", "yours")
-        desc = r["description"] if len(r["description"]) <= 70 else r["description"][:69] + "…"
+        desc = r["description"] if len(r["description"]) <= room else r["description"][:room - 1].rstrip() + "…"
         print(f"  {out.color('•', 'accent') if not r['system'] else out.dim('·')} {r['name'].ljust(width)}  "
               f"{out.dim(kind.ljust(9))}  {desc}")
     if not rows:
