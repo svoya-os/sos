@@ -2,173 +2,230 @@
 # `sos install <name>` for desktop apps: short names → Flathub IDs (installed per user with
 # `flatpak install --user`, so no password is needed and `sos remove <name>` undoes it).
 # Modules win over apps with the same name (e.g. `obsidian` → module notes).
-# proprietary = true → SOS says so before installing.
+# proprietary = true → SOS says so before installing. category groups `sos apps` and the launcher's
+# «Установить …» rows: games · chat · internet · office · creative · media · dev · system.
 
 [app.telegram]
 id = "org.telegram.desktop"
 name = "Telegram"
+category = "chat"
+summary = { en = "messenger", ru = "мессенджер" }
 license = "GPL-3.0"
 aliases = ["телеграм", "телеграмм"]
 
 [app.vscodium]
 id = "com.vscodium.codium"
 name = "VSCodium"
+category = "dev"
+summary = { en = "code editor (VS Code without telemetry)", ru = "редактор кода (VS Code без телеметрии)" }
 license = "MIT"
 aliases = ["codium", "vscode", "code"]
 
 [app.zed]
 id = "dev.zed.Zed"
 name = "Zed"
+category = "dev"
+summary = { en = "fast code editor", ru = "быстрый редактор кода" }
 license = "GPL-3.0 / Apache-2.0"
 aliases = []
 
 [app.blender]
 id = "org.blender.Blender"
 name = "Blender"
+category = "creative"
+summary = { en = "3D: modelling, animation, render", ru = "3D: моделирование, анимация, рендер" }
 license = "GPL-3.0"
 aliases = ["блендер"]
 
 [app.gimp]
 id = "org.gimp.GIMP"
 name = "GIMP"
+category = "creative"
+summary = { en = "photo editor", ru = "фоторедактор" }
 license = "GPL-3.0"
 aliases = ["гимп"]
 
 [app.krita]
 id = "org.kde.krita"
 name = "Krita"
+category = "creative"
+summary = { en = "digital painting", ru = "рисование" }
 license = "GPL-3.0"
 aliases = ["крита"]
 
 [app.inkscape]
 id = "org.inkscape.Inkscape"
 name = "Inkscape"
+category = "creative"
+summary = { en = "vector graphics", ru = "векторная графика" }
 license = "GPL-3.0"
 aliases = ["инкскейп"]
 
 [app.obs]
 id = "com.obsproject.Studio"
 name = "OBS Studio"
+category = "creative"
+summary = { en = "streaming and screen recording", ru = "стримы и запись экрана" }
 license = "GPL-2.0"
 aliases = ["obs-studio", "обс"]
 
 [app.kdenlive]
 id = "org.kde.kdenlive"
 name = "Kdenlive"
+category = "creative"
+summary = { en = "video editor", ru = "видеоредактор" }
 license = "GPL-3.0"
 aliases = []
 
 [app.audacity]
 id = "org.audacityteam.Audacity"
 name = "Audacity"
+category = "creative"
+summary = { en = "audio editor", ru = "аудиоредактор" }
 license = "GPL-3.0"
 aliases = []
 
 [app.darktable]
 id = "org.darktable.Darktable"
 name = "darktable"
+category = "creative"
+summary = { en = "RAW photos", ru = "RAW-фото" }
 license = "GPL-3.0"
 aliases = []
 
 [app.handbrake]
 id = "fr.handbrake.ghb"
 name = "HandBrake"
+category = "creative"
+summary = { en = "video converter", ru = "конвертер видео" }
 license = "GPL-2.0"
 aliases = []
 
 [app.firefox]
 id = "org.mozilla.firefox"
 name = "Firefox"
+category = "internet"
+summary = { en = "web browser", ru = "браузер" }
 license = "MPL-2.0"
 aliases = ["фаерфокс"]
 
 [app.chromium]
 id = "org.chromium.Chromium"
 name = "Chromium"
+category = "internet"
+summary = { en = "web browser", ru = "браузер" }
 license = "BSD-3-Clause"
 aliases = ["хромиум"]
 
 [app.thunderbird]
 id = "org.mozilla.Thunderbird"
 name = "Thunderbird"
+category = "internet"
+summary = { en = "mail", ru = "почта" }
 license = "MPL-2.0"
 aliases = []
 
 [app.libreoffice]
 id = "org.libreoffice.LibreOffice"
 name = "LibreOffice"
+category = "office"
+summary = { en = "office suite", ru = "офисный пакет" }
 license = "MPL-2.0"
 aliases = ["office", "либреофис", "офис"]
 
 [app.vlc]
 id = "org.videolan.VLC"
 name = "VLC"
+category = "media"
+summary = { en = "video player", ru = "видеоплеер" }
 license = "GPL-2.0"
 aliases = []
 
 [app.mpv]
 id = "io.mpv.Mpv"
 name = "mpv"
+category = "media"
+summary = { en = "minimal video player", ru = "минималистичный видеоплеер" }
 license = "GPL-2.0"
 aliases = []
 
 [app.signal]
 id = "org.signal.Signal"
 name = "Signal"
+category = "chat"
+summary = { en = "private messenger", ru = "защищённый мессенджер" }
 license = "AGPL-3.0"
 aliases = []
 
 [app.element]
 id = "im.riot.Riot"
 name = "Element"
+category = "chat"
+summary = { en = "Matrix chat", ru = "чат Matrix" }
 license = "AGPL-3.0"
 aliases = ["matrix"]
 
 [app.anki]
 id = "net.ankiweb.Anki"
 name = "Anki"
+category = "office"
+summary = { en = "flashcards", ru = "карточки для запоминания" }
 license = "AGPL-3.0"
 aliases = []
 
 [app.zotero]
 id = "org.zotero.Zotero"
 name = "Zotero"
+category = "office"
+summary = { en = "papers and citations", ru = "статьи и цитаты" }
 license = "AGPL-3.0"
 aliases = []
 
 [app.logseq]
 id = "com.logseq.Logseq"
 name = "Logseq"
+category = "office"
+summary = { en = "outliner notes", ru = "заметки-аутлайнер" }
 license = "AGPL-3.0"
 aliases = []
 
 [app.joplin]
 id = "net.cozic.joplin_desktop"
 name = "Joplin"
+category = "office"
+summary = { en = "notes", ru = "заметки" }
 license = "AGPL-3.0"
 aliases = []
 
 [app.bottles]
 id = "com.usebottles.bottles"
 name = "Bottles"
+category = "games"
+summary = { en = "Windows programs through Wine", ru = "Windows-программы через Wine" }
 license = "GPL-3.0"
 aliases = []
 
 [app.flatseal]
 id = "com.github.tchx84.Flatseal"
 name = "Flatseal"
+category = "system"
+summary = { en = "Flatpak permissions", ru = "разрешения Flatpak" }
 license = "GPL-3.0"
 aliases = []
 
 [app.lact]
 id = "io.github.ilya_zlobintsev.LACT"
 name = "LACT"
+category = "system"
+summary = { en = "GPU fans, power, undervolt", ru = "вентиляторы, мощность, андервольт видеокарты" }
 license = "MIT"
 aliases = []
 
 [app.discord]
 id = "com.discordapp.Discord"
 name = "Discord"
+category = "chat"
+summary = { en = "voice chat", ru = "голосовой чат" }
 license = "proprietary"
 proprietary = true
 aliases = ["дискорд"]
@@ -176,6 +233,97 @@ aliases = ["дискорд"]
 [app.spotify]
 id = "com.spotify.Client"
 name = "Spotify"
+category = "media"
+summary = { en = "music streaming", ru = "музыка по подписке" }
 license = "proprietary"
 proprietary = true
 aliases = ["спотифай"]
+
+[app.bazaar]
+id = "io.github.kolunmi.Bazaar"
+name = "Bazaar"
+category = "system"
+summary = { en = "app store for Flathub", ru = "магазин приложений Flathub" }
+license = "GPL-3.0"
+aliases = ["базар", "магазин", "appstore", "app-store", "shop"]
+
+[app.prism]
+id = "org.prismlauncher.PrismLauncher"
+name = "Prism Launcher"
+category = "games"
+summary = { en = "Minecraft launcher (the game is bought from Microsoft)", ru = "лаунчер Minecraft (саму игру покупают у Microsoft)" }
+license = "GPL-3.0"
+aliases = ["minecraft", "майнкрафт", "майн", "prismlauncher", "призм"]
+
+[app.protonplus]
+id = "com.vysp3r.ProtonPlus"
+name = "ProtonPlus"
+category = "games"
+summary = { en = "Proton-GE and Wine versions for Steam, Heroic, Lutris", ru = "Proton-GE и версии Wine для Steam, Heroic, Lutris" }
+license = "GPL-3.0"
+aliases = ["proton", "протон", "proton-ge", "ge-proton"]
+
+[app.heroic]
+id = "com.heroicgameslauncher.hgl"
+name = "Heroic"
+category = "games"
+summary = { en = "Epic Games, GOG and Amazon games", ru = "игры из Epic Games, GOG и Amazon" }
+license = "GPL-3.0"
+aliases = ["epic", "epic-games", "gog", "хероик", "эпик"]
+
+[app.lutris]
+id = "net.lutris.Lutris"
+name = "Lutris"
+category = "games"
+summary = { en = "all your games in one place", ru = "все игры в одном месте" }
+license = "GPL-3.0"
+aliases = ["лутрис"]
+
+[app.retroarch]
+id = "org.libretro.RetroArch"
+name = "RetroArch"
+category = "games"
+summary = { en = "retro console emulators", ru = "эмуляторы старых приставок" }
+license = "GPL-3.0"
+aliases = ["emulator", "эмулятор", "ретроарч", "dendy", "денди"]
+
+[app.vesktop]
+id = "dev.vencord.Vesktop"
+name = "Vesktop"
+category = "chat"
+summary = { en = "Discord that shares the screen with sound on Wayland", ru = "Discord, который показывает экран со звуком в Wayland" }
+license = "GPL-3.0"
+aliases = ["vencord"]
+
+[app.chrome]
+id = "com.google.Chrome"
+name = "Google Chrome"
+category = "internet"
+summary = { en = "web browser", ru = "браузер" }
+license = "proprietary"
+proprietary = true
+aliases = ["google-chrome", "хром", "гугл-хром"]
+
+[app.qbittorrent]
+id = "org.qbittorrent.qBittorrent"
+name = "qBittorrent"
+category = "internet"
+summary = { en = "torrent client", ru = "торрент-клиент" }
+license = "GPL-2.0"
+aliases = ["torrent", "торрент", "торренты", "кубит"]
+
+[app.onlyoffice]
+id = "org.onlyoffice.desktopeditors"
+name = "ONLYOFFICE"
+category = "office"
+summary = { en = "office compatible with Word and Excel files", ru = "офис, дружный с файлами Word и Excel" }
+license = "AGPL-3.0"
+aliases = ["онлиофис", "word", "excel", "ворд", "эксель"]
+
+[app.keepassxc]
+id = "org.keepassxc.KeePassXC"
+name = "KeePassXC"
+category = "office"
+summary = { en = "password manager (offline)", ru = "менеджер паролей (без облака)" }
+license = "GPL-3.0"
+aliases = ["keepass", "кипас", "пароли"]

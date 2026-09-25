@@ -30,7 +30,7 @@ from .i18n import fmt_cost, fmt_number, meta_line, norm_lang
 from .paths import Paths
 
 SUBCOMMANDS = ("ask", "status", "models", "memory", "notes", "audit", "undo", "approve", "route", "persona",
-               "avatar", "doctor", "mcp", "version", "help")
+               "avatar", "doctor", "mcp", "skills", "version", "help")
 
 # Graphite defaults (themes/graphite.toml); theme.json overrides them when present.
 # Semantic colors never reuse the accent (DESIGN §10): warn is yellow, not amber.
@@ -606,6 +606,61 @@ def cmd_notes(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_skills(args: argparse.Namespace) -> int:
+    """jackson skills [list | path | new <name> | init]: the Agent Skills Jackson reads."""
+    lang = _lang(args.lang)
+    from . import skills as sk
+    paths = Paths.from_env()
+    if args.action in ("init", "path"):
+        folder, created = sk.init_dir(paths.skills_dir, paths.config_home, lang)
+        if args.json:
+            print(json.dumps({"path": str(folder), "created": created}, ensure_ascii=False))
+        elif args.action == "path":
+            print(folder)
+        return 0
+    if args.action == "new":
+        name = " ".join(args.name).strip()
+        if not name:
+            print(say(lang, "Как назвать? jackson skills new <имя>", "Name it: jackson skills new <name>"), file=sys.stderr)
+            return 2
+        try:
+            path = sk.new_skill(paths.skills_dir, paths.config_home, name, lang)
+        except FileExistsError as exc:
+            print(say(lang, f"Такой навык уже есть: {exc}", f"This skill already exists: {exc}"), file=sys.stderr)
+            return 1
+        except ValueError:
+            print(say(lang, "Имя: буквы, цифры, пробел, точка или дефис, до 64 знаков.",
+                      "The name: letters, digits, space, dot or dash, up to 64 characters."), file=sys.stderr)
+            return 2
+        print(path)
+        print(say(lang, "Открой файл и опиши, что делать: Джексон подхватит навык сразу, без перезапуска.",
+                  "Open the file and describe what to do: Jackson picks the skill up right away."), file=sys.stderr)
+        return 0
+    loaded = sk.Skills(paths.skills_dir, system_dirs=[paths.system_skills_dir]).load()
+    system = str(paths.system_skills_dir) + os.sep
+    rows = [{"name": s.name, "description": s.description, "aliases": s.aliases, "path": str(s.path),
+             "system": str(s.path).startswith(system)} for s in loaded]
+    if args.json:
+        print(json.dumps({"skills": rows, "dir": str(paths.skills_dir)}, ensure_ascii=False, indent=2))
+        return 0
+    out = Style(sys.stdout, paths)
+    home = str(Path.home())
+    shown = str(paths.skills_dir)
+    shown = "~" + shown[len(home):] if shown.startswith(home + os.sep) else shown
+    print(out.color("›", "accent") + say(lang, " навыки · ", " skills · ") + out.dim(shown))
+    width = max([10] + [len(r["name"]) for r in rows])
+    for r in rows:
+        kind = say(lang, "системный", "system") if r["system"] else say(lang, "твой", "yours")
+        desc = r["description"] if len(r["description"]) <= 70 else r["description"][:69] + "…"
+        print(f"  {out.color('•', 'accent') if not r['system'] else out.dim('·')} {r['name'].ljust(width)}  "
+              f"{out.dim(kind.ljust(9))}  {desc}")
+    if not rows:
+        print(out.dim(say(lang, "  пока ни одного", "  none yet")))
+    print(out.dim(say(lang, "  свой навык: jackson skills new <имя> · папка: jackson skills path",
+                      "  your own: jackson skills new <name> · the folder: jackson skills path")))
+    return 0
+
+
 def cmd_audit(args: argparse.Namespace) -> int:
     lang = _lang(args.lang)
     from .audit import AuditLog
@@ -938,6 +993,10 @@ def build_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("doctor", help="проверка")
     d.add_argument("--online", action="store_true", help="also check cloud providers over the network")
     d.add_argument("--mcp", action="store_true", help="also start MCP servers and check their pins")
+    sk = sub.add_parser("skills", help="навыки: list | path | new <имя>")
+    sk.add_argument("action", nargs="?", choices=["list", "path", "new", "init"], default="list")
+    sk.add_argument("name", nargs="*")
+    sk.add_argument("--json", action="store_true")
     mc = sub.add_parser("mcp", help="MCP: list | trust <server>")
     mc.add_argument("action", nargs="?", choices=["list", "trust"], default="list")
     mc.add_argument("server", nargs="?")
@@ -977,7 +1036,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         handler = {"status": cmd_status, "models": cmd_models, "memory": cmd_memory, "notes": cmd_notes,
                    "audit": cmd_audit, "undo": cmd_undo, "approve": cmd_approve, "route": cmd_route,
-                   "persona": cmd_persona, "avatar": cmd_avatar, "doctor": cmd_doctor, "mcp": cmd_mcp}[args.cmd]
+                   "persona": cmd_persona, "avatar": cmd_avatar, "doctor": cmd_doctor, "mcp": cmd_mcp,
+                   "skills": cmd_skills}[args.cmd]
         return handler(args)
     # Anything else is a question: `jackson найди мои датасеты`, `j -`, `j` (chat).
     if argv and argv[0] == "ask":

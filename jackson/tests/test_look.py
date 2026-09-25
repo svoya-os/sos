@@ -249,7 +249,7 @@ class AiSwitchEngineTest(unittest.TestCase):
         sysm = self.app.paths.ai_off_markers[0]
         sysm.parent.mkdir(parents=True, exist_ok=True)
         sysm.write_text("off")
-        err = next(e for e in asyncio.run(run_turn(self.app, "привет")) if e["type"] == "error")
+        err = next(e for e in asyncio.run(run_turn(self.app, "расскажи о себе")) if e["type"] == "error")
         self.assertIn("--system", err["message"])
         sysm.unlink()
         self.app.paths.svoya_toml.parent.mkdir(parents=True, exist_ok=True)

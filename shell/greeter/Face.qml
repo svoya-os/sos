@@ -177,7 +177,7 @@ Item {
                 return Strings.jWho;
             if (root.greeter.prompt.length > 0)
                 return root.greeter.prompt;
-            return Strings.jHello(root.shownName);
+            return Strings.jHello(root.shownName, clock.date);
         }
         sayMeta: {
             if (root.greeter.welcome)

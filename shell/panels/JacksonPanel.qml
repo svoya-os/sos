@@ -19,6 +19,7 @@ PanelFrame {
     id: root
 
     property bool refining: false
+    property int tip: 0                   // which example the empty field suggests (a new one each time)
     property var blocks: []
     readonly property bool hasTurn: Jackson.turnId.length > 0 || Jackson.error !== null
     readonly property var route: Jackson.shownRoute
@@ -71,6 +72,7 @@ PanelFrame {
 
     onShownChanged: {
         if (root.shown) {
+            root.tip = Math.floor(Math.random() * 1000);
             if (!Jackson.busy && Jackson.question.length > 0 && input.text.length === 0)
                 input.text = Jackson.question;
             avatar.warmUp();
@@ -280,7 +282,7 @@ PanelFrame {
                 y: 16
                 width: parent.width - 36
                 visible: input.text.length === 0
-                text: Jackson.mode === "off" ? Strings.jacksonDisabled : (root.refining ? Strings.jacksonRefinePlaceholder : (Jackson.screenshot.length > 0 ? Strings.jacksonShotPlaceholder : Strings.jacksonPlaceholder))
+                text: Jackson.mode === "off" ? Strings.jacksonDisabled : (root.refining ? Strings.jacksonRefinePlaceholder : (Jackson.screenshot.length > 0 ? Strings.jacksonShotPlaceholder : Strings.jacksonPlaceholderTip(root.tip)))
                 size: Theme.fsTitle
                 scaled: true
                 color: Theme.textFaint

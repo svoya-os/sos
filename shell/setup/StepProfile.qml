@@ -6,7 +6,8 @@ import qs.components
 // from `sos modules profiles --json` (module sets; "@gpu" already resolved),
 // names and sizes from `sos modules list --json`. Nothing installs here: the
 // choice is queued and installed after the wizard closes (administrator
-// prompt), with a snapshot first. Obsidian is pre-checked (module "notes").
+// prompt), with a snapshot first. Obsidian is pre-checked (module "notes"); games (module
+// "gaming": Steam, GameMode, MangoHud) are one switch next to it.
 Item {
     id: root
 
@@ -293,67 +294,85 @@ Item {
         }
     }
 
-    // ---- apps: Obsidian, pre-checked -------------------------------------------------------------------------
-    Rectangle {
-        y: summary.y + summary.height + 12
-        width: parent.width
+    // ---- apps: Obsidian (pre-checked) and games, side by side ------------------------------------------------
+    component AppRow: Rectangle {
+        id: row
+
+        property string glyph: ""
+        property string title: ""
+        property string sub: ""
+        property string moduleId: ""
+        property bool want: false
+        readonly property bool present: !!(root.wizard.catalog[row.moduleId] && root.wizard.catalog[row.moduleId].installed)
+
+        signal flipped(bool value)
+
         height: 60
         radius: 14
         color: Theme.isDark ? Theme.surface : Theme.surface2
         border.width: 1
         border.color: Theme.line
 
-        readonly property bool present: !!(root.wizard.catalog["notes"] && root.wizard.catalog["notes"].installed)
-
         WizTile {
             x: 14
             anchors.verticalCenter: parent.verticalCenter
-            glyph: "file-text"
-            accent: root.wizard.obsidian
+            glyph: row.glyph
+            accent: row.want || row.present
         }
         Column {
             x: 60
+            width: parent.width - 60 - 76
             anchors.verticalCenter: parent.verticalCenter
 
-            Row {
-                spacing: 8
-
-                SText {
-                    height: 18
-                    text: "Obsidian"
-                    size: 13
-                    font.weight: Font.Medium
-                }
-                WizTag {
-                    anchors.verticalCenter: parent.verticalCenter
-                    kind: "line"
-                    text: Strings.wzApps
-                }
+            SText {
+                height: 18
+                width: parent.width
+                elide: Text.ElideRight
+                text: row.title
+                size: 13
+                font.weight: Font.Medium
             }
             MText {
                 height: 16
-                text: Strings.wzObsidianSub
+                width: parent.width
+                elide: Text.ElideRight
+                text: row.present ? row.sub + " · " + Strings.installed : row.sub
                 size: 11
                 color: Theme.textFaint
             }
         }
-        MText {
-            anchors.right: appToggle.left
-            anchors.rightMargin: 14
-            anchors.verticalCenter: parent.verticalCenter
-            text: parent.present ? Strings.installed : Strings.wzAfterSetup
-            size: 11
-            color: Theme.textFaint
-        }
         Toggle {
-            id: appToggle
-
             anchors.right: parent.right
             anchors.rightMargin: 16
             anchors.verticalCenter: parent.verticalCenter
-            enabled: !parent.present
-            checked: root.wizard.obsidian || parent.present
-            onToggled: value => root.wizard.obsidian = value
+            enabled: !row.present
+            checked: row.want || row.present
+            onToggled: value => row.flipped(value)
+        }
+    }
+
+    Row {
+        y: summary.y + summary.height + 12
+        width: parent.width
+        spacing: 12
+
+        AppRow {
+            width: (parent.width - 12) / 2
+            glyph: "file-text"
+            title: "Obsidian"
+            sub: Strings.wzObsidianSub
+            moduleId: "notes"
+            want: root.wizard.obsidian
+            onFlipped: value => root.wizard.obsidian = value
+        }
+        AppRow {
+            width: (parent.width - 12) / 2
+            glyph: "gamepad-2"
+            title: Strings.wzGames
+            sub: Strings.wzGamesSub
+            moduleId: "gaming"
+            want: root.wizard.gaming
+            onFlipped: value => root.wizard.gaming = value
         }
     }
 }

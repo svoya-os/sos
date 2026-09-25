@@ -9,11 +9,14 @@ effect and says honestly when it could not (no false "done").
 from __future__ import annotations
 
 import datetime as dt
+import random
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+from . import fun
+from . import skills as skills_mod
 from .i18n import fmt_bytes, fmt_latency, fmt_number, norm_lang, plural_ru
 from .osctl import OsControl
 from .persona import style_fast
@@ -588,6 +591,8 @@ HELP_RU = """Без модели, мгновенно:
 - звук: «громче», «тише», «громкость 30», «выключи звук»
 - яркость: «ярче», «темнее», «яркость 60»
 - «открой firefox», «открой загрузки», «заблокируй экран», «скриншот»
+- программы: «установи телеграм», «поставь стим», «установи майнкрафт» (установка откроется в терминале)
+- навыки: «открой навыки», «создай навык пицца»
 - тема: «тёмная тема», «светлая тема», «тема авто», «включи бумагу/графит/фосфор»
 - цвет: «сделай акцент фиолетовым», «акцент сирень», «верни оранжевый», «без цвета»
 - мой вид: «стань котом/чёртом», «надень очки», «сними наушники», «капюшон долой»; имя: «тебя зовут Макс»
@@ -595,6 +600,10 @@ HELP_RU = """Без модели, мгновенно:
 - «какая у меня видеокарта», «сколько места», «заряд батареи», «сколько памяти», «мой ip»
 - «включи/выключи wi-fi», «включи/выключи bluetooth»
 - «отмени» — откатить моё последнее действие, «новый разговор», «только локально», «выключи ИИ»
+- поиграть: «подбрось монетку», «кинь кубик d20», «шар судьбы, …», «камень», «выбери за меня пиццу или суши»,
+  «загадай число от 1 до 10», «расскажи анекдот», «морзянкой привет»
+
+А если скажешь по-своему («сделай-ка потише, соседи жалуются») — локальная модель поймёт, какую команду ты имел в виду.
 
 С моделью: вопросы, файлы («найди договор в документах»), команды в песочнице, заметки
 («запомни, что…»). Всё рискованное я сначала покажу и спрошу. Отмена — Super+Z или `jackson undo`."""
@@ -603,6 +612,8 @@ HELP_EN = """Instant, no model needed:
 - sound: "louder", "quieter", "volume 30", "mute"
 - brightness: "brighter", "dimmer", "brightness 60"
 - "open firefox", "open downloads", "lock the screen", "screenshot"
+- apps: "install telegram", "install steam", "install minecraft" (the install opens in a terminal)
+- skills: "open skills", "create skill pizza"
 - theme: "dark theme", "light theme", "auto theme", "switch to paper/graphite/phosphor"
 - color: "make the accent green", "lilac accent", "no color"
 - my look: "become a cat/imp", "put on glasses", "take off headphones", "hood off"; name: "your name is Max"
@@ -610,6 +621,10 @@ HELP_EN = """Instant, no model needed:
 - "what's my GPU", "disk space", "battery", "memory usage", "my ip"
 - "turn wi-fi on/off", "bluetooth on/off"
 - "undo" — revert my last action, "new chat", "local only", "turn AI off"
+- play: "flip a coin", "roll a d20", "magic 8 ball …", "rock", "pick for me pizza or sushi",
+  "random number from 1 to 10", "tell me a joke", "morse code hello"
+
+Say it your own way ("make it a bit quieter, the neighbours complain") and the local model works out the command.
 
 With a model: questions, files ("find the contract in Documents"), sandboxed commands, notes
 ("remember that…"). Anything risky is shown to you first. Undo: Super+Z or `jackson undo`."""
@@ -842,6 +857,150 @@ def h_ai_on(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
 BY = rf"(?: (?:на|by) (?P<n>{NUM})(?: ?%| процент\w*| percent)?)?"
 SET_N = rf"(?P<n>{NUM})(?: ?%| процент\w*| percent)?"
 
+# ---------------------------------------------------------------------------
+# fun: games, jokes, memes, greetings, Morse (jackson/fun.py); instant, offline, read-only
+
+def _rng(ctx: FastCtx) -> random.Random:
+    return random.Random(ctx.seed or None)
+
+
+def _kent(ctx: FastCtx) -> bool:
+    return ctx.persona == "kent" and ctx.humor > 0
+
+
+def _fun(ctx: FastCtx, pair: tuple[str, str], summary: str = "") -> FastResult:
+    text = ctx.say(*pair)
+    return FastResult(True, text, summary or text[:60], True)
+
+
+def h_hello(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    return _fun(ctx, fun.greeting(dt.datetime.now(), _kent(ctx)))
+
+
+def h_coin(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    return _fun(ctx, fun.coin(_rng(ctx), _kent(ctx)))
+
+
+def h_dice(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    sides = parse_number(a.get("sides")) or 6
+    if not 2 <= sides <= 1000:
+        return FastResult(False, ctx.say("У кубика бывает от 2 до 1000 граней.", "A die has 2 to 1000 sides."))
+    return _fun(ctx, fun.dice(_rng(ctx), sides, _kent(ctx)))
+
+
+def h_ball(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    return _fun(ctx, fun.ball(_rng(ctx), _kent(ctx)))
+
+
+def h_rps(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    return _fun(ctx, fun.rps(_rng(ctx), a.get("move"), _kent(ctx)))
+
+
+def h_pick(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    first = re.sub(r"^(мне|for me) ", "", a.get("a", "").strip())
+    return _fun(ctx, fun.pick(_rng(ctx), first, a.get("b", ""), _kent(ctx)))
+
+
+def h_number(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    low, high = parse_number(a.get("lo")), parse_number(a.get("hi"))
+    return _fun(ctx, fun.number(_rng(ctx), 1 if low is None else low, 100 if high is None else high))
+
+
+def h_joke(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    return _fun(ctx, fun.joke(_rng(ctx)), "joke")
+
+
+def h_pepe(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    return _fun(ctx, fun.pepe(_rng(ctx), _kent(ctx)), "meme")
+
+
+def _meme(key: str) -> Handler:
+    def handler(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+        return _fun(ctx, fun.meme(key, _kent(ctx)), key)
+    return handler
+
+
+def h_morse(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    text = a.get("text", "").strip()
+    code = fun.morse(text)
+    if not code:
+        return FastResult(False, ctx.say("Тут нечего передавать морзянкой: нужны буквы или цифры.",
+                                         "Nothing to send in Morse: letters or digits, please."))
+    after = None
+    if ctx.osc.has("sos"):                      # play it too (`sos morse` beeps through PipeWire)
+        def after() -> None:
+            ctx.osc.runner.run(["sos", "morse", "--quiet", text], timeout=120)
+    return FastResult(True, code, code[:60], True, after=after)
+
+
+# ---------------------------------------------------------------------------
+# installs (a visible terminal: `sos install` asks there) and Jackson's skills folder
+
+def h_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    item = a["_item"]
+    name, key = (item.get("names") or {}).get(ctx.lang) or item["name"], item["key"]
+    if item.get("installed"):
+        return FastResult(True, ctx.say(f"{name} уже стоит. Запустить: «открой {name}».",
+                                        f"{name} is already installed. To start it: \"open {name}\"."), name, True)
+    if not ctx.osc.open_terminal(["sos", "install", key]):
+        return FastResult(False, ctx.say(f"Не нашёл терминал. Поставь сам: sos install {key}",
+                                         f"No terminal found. Install it yourself: sos install {key}"), verified=False)
+    lead = ctx.say("Пока не установлено. ", "Not installed yet. ") if a.get("_open") else ""
+    if item["kind"] == "module":
+        what = ctx.say(f"Открыл установку модуля «{name}» в терминале: подтверди там, спросит пароль.",
+                       f"Opened the “{name}” module install in a terminal: confirm there, it asks for the password.")
+    else:
+        what = ctx.say(f"Открыл установку {name} в терминале: подтверди там. Без пароля, из Flathub.",
+                       f"Opened the {name} install in a terminal: confirm there. No password, from Flathub.")
+    return FastResult(True, lead + what, f"sos install {key}", None)
+
+
+def _home_short(ctx: FastCtx, path: Path) -> str:
+    home = str(ctx.osc.paths.home)
+    return "~" + str(path)[len(home):] if str(path).startswith(home + "/") else str(path)
+
+
+def h_skills(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    paths = ctx.osc.paths
+    folder, _ = skills_mod.init_dir(paths.skills_dir, paths.config_home, ctx.lang)
+    loaded = skills_mod.Skills(paths.skills_dir, system_dirs=[paths.system_skills_dir]).load()
+    mine = sum(1 for s in loaded if str(s.path).startswith(str(folder)))
+    shown = _home_short(ctx, folder)
+    opened = ctx.osc.xdg_open(str(folder))
+    head = ctx.say(f"Открыл папку навыков: {shown}." if opened else f"Папка навыков: {shown}.",
+                   f"Opened the skills folder: {shown}." if opened else f"The skills folder: {shown}.")
+    count = ctx.say(f" Навыков: {len(loaded)}, твоих {mine}. Новый: «создай навык пицца».",
+                    f" Skills: {len(loaded)}, yours {mine}. A new one: \"create skill pizza\".")
+    return FastResult(True, head + count, shown, None)
+
+
+def h_new_skill(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
+    """Only an empty template from the user's own words: the model never writes skills."""
+    name = a.get("name", "").strip()
+    paths = ctx.osc.paths
+    try:
+        path = skills_mod.new_skill(paths.skills_dir, paths.config_home, name, ctx.lang)
+        created = True
+    except FileExistsError as exc:
+        path, created = Path(str(exc)) / "SKILL.md", False
+    except (ValueError, OSError):
+        return FastResult(False, ctx.say("Такое имя для навыка не подходит: буквы, цифры, пробел, точка или дефис.",
+                                         "That name does not work for a skill: letters, digits, space, dot or dash."))
+    opened = ctx.osc.xdg_open(str(path))
+    shown = _home_short(ctx, path)
+    if not created:
+        return FastResult(True, ctx.say(f"Навык «{name}» уже есть: {shown}" + (", открыл." if opened else "."),
+                                        f"Skill “{name}” already exists: {shown}" + (", opened it." if opened else ".")),
+                          shown, None)
+    return FastResult(True, ctx.say(f"Создал навык «{name}»: {shown}. Опиши в нём, что делать, и я подхвачу сразу.",
+                                    f"Created skill “{name}”: {shown}. Describe what to do there; I pick it up at once."),
+                      shown, None)
+
+
+FUN_INTENTS = ("hello", "coin", "dice", "ball", "rps", "pick", "number", "joke", "pepe", "preved", "fiasco",
+               "houston", "good_job", "dont_touch", "oy_vse", "thanks", "how_are_you", "answer42", "morse")
+
+
 INTENTS: list[Intent] = [
     Intent("help", _p(r"что ты (умеешь|можешь)( делать)?", r"что умеешь", r"помощь", r"справка", r"кто ты",
                       r"(какие|список) команд\w*", r"what can you do", r"help", r"commands", r"who are you"), h_help),
@@ -976,6 +1135,54 @@ INTENTS: list[Intent] = [
     Intent("style", _p(r"(надень|одень|переоденься в|переодень) (?P<style>худи|толстовку|куртку|косуху|футболку|майку)",
                        r"(put on|wear|change into) (a |an |your )?(?P<style>hoodie|jacket|tee|t-shirt|tshirt)"),
            h_style, T1),
+    # fun (jackson/fun.py): read-only, no model
+    Intent("hello", _p(r"(привет|приветик|здарова|здорово|здравствуй|здравствуйте|салют|хай|йо|добрый день|"
+                       r"доброе утро|добрый вечер|доброй ночи)( джексон)?",
+                       r"(hi|hello|hey|yo|good (morning|afternoon|evening))( jackson)?"), h_hello),
+    Intent("coin", _p(r"(подбрось|подкинь|кинь|брось) монет(ку|у)", r"орел или решка", r"монетк(а|у)",
+                      r"(flip|toss) a coin", r"heads or tails"), h_coin),
+    Intent("dice", _p(r"(кинь|брось|подбрось)( мне)? (кубик|кубики|кости|кость|дайс)( d ?(?P<sides>\d{1,4}))?",
+                      r"(кинь|брось) d ?(?P<sides>\d{1,4})", r"d(?P<sides>\d{1,4})",
+                      r"(roll|throw)( a| the)? (die|dice|d ?(?P<sides>\d{1,4}))"), h_dice),
+    Intent("ball", _p(r"(магический |волшебный )?шар( судьбы| предсказаний)?( (?P<q>.{2,120}))?",
+                      r"(скажи )?да или нет( (?P<q>.{2,120}))?", r"magic (8|eight) ball( (?P<q>.{2,120}))?",
+                      r"yes or no( (?P<q>.{2,120}))?"), h_ball),
+    Intent("rps", _p(r"(?P<move>камень|ножницы|бумага|бумагу)",
+                     r"(давай |го )?(сыграем |поиграем |играем )?(в )?камень ножницы бумага",
+                     r"(?P<move>rock|paper|scissors)", r"(let'?s play )?rock paper scissors"), h_rps),
+    Intent("pick", _p(r"(выбери|реши) за меня (?P<a>.{1,60}?) или (?P<b>.{1,60})",
+                      r"выбери (?P<a>.{1,60}?) или (?P<b>.{1,60})",
+                      r"(pick|choose) for me (?P<a>.{1,60}?) or (?P<b>.{1,60})"), h_pick),
+    Intent("number", _p(r"(загадай|выбери|назови|дай)( мне)?( случайное)? число( от (?P<lo>\d{1,9}) до (?P<hi>\d{1,9}))?",
+                        r"(random|pick a) number( (from|between) (?P<lo>\d{1,9}) (to|and) (?P<hi>\d{1,9}))?"), h_number),
+    # «анекдот про кота» (a topic) goes to the model, which can make one up
+    Intent("joke", _p(r"(расскажи|скажи|давай|травани)( мне)?( еще)? (анекдот|шутку|прикол)",
+                      r"пошути( еще)?", r"рассмеши( меня)?", r"(еще )?(анекдот|шутку)",
+                      r"tell (me )?(a|another) joke", r"make me laugh", r"(another )?joke"), h_joke),
+    Intent("pepe", _p(r"((пепе|шнейне|фа|втфа|ватафа) ?){1,6}"), h_pepe),
+    Intent("preved", _p(r"превед( медвед| кросавчег)?"), _meme("preved")),
+    Intent("fiasco", _p(r"(это )?(полное )?фиаско( братан)?"), _meme("fiasco")),
+    Intent("houston", _p(r"хьюстон( у нас (проблемы|проблема))?", r"houston( we have a problem)?"), _meme("houston")),
+    Intent("good_job", _p(r"кто (тут )?молодец", r"я молодец"), _meme("good_job")),
+    Intent("dont_touch", _p(r"работает не трогай", r"if it works dont touch it"), _meme("dont_touch")),
+    Intent("oy_vse", _p(r"ой (все|всё)"), _meme("oy_vse")),
+    Intent("thanks", _p(r"(спасибо|спс|пасиб|пасибки|благодарю)( большое| огромное)?( джексон)?",
+                        r"(thanks|thank you|thx)( so much| a lot)?( jackson)?"), _meme("thanks")),
+    Intent("how_are_you", _p(r"как (дела|ты|жизнь|сам|поживаешь|настроение)", r"how are you( doing)?",
+                             r"whats up"), _meme("how_are_you")),
+    Intent("answer42", _p(r"(в чем )?смысл жизни", r"ответ на (главный )?вопрос жизни( вселенной и всего такого)?",
+                          r"42", r"(what is )?the meaning of life"), _meme("answer42")),
+    Intent("morse", _p(r"(скажи |напиши |переведи |передай )?(это )?(азбукой морзе|морзянкой|на морзянку|в морзянку|"
+                       r"на азбуку морзе) (?P<text>.{1,80})",
+                       r"(say |write )?(it )?(in )?morse( code)? (?P<text>.{1,80})"), h_morse),
+    Intent("skills", _p(r"(открой |покажи )?(мне )?(мои |свои |твои )?(папку )?навык(и|ов)( джексона)?",
+                        r"где (лежат |хранятся )?(мои |твои )?навыки( джексона)?",
+                        r"(open |show )?(me )?(my |your )?skills( folder)?", r"where are (my |your )?skills"),
+           h_skills, T1),
+    Intent("new_skill", _p(r"(создай|сделай|добавь|заведи)( новый| мне| свой)* навык (?P<name>[\w .-]{2,40})",
+                           r"(create|make|add)( me)?( a)?( new)? skill (?P<name>[\w .-]{2,40})"), h_new_skill, T1),
+    Intent("install", _p(r"(установи|поставь|скачай|загрузи|инсталлируй)( мне)? (?P<app>[\w .+-]{2,40})",
+                         r"(install|download|get me) (?P<app>[\w .+-]{2,40})"), h_install, T1),
     Intent("open_folder", _p(r"(открой|покажи) (мне )?(папку )?(?P<folder>загрузки|документы|изображения|картинки|"
                              r"музыку|видео|рабочий стол|домашнюю папку|домашнюю|скриншоты)",
                              r"(open|show) (my )?(the )?(?P<folder>downloads|documents|pictures|music|videos|desktop|"
@@ -983,6 +1190,9 @@ INTENTS: list[Intent] = [
     Intent("open_app", _p(r"(открой|запусти|открыть|запустить|включи) (?P<app>[\w .+-]{2,40})",
                           r"(open|launch|start|run) (?P<app>[\w .+-]{2,40})"), h_open_app, T1),
 ]
+
+
+INSTALL = next(i for i in INTENTS if i.name == "install")
 
 
 def match(text: str, osc: OsControl | None = None, names: tuple[str, ...] = ()) -> FastMatch | None:
@@ -1000,19 +1210,29 @@ def match(text: str, osc: OsControl | None = None, names: tuple[str, ...] = ()) 
             if not m:
                 continue
             args = {k: v for k, v in m.groupdict().items() if v is not None}
-            if intent.name == "rename":  # keep the user's spelling of the new name (case, ё)
+            if intent.name in ("rename", "new_skill"):  # keep the user's spelling of the name (case, ё)
                 cased = normalize(text, names, keep_case=True)
                 m2 = re.compile(pattern.pattern, re.IGNORECASE).fullmatch(
                     cased.replace("Ё", "Е").replace("ё", "е")) if cased else None
                 if m2 and m2.group("name"):
                     start, end = m2.span("name")
                     args["name"] = cased[start:end]
+            if intent.name == "install":
+                app = args.get("app", "").strip()
+                item = osc.svoya.find_installable(app) if osc is not None and len(app.split()) <= 3 else None
+                if item is None:
+                    break                   # not in the catalog (a model, a package…): other intents, then the model
+                args["_item"] = item
             if intent.name == "open_app":
                 app = args.get("app", "").strip()
                 if APP_STOP.search(app) or len(app.split()) > 3 or osc is None:
                     return None
                 entry = osc.find_app(app)
                 if entry is None:
+                    # «открой стим» before Steam is installed: offer the install instead
+                    item = osc.svoya.find_installable(app)
+                    if item is not None and not item.get("installed"):
+                        return FastMatch(INSTALL, {"app": app, "_item": item, "_open": True}, norm)
                     return None
                 args["_entry"] = entry
                 args["app"] = app
@@ -1094,7 +1314,7 @@ def decided_match(index: int, p: float, norm: str, question: bool | None = None)
 
 def run(m: FastMatch, ctx: FastCtx) -> FastResult:
     result = m.intent.handler(ctx, m.args)
-    if m.name not in ("help", "models"):  # long factual listings stay plain
+    if m.name not in ("help", "models", *FUN_INTENTS):  # listings stay plain; the fun ones have their own voice
         result.text = style_fast(ctx.persona, ctx.lang, result.text, result.ok, ctx.humor, ctx.seed)
     return result
 

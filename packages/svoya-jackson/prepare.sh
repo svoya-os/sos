@@ -5,6 +5,7 @@
 #   jackson/bin/jackson      -> /usr/bin/jackson (+ /usr/bin/j)  (generated if missing)
 #   jackson/bin/jacksond     -> /usr/lib/svoya/jacksond          (generated if missing)
 #   jackson/systemd/*.service -> /usr/lib/systemd/user/          (default unit if missing)
+#   jackson/skills/*/SKILL.md -> /usr/share/svoya/jackson/skills/  (system skills: sos, games)
 set -euo pipefail
 : "${SVOYA_SRC:?}" "${PKG_DIR:?}"
 src=$SVOYA_SRC/jackson
@@ -42,6 +43,11 @@ fi
 if [ -f "$src/README.md" ]; then
     install -D -m 0644 "$src/README.md" "$files/usr/share/doc/svoya-jackson/README.md"
 fi
+
+for skill in "$src"/skills/*/SKILL.md; do
+    [ -f "$skill" ] || continue
+    install -D -m 0644 "$skill" "$files/usr/share/svoya/jackson/skills/$(basename "$(dirname "$skill")")/SKILL.md"
+done
 
 units=$(find "$src/systemd" -maxdepth 1 -type f \( -name '*.service' -o -name '*.socket' -o -name '*.timer' \) 2>/dev/null || true)
 if [ -n "$units" ]; then

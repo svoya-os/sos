@@ -71,6 +71,32 @@ sos doctor   # the full check: GPU, storage and snapshots
 In SOS the system owns the driver, and each project brings its own CUDA version, so projects do
 not break each other.
 
+## Apps and games
+
+```sh
+sos apps                    # what one word installs: Telegram, Minecraft, OBS, torrents…
+sos install telegram        # from Flathub, just for you, no password
+sos install steam           # games: Steam, GameMode, MangoHud, 32-bit drivers (asks for the password)
+sos install bazaar          # the Bazaar app store, to browse with pictures
+```
+
+The easiest way is to type the name in the launcher (`Super+Space`): anything not installed yet
+gets an «Install …» row. Or tell Jackson: "install minecraft". He knows games too (Proton, launch
+options, gamepads): just ask. Fullscreen games keep the screen awake, and VRR turns on by itself.
+
+## Jackson's skills
+
+A skill is a short Markdown instruction Jackson reads when the conversation is about its topic.
+Your folder is already there: `~/.local/share/svoya/jackson/skills`, bookmarked in the file manager
+as "Jackson's skills".
+
+```sh
+jackson skills              # which skills there are
+jackson skills new pizza    # a new skill from a template
+```
+
+Or tell Jackson: "open skills", "create skill pizza".
+
 ## Add tools: modules
 
 Modules add groups of tools: Local LLMs, Studio (image, video, voice), ML Lab, Agents, Dev and

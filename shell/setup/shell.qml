@@ -75,6 +75,7 @@ ShellRoot {
     property string profile: "newcomer"
     property bool offline: false
     property bool obsidian: true
+    property bool gaming: false
 
     readonly property string themeChoice: Theme.baseChoice
 
@@ -296,6 +297,8 @@ ShellRoot {
         }
         if (root.obsidian && !(root.catalog["notes"] && root.catalog["notes"].installed) && out.indexOf("notes") < 0)
             out.push("notes");
+        if (root.gaming && !(root.catalog["gaming"] && root.catalog["gaming"].installed) && out.indexOf("gaming") < 0)
+            out.push("gaming");
         return out;
     }
 

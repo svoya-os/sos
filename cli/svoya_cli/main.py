@@ -47,21 +47,25 @@ def _parser() -> argparse.ArgumentParser:
         epilog=tr(
             "everyday:\n"
             "  sos install obsidian | llm-local | qwen3.5-9b   install an app, a module or a model\n"
+            "  sos apps                                      what one word installs: Telegram, Minecraft, OBS…\n"
             "  sos remove <thing>                            remove it again\n"
             "  sos fix · sos gpu                             repair · check the graphics card\n"
             "  sos update · sos undo                         update (with a snapshot) · roll back\n"
             "  sos theme night|day|auto · sos accent lilac   theme · accent color (undo: sos undo)\n"
             "  sos ai off | on                               the AI switch\n"
             "  sos models suggest                            the best local model for this machine\n"
+            "  sos morse hello                               Morse code, with sound (just `sos morse`: SOS)\n"
             "Russian works too: sos установить, удалить, починить, видеокарта, обновить, откатить, тема, модели.",
             "каждый день:\n"
             "  sos установить obsidian | llm-local | qwen3.5-9b   приложение, модуль или модель\n"
+            "  sos приложения                                    что ставится одним словом: Telegram, Minecraft, OBS…\n"
             "  sos удалить <что>                                 удалить обратно\n"
             "  sos починить · sos видеокарта                     починить · проверить видеокарту\n"
             "  sos обновить · sos откатить                       обновить (со снимком) · откатить\n"
             "  sos тема ночь|день|авто · sos акцент сирень       тема · цвет акцента (отменить: sos откатить)\n"
             "  sos ии выкл | вкл                                 выключатель ИИ\n"
             "  sos модели подобрать                              лучшая локальная модель для этой машины\n"
+            "  sos морзе привет                                  азбука Морзе со звуком (просто `sos морзе`: SOS)\n"
             "По-английски тоже можно: sos install, remove, fix, gpu, update, undo, theme, models."))
     p.add_argument("--version", action="version", version=f"sos {__version__}")
     p.add_argument("--no-color", action="store_true", help=tr("plain output", "без цвета"))
@@ -300,11 +304,23 @@ def _parser() -> argparse.ArgumentParser:
     jlist.add_argument("--json", action="store_true")
     jlist.add_argument("--all", action="store_true")
 
+    ap = cmd("apps", "apps that one word installs (Flathub, no password)",
+             "приложения, которые ставятся одним словом (Flathub, без пароля)")
+    ap.add_argument("--json", action="store_true")
+
+    mo = cmd("morse", "Morse code with sound (default: SOS)", "азбука Морзе со звуком (по умолчанию SOS)")
+    mo.add_argument("text", nargs="*", help=tr("what to send", "что передать"))
+    mo.add_argument("--wpm", type=int, default=18, help=tr("speed, words per minute (5–40)", "скорость, слов в минуту (5–40)"))
+    mo.add_argument("--quiet", action="store_true", help=tr("sound only", "только звук"))
+    mo.add_argument("--no-sound", action="store_true", help=tr("text only", "только текст"))
+    mo.add_argument("--json", action="store_true")
+
     ss = cmd("session-start", "start the desktop session (Hyprland exec-once)", "запуск сеанса (exec-once в Hyprland)")
     ss.add_argument("--dry-run", action="store_true")
     ss.add_argument("--json", action="store_true")
-    # plumbing, not for people: works, but stays out of `sos --help`
-    sub._choices_actions = [a for a in sub._choices_actions if a.dest != "session-start"]
+    sub.add_parser("tea")
+    # plumbing and easter eggs, not for the list: they work, but stay out of `sos --help`
+    sub._choices_actions = [a for a in sub._choices_actions if a.dest not in ("session-start", "tea")]
     return p
 
 
@@ -321,7 +337,7 @@ def main(argv: list[str] | None = None) -> int:
     rest = commands.normalize(rest)
     argv = flags + rest
     first = next((a for a in rest if not a.startswith("-")), None)
-    if first is not None and first not in commands.COMMANDS and not rest[0].startswith("-"):
+    if first is not None and first not in commands.COMMANDS + commands.HIDDEN and not rest[0].startswith("-"):
         hints = commands.suggest(first)
         msg = tr(f"sos: unknown command '{first}'.", f"sos: неизвестная команда «{first}».")
         if hints:
@@ -388,6 +404,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "session-start":
             from . import session
             return session.main(args, ctx)
+        if args.cmd == "apps":
+            from . import install
+            return install.main_apps(args, ctx)
+        if args.cmd == "morse":
+            from . import fun
+            return fun.main_morse(args, ctx)
+        if args.cmd == "tea":
+            from . import fun
+            return fun.main_tea(args, ctx)
     except KeyboardInterrupt:
         return 130
     except BrokenPipeError:

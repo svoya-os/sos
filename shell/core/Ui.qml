@@ -13,7 +13,7 @@ Singleton {
 
     property string modal: ""
     property var screen: null            // ShellScreen the overlay opens on
-    property string launcherMode: "all"  // all | settings | modules | actions
+    property string launcherMode: "all"  // all | settings | modules | actions | install
     property string launcherQuery: ""
     property string shotPath: ""         // screenshot waiting for an action
     property string ccPage: "main"       // the control center page to open: main | look

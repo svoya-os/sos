@@ -99,6 +99,12 @@ Singleton {
     // ---- Jackson -------------------------------------------------------------------------
     readonly property string jackson: root.t("Джексон", "Jackson")
     readonly property string jacksonPlaceholder: root.t("Спроси что-нибудь…", "Ask anything…")
+    // the empty field suggests one thing he can do, a different one each time the panel opens
+    readonly property var jacksonTips: root.ru ? ["подбрось монетку", "таймер на 5 минут", "установи телеграм", "расскажи анекдот", "кинь кубик d20", "тёмная тема", "морзянкой привет", "открой навыки", "громче", "пепе шнейне"] : ["flip a coin", "timer for 5 minutes", "install telegram", "tell me a joke", "roll a d20", "dark theme", "morse hello", "open skills", "louder"]
+    function jacksonPlaceholderTip(i) {
+        const tips = root.jacksonTips;
+        return root.t("Спроси что-нибудь… например, «", "Ask anything… e.g. “") + tips[Math.abs(i) % tips.length] + root.t("»", "”");
+    }
     readonly property string jacksonRefinePlaceholder: root.t("Уточни запрос…", "Refine the request…")
     readonly property string jacksonShotPlaceholder: root.t("Что сделать со снимком?", "What should I do with the screenshot?")
     readonly property string jacksonOffline: root.t("не в сети", "offline")
@@ -147,6 +153,36 @@ Singleton {
     readonly property string groupModules: root.t("Модули", "Modules")
     readonly property string groupActions: root.t("Действия", "Actions")
     readonly property string groupJackson: root.t("Джексон", "Jackson")
+    readonly property string groupInstall: root.t("Установить", "Install")
+    readonly property string groupSecret: root.t("Пасхалка", "Easter egg")
+    function installThing(name) {
+        return root.t("Установить " + name, "Install " + name);
+    }
+    readonly property string installApps: root.t("Установить приложение", "Install an app")
+    readonly property string jacksonSkills: root.t("Навыки Джексона", "Jackson's skills")
+    readonly property string morseCallSign: root.t("Позывной СОС азбукой Морзе", "The SOS call sign in Morse code")
+    readonly property string funCoin: root.t("Подбросить монетку", "Flip a coin")
+    readonly property string funCoinAsk: root.t("подбрось монетку", "flip a coin")
+    readonly property string funDice: root.t("Кинуть кубик d20", "Roll a d20")
+    readonly property string funDiceAsk: root.t("кинь кубик d20", "roll a d20")
+    readonly property string funJoke: root.t("Анекдот от Джексона", "A joke from Jackson")
+    readonly property string funJokeAsk: root.t("расскажи анекдот", "tell me a joke")
+    readonly property string funRps: root.t("Камень, ножницы, бумага", "Rock, paper, scissors")
+    readonly property string funRpsAsk: root.t("сыграем в камень ножницы бумага", "rock paper scissors")
+    readonly property string secretGod: root.t("Режим бога", "God mode")
+    readonly property string secretPepe: root.t("Пепе шнейне!", "Pepe shneine!")
+    readonly property string secretGoldSub: root.t("золотой акцент · вернуть: sos откатить", "gold accent · undo: sos undo")
+    readonly property string secret42Sub: root.t("ответ на главный вопрос", "the answer to the ultimate question")
+    readonly property string secret42Ask: root.t("в чём смысл жизни", "what is the meaning of life")
+    readonly property string secretKent: root.t("Кентафурик на связи", "The buddy is here")
+    readonly property string secretKentSub: root.t("Джексон здоровается", "Jackson says hi")
+    readonly property string secretHello: root.t("Привет, мир! на UpsiL", "Hello, world! in UpsiL")
+    readonly property string secretHelloSub: root.t("первая программа и интерактивный UpsiL в терминале", "a first program and interactive UpsiL in a terminal")
+    readonly property string secretHelloCode: root.t('print("Привет, мир! Это UpsiL: {6 * 7}")', 'print("Hello, world! This is UpsiL: {6 * 7}")')
+    readonly property string secretHelloRepl: root.t("Дальше сам: пиши код, выход — :q", "Your turn: type code, :q to quit")
+    readonly property string secretNoUpsil: root.t("UpsiL ещё не установлен: sos install upsil", "UpsiL is not installed yet: sos install upsil")
+    readonly property string secretTea: root.t("418: я чайник", "418 I'm a teapot")
+    readonly property string secretZen: root.t("Дзен UpsiL", "The Zen of UpsiL")
     readonly property string askJackson: root.t("Спросить Джексона", "Ask Jackson")
     readonly property string nothingFound: root.t("Ничего не нашлось", "Nothing found")
     readonly property string open: root.t("открыть", "open")
@@ -307,9 +343,32 @@ Singleton {
     function kv(kentRu, kentEn, plainRu, plainEn) {
         return root.kentVoice ? root.t(kentRu, kentEn) : root.t(plainRu, plainEn);
     }
-    function jHello(name) {
-        // the name is already big on the left: the кентафурик greets, the plain voice names
+    function jHello(name, now) {
+        // the name is already big on the left: the кентафурик greets, the plain voice names.
+        // He knows the day (same table as Jackson's «привет», jackson/fun.py): New Year's Eve and Day,
+        // April Fools', the Programmers' Day (the 256th day), a sleepless night, Monday, Friday evening.
         const who = name.length > 0 ? ", " + name : "";
+        const d = now || new Date();
+        const m = d.getMonth() + 1, day = d.getDate(), h = d.getHours(), wd = d.getDay();
+        const doy = Math.round((Date.UTC(d.getFullYear(), m - 1, day) - Date.UTC(d.getFullYear(), 0, 0)) / 86400000);
+        if (m === 12 && day === 31)
+            return root.kv("С наступающим, кентафурик! Пароль?", "Almost New Year, buddy! Password?", "С наступающим" + who + "! Пароль?", "Happy New Year's Eve" + who + "! Password?");
+        if (m === 1 && day === 1)
+            return root.kv("С Новым годом, кентафурик! Пароль?", "Happy New Year, buddy! Password?", "С Новым годом" + who + "! Пароль?", "Happy New Year" + who + "! Password?");
+        if (m === 4 && day === 1)
+            return root.kv("С первым апреля! Пароль? Без приколов.", "Happy April Fools'! Password? No jokes.", "С первым апреля" + who + ". Пароль?", "Happy April Fools'" + who + ". Password?");
+        if (doy === 256)
+            return root.kv("С Днём программиста, кентафурик! Пароль?", "Happy Programmers' Day, buddy! Password?", "С Днём программиста" + who + "! Пароль?", "Happy Programmers' Day" + who + "! Password?");
+        if (h < 5)
+            return root.kv("Не спится, кентафурик? Пароль?", "Can't sleep, buddy? Password?", "Доброй ночи" + who + ". Пароль?", "Good night" + who + ". Password?");
+        if (wd === 1 && h < 12)
+            return root.kv("Понедельник, кентафурик. Держись! Пароль?", "Monday, buddy. Hang in there! Password?", "Доброе утро" + who + ". Пароль?", "Good morning" + who + ". Password?");
+        if (wd === 5 && h >= 17)
+            return root.kv("Пятница, чуваааак! Пароль?", "It's Friday, duuude! Password?", "Добрый вечер" + who + ". Пароль?", "Good evening" + who + ". Password?");
+        if (h < 12)
+            return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Доброе утро" + who + ". Пароль?", "Good morning" + who + ". Password?");
+        if (h >= 18)
+            return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Добрый вечер" + who + ". Пароль?", "Good evening" + who + ". Password?");
         return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Привет" + who + ". Пароль?", "Hi" + who + ". Password?");
     }
     readonly property string jWaiting: root.kv("на связи", "here", "жду", "waiting")
@@ -510,9 +569,9 @@ Singleton {
     function wzFreeOf(free) {
         return root.t("из " + free + " свободных", "of " + free + " free");
     }
-    readonly property string wzApps: root.t("Приложения", "Apps")
-    readonly property string wzObsidianSub: root.t("заметки в Markdown · из Flathub · бесплатная, закрытый код", "Markdown notes · from Flathub · free, closed source")
-    readonly property string wzAfterSetup: root.t("ставится после настройки, в фоне", "installs after setup, in the background")
+    readonly property string wzObsidianSub: root.t("заметки в Markdown · Flathub · бесплатная, код закрыт", "Markdown notes · Flathub · free, closed source")
+    readonly property string wzGames: root.t("Игры", "Games")
+    readonly property string wzGamesSub: root.t("Steam, GameMode, MangoHud · клиент Steam закрытый", "Steam, GameMode, MangoHud · the Steam client is closed")
 
     // step 6
     readonly property string wzVram: root.t("видеопамять", "video memory")

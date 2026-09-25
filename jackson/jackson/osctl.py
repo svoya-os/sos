@@ -356,6 +356,20 @@ class OsControl:
     def xdg_open(self, target: str) -> bool:
         return self.has("xdg-open") and self.runner.spawn(["xdg-open", target]) is not None
 
+    TERMINALS = ("kitty", "foot", "alacritty", "ghostty", "ptyxis", "gnome-terminal", "konsole", "x-terminal-emulator")
+
+    def open_terminal(self, argv: list[str], hold: bool = True) -> bool:
+        """Run *argv* in a visible terminal (installs ask for confirmation and passwords there); with
+        *hold* the window waits for Enter afterwards, so the result can be read."""
+        cmd = ["sh", "-c", '"$@"; printf "\\n"; read -r _', "sh", *argv] if hold else list(argv)
+        if self.has("xdg-terminal-exec"):
+            return self.runner.spawn(["xdg-terminal-exec", *cmd]) is not None
+        for term in self.TERMINALS:
+            if self.has(term):
+                flag = "--" if term in ("gnome-terminal", "ptyxis") else "-e"
+                return self.runner.spawn([term, flag, *cmd]) is not None
+        return False
+
     # ------------------------------------------------------------------ information
     def gpus(self) -> list[dict[str, Any]]:
         status = self.svoya.status()

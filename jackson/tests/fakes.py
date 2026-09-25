@@ -405,6 +405,15 @@ class FakeRunner(Runner):
                 elif a[1] == "on" and marker.exists():
                     marker.unlink()
                 return RunResult(0, f"ai {a[1]}\n")
+            if a[:2] == ["apps", "--json"]:
+                return RunResult(0, json.dumps({"apps": [
+                    {"key": "telegram", "name": "Telegram", "aliases": ["телеграм"], "installed": False},
+                    {"key": "prism", "name": "Prism Launcher", "aliases": ["minecraft", "майнкрафт"], "installed": False},
+                    {"key": "gimp", "name": "GIMP", "aliases": ["гимп"], "installed": True}]}))
+            if a[:3] == ["modules", "list", "--json"]:
+                return RunResult(0, json.dumps({"modules": [
+                    {"id": "gaming", "name": {"en": "Gaming", "ru": "Игры"}, "aliases": ["steam", "стим"],
+                     "installed": False}]}))
             if a[:2] == ["status", "--json"]:
                 return RunResult(0, json.dumps({"gpu": [{"index": 0, "vendor": "nvidia", "name": "RTX 4090",
                                                          "vramUsedMiB": 11468, "vramTotalMiB": 24564, "tempC": 64,

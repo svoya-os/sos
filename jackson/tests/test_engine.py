@@ -188,7 +188,7 @@ class EngineTest(unittest.TestCase):
 
     def test_route_error_is_an_error_event(self):
         app = make_app(self.root, "http://127.0.0.1:9/v1")
-        events = asyncio.run(run_turn(app, "привет"))
+        events = asyncio.run(run_turn(app, "расскажи о себе"))
         self.assertEqual(kinds(events), ["error"])
         error = next(e for e in events if e["type"] == "error")
         self.assertIn("Нет доступной модели", error["message"])
@@ -206,7 +206,7 @@ class EngineTest(unittest.TestCase):
                                "anthropic", kind="anthropic", base_url=f"http://127.0.0.1:{cloud.port}",
                                needs_key=True, region="us", label="Anthropic", models=["claude-haiku-4-5"]),
                                api_key="sk-test")})
-        events = asyncio.run(run_turn(app, "привет"))
+        events = asyncio.run(run_turn(app, "расскажи о себе"))
         routes = [e for e in events if e["type"] == "route"]
         self.assertEqual([r["provider"] for r in routes], ["local", "anthropic"])
         self.assertIn("переключаюсь", routes[1]["reason"])

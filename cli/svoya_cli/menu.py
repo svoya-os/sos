@@ -146,10 +146,20 @@ def action(key: str, run: Callable[[list[str]], int] = _run, ask: Callable[[str]
         state = load_state(ctx)
         items = [(m["id"], m["name"]["en"], m["name"].get("ru", m["name"]["en"]), m["summary"]["en"][:60], m["summary"].get("ru", "")[:60])
                  for m in cat.values() if m["id"] not in state["modules"]]
+        items.append(("__apps", "Apps…", "Приложения…", "Telegram, Minecraft, OBS… (Flathub, no password)",
+                      "Telegram, Minecraft, OBS… (Flathub, без пароля)"))
         items.append(("__other", "Something else…", "Другое…", "an app or a model by name", "приложение или модель по имени"))
         choice = select(tr("Install", "Установить"), items)
         if choice is None:
             return 0
+        if choice == "__apps":
+            from .install import catalog, installed_flatpaks
+            have = installed_flatpaks(ctx)
+            apps = [(a["key"], a["name"], a["name"], a.get("summary", {}).get("en", ""), a.get("summary", {}).get("ru", ""))
+                    for a in catalog() if a["id"] not in have]
+            choice = select(tr("Apps", "Приложения"), apps)
+            if choice is None:
+                return 0
         if choice == "__other":
             name = ask(tr("name (e.g. obsidian, telegram, qwen3.5-9b): ", "имя (например obsidian, telegram, qwen3.5-9b): ")).strip()
             return run(["install", name]) if name else 0

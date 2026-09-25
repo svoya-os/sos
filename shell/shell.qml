@@ -133,6 +133,9 @@ ShellRoot {
         function modules(): void {
             Ui.openLauncher("modules", "");
         }
+        function install(): void {
+            Ui.openLauncher("install", "");
+        }
     }
 
     IpcHandler {

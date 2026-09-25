@@ -71,7 +71,7 @@ class CliTest(unittest.TestCase):
     def test_inherited_silent_pipe_does_not_hang(self):
         r, w = os.pipe()   # a pipe whose writer stays open and silent (like some job runners)
         try:
-            res = subprocess.run([sys.executable, str(BIN / "j"), "привет"], stdin=r, capture_output=True, text=True,
+            res = subprocess.run([sys.executable, str(BIN / "j"), "расскажи о себе"], stdin=r, capture_output=True, text=True,
                                  env=self.env, timeout=30)
         except subprocess.TimeoutExpired:
             self.fail("j blocked on an inherited pipe")
@@ -79,7 +79,7 @@ class CliTest(unittest.TestCase):
             os.close(w)
             os.close(r)
         self.assertEqual(res.returncode, 0, res.stderr)
-        self.assertEqual(self.srv.requests[-1]["messages"][-1]["content"], "привет")
+        self.assertEqual(self.srv.requests[-1]["messages"][-1]["content"], "расскажи о себе")
 
     def test_question_from_piped_stdin_without_words(self):
         res = self.run_cli(stdin="вопрос целиком из пайпа\n", prog="j")
@@ -87,7 +87,7 @@ class CliTest(unittest.TestCase):
         self.assertEqual(self.srv.requests[-1]["messages"][-1]["content"], "вопрос целиком из пайпа")
 
     def test_json_mode_prints_protocol_events(self):
-        res = self.run_cli("--json", "привет")
+        res = self.run_cli("--json", "расскажи о себе")
         events = [json.loads(line) for line in res.stdout.splitlines()]
         self.assertEqual([e["type"] for e in events][0], "route")
         self.assertEqual(events[-1]["type"], "done")

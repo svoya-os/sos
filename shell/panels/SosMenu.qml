@@ -51,6 +51,7 @@ PanelFrame {
             items: [
                 { glyph: "info", label: Strings.about, key: "a", run: () => Ui.show("about") },
                 { glyph: "settings", label: Strings.settings, key: "s", run: () => Ui.openLauncher("settings", "") },
+                { glyph: "store", label: Strings.installApps, key: "i", run: () => Ui.openLauncher("install", "") },
                 { glyph: "package", label: Strings.modulesTitle, key: "m", run: () => Ui.openLauncher("modules", "") },
                 { glyph: "stethoscope", label: Strings.doctor, hint: "Super Esc", key: "d", run: () => { Ui.hide(); Actions.doctor(); } },
                 { glyph: "power", label: Strings.session, key: "e", run: () => Ui.show("session") }

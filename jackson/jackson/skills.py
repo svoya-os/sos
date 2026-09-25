@@ -8,7 +8,9 @@ optional ``aliases`` line (comma-separated, e.g. other spellings of the name) co
 name when matching. The catalogue (name + description) is always in the prompt; the body of the
 best-matching skills is added for the turn. Skills are instructions only: they never grant
 permissions, and Jackson never installs a skill from chat (neither folder is writable through
-Jackson's tools).
+Jackson's tools; the fast-path «создай навык X», the user's own words, only makes an empty template). ``init_dir`` makes the user's folder on the first login (``sos session-start``
+runs ``jackson skills init``), with a README and a file-manager bookmark; ``jackson skills new``
+starts a skill from a template.
 """
 
 from __future__ import annotations
@@ -113,3 +115,126 @@ class Skills:
             lines.append((f"\nАктивный навык «{s.name}»:\n" if ru else f"\nActive skill “{s.name}”:\n")
                          + s.body[:MAX_BODY])
         return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# the user's folder: created on the first login, with a README and a bookmark in the file manager
+
+README_RU = """# Навыки Джексона
+
+Навык — папка с файлом `SKILL.md`: короткая инструкция, которую Джексон читает, когда
+разговор по теме. Навыки — подсказки, а не права: разрешений они не добавляют.
+
+## Свой навык
+
+    jackson skills new пицца
+
+или руками: папка `пицца/`, в ней `SKILL.md`:
+
+    ---
+    name: пицца
+    description: Как я заказываю пиццу: любимая пиццерия, что не ем.
+    aliases: pizza, пиццу
+    ---
+    Заказываю в «Додо» на Ленина, 5, всегда без оливок. На вопрос «что заказать»
+    предложи две пиццы и напиток.
+
+- `description` — одна строка: по ней Джексон понимает, что навык нужен.
+- `aliases` — другие слова и написания имени, через запятую.
+- Дальше обычный Markdown, до 4000 символов.
+- Свой навык с тем же `name`, что у системного, заменяет системный.
+
+Системные навыки (от пакетов СОС и UpsiL): /usr/share/svoya/jackson/skills.
+Все навыки: `jackson skills`. Формат — Agent Skills (SKILL.md), как у других ассистентов.
+"""
+
+README_EN = """# Jackson's skills
+
+A skill is a folder with a `SKILL.md` file: a short instruction Jackson reads when the
+conversation is about its topic. Skills are guidance, not permissions: they grant nothing.
+
+## Your own skill
+
+    jackson skills new pizza
+
+or by hand: a folder `pizza/` with `SKILL.md` inside:
+
+    ---
+    name: pizza
+    description: How I order pizza: my place, what I never eat.
+    aliases: pizzas
+    ---
+    I order from the place on Main St 5, never with olives. When I ask "what should
+    I order", suggest two pizzas and a drink.
+
+- `description`: one line; Jackson uses it to tell when the skill is needed.
+- `aliases`: other words and spellings of the name, comma-separated.
+- Then plain Markdown, up to 4000 characters.
+- Your skill with the same `name` as a system one replaces it.
+
+System skills (from SOS and UpsiL packages): /usr/share/svoya/jackson/skills.
+All skills: `jackson skills`. The format is Agent Skills (SKILL.md), as with other assistants.
+"""
+
+TEMPLATE_RU = """---
+name: {name}
+description: Одна строка: о чём навык и когда он нужен (по ней Джексон его находит).
+aliases:
+---
+Что делать, когда разговор про «{name}». Пиши как новому коллеге: коротко, по пунктам,
+с примерами. До 4000 символов.
+
+- 
+"""
+
+TEMPLATE_EN = """---
+name: {name}
+description: One line: what the skill is about and when it is needed (Jackson finds it by this).
+aliases:
+---
+What to do when the conversation is about "{name}". Write as for a new colleague: short,
+in points, with examples. Up to 4000 characters.
+
+- 
+"""
+
+BOOKMARK_LABEL = {"ru": "Навыки Джексона", "en": "Jackson's skills"}
+
+
+def init_dir(skills_dir: Path, config_home: Path, lang: str = "ru") -> tuple[Path, bool]:
+    """Make the user's skills folder. Only when it is created: the README and a bookmark in the
+    file manager (GTK: Thunar, Nautilus), so deleting either is respected."""
+    created = not skills_dir.is_dir()
+    skills_dir.mkdir(parents=True, exist_ok=True)
+    if created:
+        (skills_dir / "README.md").write_text(README_RU if lang == "ru" else README_EN, encoding="utf-8")
+        bookmarks = config_home / "gtk-3.0" / "bookmarks"
+        uri = skills_dir.as_uri()
+        try:
+            text = bookmarks.read_text(encoding="utf-8") if bookmarks.exists() else ""
+            if uri not in text.split():
+                bookmarks.parent.mkdir(parents=True, exist_ok=True)
+                with open(bookmarks, "a", encoding="utf-8") as f:
+                    f.write(("" if not text or text.endswith("\n") else "\n")
+                            + f"{uri} {BOOKMARK_LABEL.get(lang, BOOKMARK_LABEL['en'])}\n")
+        except OSError:
+            pass
+    return skills_dir, created
+
+
+def slug(name: str) -> str:
+    return re.sub(r"[^\w.-]+", "-", name.strip().lower()).strip("-.")[:64]
+
+
+def new_skill(skills_dir: Path, config_home: Path, name: str, lang: str = "ru") -> Path:
+    """A skill from the template; FileExistsError when one with this folder name exists."""
+    folder = slug(name)
+    if not folder or not re.fullmatch(r"[\w .-]{1,64}", name.strip()):
+        raise ValueError(name)
+    init_dir(skills_dir, config_home, lang)
+    path = skills_dir / folder / "SKILL.md"
+    if path.parent.exists():
+        raise FileExistsError(path.parent)
+    path.parent.mkdir(parents=True)
+    path.write_text((TEMPLATE_RU if lang == "ru" else TEMPLATE_EN).format(name=name.strip()), encoding="utf-8")
+    return path

@@ -10,6 +10,9 @@ Assumed contract (see README "Contract notes"):
 * ``sos theme apply <id|auto>``                — ARCHITECTURE §4.1
 * ``sos theme accent <id|word|#hex> --json``   — DESIGN §10 (``{"ok", "accent", "previous", …}``)
 * ``sos ai off`` / ``sos ai on``               — the AI switch (WORKFLOWS §8)
+* ``sos apps --json`` → ``{"apps": [{"key", "name", "aliases", "installed", …}]}`` and
+  ``sos modules list --json`` → ``{"modules": [{"id", "name", "aliases", "installed", …}]}``: what
+  ``sos install <word>`` knows (Jackson opens that install in a terminal, the user confirms there)
 
 Fallback for snapshots when neither command exists: ``snapper -c <snapshots.snapper_config>``.
 """
@@ -17,6 +20,7 @@ Fallback for snapshots when neither command exists: ``snapper -c <snapshots.snap
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -40,6 +44,7 @@ class SvoyaCli:
         self.runner = runner
         self.paths = paths
         self.snapper_config = snapper_config
+        self._catalog: tuple[float, list[dict[str, Any]]] | None = None
 
     @property
     def binary(self) -> str | None:
@@ -153,6 +158,44 @@ class SvoyaCli:
         if exe is None:
             return False
         return self.runner.spawn([exe, "ai", "off"]) is not None
+
+    # ------------------------------------------------------------------
+    def catalog(self) -> list[dict[str, Any]]:
+        """Apps and modules `sos install` knows, each with the words that name it (cached 30 s)."""
+        exe = self.binary
+        if exe is None:
+            return []
+        now = time.monotonic()
+        if self._catalog is not None and now - self._catalog[0] < 30:
+            return self._catalog[1]
+        items: list[dict[str, Any]] = []
+        for argv, key in (([exe, "apps", "--json"], "apps"), ([exe, "modules", "list", "--json"], "modules")):
+            res = self.runner.run(argv, timeout=8.0)
+            try:
+                rows = json.loads(res.out).get(key, []) if res.ok else []
+            except (ValueError, AttributeError):
+                rows = []
+            for r in rows if isinstance(rows, list) else []:
+                if not isinstance(r, dict) or not (r.get("key") or r.get("id")):
+                    continue
+                name = r.get("name")
+                names = list(name.values()) if isinstance(name, dict) else [str(name or "")]
+                items.append({"key": str(r.get("key") or r.get("id")), "name": next((n for n in names if n), ""),
+                              "names": {k: v for k, v in name.items()} if isinstance(name, dict) else {},
+                              "kind": "app" if key == "apps" else "module", "installed": bool(r.get("installed")),
+                              "proprietary": bool(r.get("proprietary")),
+                              "words": [str(r.get("key") or r.get("id")), *names, *map(str, r.get("aliases") or [])]})
+        self._catalog = (now, items)
+        return items
+
+    def find_installable(self, word: str) -> dict[str, Any] | None:
+        w = " ".join(word.lower().replace("ё", "е").split())
+        if not w:
+            return None
+        for item in self.catalog():
+            if any(w == x.lower().replace("ё", "е") for x in item["words"] if x):
+                return item
+        return None
 
     def ai_on(self) -> tuple[bool, str]:
         exe = self.binary

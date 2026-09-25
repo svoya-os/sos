@@ -17,6 +17,10 @@ from .context import Ctx
 from .i18n import tr
 
 FLATHUB = "https://dl.flathub.org/repo/flathub.flatpakrepo"
+# `sos apps` and the launcher group the catalog like this (apps.toml: category)
+CATEGORIES = (("games", "Games", "Игры"), ("chat", "Chat", "Общение"), ("internet", "Internet", "Интернет"),
+              ("office", "Office and study", "Офис и учёба"), ("creative", "Photo, video, sound", "Фото, видео, звук"),
+              ("media", "Players", "Плееры"), ("dev", "Code", "Код"), ("system", "System", "Система"))
 
 
 def load_apps(data_dir: Path | None = None) -> dict[str, dict]:
@@ -30,6 +34,58 @@ def load_apps(data_dir: Path | None = None) -> dict[str, dict]:
         for al in a.get("aliases", []):
             out.setdefault(al.lower(), a)
     return out
+
+
+def catalog() -> list[dict]:
+    """Each app once (``load_apps`` also maps every alias), in apps.toml order."""
+    return [a for k, a in load_apps().items() if k == a["key"]]
+
+
+def installed_flatpaks(ctx: Ctx) -> set[str]:
+    if not ctx.runner.which("flatpak"):
+        return set()
+    res = ctx.runner.run(["flatpak", "list", "--app", "--columns=application"], timeout=10)
+    return {line.strip() for line in res.out.splitlines() if line.strip()} if res.ok else set()
+
+
+def main_apps(args, ctx: Ctx) -> int:
+    """``sos apps``: what one word installs (Flathub, per user, no password), by category."""
+    from .i18n import pick
+    have = installed_flatpaks(ctx)
+    rows = [{"key": a["key"], "id": a["id"], "name": a["name"], "summary": a.get("summary", {}),
+             "category": a.get("category", "system"), "license": a.get("license", "?"),
+             "proprietary": bool(a.get("proprietary")), "aliases": a.get("aliases", []), "installed": a["id"] in have}
+            for a in catalog()]
+    if args.json:
+        ui.print_json({"apps": rows, "categories": [{"id": c, "name": {"en": en, "ru": ru}} for c, en, ru in CATEGORIES]})
+        return 0
+    try:
+        from .modules import load_state
+        gaming = "gaming" in load_state(ctx)["modules"]
+    except Exception:
+        gaming = False
+    st = ui.style()
+    ui.head(tr("apps", "приложения") + st.faint(tr(" · sos install <name>: Flathub, just for you, no password",
+                                                  " · sos install <имя>: Flathub, только для вас, без пароля")))
+    for cid, en, ru in CATEGORIES:
+        group = [r for r in rows if r["category"] == cid]
+        if not group:
+            continue
+        ui.out("")
+        ui.out("  " + st.bold(tr(en, ru)))
+        if cid == "games":
+            mark = st.ok("✓") if gaming else st.faint("·")
+            ui.out(f"  {mark} {'steam'.ljust(12)} {'Steam'.ljust(16)} "
+                   + st.faint(tr("+ GameMode, MangoHud, gamescope (module, asks for the password)",
+                                 "+ GameMode, MangoHud, gamescope (модуль, спросит пароль)")))
+        for r in group:
+            mark = st.ok("✓") if r["installed"] else st.faint("·")
+            extra = st.warn(tr(" · proprietary", " · проприетарное")) if r["proprietary"] else ""
+            ui.out(f"  {mark} {r['key'].ljust(12)} {r['name'].ljust(16)} {st.faint(pick(r['summary']))}{extra}")
+    ui.out("")
+    ui.note(tr("sos install telegram · sos remove telegram · an app store: sos install bazaar",
+               "sos установить telegram · sos удалить telegram · магазин приложений: sos установить магазин"))
+    return 0
 
 
 def resolve(ctx: Ctx, thing: str) -> tuple[str, object] | None:

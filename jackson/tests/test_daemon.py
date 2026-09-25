@@ -60,7 +60,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertEqual(welcome["route"]["model"], "qwen3.5-4b")
             self.assertEqual(welcome["persona"]["id"], "kent")
             await b.hello("bar", "ru")
-            await a.send({"type": "ask", "id": "t1", "text": "привет", "context": {"cwd": str(self.app.paths.home)}})
+            await a.send({"type": "ask", "id": "t1", "text": "расскажи о себе", "context": {"cwd": str(self.app.paths.home)}})
             events = await until(a, ("done",), "t1")
             types = [e["type"] for e in events if e["type"] != "state"]
             self.assertEqual(types[0], "route")
@@ -223,7 +223,7 @@ class ProtocolTest(unittest.TestCase):
         async def scenario(svc):
             a = await connect(self.app.paths.socket)
             await a.hello("cli", "ru")
-            await a.send({"type": "ask", "id": "t8", "text": "привет"})
+            await a.send({"type": "ask", "id": "t8", "text": "расскажи о себе"})
             await until(a, ("done",), "t8")
             await a.close()
         self.run_async(scenario)

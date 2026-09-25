@@ -93,6 +93,34 @@ class InstallResolveTest(SandboxTest):
         self.assertTrue(apps["discord"]["proprietary"])
         for a in apps.values():
             self.assertRegex(a["id"], r"^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+){2,}$")
+        cats = {c for c, _, _ in install.CATEGORIES}
+        for a in install.catalog():
+            self.assertIn(a["category"], cats, a["key"])
+            self.assertTrue(a["summary"]["ru"] and a["summary"]["en"], a["key"])
+
+    def test_russian_names_and_the_store(self):
+        ctx = self.sb.ctx(FakeRunner())
+        for word, app_id in (("майнкрафт", "org.prismlauncher.PrismLauncher"), ("магазин", "io.github.kolunmi.Bazaar"),
+                             ("торрент", "org.qbittorrent.qBittorrent"), ("дискорд", "com.discordapp.Discord")):
+            kind, obj = install.resolve(ctx, word)
+            self.assertEqual((kind, obj["id"]), ("app", app_id), word)
+        kind, obj = install.resolve(ctx, "стим")                   # Steam is the module (i386, drivers)
+        self.assertEqual((kind, obj["id"]), ("module", "gaming"))
+
+    def test_sos_apps(self):
+        r = FakeRunner(available={"flatpak"}, responses={"flatpak list": "org.telegram.desktop\norg.gimp.GIMP\n"})
+        ctx = self.sb.ctx(r)
+        rv, out = capture(install.main_apps, argparse.Namespace(json=True), ctx)
+        data = json.loads(out)
+        by_key = {a["key"]: a for a in data["apps"]}
+        self.assertTrue(by_key["telegram"]["installed"])
+        self.assertFalse(by_key["prism"]["installed"])
+        self.assertEqual(data["categories"][0]["id"], "games")
+        self.assertEqual(install.main_apps(argparse.Namespace(json=False), self.sb.ctx(FakeRunner())), 0)
+        text = self.output()
+        self.assertIn("Minecraft", text)
+        self.assertIn("steam", text)                               # the module, first among games
+        self.assertIn("proprietary", text)
 
 
 class MenuTest(SandboxTest):
@@ -188,6 +216,17 @@ class SessionTest(SandboxTest):
         # an installed system is not live
         self.sb.write("/proc/cmdline", "BOOT_IMAGE=/vmlinuz root=UUID=1 ro quiet splash\n")
         self.assertFalse(live.is_live(self.sb.ctx(r)))
+
+    def test_first_login_makes_the_skills_folder(self):
+        r = FakeRunner(available={"jackson"}, responses={"jackson skills init": '{"created": true}'})
+        ctx = self.sb.ctx(r, SVOYA_SHELL_DIR=str(self.sb.dir / "sh"))
+        steps = {s["step"]: s for s in session.start(ctx)}
+        self.assertTrue(steps["skills"]["ok"])
+        self.assertTrue(r.called("jackson", "skills", "init"))
+        (self.sb.home / ".local/share/svoya/jackson/skills").mkdir(parents=True)
+        r2 = FakeRunner(available={"jackson"})
+        self.assertNotIn("skills", {s["step"] for s in session.start(self.sb.ctx(r2, SVOYA_SHELL_DIR=str(self.sb.dir / "sh")))})
+        self.assertFalse(r2.called("jackson"))
 
     def test_ai_switched_off_skips_jackson(self):
         (self.sb.home / ".config/svoya").mkdir(parents=True)

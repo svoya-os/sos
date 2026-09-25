@@ -9,7 +9,9 @@ import "Fuzzy.js" as Fuzzy
 // 640px. Groups: Приложения · Файлы · Настройки · Модули · Действия, rows 40px
 // (20px icon, Plex Sans 13.5 name, mono 11 secondary, Enter keycap on the top
 // hit). `?text` or Tab hands the query to Jackson. Modes (СОС menu):
-// settings / modules / actions show one group only.
+// settings / modules / actions show one group only; install lists what `sos install`
+// knows and is not installed yet (catalog apps by category, then modules). Typing an
+// app that is not installed offers «Установить …»; a few secret words do tricks.
 PanelFrame {
     id: root
 
@@ -18,6 +20,9 @@ PanelFrame {
     property var modules: []          // from `sos modules list --json`
     property bool modulesLoaded: false
     property var recentFiles: []      // from recently-used.xbel
+    property var catalogApps: []      // from `sos apps --json`: Flathub apps by one word
+    property var catalogCats: []
+    property bool appsLoaded: false
 
     readonly property string mode: Ui.launcherMode
     readonly property bool askMode: root.query.trim().indexOf("?") === 0
@@ -63,8 +68,71 @@ PanelFrame {
         { key: "doctor", title: Strings.doctor, secondary: "sos doctor", glyph: "stethoscope", run: () => Actions.doctor() },
         { key: "dnd", title: Strings.dnd, secondary: Settings.dnd ? Strings.btOn : Strings.btOff, glyph: Settings.dnd ? "bell-off" : "bell", run: () => Notifs.toggleDnd() },
         { key: "tiling", title: Strings.toggleTiling, secondary: "Super T", glyph: "layout-grid", run: () => Hypr.toggleTiling() },
-        { key: "terminal", title: Strings.terminal, secondary: "Super Enter", glyph: "terminal", run: () => Sys.terminal() }
+        { key: "terminal", title: Strings.terminal, secondary: "Super Enter", glyph: "terminal", run: () => Sys.terminal() },
+        { key: "install apps store", title: Strings.installApps, secondary: "sos apps", glyph: "store", run: () => Ui.openLauncher("install", "") },
+        { key: "skills навыки", title: Strings.jacksonSkills, secondary: "~/.local/share/svoya/jackson/skills", glyph: "book-open", run: () => root.openSkills() },
+        { key: "morse sos морзе", title: Strings.morseCallSign, secondary: "sos morse", glyph: "radio", run: () => Sys.detachSos(["morse", "--quiet"]) }
+    ].concat(Jackson.enabled ? root.funEntries : [])
+    // Jackson's games, found by typing («монетка», «кубик», «анекдот»); answered without a model
+    readonly property var funEntries: [
+        { key: "coin монетка орел решка", title: Strings.funCoin, secondary: Strings.groupJackson, glyph: "dices", run: () => Actions.askJackson(Strings.funCoinAsk) },
+        { key: "dice кубик d20", title: Strings.funDice, secondary: Strings.groupJackson, glyph: "dices", run: () => Actions.askJackson(Strings.funDiceAsk) },
+        { key: "joke анекдот шутка", title: Strings.funJoke, secondary: Strings.groupJackson, glyph: "party-popper", run: () => Actions.askJackson(Strings.funJokeAsk) },
+        { key: "rps камень ножницы бумага", title: Strings.funRps, secondary: Strings.groupJackson, glyph: "dices", run: () => Actions.askJackson(Strings.funRpsAsk) }
     ]
+
+    // ---- secret words: the whole query, exactly; each trick is harmless or undoable (sos undo) ------
+    readonly property var secrets: ({
+        "sos": "sos", "сос": "sos", "...---...": "sos", "... --- ...": "sos", "···———···": "sos", "··· ——— ···": "sos",
+        "iddqd": "god", "idkfa": "god",
+        "пепе": "pepe", "шнейне": "pepe", "пепе шнейне": "pepe", "пепе шнейне фа": "pepe", "втфа": "pepe", "ватафа": "pepe", "pepe": "pepe",
+        "42": "answer",
+        "кентафурик": "kent", "kentafurik": "kent",
+        "привет мир": "hello", "hello world": "hello",
+        "чай": "tea", "кофе": "tea", "tea": "tea", "coffee": "tea", "418": "tea",
+        "дзен": "zen", "upsil zen": "zen", "дзен upsil": "zen"
+    })
+
+    function secretRows(q) {
+        const w = q.toLowerCase().replace(/ё/g, "е").replace(/[,!?]/g, "").replace(/\s+/g, " ").trim();
+        const hit = root.secrets[w];
+        if (!hit)
+            return [];
+        const gold = "#ffd700";
+        const hello = 'command -v upsil >/dev/null 2>&1 || { printf "%s\\n" "$3"; read -r _; exit 0; }; ' + 'f=$(mktemp --suffix=.upl) && printf "%s\\n" "$1" >"$f" && upsil run "$f"; rm -f "$f"; ' + 'printf "\\n%s\\n" "$2"; exec upsil repl';
+        const rows = {
+            sos: { title: "··· ——— ···", secondary: Strings.morseCallSign, glyph: "radio", run: () => Sys.detachSos(["morse", "--quiet"]) },
+            god: { title: Strings.secretGod, secondary: Strings.secretGoldSub, glyph: "zap", run: () => Theme.setAccent(gold) },
+            pepe: { title: Strings.secretPepe, secondary: Strings.secretGoldSub, glyph: "party-popper", run: () => {
+                    Theme.setAccent(gold);
+                    if (Jackson.enabled)
+                        Actions.askJackson("пепе шнейне");
+                } },
+            answer: { title: "42", secondary: Strings.secret42Sub, glyph: "sparkles", run: () => Actions.askJackson(Strings.secret42Ask) },
+            kent: { title: Strings.secretKent, secondary: Strings.secretKentSub, glyph: "sparkles", run: () => Actions.askJackson(Strings.ru ? "привет" : "hello") },
+            hello: { title: Strings.secretHello, secondary: Strings.secretHelloSub, glyph: "terminal", run: () => Sys.terminal(["sh", "-c", hello, "sh", Strings.secretHelloCode, Strings.secretHelloRepl, Strings.secretNoUpsil]) },
+            tea: { title: Strings.secretTea, secondary: "sos чай", glyph: "coffee", run: () => Sys.terminal(["sh", "-c", 'c=$(command -v sos || command -v svoya) && "$c" tea; printf "\\n"; read -r _']) },
+            zen: { title: Strings.secretZen, secondary: "upsil zen", glyph: "sparkles", run: () => Sys.terminal(["sh", "-c", 'upsil zen || printf "%s\\n" "$1"; printf "\\n"; read -r _', "sh", Strings.secretNoUpsil]) }
+        };
+        const r = rows[hit];
+        return r ? [{ group: "secret", title: r.title, secondary: r.secondary, glyph: r.glyph, run: r.run, score: 1000 }] : [];
+    }
+
+    // The word for installing opens the install list («приложения», «магазин», «apps»…).
+    readonly property var installWords: ["apps", "app store", "store", "install app", "install apps", "приложения",
+        "установить приложение", "установить программу", "магазин", "магазин приложений", "каталог", "программы"]
+
+    function commandRows(q) {
+        const w = q.toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
+        if (root.installWords.indexOf(w) < 0)
+            return [];
+        return [{ group: "install", title: Strings.installApps, secondary: "sos apps", glyph: "store", run: () => Ui.openLauncher("install", ""), score: 1000 }];
+    }
+
+    function openSkills() {
+        const dir = Sys.home + "/.local/share/svoya/jackson/skills";
+        Sys.detachSh('[ -d "$1" ] || { command -v jackson >/dev/null 2>&1 && jackson skills init >/dev/null 2>&1; mkdir -p "$1"; }; exec xdg-open "$1"', [dir]);
+    }
 
     // ---- results ------------------------------------------------------------------------------
     // With an empty query and no launch history yet, the first eight rows are what a new user
@@ -121,9 +189,11 @@ PanelFrame {
             const m = root.modules[i];
             const name = m.name ? (Strings.ru ? m.name.ru : m.name.en) || m.id : m.id;
             const summary = m.summary ? (Strings.ru ? m.summary.ru : m.summary.en) || "" : "";
-            const sc = q.length === 0 ? 1 : Fuzzy.best(q, [name, m.id, summary]);
+            if (root.mode === "install" && m.installed)
+                continue;
+            const sc = q.length === 0 ? 1 : Fuzzy.best(q, [name, m.id, summary, (m.aliases || []).join(" ")]);
             if (sc > 60 || q.length === 0)
-                out.push({ group: "modules", title: name, secondary: m.installed ? Strings.installed : "sos install " + m.id, glyph: "package", module: m, score: sc + (m.installed ? 0 : 1) });
+                out.push({ group: "modules", title: name, secondary: m.installed ? Strings.installed : "sos install " + m.id, glyph: m.id === "gaming" ? "gamepad-2" : "package", module: m, score: sc + (m.installed ? 0 : 1) });
         }
         out.sort((a, b) => b.score - a.score);
         return out.slice(0, limit);
@@ -143,6 +213,35 @@ PanelFrame {
         return out.slice(0, 5);
     }
 
+    // Catalog apps that are not installed yet: «Установить Telegram» (typing «телеграм» is enough).
+    // In install mode with an empty query, all of them, grouped by category.
+    function installRows(q, limit) {
+        if (q.length < 2 && root.mode !== "install")
+            return [];
+        const out = [];
+        for (let i = 0; i < root.catalogApps.length; i++) {
+            const a = root.catalogApps[i];
+            if (a.installed)
+                continue;
+            const summary = a.summary ? (Strings.ru ? a.summary.ru : a.summary.en) || "" : "";
+            const sc = q.length === 0 ? 1 : Fuzzy.best(q, [a.name, a.key, (a.aliases || []).join(" "), summary]);
+            if (sc > 60 || q.length === 0)
+                out.push({ group: q.length === 0 ? "cat:" + a.category : "install", title: q.length === 0 ? a.name : Strings.installThing(a.name), secondary: summary + " · sos install " + a.key, glyph: a.category === "games" ? "gamepad-2" : "download", app: a.key, score: sc, idx: i });
+        }
+        if (q.length > 0) {
+            out.sort((a, b) => b.score - a.score);
+        } else {
+            // by category, in the catalog's order, so each caption comes once
+            const order = root.catalogCats.map(c => c.id);
+            const rank = g => {
+                const k = order.indexOf(g.slice(4));
+                return k < 0 ? 99 : k;
+            };
+            out.sort((a, b) => rank(a.group) - rank(b.group) || a.idx - b.idx);
+        }
+        return out.slice(0, limit);
+    }
+
     readonly property var rows: {
         const q = root.askMode ? "" : root.query.trim();
         let out = [];
@@ -151,10 +250,16 @@ PanelFrame {
             return out;
         }
         const m = root.mode;
+        if (m === "install")
+            return root.installRows(q, 80).concat(root.moduleRows(q, 30));
         if (m === "all" || m === "apps")
             out = out.concat(root.appRows(q));
-        if (m === "all")
+        if (m === "all") {
+            // after apps (so «сос» still finds the live installer first): a secret word, then what
+            // can be installed («телеграм» → «Установить Telegram»), then recent files
+            out = out.concat(root.secretRows(q)).concat(root.commandRows(q)).concat(root.installRows(q, 3));
             out = out.concat(root.fileRows(q));
+        }
         if (m === "all" || m === "settings")
             out = out.concat(root.staticRows("settings", q.length > 0 ? root.settingsEntries.concat(root.accentEntries) : root.settingsEntries, q, m === "settings" ? 20 : (q.length ? 4 : 0)));
         if (m === "all" || m === "modules")
@@ -173,8 +278,17 @@ PanelFrame {
             settings: Strings.groupSettings,
             modules: Strings.groupModules,
             actions: Strings.groupActions,
-            jackson: Strings.groupJackson
-        })[g] || "";
+            jackson: Strings.groupJackson,
+            install: Strings.groupInstall,
+            secret: Strings.groupSecret
+        })[g] || root.categoryTitle(g);
+    }
+
+    function categoryTitle(g) {
+        if (g.indexOf("cat:") !== 0)
+            return "";
+        const c = root.catalogCats.find(x => x.id === g.slice(4));
+        return c ? (Strings.ru ? c.name.ru : c.name.en) : g.slice(4);
     }
 
     function activate(i) {
@@ -193,8 +307,13 @@ PanelFrame {
         } else if (r.file) {
             Sys.detach(["xdg-open", r.file]);
         } else if (r.module) {
-            if (!r.module.installed)
+            if (!r.module.installed) {
                 Sys.terminal(["sh", "-c", 'c=$(command -v sos || command -v svoya); "$c" install "$1"; printf "\\n"; read -r _', "sh", r.module.id]);
+                root.modulesLoaded = false;
+            }
+        } else if (r.app) {
+            Sys.terminal(["sh", "-c", 'c=$(command -v sos || command -v svoya); "$c" install "$1"; printf "\\n"; read -r _', "sh", r.app]);
+            root.appsLoaded = false;
         } else if (r.run) {
             r.run();
         }
@@ -226,6 +345,8 @@ PanelFrame {
             Qt.callLater(field.focusInput);
             if (!root.modulesLoaded)
                 root.loadModules();
+            if (!root.appsLoaded)
+                root.loadApps();
             xbel.reload();
         }
     }
@@ -241,9 +362,23 @@ PanelFrame {
                     id: m.id,
                     name: m.name,
                     summary: m.summary,
+                    aliases: m.aliases || [],
                     installed: m.installed === true
                 }));
                 root.modulesLoaded = true;
+            } catch (e) {}
+        });
+    }
+
+    function loadApps() {
+        Sys.sos(["apps", "--json"], function (code, out) {
+            if (code !== 0)
+                return;
+            try {
+                const data = JSON.parse(out);
+                root.catalogApps = data.apps || [];
+                root.catalogCats = data.categories || [];
+                root.appsLoaded = true;
             } catch (e) {}
         });
     }

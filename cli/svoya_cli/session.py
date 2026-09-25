@@ -8,6 +8,7 @@
 4. first login only (no ``~/.config/svoya/first-run-done``): ``quickshell -p …/shell/setup`` (logged, no restart);
    in the live session Jackson greets instead and offers the installer (``live.py``)
 5. warm the status cache in the background (apt/snapper counts)
+6. first login only: Jackson's skills folder (``jackson skills init``: README, file-manager bookmark)
 
 A second call in the same session changes nothing. Nothing here waits on the network or on apt.
 Each step's outcome is appended to ``~/.local/state/svoya/session.log``.
@@ -134,6 +135,12 @@ def start(ctx: Ctx) -> list[dict]:
             steps.append({"step": "first-run", "ok": r.spawn([*_supervised(ctx, once=True), setup]), "detail": setup})
     # 5. warm the status cache (apt/snapper counts) without waiting
     r.spawn([*svoya_argv(), "status", "--refresh-cache"], mutating=False)
+    # 6. Jackson's skills folder, ready before the first question about it. The README and the bookmark
+    #    come only with a new folder, so deleting them sticks.
+    skills = ctx.paths.data_home / "svoya" / "jackson" / "skills"
+    if not skills.is_dir() and r.which("jackson"):
+        res = r.run(["jackson", "skills", "init", "--json"], timeout=10, mutating=True)
+        steps.append({"step": "skills", "ok": res.ok, "detail": str(skills) if res.ok else res.err.strip()[:200]})
     return steps
 
 
@@ -158,5 +165,5 @@ def main(args, ctx: Ctx | None = None) -> int:
     elif ctx.dry_run or os.isatty(1):
         for s in steps:
             ui.out(f"  {ui.mark('ok' if s['ok'] else 'fail')} {s['step'].ljust(10)} {ui.style().faint(s['detail'])}")
-    return 0 if all(s["ok"] for s in steps if s["step"] != "first-run") else 1
+    return 0 if all(s["ok"] for s in steps if s["step"] not in ("first-run", "skills")) else 1
 

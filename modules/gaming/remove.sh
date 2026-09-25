@@ -4,4 +4,4 @@
 source "${SVOYA_LIB:?}/common.sh"
 sv_require_root
 sv_apt_track_remove
-sv_flatpak_remove com.heroicgameslauncher.hgl net.lutris.Lutris io.github.ilya_zlobintsev.LACT
+sv_flatpak_remove com.heroicgameslauncher.hgl net.lutris.Lutris com.vysp3r.ProtonPlus io.github.ilya_zlobintsev.LACT

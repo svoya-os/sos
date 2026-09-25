@@ -230,7 +230,12 @@ exactly why and what to do (`sos models serve`, `jackson route set policy any`, 
 * **Skills** (`~/.local/share/svoya/jackson/skills/*/SKILL.md`, plus system skills from packages in
   `/usr/share/svoya/jackson/skills`, e.g. UpsiL's; a user skill of the same name wins): catalogue in the
   prompt, bodies of the best matches added per turn (the name or an `aliases:` spelling in the request
-  counts extra); they are guidance only and grant nothing.
+  counts extra); they are guidance only and grant nothing. svoya-jackson ships two system skills,
+  `sos` (how SOS does things: `sos install`, themes, undo, keys) and `games` (Steam, Proton, launch
+  options, gamepads). The user's folder is made on the first login (`jackson skills init`: a README
+  and a file-manager bookmark); `jackson skills` lists them, `jackson skills new <name>` starts one
+  from a template, and the fast path answers «открой навыки» and «создай навык X» (an empty
+  template from the user's own words: the model never writes skills).
 * **Audit**: `audit.jsonl`, one JSON object per line, `prev` = SHA-256 of the previous line's bytes,
   plus `audit.head` (last seq + hash) to catch truncation; `flock`-serialized across processes,
   fsync'ed; long values stored as digests, secret-looking keys masked. `jackson audit verify`.
