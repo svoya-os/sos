@@ -14,7 +14,31 @@ from . import __version__, i18n
 from .i18n import tr
 
 
+# argparse's own words (usage, section titles, -h, errors) in Russian too: it looks `_` up in its
+# module globals at call time, so a lookup table is enough (no .mo files).
+_ARGPARSE_RU = {
+    "usage: ": "использование: ",
+    "positional arguments": "аргументы",
+    "options": "параметры",
+    "show this help message and exit": "показать эту справку",
+    "show program's version number and exit": "показать версию",
+    "%(prog)s: error: %(message)s\n": "%(prog)s: ошибка: %(message)s\n",
+    "invalid choice: %(value)r (choose from %(choices)s)": "нет такого варианта: %(value)r (есть: %(choices)s)",
+    "the following arguments are required: %s": "не хватает аргументов: %s",
+    "unrecognized arguments: %s": "непонятные аргументы: %s",
+    "expected one argument": "нужно одно значение",
+    "argument %(argument_name)s: %(message)s": "аргумент %(argument_name)s: %(message)s",
+    "invalid %(type)s value: %(value)r": "неверное значение (%(type)s): %(value)r",
+}
+
+
+def _localize_argparse() -> None:
+    if i18n.lang() == "ru":
+        argparse._ = lambda text: _ARGPARSE_RU.get(text, text)  # type: ignore[attr-defined]
+
+
 def _parser() -> argparse.ArgumentParser:
+    _localize_argparse()
     p = argparse.ArgumentParser(
         prog="sos",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -41,7 +65,8 @@ def _parser() -> argparse.ArgumentParser:
             "По-английски тоже можно: sos install, remove, fix, gpu, update, undo, theme, models."))
     p.add_argument("--version", action="version", version=f"sos {__version__}")
     p.add_argument("--no-color", action="store_true", help=tr("plain output", "без цвета"))
-    sub = p.add_subparsers(dest="cmd", metavar="<command>")
+    p._positionals.title = tr("commands", "команды")
+    sub = p.add_subparsers(dest="cmd", metavar=tr("<command>", "<команда>"))
 
     def cmd(name: str, en: str, ru: str, **kw) -> argparse.ArgumentParser:
         return sub.add_parser(name, help=tr(en, ru), description=tr(en, ru), **kw)
@@ -276,6 +301,8 @@ def _parser() -> argparse.ArgumentParser:
     ss = cmd("session-start", "start the desktop session (Hyprland exec-once)", "запуск сеанса (exec-once в Hyprland)")
     ss.add_argument("--dry-run", action="store_true")
     ss.add_argument("--json", action="store_true")
+    # plumbing, not for people: works, but stays out of `sos --help`
+    sub._choices_actions = [a for a in sub._choices_actions if a.dest != "session-start"]
     return p
 
 

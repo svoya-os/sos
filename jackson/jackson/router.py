@@ -155,12 +155,37 @@ def order_local_models(models: list[str], task: str, pcfg: ProviderConfig) -> li
 
 class Router:
     def __init__(self, config: Config, providers: dict[str, Provider], health: HealthCache,
-                 spend: SpendLedger, key_check: Callable[[str], bool] | None = None) -> None:
+                 spend: SpendLedger, key_check: Callable[[str], bool] | None = None,
+                 local_starter: Callable[[], bool] | None = None, start_wait: float = 20.0,
+                 local_installed: Callable[[], bool] | None = None) -> None:
         self.config = config
         self.providers = providers
         self.health = health
         self.spend = spend
         self.key_check = key_check or (lambda name: bool(providers[name].api_key) or not providers[name].cfg.needs_key)
+        # Starts the local model server when a question needs it and a model is installed
+        # (`sos models serve`): asking Jackson counts as asking for the model (AI never starts by itself).
+        self.local_starter = local_starter
+        self.start_wait = start_wait
+        self.local_installed = local_installed      # None: unknown (tests, other systems)
+
+    def _wake_local(self, names: list[str]) -> dict[str, tuple[bool, str]]:
+        """Local providers are all down: start the server once and give it `start_wait` seconds."""
+        if self.local_starter is None or not names:
+            return {}
+        try:
+            started = self.local_starter()
+        except Exception:  # starting is a convenience; routing must go on without it
+            started = False
+        if not started:
+            return {}
+        deadline = time.monotonic() + self.start_wait
+        while True:
+            status = {n: (h.ok, "loading" if h.loading else h.detail)
+                      for n, h in self.health.refresh(names, timeout=1.0).items()}
+            if any(ok for ok, _ in status.values()) or time.monotonic() >= deadline:
+                return status
+            time.sleep(0.5)
 
     # ------------------------------------------------------------------
     def classify(self, text: str, context: dict[str, Any] | None = None, has_images: bool = False,
@@ -239,6 +264,9 @@ class Router:
         # Health of local providers first (cached; the background service keeps it warm).
         local_names = [n for n, p in self.providers.items() if p.cfg.local and p.cfg.enabled]
         local_status = {n: self.provider_ready(n) for n in local_names}
+        if local_status and not any(ok for ok, _ in local_status.values()) and route != "cloud" \
+                and (rc.policy == "local-only" or rc.offline or rc.prefer_local):
+            local_status.update(self._wake_local(local_names))
         pairs = self._ordered_pairs(task)
 
         explicit_model = route if "/" in route else None
@@ -354,7 +382,10 @@ class Router:
         elif explicit_cloud and not any(ok for n, (ok, _) in ready.items() if not self.providers[n].cfg.local):
             why = t("route.why.no_cloud", lang)
         elif rc.policy == "local-only" and not explicit_cloud:
-            why = t("route.why.local_only", lang, detail=local_detail)
+            if self.local_installed is not None and not self.local_installed():
+                why = t("route.why.no_local_model", lang)      # nothing to start: say how to get one
+            else:
+                why = t("route.why.local_only", lang, detail=local_detail)
         else:
             details = [f"{self.providers[n].cfg.display}: {w}" for n, (ok, w) in ready.items() if not ok]
             if not details and not pairs:

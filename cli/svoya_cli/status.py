@@ -227,7 +227,13 @@ def render(status: dict) -> None:
         ui.kv(tr("job", "задача"), " ".join(bits), width=12)
     ai = status.get("ai")
     if ai:
-        ui.kv(tr("ai", "ии"), tr("local", "локально") if ai.get("local") else st.cloud(tr("cloud", "облако")), width=12)
+        if ai.get("enabled") is False:
+            txt = st.faint(tr("off · sos ai on", "выключен · sos ии вкл"))
+        elif "local" not in ai:                     # jacksond has not said where it thinks: not running
+            txt = st.faint(tr("Jackson is not running", "Джексон не запущен"))
+        else:
+            txt = tr("local", "локально") if ai["local"] else st.cloud(tr("cloud", "облако"))
+        ui.kv(tr("ai", "ии"), txt, width=12)
     upd = status.get("updates")
     if upd:
         txt = str(upd["available"]) if upd["available"] else tr("none", "нет")

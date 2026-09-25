@@ -68,6 +68,29 @@ class RouterTest(unittest.TestCase):
         self.assertIn("только локально", ctx.exception.message)
         self.assertIn("sos models serve", ctx.exception.message)
 
+    def test_asking_starts_the_local_server_when_a_model_is_installed(self):
+        r, providers = make_router(self.root, local_ok=False)
+        calls = []
+
+        def start():
+            calls.append(1)
+            providers["local"].healthy = True          # the server came up
+            return True
+
+        r.local_starter, r.start_wait = start, 2.0
+        d = r.decide("привет", lang="ru")
+        self.assertEqual((d.chosen.provider, d.chosen.local), ("local", True))
+        self.assertEqual(len(calls), 1)
+
+    def test_no_installed_model_says_how_to_get_one(self):
+        r, _ = make_router(self.root, local_ok=False)
+        r.local_starter = lambda: False                # nothing to start: no model in /srv/ai
+        r.local_installed = lambda: False
+        with self.assertRaises(RouteError) as ctx:
+            r.decide("привет", lang="ru")
+        self.assertIn("пока нет своей модели", ctx.exception.message)
+        self.assertIn("sos модели подобрать", ctx.exception.message)
+
     def test_policy_any_falls_back_to_cloud_when_local_down(self):
         r, _ = make_router(self.root, route={"policy": "any"}, local_ok=False)
         d = r.decide("привет", lang="ru")

@@ -105,7 +105,7 @@ class CliTest(unittest.TestCase):
         self.assertEqual(data["route"]["policy"], "any")
         self.assertIn("# test settings", self.paths.config_file.read_text(encoding="utf-8"))
         action = res.stdout.split("jackson undo ")[1].split(")")[0]
-        shown = json.loads(self.run_cli("route").stdout)
+        shown = json.loads(self.run_cli("route", "--json").stdout)
         self.assertEqual(shown["policy"], "any")
         undo = self.run_cli("undo", action)
         self.assertEqual(undo.returncode, 0, undo.stdout + undo.stderr)

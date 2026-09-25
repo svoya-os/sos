@@ -683,9 +683,33 @@ def cmd_route(args: argparse.Namespace) -> int:
     cfg = load_config(paths)
     if args.action in (None, "show"):
         rc = cfg.route
-        print(json.dumps({"mode": rc.default, "policy": rc.policy, "offline": rc.offline,
-                          "dailyBudgetEur": rc.daily_budget_eur, "preferLocal": rc.prefer_local,
-                          "task": rc.task}, ensure_ascii=False, indent=1))
+        data = {"mode": rc.default, "policy": rc.policy, "offline": rc.offline,
+                "dailyBudgetEur": rc.daily_budget_eur, "preferLocal": rc.prefer_local, "task": rc.task}
+        if getattr(args, "json", False):
+            print(json.dumps(data, ensure_ascii=False, indent=1))
+            return 0
+        ru = lang == "ru"
+        mode = {"auto": ("сам выбирает", "picks itself"), "local": ("только своя модель", "local model only"),
+                "cloud": ("облако", "cloud")}.get(rc.default, (rc.default, rc.default))
+        policy = {"local-only": ("только локально — данные не уходят с компьютера",
+                                 "local only — data never leaves this computer"),
+                  "eu": ("локально или облака в ЕС", "local or EU clouds"),
+                  "any": ("любые модели, дешёвые и быстрые первыми", "any model, cheap and fast first")
+                  }.get(rc.policy, (rc.policy, rc.policy))
+        rows = [
+            ("режим" if ru else "mode", mode[0 if ru else 1]),
+            ("политика" if ru else "policy", policy[0 if ru else 1]),
+            ("офлайн" if ru else "offline", ("да" if rc.offline else "нет") if ru else ("on" if rc.offline else "off")),
+            ("бюджет" if ru else "budget", (fmt_cost(rc.daily_budget_eur, lang) + (" в день" if ru else " a day"))
+             if rc.daily_budget_eur is not None else ("без лимита" if ru else "no limit")),
+        ]
+        for task, chain in rc.task.items():
+            rows.append((task, " → ".join(chain[:4]) + (" …" if len(chain) > 4 else "")))
+        width = max(len(k) for k, _ in rows) + 2
+        for k, v in rows:
+            print(f"{k.ljust(width)}{v}")
+        print(("изменить: j route set policy any|eu|local-only · j route set budget 2"
+               if ru else "change: j route set policy any|eu|local-only · j route set budget 2"))
         return 0
     key, value = args.key, args.value
     parsed: Any
@@ -851,11 +875,27 @@ def cmd_mcp(args: argparse.Namespace) -> int:
 
 # ---------------------------------------------------------------------------
 
+_ARGPARSE_RU = {
+    "usage: ": "использование: ",
+    "positional arguments": "команды",
+    "options": "параметры",
+    "show this help message and exit": "показать эту справку",
+    "show program's version number and exit": "показать версию",
+    "%(prog)s: error: %(message)s\n": "%(prog)s: ошибка: %(message)s\n",
+    "invalid choice: %(value)r (choose from %(choices)s)": "нет такого варианта: %(value)r (есть: %(choices)s)",
+    "the following arguments are required: %s": "не хватает аргументов: %s",
+    "unrecognized arguments: %s": "непонятные аргументы: %s",
+    "argument %(argument_name)s: %(message)s": "аргумент %(argument_name)s: %(message)s",
+}
+
+
 def build_parser() -> argparse.ArgumentParser:
+    if _lang() == "ru":
+        argparse._ = lambda text: _ARGPARSE_RU.get(text, text)  # type: ignore[attr-defined]
     p = argparse.ArgumentParser(prog="jackson", description="Джексон / Jackson — ассистент СОС. Короче: j <вопрос>.")
     p.add_argument("--lang", choices=["ru", "en"])
     p.add_argument("-V", "--version", action="version", version=f"jackson {__version__}")
-    sub = p.add_subparsers(dest="cmd")
+    sub = p.add_subparsers(dest="cmd", metavar="<команда>")
     a = sub.add_parser("ask", help="задать вопрос / ask")
     a.add_argument("words", nargs="*")
     _ask_flags(a)
@@ -886,6 +926,7 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("action", nargs="?", choices=["show", "set"])
     r.add_argument("key", nargs="?")
     r.add_argument("value", nargs="?")
+    r.add_argument("--json", action="store_true")
     pe = sub.add_parser("persona", help="образ: show | set <id> | humor 0-2")
     pe.add_argument("action", nargs="?", choices=["show", "set", "humor"])
     av = sub.add_parser("avatar", help="внешний вид и имя: show | set <ключ> <значение> | reset")

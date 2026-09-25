@@ -362,8 +362,13 @@ def check_backend(f: Facts, user_env_path: str) -> Check:
     fix = Fix(True, root=False, user_files={user_env_path: f"# SOS (sos fix): PyTorch wheels for this GPU\nUV_TORCH_BACKEND={want}\n"},
               note=("applies to new sessions; `uv pip install torch` picks it up", "для новых сеансов; `uv pip install torch` его учтёт"))
     if have is None:
-        return Check("compute.backend", t, "warn", (f"UV_TORCH_BACKEND is not set; this GPU needs {want}",
-                                                   f"UV_TORCH_BACKEND не задан; этой видеокарте нужен {want}"), fix)
+        if want == "cpu":
+            why = ("UV_TORCH_BACKEND is not set; without a GPU PyTorch needs the cpu wheels",
+                   "UV_TORCH_BACKEND не задан; без видеокарты PyTorch нужен в сборке cpu")
+        else:
+            why = (f"UV_TORCH_BACKEND is not set; this GPU needs {want}",
+                   f"UV_TORCH_BACKEND не задан; этой видеокарте нужен {want}")
+        return Check("compute.backend", t, "warn", why, fix)
     if have == "auto" and want in ("cu126",):
         return Check("compute.backend", t, "fail", ("uv 'auto' picks CUDA 12.8+ wheels that do not run on this GPU (uv #14742)",
                                                    "uv «auto» ставит колёса CUDA 12.8+, которые не работают на этой карте (uv #14742)"), fix)
@@ -489,8 +494,10 @@ def check_store(f: Facts) -> Check:
         return Check("storage.ai", t, "warn", ("not a separate btrfs subvolume: snapshots would carry model files",
                                               "не отдельный подтом btrfs: снимки будут тащить файлы моделей"), gpu=False)
     if free is not None and free < 50 * GiB:
-        return Check("storage.ai", t, "warn", (f"{free / GiB:.0f} GB free — enough for a few models",
-                                              f"свободно {free / GiB:.0f} ГБ — хватит на несколько моделей"), gpu=False)
+        # a warning is for something to act on: say what gets tight, not that all is well
+        return Check("storage.ai", t, "warn", (f"{free / GiB:.0f} GB free: room for a few models, not for large ones (30+ GB)",
+                                              f"свободно {free / GiB:.0f} ГБ: на пару моделей хватит, на большие (30+ ГБ) — нет"),
+                     gpu=False)
     txt = f"{(free or 0) / GiB:.0f} GB free" + (" · own subvolume" if s.get("subvolume") else "")
     txt_ru = f"свободно {(free or 0) / GiB:.0f} ГБ" + (" · свой подтом" if s.get("subvolume") else "")
     return Check("storage.ai", t, "ok", (txt, txt_ru), gpu=False)

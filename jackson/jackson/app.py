@@ -5,6 +5,10 @@ CLI's in-process mode alike."""
 from __future__ import annotations
 
 import logging
+import os
+import shutil
+import time
+from pathlib import Path
 from typing import Any, Mapping
 
 from . import aiswitch
@@ -58,7 +62,9 @@ class Jackson:
         self.providers = providers
         self.health = HealthCache(self.providers)
         self.spend = SpendLedger(self.paths.spend_file)
-        self.router = Router(self.config, self.providers, self.health, self.spend, key_check=self.key_check)
+        self._local_start_at = -1e9
+        self.router = Router(self.config, self.providers, self.health, self.spend, key_check=self.key_check,
+                             local_starter=self.start_local_models, local_installed=self.has_local_model)
         self.grants = Grants(self.paths.grants_file)
         self.permissions = Permissions(self.grants)
         self.skills = Skills(self.paths.skills_dir, self.config.skills_max_active)
@@ -84,6 +90,28 @@ class Jackson:
         if found.key:
             prov.api_key = found.key
         return bool(found.key)
+
+    def has_local_model(self) -> bool:
+        """Is a GGUF model in the shared store (``$HF_HOME/hub``, default /srv/ai)?"""
+        hub = Path(os.environ.get("HF_HOME") or "/srv/ai") / "hub"
+        try:
+            return any(True for _ in hub.glob("models--*/snapshots/*/*.gguf"))
+        except OSError:
+            return False
+
+    def start_local_models(self) -> bool:
+        """The router found every local model server down: `sos models serve`, if a model is installed
+        — at most once in 2 minutes."""
+        now = time.monotonic()
+        if now - self._local_start_at < 120:
+            return False
+        sos = shutil.which("sos") or shutil.which("svoya")
+        if not sos or not self.has_local_model():
+            return False
+        self._local_start_at = now
+        log.info("starting the local model server (sos models serve)")
+        res = self.runner.run([sos, "models", "serve"], timeout=60)
+        return res.ok
 
     def local_provider_names(self) -> list[str]:
         return [n for n, p in self.providers.items() if p.cfg.local and p.cfg.enabled]

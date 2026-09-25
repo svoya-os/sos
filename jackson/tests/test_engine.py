@@ -190,7 +190,7 @@ class EngineTest(unittest.TestCase):
         events = asyncio.run(run_turn(app, "привет"))
         self.assertEqual(kinds(events), ["error"])
         error = next(e for e in events if e["type"] == "error")
-        self.assertIn("только локально", error["message"])
+        self.assertIn("Нет доступной модели", error["message"])
         self.assertTrue(error["retryable"])
         self.assertEqual(events[-1]["state"], "idle")
 
