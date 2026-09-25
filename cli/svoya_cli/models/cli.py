@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 
 from .. import config as config_mod
-from .. import i18n, ui
+from .. import i18n, live, ui
 from ..context import Ctx
 from ..hw import gpu as gpu_mod
 from ..i18n import tr
@@ -427,9 +427,10 @@ def cmd_pull(args, ctx: Ctx) -> int:
         free = shutil.disk_usage(probe).free
     except OSError:
         free = None
+    in_ram = live.is_live(ctx)
     ev("plan", repo=repo, revision=revision, files=files, totalBytes=total, license=verdict.as_json(),
        usable={"status": status, "reason": reason, "region": region}, fit=fit_verdict, memoryBytes8k=need,
-       diskFreeBytes=free)
+       diskFreeBytes=free, live=in_ram)
     head(f"{repo} {st.faint('· ' + i18n.count(len(files), 'file', 'files', 'файл', 'файла', 'файлов') + ' · ' + i18n.gib(total))}")
     say(tr("license", "лицензия"), f"{verdict.license or tr('unknown', 'неизвестна')}  "
         + {"ok": st.ok("✓ " + (reason or tr('OK for you', 'подходит'))), "warn": st.warn("! " + reason),
@@ -439,6 +440,9 @@ def cmd_pull(args, ctx: Ctx) -> int:
         say(tr("fit", "влезет?"), tr(en, ru) + (st.faint(f"  {i18n.gib(need)} @ 8k") if need else ""), width=11)
     if free is not None:
         say(tr("disk", "диск"), tr(f"{i18n.gib(total)} of {i18n.gib(free)} free", f"{i18n.gib(total)} из {i18n.gib(free)} свободных"), width=11)
+    if in_ram:
+        say(tr("live", "живая"), st.warn(tr("! live session: the files go to RAM and are gone after a reboot — install SOS first",
+                                          "! живая сессия: файлы лягут в оперативную память и пропадут после перезагрузки — сначала установи СОС")), width=11)
 
     if args.dry_run:
         ev("done", ok=True, dryRun=True)

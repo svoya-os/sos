@@ -4,7 +4,7 @@ import io
 import json
 import unittest
 
-from svoya_cli import commands, i18n, install, menu, session, ui
+from svoya_cli import commands, i18n, install, live, menu, session, ui
 from svoya_cli.main import main as sos_main
 from svoya_cli.util import toml_dumps
 
@@ -168,6 +168,26 @@ class SessionTest(SandboxTest):
         # the language reaches services started later (Jackson answers in the user's language)
         imported = [c for c in r.calls if c[:3] == ["systemctl", "--user", "import-environment"]]
         self.assertTrue(imported and "LANG" in imported[0])
+
+    def test_live_session_greets_instead_of_the_wizard(self):
+        shell = self.sb.dir / "shell"
+        self.sb.write("/proc/cmdline", "BOOT_IMAGE=/casper/vmlinuz boot=casper hostname=sos quiet splash ---\n")
+        r = FakeRunner(available={"systemctl", "quickshell", "notify-send"})
+        steps = {s["step"]: s for s in session.start(self.sb.ctx(r, SVOYA_SHELL_DIR=str(shell)))}
+        self.assertEqual(steps["first-run"]["detail"], "skipped (live session)")
+        self.assertNotIn(["quickshell", "-p", f"{shell}/setup"], r.spawned)
+        hello = next(c for c in r.spawned if c[:2] == ["sh", "-c"])
+        self.assertIn("notify-send", hello[2])
+        self.assertEqual(hello[-1], "/usr/bin/sos-install")
+        self.assertIn("кентафурик", " ".join(hello[4:]) + " ".join(live.hello(self.sb.ctx(r), True)))
+        # a plain persona greets plainly
+        (self.sb.home / ".config/svoya").mkdir(parents=True, exist_ok=True)
+        (self.sb.home / ".config/svoya/jackson.toml").write_text('persona = "sysop"\n')
+        self.assertNotIn("кентафурик", live.hello(self.sb.ctx(r), True)[2])
+        self.assertEqual(live.hello(self.sb.ctx(r), False)[3], "Install SOS")
+        # an installed system is not live
+        self.sb.write("/proc/cmdline", "BOOT_IMAGE=/vmlinuz root=UUID=1 ro quiet splash\n")
+        self.assertFalse(live.is_live(self.sb.ctx(r)))
 
     def test_ai_switched_off_skips_jackson(self):
         (self.sb.home / ".config/svoya").mkdir(parents=True)

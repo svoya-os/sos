@@ -5,7 +5,8 @@
 2. ``systemctl --user start --no-block jacksond.service`` (skipped while AI is off: ``sos ai off``)
 3. ``quickshell -p /usr/share/svoya/shell`` — unless it is already running — through
    ``/usr/lib/svoya/shell-run``: output to ``$XDG_RUNTIME_DIR/sos-shell.log``, restart after a crash
-4. first login only (no ``~/.config/svoya/first-run-done``): ``quickshell -p …/shell/setup`` (logged, no restart)
+4. first login only (no ``~/.config/svoya/first-run-done``): ``quickshell -p …/shell/setup`` (logged, no restart);
+   in the live session Jackson greets instead and offers the installer (``live.py``)
 5. warm the status cache in the background (apt/snapper counts)
 
 A second call in the same session changes nothing. Nothing here waits on the network or on apt.
@@ -17,7 +18,7 @@ import fcntl
 import os
 
 from . import config as config_mod
-from . import ui
+from . import i18n, live, ui
 from .context import Ctx
 from .i18n import tr
 from .runner import svoya_argv
@@ -118,8 +119,14 @@ def start(ctx: Ctx) -> list[dict]:
     else:
         steps.append({"step": "shell", "ok": False, "detail": "quickshell not installed"})
 
-    # 4. first-run wizard
-    if not ctx.paths.first_run_marker.exists():
+    # 4. first-run wizard — not in the live session: nothing there persists and a model it offers would
+    #    download into RAM. There Jackson greets and offers the installer instead (live.py).
+    if live.is_live(ctx):
+        steps.append({"step": "first-run", "ok": True, "detail": "skipped (live session)"})
+        if r.which("notify-send"):
+            app, title, body, button = live.hello(ctx, i18n.lang() == "ru")
+            r.spawn(["sh", "-c", live.HELLO_SH, "sh", app, title, body, button, live.INSTALLER], mutating=False)
+    elif not ctx.paths.first_run_marker.exists():
         setup = f"{shell}/setup"
         if running(ctx, ["quickshell", "-p", setup]):
             steps.append({"step": "first-run", "ok": True, "detail": "already running"})
