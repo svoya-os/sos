@@ -1,0 +1,30 @@
+1734 training phrases: en/battery 30, en/bluetooth_off 30, en/bluetooth_on 30, en/brightness_down 30, en/brightness_up 30, en/lock 30, en/mute 30, en/none 105, en/screenshot 30, en/time 30, en/unmute 30, en/volume_down 39, en/volume_up 45, en/wifi_off 30, en/wifi_on 30, ru/battery 60, ru/bluetooth_off 60, ru/bluetooth_on 60, ru/brightness_down 60, ru/brightness_up 66, ru/lock 60, ru/mute 72, ru/none 237, ru/screenshot 60, ru/time 60, ru/unmute 60, ru/volume_down 96, ru/volume_up 114, ru/wifi_off 60, ru/wifi_on 60
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 5 files:  60%|██████    | 3/5 [00:00<00:00, 29.16it/s]Fetching 5 files: 100%|██████████| 5/5 [00:07<00:00,  1.48s/it]
+train 1561, calibration 173; max tokens 249
+  epoch 1/3 batch 25 loss 1.2287 reward -0.981 (132 s)
+  epoch 1/3 batch 50 loss 1.0441 reward -0.437 (264 s)
+  epoch 1/3 batch 75 loss 0.9638 reward -0.861 (395 s)
+  epoch 1/3 batch 100 loss 0.9284 reward -0.561 (527 s)
+  epoch 1/3 batch 125 loss 0.2048 reward 0.055 (659 s)
+  epoch 1/3 batch 150 loss 0.4869 reward -0.173 (792 s)
+  epoch 1/3 batch 175 loss 1.0755 reward -0.153 (925 s)
+=== epoch 1/3: mean loss 0.9612 (1032 s)
+  epoch 2/3 batch 25 loss 1.1258 reward -0.459 (1164 s)
+  epoch 2/3 batch 50 loss -0.4093 reward 0.064 (1297 s)
+  epoch 2/3 batch 75 loss 0.0589 reward 0.067 (1431 s)
+  epoch 2/3 batch 100 loss -1.1529 reward 0.077 (1566 s)
+  epoch 2/3 batch 125 loss 0.4549 reward 0.049 (1700 s)
+  epoch 2/3 batch 150 loss -0.9128 reward 0.078 (1834 s)
+  epoch 2/3 batch 175 loss 0.9258 reward -0.264 (1968 s)
+=== epoch 2/3: mean loss 0.3511 (2075 s)
+  epoch 3/3 batch 25 loss 0.6527 reward 0.082 (2208 s)
+  epoch 3/3 batch 50 loss -0.0895 reward 0.073 (2341 s)
+  epoch 3/3 batch 75 loss 1.4881 reward -0.276 (2474 s)
+  epoch 3/3 batch 100 loss 0.8901 reward -0.237 (2608 s)
+  epoch 3/3 batch 125 loss 0.1447 reward 0.085 (2741 s)
+  epoch 3/3 batch 150 loss 0.0744 reward 0.085 (2874 s)
+  epoch 3/3 batch 175 loss 0.2801 reward 0.085 (3008 s)
+=== epoch 3/3: mean loss 0.1518 (3117 s)
+calibration slice: 160/173 right; temperature 1.116
+saved dist/laya-jackson (3150 s)
