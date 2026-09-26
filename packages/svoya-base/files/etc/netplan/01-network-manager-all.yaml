@@ -1,0 +1,7 @@
+# SOS: NetworkManager manages every network device (wired, Wi-Fi, mobile), as on Ubuntu Desktop.
+# Without this file Ubuntu's network-manager leaves wired Ethernet unmanaged
+# (/usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf) and a computer on a cable
+# stays offline; netplan's generator lifts that when NetworkManager is the renderer.
+network:
+  version: 2
+  renderer: NetworkManager

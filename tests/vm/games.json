@@ -14,6 +14,7 @@
     {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
     {"id": "desktop", "action": "sleep", "seconds": 10},
     {"id": "desktop", "action": "screenshot", "name": "01-desktop", "assert": "not_blank"},
+    {"id": "network", "action": "wait_serial", "pattern": "SOS-MARK \\S+ network-online", "fail_pattern": "SOS-MARK \\S+ network-offline", "timeout_s": 240},
 
     {"id": "install", "action": "key", "keys": ["meta_l", "ret"], "hold_ms": 120},
     {"id": "install", "action": "sleep", "seconds": 5},

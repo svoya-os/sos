@@ -876,7 +876,7 @@ def _fun(ctx: FastCtx, pair: tuple[str, str], summary: str = "") -> FastResult:
 
 
 def h_hello(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
-    return _fun(ctx, fun.greeting(dt.datetime.now(), _kent(ctx)))
+    return _fun(ctx, fun.greeting(dt.datetime.now(), _kent(ctx), rng=_rng(ctx)))
 
 
 def h_coin(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
@@ -918,7 +918,7 @@ def h_pepe(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
 
 def _meme(key: str) -> Handler:
     def handler(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
-        return _fun(ctx, fun.meme(key, _kent(ctx)), key)
+        return _fun(ctx, fun.meme(key, _kent(ctx), _rng(ctx)), key)
     return handler
 
 

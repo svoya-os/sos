@@ -1,0 +1,15 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# VM tests only (tests/vm/install.json; live image only): the real installer with a test copy of its
+# settings — «Erase disk» preselected and the user's name filled in. Everything else the bot clicks and
+# types like a person does. A short command to type: 309 typed characters got lost in ISO #8.
+set -euo pipefail
+cfg=/tmp/sos-vm-test-calamares
+rm -rf "$cfg"
+cp -r /etc/calamares "$cfg"
+sed -i 's/^initialPartitioningChoice: none/initialPartitioningChoice: erase/' "$cfg/modules/partition.conf"
+grep -q '^initialPartitioningChoice: erase$' "$cfg/modules/partition.conf"
+printf 'presets:\n    fullName:\n        value: "SOS Tester"\n    loginName:\n        value: "tester"\n' \
+    >>"$cfg/modules/users.conf"
+logger -t sos-vm-test "SOS-STEP installer-start"
+exec sos-install -c "$cfg"

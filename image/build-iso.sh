@@ -132,7 +132,9 @@ dry_run() {
         bash -n "$h" || die "syntax error in $h"
     done
     info "${#HOOKS[@]} hooks ok"
-    [ -x "$IMAGE_DIR/overlay-live/usr/lib/svoya/vm-test-agent" ] || die "vm-test-agent not executable"
+    for f in vm-test-agent vm-test-installer live-user-groups; do
+        [ -x "$IMAGE_DIR/overlay-live/usr/lib/svoya/$f" ] || die "overlay-live: $f not executable"
+    done
     mkdir -p "$WORK/dry"
     DISK_ID=sos-dryrun
     render "$IMAGE_DIR/boot/grub.cfg" "$WORK/dry/grub.cfg"

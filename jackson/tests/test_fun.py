@@ -5,7 +5,7 @@ import datetime as dt
 import random
 import unittest
 
-from jackson import fastpath, fun
+from jackson import fastpath, fun, variety
 from jackson.osctl import OsControl
 from jackson.paths import Paths
 from tests.fakes import FakeRunner, rmtree, short_tmpdir
@@ -59,17 +59,42 @@ class FunTest(unittest.TestCase):
     def test_greetings_know_the_time(self):
         def g(*args, kent=True):
             return fun.greeting(dt.datetime(*args), kent)[0]
-        self.assertIn("Не спится", g(2026, 9, 23, 2, 30))
-        self.assertIn("Понедельник", g(2026, 9, 21, 8, 0))           # a Monday
-        self.assertIn("Пятница, чуваааак", g(2026, 9, 25, 19, 0))     # a Friday evening
+        night = g(2026, 9, 23, 2, 30)
+        self.assertTrue(any(w in night for w in ("Не спится", "полуночник", "Ночной")), night)
+        self.assertTrue(g(2026, 9, 21, 8, 0).startswith("Понедельник"))    # a Monday
+        self.assertTrue(g(2026, 9, 25, 19, 0).startswith("Пятница"))       # a Friday evening
         self.assertIn("С наступающим", g(2026, 12, 31, 12, 0))
         self.assertIn("С Новым годом", g(2027, 1, 1, 12, 0))
         self.assertIn("первым апреля", g(2027, 4, 1, 12, 0))
         self.assertIn("Днём программиста", g(2026, 9, 13, 12, 0))    # day 256
         self.assertIn("Днём программиста", g(2028, 9, 12, 12, 0))    # day 256 in a leap year
         self.assertNotIn("программиста", g(2028, 9, 13, 12, 0))
-        self.assertEqual(g(2026, 9, 23, 14, 0), "Здарова, кентафурик! Чем помочь?")
         self.assertEqual(g(2026, 9, 23, 14, 0, kent=False), "Добрый день! Чем помочь?")
+        for seed in range(12):                                         # the name instead of «кентафурик»
+            named = fun.greeting(dt.datetime(2026, 9, 23, 14, 0), True, name="Макс", rng=random.Random(seed))[0]
+            self.assertLessEqual(named.count("Макс"), 1)
+            self.assertNotIn("кентафурик", named)
+
+    def test_greetings_are_never_the_same_twice_in_a_row(self):
+        # «Йоу», «здарова», «салют», «хэй»… the кентафурик does not repeat himself (jackson/variety.py)
+        variety.forget()
+        rng = random.Random(7)
+        day = [fun.greeting(dt.datetime(2026, 9, 23, 14, 0), True, rng=rng)[0] for _ in range(24)]
+        self.assertTrue(all(a != b for a, b in zip(day, day[1:])))
+        self.assertGreaterEqual(len(set(day)), 6)
+        self.assertTrue(any(t.startswith(("Йоу", "Йо-йо")) for t in day))
+        self.assertTrue(any(t.startswith("Здарова") for t in day))
+        words = {t.split("!")[0].split(",")[0].split("?")[0] for t in day}
+        self.assertGreaterEqual(len(words), 4)                     # different openings, not one phrase
+        for slot, lines in fun.HELLO_KENT.items():
+            with self.subTest(slot=slot):
+                self.assertGreaterEqual(len(lines), 3)
+                self.assertTrue(all(ru and en for ru, en in lines))
+        thanks = [fun.meme("thanks", True, rng)[0] for _ in range(10)]
+        self.assertTrue(all(a != b for a, b in zip(thanks, thanks[1:])))
+        self.assertEqual(fun.meme("thanks", False, rng)[0], "Пожалуйста!")
+        jokes = [fun.joke(rng)[0] for _ in range(len(fun.JOKES_RU) // 2 + 1)]
+        self.assertEqual(len(jokes), len(set(jokes)))              # no joke twice until half of them were told
 
 
 class FunIntentTest(unittest.TestCase):

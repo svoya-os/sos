@@ -9,7 +9,18 @@ override_dh_auto_install:
 	mkdir -p $(PKG)
 	cp -a files/. $(PKG)/
 
+override_dh_installdeb:
+	dh_installdeb
+	# The identity files replace base-files' (diverted by the preinst). As conffiles, dpkg inherits
+	# base-files' records for them, finds them "deleted" (the diversion renamed them away) and keeps
+	# them deleted: ISO #8 had no /etc/lsb-release, /etc/issue or motd help text. Plain files instead.
+	sed -i -e '\|^/etc/lsb-release$$|d' -e '\|^/etc/issue$$|d' -e '\|^/etc/issue\.net$$|d' \
+		-e '\|^/etc/update-motd\.d/10-help-text$$|d' $(PKG)/DEBIAN/conffiles
+	[ -s $(PKG)/DEBIAN/conffiles ] || rm -f $(PKG)/DEBIAN/conffiles
+
 override_dh_fixperms:
 	dh_fixperms
 	chmod 0755 $(PKG)/usr/lib/svoya/setup-snapper $(PKG)/etc/update-motd.d/10-help-text
 	chmod 0644 $(PKG)/usr/share/snapper/config-templates/svoya
+	# netplan warns about (and future releases refuse) configuration readable by others
+	chmod 0600 $(PKG)/etc/netplan/01-network-manager-all.yaml

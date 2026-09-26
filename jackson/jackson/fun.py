@@ -12,6 +12,8 @@ import datetime as dt
 import random
 import re
 
+from .variety import fresh
+
 T = tuple[str, str]
 
 # ---------------------------------------------------------------------------
@@ -55,7 +57,7 @@ BALL_PLAIN: list[T] = [
 
 
 def ball(rng: random.Random, kent: bool) -> T:
-    return rng.choice(BALL_KENT if kent else BALL_PLAIN)
+    return fresh(rng, "ball:" + ("kent" if kent else "plain"), BALL_KENT if kent else BALL_PLAIN)
 
 
 RPS_RU = {"камень": 0, "ножницы": 1, "бумага": 2, "бумагу": 2}
@@ -124,7 +126,7 @@ JOKES_EN = [
 
 
 def joke(rng: random.Random) -> T:
-    return rng.choice(JOKES_RU), rng.choice(JOKES_EN)
+    return fresh(rng, "joke:ru", JOKES_RU), fresh(rng, "joke:en", JOKES_EN)
 
 
 # ---------------------------------------------------------------------------
@@ -140,12 +142,12 @@ PEPE_KENT: list[T] = [
 
 def pepe(rng: random.Random, kent: bool) -> T:
     if kent:
-        return rng.choice(PEPE_KENT)
+        return fresh(rng, "pepe", PEPE_KENT)
     return ("Мем знаю: «пепе, шнейне, фа». Чем помочь?", "I know the meme. How can I help?")
 
 
-MEMES: dict[str, tuple[T, T]] = {
-    # key: (kent reply, plain reply)
+MEMES: dict[str, tuple[T | list[T], T]] = {
+    # key: (kent reply or replies — a different one each time, plain reply)
     "preved": (("Превед, кросавчег! Чем помочь?", "Preved! What's up?"),
                ("Привет! Чем помочь?", "Hi! How can I help?")),
     "fiasco": (("Не фиаско, а опыт, братан. Рассказывай — разберёмся.", "Not a fiasco, bro, just experience. Tell me."),
@@ -161,28 +163,88 @@ MEMES: dict[str, tuple[T, T]] = {
                     "Golden rule. A snapshot comes before every update anyway.")),
     "oy_vse": (("Всё-всё, молчу. Если что — я на связи.", "Okay, okay, quiet. I'm here if you need me."),
                ("Хорошо. Я на связи.", "Okay. I'm here.")),
-    "thanks": (("Обращайся, кентафурик!", "Anytime, buddy!"), ("Пожалуйста!", "You're welcome!")),
-    "how_are_you": (("Ровно, кентафурик: процессор тёплый, память свободна. У тебя как?",
-                     "Smooth, buddy: warm CPU, free memory. How about you?"),
+    "thanks": ([("Обращайся, кентафурик!", "Anytime, buddy!"),
+                ("Да не за что, чувак. Я на связи.", "No problem, dude. I'm around."),
+                ("Базару нет, обращайся!", "You bet, anytime!"),
+                ("Изи, братишка. Если что — зови.", "Easy, bro. Call me anytime."),
+                ("Йоу, всегда пожалуйста!", "Yo, you're welcome!")],
+               ("Пожалуйста!", "You're welcome!")),
+    "how_are_you": ([("Ровно, кентафурик: процессор тёплый, память свободна. У тебя как?",
+                      "Smooth, buddy: warm CPU, free memory. How about you?"),
+                     ("Йоу, всё чётко: логи чистые, диск не забит. Сам как?",
+                      "Yo, all good: clean logs, plenty of disk. You?"),
+                     ("Как по нотам, чувак. А у тебя что нового?", "Running like clockwork, dude. What's new with you?"),
+                     ("Норм, кент: кулеры крутятся, настроение — имба. Ты как?",
+                      "Solid, bro: fans spinning, mood on point. How are you?")],
                     ("Всё работает. Чем помочь?", "All systems go. How can I help?")),
     "answer42": (("42. Осталось понять вопрос, кентафурик.", "42. Now we just need the question."),
                  ("42. Осталось понять вопрос.", "42. Now we just need the question.")),
 }
 
 
-def meme(key: str, kent: bool) -> T:
+def meme(key: str, kent: bool, rng: random.Random | None = None) -> T:
     k, plain = MEMES[key]
-    return k if kent else plain
+    if not kent:
+        return plain
+    if isinstance(k, list):
+        return fresh(rng or random.Random(), "meme:" + key, k)
+    return k
 
 
 # ---------------------------------------------------------------------------
 # greetings that know the time
 
-def greeting(now: dt.datetime, kent: bool, name: str = "") -> T:
-    """«Здарова, кентафурик!» with a twist for the night, Monday morning, Friday evening and holidays."""
+# «Кентафурик» greets differently every time — «йоу», «здарова», «салют», «хэй» — and never twice in a
+# row (variety.fresh). {you} is «, кентафурик» / «, чувак» / «, кент» / «, братишка», or the user's name.
+BUDDIES_RU = ("кентафурик", "кентафурик", "чувак", "кент", "братишка")
+HELLO_KENT: dict[str, list[T]] = {
+    "night": [
+        ("Не спится{you}? Я тоже тут.", "Up late? I'm here too."),
+        ("Йоу, полуночник! Чем помочь?", "Yo, night owl! What's up?"),
+        ("Ночной движ{you}? Я на связи.", "Night shift, buddy? I'm here."),
+    ],
+    "monday": [
+        ("Понедельник, утро… держись{you}. Чем помочь?", "Monday morning. Hang in there. What's up?"),
+        ("Понедельник{you}? Изи, прорвёмся. С чего начнём?", "Monday, huh? Easy, we'll get through it. Where do we start?"),
+        ("Понедельник, йоу! Кофе — и погнали{you}. Что делаем?", "Monday, yo! Coffee, then let's roll. What's first?"),
+    ],
+    "friday": [
+        ("Пятница, чуваааак! Какие планы{you}?", "Friday evening! What's the plan?"),
+        ("Пятница, вечер{you}! Йоу, игры или ещё поработаем?", "Friday night, yo! Games, or one more task?"),
+        ("Пятница{you}! Это база: неделя закрыта. Чем помочь?", "Friday! The week is done, for real. What's up?"),
+    ],
+    "morning": [
+        ("Йоу, доброе утро{you}! С чего начнём?", "Yo, good morning! Where do we start?"),
+        ("Доброе утро{you}! Кофе уже был? Чем помочь?", "Morning, buddy! Coffee first? Then what's up?"),
+        ("Утречко{you}! Я на связи — что делаем?", "Mornin'! I'm here — what are we doing?"),
+        ("Здарооова{you}! Утро — лучшее время что-нибудь замутить. Чем помочь?",
+         "Heyyy! Mornings are for building stuff. What's up?"),
+    ],
+    "day": [
+        ("Йоу{you}! Чё как? Чем помочь?", "Yo! What's up?"),
+        ("Здарова{you}! Чем помочь?", "Hey, buddy! What do you need?"),
+        ("Йо-йо! Я на связи. Что мутим?", "Yo yo! What's the plan?"),
+        ("Салют{you}! Погнали — что нужно?", "Sup, dude? Let's roll — what do you need?"),
+        ("Хэй{you}! Я тут. Что делаем?", "Hey hey! I'm here. What are we doing?"),
+        ("Здарооова{you}! Какие задачи?", "Heyyy! What's on the list?"),
+    ],
+    "evening": [
+        ("Добрый вечер{you}! Чем помочь?", "Evening, buddy! What's up?"),
+        ("Йоу{you}! Вечерний движ — что делаем?", "Yo! Evening shift — what are we doing?"),
+        ("Здарова{you}! Вечер — самое время для чего-нибудь годного. Чем помочь?",
+         "Hey! Evenings are for good stuff. What do you need?"),
+        ("Хэй{you}! Я на связи. Что нужно?", "Hey, dude! I'm here. What do you need?"),
+    ],
+}
+
+
+def greeting(now: dt.datetime, kent: bool, name: str = "", rng: random.Random | None = None) -> T:
+    """«Йоу, кентафурик!», «Здарова!», «Салют!»… with a twist for the night, Monday morning, Friday evening
+    and holidays; the plain voice says «Добрый день»."""
+    rng = rng or random.Random()
     md = (now.month, now.day)
     h, wd = now.hour, now.weekday()
-    you_ru = name or ("кентафурик" if kent else "")
+    you_ru = name or (fresh(rng, "buddy", BUDDIES_RU) if kent else "")
     you = f", {you_ru}" if you_ru else ""
     if md == (12, 31):
         return (f"С наступающим{you}! Снимок системы на Новый год уже сделан?", "Happy New Year's Eve!")
@@ -194,19 +256,23 @@ def greeting(now: dt.datetime, kent: bool, name: str = "") -> T:
         return (f"С Днём программиста{you}! Сегодня 256-й день года — самое круглое число.",
                 "Happy Programmers' Day: day 256 of the year.")
     if 0 <= h < 5:
-        return ((f"Не спится{you}? Я тоже тут." if kent else "Доброй ночи. Чем помочь?"),
-                "Up late? I'm here too.")
-    if wd == 0 and 5 <= h < 12:
-        return ((f"Понедельник, утро… держись{you}. Чем помочь?" if kent else "Доброе утро! Чем помочь?"),
-                "Monday morning. Hang in there. What's up?")
-    if wd == 4 and h >= 17:
-        return ((f"Пятница, чуваааак! Какие планы{you}?" if kent else "Добрый вечер пятницы! Чем помочь?"),
-                "Friday evening! What's the plan?")
+        slot = "night"
+    elif wd == 0 and 5 <= h < 12:
+        slot = "monday"
+    elif wd == 4 and h >= 17:
+        slot = "friday"
+    else:
+        slot = "morning" if 5 <= h < 12 else ("day" if h < 18 else "evening")
     if kent:
-        part = "Доброе утро" if 5 <= h < 12 else ("Здарова" if h < 18 else "Добрый вечер")
-        return (f"{part}{you}! Чем помочь?", "Hey! What's up?")
-    part = "Доброе утро" if 5 <= h < 12 else ("Добрый день" if h < 18 else "Добрый вечер")
-    return (f"{part}! Чем помочь?", "Hi! How can I help?")
+        ru, en = fresh(rng, "hello:" + slot, HELLO_KENT[slot])
+        return ru.format(you=you), en
+    plain = {"night": ("Доброй ночи. Чем помочь?", "Up late? I'm here too."),
+             "monday": ("Доброе утро! Чем помочь?", "Monday morning. Hang in there. What's up?"),
+             "friday": ("Добрый вечер пятницы! Чем помочь?", "Friday evening! What's the plan?"),
+             "morning": ("Доброе утро! Чем помочь?", "Hi! How can I help?"),
+             "day": ("Добрый день! Чем помочь?", "Hi! How can I help?"),
+             "evening": ("Добрый вечер! Чем помочь?", "Hi! How can I help?")}
+    return plain[slot]
 
 
 # ---------------------------------------------------------------------------

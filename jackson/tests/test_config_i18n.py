@@ -158,6 +158,9 @@ class PersonaTest(unittest.TestCase):
         self.assertIn("без шуток", persona_text("kent", "ru", 0))
         self.assertIn("кентафурик", persona_text("kent", "ru", 1))
         self.assertIn("чуваааак", persona_text("kent", "ru", 1))
+        self.assertIn("«йоу»", persona_text("kent", "ru", 1))             # he says «йоу», and not the same word every time
+        self.assertIn("Не повторяйся", persona_text("kent", "ru", 1))
+        self.assertIn("“yo”", persona_text("kent", "en", 1))
         self.assertIn("в большинстве ответов", persona_text("kent", "ru", 1))
         self.assertEqual(style_fast("kent", "ru", "Громкость 50%.", ok=False, humor=2), "Громкость 50%.")
         self.assertEqual(style_fast("kent", "ru", "Громкость 50%.", ok=True, humor=0), "Громкость 50%.")
@@ -167,6 +170,10 @@ class PersonaTest(unittest.TestCase):
         some = [style_fast("kent", "ru", "ok", True, 1, seed=str(i)) for i in range(60)]
         self.assertTrue(15 < sum(f != "ok" for f in some) < 45)    # humor 1 (default): about half
         self.assertTrue(style_fast("dispatcher", "ru", "Готово", True).startswith("✓"))
+        quips = [style_fast("kent", "ru", "ok", True, 2, seed=f"turn-{i}")[:-3] for i in range(30)]
+        self.assertTrue(all(a != b for a, b in zip(quips, quips[1:])))  # never the same word twice in a row
+        self.assertGreaterEqual(len(set(quips)), 12)
+        self.assertTrue(any(q.startswith(("Йоу", "Йо,")) for q in quips))
 
 
 class SandboxTest(unittest.TestCase):

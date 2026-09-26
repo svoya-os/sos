@@ -34,3 +34,14 @@ fi
 if find "$root/usr/share/plymouth/themes" -maxdepth 1 -iname '*ubuntu*' | grep -q .; then
     die "an Ubuntu plymouth theme is still installed"
 fi
+
+# The system says SOS everywhere: svoya-base's identity files replace base-files' (diversions).
+# ISO #8 lost /etc/lsb-release, /etc/issue and the motd help text to dpkg's conffile takeover (the
+# console welcome read «Welcome to  (GNU/Linux …)»); never again without the build noticing.
+for f in /usr/lib/os-release /etc/lsb-release /etc/issue /etc/issue.net /etc/update-motd.d/10-help-text; do
+    [ -s "$root$f" ] || die "identity file missing: $f (svoya-base)"
+done
+grep -q '^ID=sos$' "$root/usr/lib/os-release" || die "/usr/lib/os-release is not SOS's"
+grep -q '^DISTRIB_ID=SOS$' "$root/etc/lsb-release" || die "/etc/lsb-release is not SOS's"
+info "identity: $(sh "$root/etc/update-motd.d/00-header" 2>/dev/null | head -n 1 || true)"
+

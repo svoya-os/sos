@@ -1,6 +1,6 @@
 {
   "name": "install-to-disk",
-  "description": "Install SOS from the live session onto an empty 64 GB NVMe disk with the real installer (Calamares and the SOS steps), then boot the installed system: the greeter, the login, the first-run wizard. The only test changes to the installer's settings are made in a copy under /tmp: «Erase disk» preselected and the user's name filled in; the rest is typed and clicked like a person does. The installer's own steps log to the journal (sos-installer), which the serial console carries.",
+  "description": "Install SOS from the live session onto an empty 64 GB NVMe disk with the real installer (Calamares and the SOS steps), then boot the installed system: the greeter, the login, the first-run wizard. The only test changes to the installer's settings are made in a copy under /tmp by /usr/lib/svoya/vm-test-installer (live image only): «Erase disk» preselected and the user's name filled in; the rest is typed and clicked like a person does. The installer's own steps log to the journal (sos-installer), which the serial console carries.",
   "vm": {
     "memory_mib": 8192,
     "smp": 4,
@@ -18,8 +18,9 @@
     {"id": "desktop", "action": "screenshot", "name": "01-live-desktop", "assert": "not_blank"},
 
     {"id": "installer", "action": "key", "keys": ["meta_l", "ret"], "hold_ms": 120},
-    {"id": "installer", "action": "sleep", "seconds": 5},
-    {"id": "installer", "action": "type", "text": "cp -r /etc/calamares /tmp/cal && sed -i 's/^initialPartitioningChoice: none/initialPartitioningChoice: erase/' /tmp/cal/modules/partition.conf && printf 'presets:\\n    fullName:\\n        value: \"SOS Tester\"\\n    loginName:\\n        value: \"tester\"\\n' >> /tmp/cal/modules/users.conf && sos-install -c /tmp/cal\n"},
+    {"id": "installer", "action": "sleep", "seconds": 8},
+    {"id": "installer", "action": "type", "text": "/usr/lib/svoya/vm-test-installer\n"},
+    {"id": "installer", "action": "wait_serial", "pattern": "SOS-STEP installer-start", "timeout_s": 60},
     {"id": "installer", "action": "sleep", "seconds": 25},
     {"id": "welcome", "action": "screenshot", "name": "02-welcome", "expect_change_from": "01-live-desktop"},
     {"id": "welcome", "action": "key", "keys": ["alt", "n"], "hold_ms": 120},

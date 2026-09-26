@@ -141,6 +141,18 @@ class PrepareScriptTests(unittest.TestCase):
         for path in ("/usr/lib/os-release", "/etc/lsb-release", "/etc/issue", "/etc/issue.net"):
             self.assertIn(path, preinst)
 
+    def test_diverted_identity_files_are_not_conffiles(self):
+        # dpkg keeps a diverted conffile "deleted" (ISO #8: no /etc/lsb-release, «Welcome to  (GNU/Linux…)»)
+        pre = (ROOT / "packages/svoya-base/debian/svoya-base.preinst").read_text()
+        diverted = re.search(r'DIVERTED="([^"]+)"', pre).group(1).split()
+        rules = (ROOT / "packages/svoya-base/debian/rules").read_text()
+        for path in diverted:
+            if path.startswith("/etc/"):
+                self.assertIn("\\|^" + path.replace(".", "\\.") + "$$|d", rules, path)
+        debrand = (ROOT / "image/hooks/70-debrand.sh").read_text()
+        for path in diverted:
+            self.assertIn(path, debrand)                 # the build fails when one is missing
+
     def test_branding_layout(self):
         with tempfile.TemporaryDirectory() as tmp:
             files = self.prepare("svoya-branding", tmp)

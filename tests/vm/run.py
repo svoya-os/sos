@@ -31,6 +31,10 @@ import keys  # noqa: E402
 from qmp import QMPClient, QMPError, QMPTimeout  # noqa: E402
 
 ACTIONS = {"sleep", "screenshot", "wait_screen", "wait_serial", "key", "type", "click", "eject", "reset"}
+# The guest's display adapter (vm.display): virtio-gpu (Mesa renders on the CPU by itself), the VMware
+# SVGA II adapter that VirtualBox and VMware give a guest (vmwgfx without 3D), QEMU's standard VGA
+# (bochs-drm, no render node) — the last two draw in software (packages/svoya-session gpu-env).
+DISPLAYS = {"virtio", "vmware", "std"}
 OVMF_DIRS = ["/usr/share/OVMF", "/usr/share/ovmf", "/usr/share/edk2/ovmf", "/usr/share/edk2-ovmf/x64",
              "/usr/share/qemu"]
 OVMF_SETS = {
@@ -55,6 +59,9 @@ def load_plan(path: pathlib.Path) -> dict:
 def validate_plan(plan: dict) -> None:
     if not isinstance(plan.get("steps"), list) or not plan["steps"]:
         raise ValueError("plan needs a non-empty 'steps' list")
+    display = plan.get("vm", {}).get("display", "virtio")
+    if display not in DISPLAYS:
+        raise ValueError(f"vm.display must be one of {sorted(DISPLAYS)}, not {display!r}")
     names = set()
     for n, step in enumerate(plan["steps"], 1):
         action = step.get("action")
@@ -99,6 +106,12 @@ def kvm_usable() -> bool:
     return os.access("/dev/kvm", os.R_OK | os.W_OK)
 
 
+def display_args(display: str, xres: int, yres: int) -> list[str]:
+    if display == "virtio":
+        return ["-vga", "none", "-device", f"virtio-vga,xres={xres},yres={yres}"]
+    return ["-vga", display]        # vmware, std: the guest picks its mode
+
+
 def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_copy: str | None,
                  code: str | None, disk: str | None = None) -> list[str]:
     vm = plan.get("vm", {})
@@ -115,7 +128,7 @@ def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_c
            "-cpu", "host" if accel == "kvm" else "max",
            "-smp", str(args.smp or vm.get("smp", 4)), "-m", str(args.memory or vm.get("memory_mib", 6144)),
            "-smbios", f"type=1,manufacturer=SOS,product={vm.get('smbios_product', 'sos-vm-test')}",
-           "-vga", "none", "-device", f"virtio-vga,xres={xres},yres={yres}",
+           *display_args(vm.get("display", "virtio"), xres, yres),
            "-display", "none",
            "-drive", f"file={args.iso},media=cdrom,if=none,id=cd0,readonly=on",
            "-device", "ide-cd,drive=cd0,bus=ide.0,bootindex=0,id=cdrom",

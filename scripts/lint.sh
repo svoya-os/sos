@@ -16,6 +16,7 @@ mapfile -t shell_files < <(
             'image/*.sh' 'installer/*.sh' 'packages/*.sh' 'scripts/*.sh' 'tests/*.sh' 2>/dev/null ||
             find image installer packages scripts tests -name '*.sh'
         printf '%s\n' image/overlay-live/usr/lib/svoya/vm-test-agent image/overlay-live/usr/lib/svoya/live-user-groups \
+            image/overlay-live/usr/lib/svoya/vm-test-installer \
             installer/sos-install installer/scripts/launch \
             packages/svoya-session/files/usr/bin/svoya-session packages/svoya-session/files/usr/lib/svoya/greeter-session \
             packages/svoya-session/files/usr/lib/svoya/session-keyboard packages/svoya-session/files/usr/lib/svoya/shell-run \

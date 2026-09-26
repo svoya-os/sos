@@ -1,10 +1,10 @@
 {
-  "name": "live-iso-smoke",
-  "description": "Boot the SOS live ISO and screenshot the milestones: boot menu, boot splash, live desktop, launcher (Super+Space), Jackson (Super+J).",
+  "name": "live-iso-vmware-display",
+  "description": "The live desktop on the display adapter VirtualBox (VMSVGA) and VMware give a guest: VMware SVGA II, the vmwgfx driver without 3D. Mesa's own driver for it needs 3D, so SOS draws on the CPU there (packages/svoya-session gpu-env); the diagnostics block printed at desktop-ready names the rendering mode.",
   "vm": {
     "memory_mib": 6144,
     "smp": 4,
-    "resolution": [1440, 900],
+    "display": "vmware",
     "smbios_product": "sos-vm-test"
   },
   "steps": [
@@ -12,20 +12,18 @@
     {"id": "boot-menu", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
     {"id": "boot-menu", "action": "screenshot", "name": "01-boot-menu", "assert": "not_blank"},
     {"id": "boot", "action": "key", "keys": ["ret"]},
-    {"id": "plymouth", "action": "sleep", "seconds": 10},
-    {"id": "plymouth", "action": "screenshot", "name": "02-plymouth"},
     {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
+    {"id": "desktop", "action": "wait_serial", "pattern": "## Hyprland rendering: .*SVOYA_RENDERER=software", "timeout_s": 90},
     {"id": "desktop", "action": "sleep", "seconds": 8},
-    {"id": "desktop", "action": "screenshot", "name": "03-live-desktop", "assert": "not_blank"},
-    {"id": "network", "action": "wait_serial", "pattern": "SOS-MARK \\S+ network-online", "fail_pattern": "SOS-MARK \\S+ network-offline", "timeout_s": 240},
+    {"id": "desktop", "action": "screenshot", "name": "02-live-desktop", "assert": "not_blank"},
     {"id": "launcher", "action": "key", "keys": ["meta_l", "spc"], "hold_ms": 120},
-    {"id": "launcher", "action": "sleep", "seconds": 3},
-    {"id": "launcher", "action": "screenshot", "name": "04-launcher", "expect_change_from": "03-live-desktop"},
+    {"id": "launcher", "action": "sleep", "seconds": 4},
+    {"id": "launcher", "action": "screenshot", "name": "03-launcher", "expect_change_from": "02-live-desktop"},
     {"id": "launcher", "action": "key", "keys": ["esc"]},
     {"id": "launcher", "action": "sleep", "seconds": 2},
     {"id": "jackson", "action": "key", "keys": ["meta_l", "j"], "hold_ms": 150},
-    {"id": "jackson", "action": "sleep", "seconds": 3},
-    {"id": "jackson", "action": "screenshot", "name": "05-jackson", "expect_change_from": "03-live-desktop"},
+    {"id": "jackson", "action": "sleep", "seconds": 4},
+    {"id": "jackson", "action": "screenshot", "name": "04-jackson", "expect_change_from": "02-live-desktop"},
     {"id": "jackson", "action": "key", "keys": ["esc"]}
   ]
 }

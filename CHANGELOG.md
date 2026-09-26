@@ -41,5 +41,14 @@ Work towards v0.1 «Первый сигнал».
 - The system is called **SOS — Svoya Operating System** («СОС — Своя Операционная Система»),
   and its command is `sos`; `svoya` stays as an alias. Package names and paths keep the
   technical name `svoya`. Jackson has a short command too: `j`.
+- Jackson greets and confirms differently every time («йоу», «здарова», «салют»…) and does not
+  repeat a joke or a quip until the others had their turn; the login and lock screens vary his
+  lines too.
+
+### Fixed
+
+- Wired Ethernet works out of the box: NetworkManager manages every network device, as on Ubuntu
+  Desktop (a computer on a cable, or a virtual machine, stayed offline).
+- The console welcome, `/etc/issue` and `lsb_release` name SOS again: the build lost these files.
 
 [Unreleased]: https://github.com/svoya-os/sos/commits/main

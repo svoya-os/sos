@@ -17,6 +17,8 @@ Item {
     property string message: ""           // PAM prompt, info or error
     property bool error: false
     property bool inputEnabled: true
+    // which of Jackson's lock lines this time (Strings.jLocked): drawn once per lock, not per minute
+    readonly property int pick: Math.floor(Math.random() * 1000)
 
     signal submit(string password)
 
@@ -117,7 +119,7 @@ Item {
                 return Strings.jWrong(line.capsOn, Hypr.layoutCount > 1 ? Hypr.layoutCode : "");
             if (root.job !== null && line.length === 0)
                 return Strings.whileAway + " " + (root.job.label || "") + (root.job.progress !== undefined ? " " + Math.round(root.job.progress * 100) + "%" : "");
-            return Strings.jLocked;
+            return Strings.jLocked(root.pick);
         }
         sayMeta: {
             if (root.busy)

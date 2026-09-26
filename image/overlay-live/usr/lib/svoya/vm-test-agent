@@ -16,6 +16,9 @@ systemctl stop serial-getty@ttyS0.service 2>/dev/null || true
 mark() { printf 'SOS-MARK %s %s\n' "$(cut -d' ' -f1 /proc/uptime)" "$*" >"$tty"; }
 
 mark agent-start
+# The network: NetworkManager has a connection (QEMU's user network is a cable) or not within
+# 3 minutes. Plans that download something wait for it (tests/vm/plan.json, model.json, games.json).
+( if command -v nm-online >/dev/null && nm-online -q -t 180; then mark network-online; else mark network-offline; fi ) &
 cursor=/run/sos-vm-test.journal-cursor
 ( while :; do
       journalctl -b -f -o short-monotonic --no-hostname --cursor-file="$cursor" >"$tty" 2>&1
@@ -25,6 +28,7 @@ cursor=/run/sos-vm-test.journal-cursor
 user=${1:-svoya}
 uid=$(id -u "$user" 2>/dev/null || echo 1000)
 
+declare -A shown=()          # crash reports already printed (diag runs several times)
 diag() {
     {
         echo "SOS-DIAG begin $1"
@@ -44,6 +48,11 @@ diag() {
         if [ -n "$pid" ]; then
             echo "## Hyprland rendering: $(tr '\0' '\n' <"/proc/$pid/environ" | grep -E '^(MESA_LOADER_DRIVER_OVERRIDE|LIBGL_ALWAYS_SOFTWARE|SVOYA_RENDERER)=' | tr '\n' ' ')"
         fi
+        echo "## network (NetworkManager devices, addresses, DNS, netplan)"
+        nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device 2>&1 | head -n 8
+        ip -brief address 2>&1 | head -n 8
+        resolvectl dns 2>&1 | head -n 4
+        ls -la /etc/netplan /run/NetworkManager/conf.d 2>&1 | head -n 12
         echo "## identity (console welcome: /etc/update-motd.d/00-header)"
         ls -la /etc/lsb-release /etc/os-release /usr/lib/os-release 2>&1
         grep -H DESCRIPTION /etc/lsb-release 2>&1
@@ -80,9 +89,20 @@ diag() {
                 quickshell -p /usr/share/svoya/shell 2>&1 | tail -n 100
             echo "## probe exit: ${PIPESTATUS[0]}"
         fi
+        # Hyprland's crash reports (the session's and the greeter's), once each: the backtrace and the
+        # log tail, the lines before the abort that a buffered stdout loses
         for f in /home/"$user"/.cache/hyprland/hyprlandCrashReport*.txt \
-                 /home/"$user"/.local/share/hyprland/hyprlandCrashReport*.txt; do
-            [ -f "$f" ] && { echo "## $f"; head -n 60 "$f"; }
+                 /home/"$user"/.local/share/hyprland/hyprlandCrashReport*.txt \
+                 /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport*.txt; do
+            [ -f "$f" ] || continue
+            if [ -n "${shown[$f]:-}" ]; then echo "## $f (above)"; continue; fi
+            shown[$f]=1
+            echo "## $f"
+            head -n 8 "$f"
+            echo "# backtrace"
+            sed -n '/^Backtrace:/,/^Log tail:/p' "$f" | grep -avE '^[[:space:]]*(\?\?:[0-9?]*)?$' | head -n 60
+            echo "# log tail"
+            sed -n '/^Log tail:/,$p' "$f" | tail -n 70
         done
         echo "SOS-DIAG end $1"
     } >"$tty" 2>&1

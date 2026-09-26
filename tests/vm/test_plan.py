@@ -47,6 +47,14 @@ class PlanTests(unittest.TestCase):
         for s in plan["steps"]:
             if s["action"] == "type":
                 keys.text_to_combos(s["text"])
+        typed = [s["text"] for s in plan["steps"] if s["action"] == "type"]
+        self.assertEqual(typed[0], "/usr/lib/svoya/vm-test-installer\n")      # short: long typing got lost
+        helper = (HERE.parents[1] / "image/overlay-live/usr/lib/svoya/vm-test-installer")
+        self.assertTrue(helper.stat().st_mode & 0o111)
+        text = helper.read_text()
+        self.assertIn("initialPartitioningChoice: erase", text)
+        self.assertIn('exec sos-install -c "$cfg"', text)
+        self.assertIn("SOS-STEP installer-start", text)
         lib = (HERE.parents[1] / "installer/scripts/lib.sh").read_text()
         self.assertIn("logger -t sos-installer", lib)                  # what the wait above reads
         self.assertIn('log "installation finalized"', (HERE.parents[1] / "installer/scripts/finalize.sh").read_text())
@@ -60,6 +68,27 @@ class PlanTests(unittest.TestCase):
         for s in plan["steps"]:
             if s["action"] == "type":
                 keys.text_to_combos(s["text"])                  # US keys only
+
+    def test_downloads_wait_for_the_network(self):
+        # ISO #8: a live session without a wired connection failed `sos install` with «Temporary failure
+        # resolving»; the smoke test now checks the network, the plans that download wait for it.
+        agent = (HERE.parents[1] / "image/overlay-live/usr/lib/svoya/vm-test-agent").read_text()
+        self.assertIn("mark network-online", agent)
+        self.assertIn("mark network-offline", agent)
+        for name in ("plan.json", "model.json", "games.json"):
+            with self.subTest(plan=name):
+                steps = run.load_plan(HERE / name)["steps"]
+                waits = [i for i, s in enumerate(steps) if s["action"] == "wait_serial" and "network-online" in s["pattern"]]
+                self.assertEqual(len(waits), 1)
+                self.assertIn("network-offline", steps[waits[0]]["fail_pattern"])
+                typed = [i for i, s in enumerate(steps) if s["action"] == "type" and "sos install" in s.get("text", "")]
+                self.assertTrue(all(waits[0] < i for i in typed))
+        netplan = (HERE.parents[1] / "packages/svoya-base/files/etc/netplan/01-network-manager-all.yaml").read_text()
+        self.assertRegex(netplan, r"(?m)^  renderer: NetworkManager$")      # Ethernet is managed, as on Ubuntu Desktop
+        rules = (HERE.parents[1] / "packages/svoya-base/debian/rules").read_text()
+        self.assertIn("chmod 0600 $(PKG)/etc/netplan/01-network-manager-all.yaml", rules)
+        shadow = HERE.parents[1] / "packages/svoya-base/files/etc/NetworkManager/conf.d/10-globally-managed-devices.conf"
+        self.assertTrue(all(line.startswith("#") for line in shadow.read_text().splitlines()))   # no unmanaged-devices
 
     def test_safe_graphics_plan_boots_the_second_entry(self):
         plan = run.load_plan(HERE / "safe-graphics.json")
@@ -133,6 +162,21 @@ class QemuCommandTests(unittest.TestCase):
         self.assertIn("file:/tmp/out/serial.log", line)
         self.assertIn("unix:/tmp/out/qmp.sock,server=on,wait=off", line)
         self.assertIn("virtio-vga,xres=1440,yres=900", line)
+
+    def test_vmware_display_like_virtualbox(self):
+        # VirtualBox's VMSVGA and VMware: the VMware SVGA II adapter (vmwgfx), no virtio-gpu
+        plan = run.load_plan(HERE / "vmware.json")
+        cmd = run.qemu_command(self.args("uefi"), plan, pathlib.Path("/tmp/out"), "/tmp/out/VARS.fd", "/x/CODE.fd")
+        self.assertEqual(cmd[cmd.index("-vga") + 1], "vmware")
+        self.assertNotIn("virtio-vga", " ".join(cmd))
+        waits = [s["pattern"] for s in plan["steps"] if s["action"] == "wait_serial"]
+        self.assertTrue(any("SVOYA_RENDERER=software" in w for w in waits))    # gpu-env chose the CPU
+        agent = (HERE.parents[1] / "image/overlay-live/usr/lib/svoya/vm-test-agent").read_text()
+        self.assertIn('echo "## Hyprland rendering: ', agent)                    # what that wait reads
+        iso = (HERE.parents[1] / ".github/workflows/iso.yml").read_text()
+        self.assertIn("plan: tests/vm/vmware.json", iso)
+        with self.assertRaises(ValueError):
+            run.validate_plan({"vm": {"display": "cirrus"}, "steps": [{"action": "sleep", "seconds": 1}]})
 
     def test_bios_command_has_no_pflash(self):
         plan = run.load_plan(HERE / "plan.json")

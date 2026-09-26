@@ -19,6 +19,8 @@ Item {
     readonly property var sessions: root.greeter.sessions
     readonly property var user: root.users.length > 0 ? root.users[root.greeter.userIndex] : null
     readonly property string shownName: root.greeter.manualUser ? root.greeter.manualName : (root.user ? root.user.display : "")
+    // which greeting this time (Strings.jHello, jWelcome): drawn once per login screen, not per minute
+    readonly property int helloPick: Math.floor(Math.random() * 1000)
 
     // composition (the mockup is 1440×900)
     readonly property real s: Math.max(0.75, Math.min(1.8, Math.min(width / 1440, height / 900)))
@@ -168,7 +170,7 @@ Item {
         welcome: root.greeter.welcome
         say: {
             if (root.greeter.welcome)
-                return Strings.jWelcome;
+                return Strings.jWelcome(root.helloPick);
             if (root.greeter.busy)
                 return Strings.jChecking;
             if (root.greeter.failed && (line.ghost > 0 || line.length === 0))
@@ -177,7 +179,7 @@ Item {
                 return Strings.jWho;
             if (root.greeter.prompt.length > 0)
                 return root.greeter.prompt;
-            return Strings.jHello(root.shownName, clock.date);
+            return Strings.jHello(root.shownName, clock.date, root.helloPick);
         }
         sayMeta: {
             if (root.greeter.welcome)

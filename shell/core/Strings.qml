@@ -347,7 +347,12 @@ Singleton {
     function kv(kentRu, kentEn, plainRu, plainEn) {
         return root.kentVoice ? root.t(kentRu, kentEn) : root.t(plainRu, plainEn);
     }
-    function jHello(name, now) {
+    // One line of a list, the same one for as long as the screen shows (pick: a number the screen
+    // draws once), a different one next time: the кентафурик does not greet the same way every login.
+    function jPick(list, pick) {
+        return list[Math.abs(Math.floor(pick || 0)) % list.length];
+    }
+    function jHello(name, now, pick) {
         // the name is already big on the left: the кентафурик greets, the plain voice names.
         // He knows the day (same table as Jackson's «привет», jackson/fun.py): New Year's Eve and Day,
         // April Fools', the Programmers' Day (the 256th day), a sleepless night, Monday, Friday evening.
@@ -355,6 +360,7 @@ Singleton {
         const d = now || new Date();
         const m = d.getMonth() + 1, day = d.getDate(), h = d.getHours(), wd = d.getDay();
         const doy = Math.round((Date.UTC(d.getFullYear(), m - 1, day) - Date.UTC(d.getFullYear(), 0, 0)) / 86400000);
+        const k = pick || 0;
         if (m === 12 && day === 31)
             return root.kv("С наступающим, кентафурик! Пароль?", "Almost New Year, buddy! Password?", "С наступающим" + who + "! Пароль?", "Happy New Year's Eve" + who + "! Password?");
         if (m === 1 && day === 1)
@@ -364,16 +370,16 @@ Singleton {
         if (doy === 256)
             return root.kv("С Днём программиста, кентафурик! Пароль?", "Happy Programmers' Day, buddy! Password?", "С Днём программиста" + who + "! Пароль?", "Happy Programmers' Day" + who + "! Password?");
         if (h < 5)
-            return root.kv("Не спится, кентафурик? Пароль?", "Can't sleep, buddy? Password?", "Доброй ночи" + who + ". Пароль?", "Good night" + who + ". Password?");
+            return root.kv(root.jPick(["Не спится, кентафурик? Пароль?", "Йоу, полуночник! Пароль?", "Ночной движ? Пароль, чувак."], k), root.jPick(["Can't sleep, buddy? Password?", "Yo, night owl! Password?"], k), "Доброй ночи" + who + ". Пароль?", "Good night" + who + ". Password?");
         if (wd === 1 && h < 12)
-            return root.kv("Понедельник, кентафурик. Держись! Пароль?", "Monday, buddy. Hang in there! Password?", "Доброе утро" + who + ". Пароль?", "Good morning" + who + ". Password?");
+            return root.kv(root.jPick(["Понедельник, кентафурик. Держись! Пароль?", "Понедельник? Изи, прорвёмся. Пароль?", "Понедельник, йоу! Пароль — и погнали."], k), root.jPick(["Monday, buddy. Hang in there! Password?", "Monday, yo! Password, and let's roll."], k), "Доброе утро" + who + ". Пароль?", "Good morning" + who + ". Password?");
         if (wd === 5 && h >= 17)
-            return root.kv("Пятница, чуваааак! Пароль?", "It's Friday, duuude! Password?", "Добрый вечер" + who + ". Пароль?", "Good evening" + who + ". Password?");
+            return root.kv(root.jPick(["Пятница, чуваааак! Пароль?", "Пятница, кентафурик! Йоу, пароль?", "Пятница — это база. Пароль?"], k), root.jPick(["It's Friday, duuude! Password?", "Friday, yo! Password?"], k), "Добрый вечер" + who + ". Пароль?", "Good evening" + who + ". Password?");
         if (h < 12)
-            return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Доброе утро" + who + ". Пароль?", "Good morning" + who + ". Password?");
+            return root.kv(root.jPick(["Йоу, доброе утро! Пароль?", "Здарова, кентафурик! Пароль?", "Утречко, чувак! Пароль?", "Салют! Пароль, кентафурик?"], k), root.jPick(["Yo, morning, buddy! Password?", "Hey, buddy! Password?", "Mornin', dude! Password?"], k), "Доброе утро" + who + ". Пароль?", "Good morning" + who + ". Password?");
         if (h >= 18)
-            return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Добрый вечер" + who + ". Пароль?", "Good evening" + who + ". Password?");
-        return root.kv("Здарова, кентафурик! Пароль?", "Yo, buddy! Password?", "Привет" + who + ". Пароль?", "Hi" + who + ". Password?");
+            return root.kv(root.jPick(["Йоу, кентафурик! Пароль?", "Добрый вечер, чувак! Пароль?", "Здарова! Пароль, кентафурик?", "Хэй, кент! Пароль?"], k), root.jPick(["Yo, buddy! Password?", "Evening, dude! Password?", "Hey hey! Password?"], k), "Добрый вечер" + who + ". Пароль?", "Good evening" + who + ". Password?");
+        return root.kv(root.jPick(["Йоу, кентафурик! Пароль?", "Здарова, кентафурик! Пароль?", "Салют, чувак! Пароль?", "Хэй, кент! Пароль?", "Йо-йо! Пароль?", "Здарооова! Пароль?"], k), root.jPick(["Yo, buddy! Password?", "Hey, dude! Password?", "Sup, bro? Password?", "Yo yo! Password?"], k), "Привет" + who + ". Пароль?", "Hi" + who + ". Password?");
     }
     readonly property string jWaiting: root.kv("на связи", "here", "жду", "waiting")
     readonly property string jListening: root.t("слушаю", "listening")
@@ -387,13 +393,19 @@ Singleton {
         return root.kv("Не то, кентафурик. Давай ещё разок.", "Not it, buddy. One more time.", "Не то. Давай ещё раз.", "Nope. Try again.");
     }
     readonly property string jAgain: root.t("ещё раз", "again")
-    readonly property string jWelcome: root.kv("Базару нет — заходим!", "No doubt — we're in!", "Есть контакт. Поехали!", "Connected. Let's go!")
+    function jWelcome(pick) {
+        return root.kv(root.jPick(["Базару нет — заходим!", "Йоу, заходим!", "Чётко — погнали!", "Есть контакт, кентафурик!"], pick), root.jPick(["No doubt — we're in!", "Yo, we're in!", "Solid — let's roll!"], pick), "Есть контакт. Поехали!", "Connected. Let's go!");
+    }
     readonly property string jLoadingDesk: root.t("загружаю стол", "loading your desk")
     readonly property string jWho: root.kv("Кто там? Назовись, кентафурик.", "Who's there? Name, buddy.", "Кто там? Имя пользователя.", "Who's there? Your user name.")
     readonly property string jOneMoreStep: root.t("ещё шаг", "one more step")
-    readonly property string jLocked: root.kv("Отошёл, кентафурик? Я присмотрю.", "Stepped away, bro? I'll keep watch.", "Отошёл? Я покараулю.", "Stepped away? I'll keep watch.")
+    function jLocked(pick) {
+        return root.kv(root.jPick(["Отошёл, кентафурик? Я присмотрю.", "Йоу, я на посту. Возвращайся.", "Перерыв, чувак? Я покараулю.", "Всё под контролем, кент. Жду."], pick), root.jPick(["Stepped away, bro? I'll keep watch.", "Yo, I got this. Come back soon.", "Break time, dude? I'll keep watch."], pick), "Отошёл? Я покараулю.", "Stepped away? I'll keep watch.");
+    }
     readonly property string jLockedMeta: root.t("заблокировано", "locked")
-    readonly property string jWelcomeBack: root.kv("Чуваааак, с возвращением!", "Duuude, welcome back!", "С возвращением!", "Welcome back!")
+    function jWelcomeBack(pick) {
+        return root.kv(root.jPick(["Чуваааак, с возвращением!", "Йоу, ты вернулся!", "С возвращением, кентафурик!"], pick), root.jPick(["Duuude, welcome back!", "Yo, you're back!"], pick), "С возвращением!", "Welcome back!");
+    }
     readonly property string jWorking: root.t("работаю", "working")
     function left(sec) {
         return root.ru ? "ещё " + Fmt.duration(sec) : Fmt.duration(sec) + " left";
