@@ -58,10 +58,15 @@ fi
 # Tell systemd --user and D-Bus about the session (portals, Jackson); WAYLAND_DISPLAY is added by
 # `sos session-start` once the compositor runs.
 if command -v dbus-update-activation-environment >/dev/null; then
-    # (the software-rendering variables too, so D-Bus-started apps and portals draw the same way)
+    # (the software-rendering variables that gpu-env set too, so D-Bus-started apps and portals draw
+    # the same way)
+    render_vars=()
+    for v in MESA_LOADER_DRIVER_OVERRIDE LIBGL_ALWAYS_SOFTWARE GBM_ALWAYS_SOFTWARE SVOYA_RENDERER; do
+        [ -n "${!v:-}" ] && render_vars+=("$v")
+    done
     dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP \
         XDG_CURRENT_DESKTOP DESKTOP_SESSION QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME HF_HOME \
-        ${SVOYA_RENDERER:+MESA_LOADER_DRIVER_OVERRIDE LIBGL_ALWAYS_SOFTWARE SVOYA_RENDERER} >/dev/null 2>&1 || true
+        "${render_vars[@]}" >/dev/null 2>&1 || true
 fi
 
 conf=/usr/share/svoya/hypr/hyprland.conf

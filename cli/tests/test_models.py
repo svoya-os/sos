@@ -312,6 +312,26 @@ class ServeTest(SandboxTest):
         self.assertTrue(r.called("systemctl", "--user", "start", "svoya-llm.service"))
         self.assertIn("127.0.0.1:18080/v1", self.output())
 
+    def test_serve_limits_the_context_window(self):
+        # llama.cpp's default context (the model's training context, 262k for Qwen3.5) ran the model
+        # bot's 12 GB machine out of memory before the first answer
+        from svoya_cli.paths import REPO_ROOT
+        unit = (REPO_ROOT / "modules/llm-local/files/svoya-llm.service").read_text()
+        self.assertIn(f"Environment=LLAMA_ARG_CTX_SIZE={mcli.SERVE_CTX}", unit)
+        self.assertIn("EnvironmentFile=-%h/.config/svoya/llm.env", unit)
+        self.assertLess(unit.index("Environment=LLAMA_ARG_CTX_SIZE"), unit.index("EnvironmentFile="))  # yours wins
+        seen = {}
+
+        class Spawning(FakeRunner):
+            def spawn(self, argv, *, env=None, cwd=None, mutating=True):
+                seen["env"] = env
+                return super().spawn(argv, env=env, cwd=cwd, mutating=mutating)
+
+        r = Spawning(available={"llama-server"})
+        args = argparse.Namespace(port=18080, stop=False, status=False, foreground=False, json=False)
+        self.assertEqual(mcli.cmd_serve(args, self.sb.ctx(r)), 0)
+        self.assertEqual(seen["env"]["LLAMA_ARG_CTX_SIZE"], "16384")
+
     def test_serve_without_server_explains(self):
         import contextlib
         import io

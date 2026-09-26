@@ -518,6 +518,9 @@ def _healthy(url: str) -> bool:
         return False
 
 
+SERVE_CTX = "16384"                    # tokens; as Environment= in modules/llm-local/files/svoya-llm.service
+
+
 def cmd_serve(args, ctx: Ctx) -> int:
     """Start/stop the local OpenAI-compatible server Jackson uses (llama.cpp router, localhost only)."""
     url = f"http://127.0.0.1:{args.port}"
@@ -557,9 +560,12 @@ def cmd_serve(args, ctx: Ctx) -> int:
         cmd_views(SimpleNamespace(out=None, json=False, quiet=True), ctx)
         argv = ["llama-server", "--host", "127.0.0.1", "--port", str(args.port), "--models-dir", str(views_dir),
                 "--models-max", "2", "--jinja"]
+        # the context window of svoya-llm.service: llama.cpp's default (the model's training context)
+        # does not fit in memory
+        env = {**os.environ, "LLAMA_ARG_CTX_SIZE": os.environ.get("LLAMA_ARG_CTX_SIZE") or SERVE_CTX}
         if args.foreground and not ctx.dry_run:
-            os.execvp(argv[0], argv)
-        r.spawn(argv)
+            os.execvpe(argv[0], argv, env)
+        r.spawn(argv, env=env)
     else:
         ui.err(tr("sos: no local model server yet — sos install llm-local", "sos: локального сервера моделей ещё нет — sos install llm-local"))
         return 2

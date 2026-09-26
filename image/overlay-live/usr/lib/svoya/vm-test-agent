@@ -46,7 +46,7 @@ diag() {
         # software rendering chosen by /usr/lib/svoya/gpu-env (VirtualBox, VMware, nomodeset), or the GPU
         pid=$(pgrep -u "$user" -x Hyprland | head -n 1)
         if [ -n "$pid" ]; then
-            echo "## Hyprland rendering: $(tr '\0' '\n' <"/proc/$pid/environ" | grep -E '^(MESA_LOADER_DRIVER_OVERRIDE|LIBGL_ALWAYS_SOFTWARE|SVOYA_RENDERER)=' | tr '\n' ' ')"
+            echo "## Hyprland rendering: $(tr '\0' '\n' <"/proc/$pid/environ" | grep -E '^(MESA_LOADER_DRIVER_OVERRIDE|LIBGL_ALWAYS_SOFTWARE|GBM_ALWAYS_SOFTWARE|SVOYA_RENDERER)=' | tr '\n' ' ')"
         fi
         echo "## network (NetworkManager devices, addresses, DNS, netplan)"
         nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device 2>&1 | head -n 8

@@ -234,25 +234,29 @@ class ListsAndBootTests(unittest.TestCase):
             if render:
                 (root / "dev/dri").mkdir(parents=True)
                 (root / "dev/dri/renderD128").touch()
-            script = (f'set -u; . "{ROOT}/packages/svoya-session/files/usr/lib/svoya/gpu-env"; '
-                      'printf "%s|%s|%s" "${MESA_LOADER_DRIVER_OVERRIDE:-}" "${LIBGL_ALWAYS_SOFTWARE:-}" '
-                      '"$(type svoya_gpu_software >/dev/null 2>&1 && echo leaked)"')
+            script = (f'set -euo pipefail; . "{ROOT}/packages/svoya-session/files/usr/lib/svoya/gpu-env"; '
+                      'printf "%s|%s|%s|%s" "${MESA_LOADER_DRIVER_OVERRIDE:-}" "${LIBGL_ALWAYS_SOFTWARE:-}" '
+                      '"${GBM_ALWAYS_SOFTWARE:-}" "$(type svoya_gpu_software >/dev/null 2>&1 && echo leaked)"')
             clean = {"PATH": "/usr/bin:/bin", "SVOYA_GPU_ROOT": str(root), **env}
             out = subprocess.run(["bash", "-c", script], check=True, capture_output=True, text=True, env=clean).stdout
-        override, soft, leaked = out.split("|")
+        override, soft, gbm, leaked = out.split("|")
         self.assertEqual(leaked, "")                 # the helper function does not stay in the session
-        return {"override": override, "software": soft}
+        return {"override": override, "software": soft, "gbm": gbm}
 
     def test_gpu_env_software_where_hyprland_cannot_start(self):
-        sw = {"override": "kms_swrast", "software": "1"}
-        hw = {"override": "", "software": ""}
-        self.assertEqual(self.gpu_env("vmwgfx", True), sw)                  # VirtualBox VMSVGA, VMware
-        self.assertEqual(self.gpu_env("simple-framebuffer", False), sw)     # nomodeset («safe graphics»)
-        self.assertEqual(self.gpu_env("bochs-drm", False), sw)              # QEMU standard VGA
-        self.assertEqual(self.gpu_env("virtio_gpu", True), hw)              # Mesa falls back by itself
+        vmw = {"override": "kms_swrast", "software": "1", "gbm": ""}
+        # no render node: EGL on GBM asks for a render device unless GBM is in software mode
+        # (ISO #9: "DRI2: failed to get compatible render device" on simpledrm)
+        display_only = {"override": "", "software": "1", "gbm": "1"}
+        hw = {"override": "", "software": "", "gbm": ""}
+        self.assertEqual(self.gpu_env("vmwgfx", True), vmw)                          # VirtualBox VMSVGA, VMware
+        self.assertEqual(self.gpu_env("simple-framebuffer", False), display_only)    # nomodeset («safe graphics»)
+        self.assertEqual(self.gpu_env("bochs-drm", False), display_only)             # QEMU standard VGA
+        self.assertEqual(self.gpu_env("virtio_gpu", True), hw)                       # Mesa falls back by itself
         self.assertEqual(self.gpu_env("i915", True), hw)
-        self.assertEqual(self.gpu_env(None, False), hw)                     # no display at all
+        self.assertEqual(self.gpu_env(None, False), hw)                              # no display at all
         self.assertEqual(self.gpu_env("vmwgfx", True, SVOYA_GPU="hardware"), hw)
+        self.assertEqual(self.gpu_env("simple-framebuffer", False, SVOYA_GPU="hardware"), hw)
 
     def test_grub_menu_entries(self):
         cfg = (ROOT / "image/boot/grub.cfg").read_text()

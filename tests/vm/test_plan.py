@@ -163,18 +163,14 @@ class QemuCommandTests(unittest.TestCase):
         self.assertIn("unix:/tmp/out/qmp.sock,server=on,wait=off", line)
         self.assertIn("virtio-vga,xres=1440,yres=900", line)
 
-    def test_vmware_display_like_virtualbox(self):
-        # VirtualBox's VMSVGA and VMware: the VMware SVGA II adapter (vmwgfx), no virtio-gpu
-        plan = run.load_plan(HERE / "vmware.json")
+    def test_display_adapters(self):
+        # vm.display: virtio (default), vmware (VMware SVGA II), std (bochs). QEMU's VMware adapter is no
+        # stand-in for VirtualBox: vmwgfx does not bind to it and the guest has no DRM device at all.
+        plan = {"vm": {"display": "std"}, "steps": [{"action": "sleep", "seconds": 1}]}
+        run.validate_plan(plan)
         cmd = run.qemu_command(self.args("uefi"), plan, pathlib.Path("/tmp/out"), "/tmp/out/VARS.fd", "/x/CODE.fd")
-        self.assertEqual(cmd[cmd.index("-vga") + 1], "vmware")
+        self.assertEqual(cmd[cmd.index("-vga") + 1], "std")
         self.assertNotIn("virtio-vga", " ".join(cmd))
-        waits = [s["pattern"] for s in plan["steps"] if s["action"] == "wait_serial"]
-        self.assertTrue(any("SVOYA_RENDERER=software" in w for w in waits))    # gpu-env chose the CPU
-        agent = (HERE.parents[1] / "image/overlay-live/usr/lib/svoya/vm-test-agent").read_text()
-        self.assertIn('echo "## Hyprland rendering: ', agent)                    # what that wait reads
-        iso = (HERE.parents[1] / ".github/workflows/iso.yml").read_text()
-        self.assertIn("plan: tests/vm/vmware.json", iso)
         with self.assertRaises(ValueError):
             run.validate_plan({"vm": {"display": "cirrus"}, "steps": [{"action": "sleep", "seconds": 1}]})
 

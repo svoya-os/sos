@@ -7,26 +7,38 @@
 # only for virtio-gpu and vgem; any other GPU without a working 3D driver makes the compositor
 # abort at start (a black screen, then "Hyprland has crashed" on the console):
 #   - vmwgfx: VirtualBox (VMSVGA, VBoxSVGA) and VMware. Without working 3D acceleration EGL
-#     cannot start; with it, apps' GPU buffers are refused (vmwgfx prime handles);
+#     cannot start; with it, apps' GPU buffers are refused (vmwgfx prime handles). Mesa's
+#     kms_swrast drives the render node instead;
 #   - no render node at all: `nomodeset` (the «safe graphics» boot entry: simpledrm), QEMU's
-#     standard VGA (bochs), VirtualBox's VBoxVGA (vboxvideo).
-# There SOS draws on the CPU, as a VM without 3D does anyway: Mesa's kms_swrast for the compositor,
-# llvmpipe for the apps. SVOYA_GPU=hardware (e.g. in /etc/environment) keeps the GPU path.
-svoya_gpu_software() {
-    [ "${SVOYA_GPU:-}" = hardware ] && return 1
+#     standard VGA (bochs), VirtualBox's VBoxVGA (vboxvideo). Hyprland falls back to EGL on GBM,
+#     which asks for a render device and fails ("DRI2: failed to get compatible render device",
+#     the «safe graphics» bot) unless GBM itself is in software mode: GBM_ALWAYS_SOFTWARE.
+# There SOS draws on the CPU, as a VM without 3D does anyway; llvmpipe for the apps.
+# SVOYA_GPU=hardware (e.g. in /etc/environment) keeps the GPU path.
+svoya_gpu_software() {   # prints vmwgfx or display-only when the GPU path cannot start
+    [ "${SVOYA_GPU:-}" = hardware ] && return 0
     local root=${SVOYA_GPU_ROOT:-} link cards=0 renders=0     # (SVOYA_GPU_ROOT: tests only)
     for link in "$root"/sys/class/drm/card[0-9]*/device/driver; do
         [ -e "$link" ] || continue
         cards=$((cards + 1))
-        [ "$(basename "$(readlink -f "$link")")" = vmwgfx ] && return 0
+        if [ "$(basename "$(readlink -f "$link")")" = vmwgfx ]; then
+            echo vmwgfx
+            return 0
+        fi
     done
     for link in "$root"/dev/dri/renderD*; do
         [ -e "$link" ] && renders=$((renders + 1))
     done
-    [ "$cards" -gt 0 ] && [ "$renders" -eq 0 ]
+    if [ "$cards" -gt 0 ] && [ "$renders" -eq 0 ]; then
+        echo display-only
+    fi
+    return 0
 }
 
-if svoya_gpu_software; then
-    export MESA_LOADER_DRIVER_OVERRIDE=kms_swrast LIBGL_ALWAYS_SOFTWARE=1 SVOYA_RENDERER=software
-fi
+case "$(svoya_gpu_software)" in
+    vmwgfx)
+        export MESA_LOADER_DRIVER_OVERRIDE=kms_swrast LIBGL_ALWAYS_SOFTWARE=1 SVOYA_RENDERER=software ;;
+    display-only)
+        export GBM_ALWAYS_SOFTWARE=1 LIBGL_ALWAYS_SOFTWARE=1 SVOYA_RENDERER=software ;;
+esac
 unset -f svoya_gpu_software
