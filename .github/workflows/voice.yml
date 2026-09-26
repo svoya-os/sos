@@ -55,10 +55,19 @@ jobs:
         run: |
           set -euo pipefail
           . "$RUNNER_TEMP/voice/bin/activate"
-          espeak-ng -v ru -s 140 -w "$RUNNER_TEMP/ru.wav" "какая сегодня погода"
+          # a natural Russian voice (Vosk TTS) and robotic ones (espeak-ng) for a microphone
+          pip install --quiet vosk-tts || true
+          python - "$RUNNER_TEMP/ru.wav" <<'PY' || echo "::warning::Vosk TTS did not make the Russian phrase"
+          import sys
+          from vosk_tts import Model, Synth
+          Synth(Model(model_name="vosk-model-tts-ru-0.9-multi")).synth("какая сегодня погода", sys.argv[1], speaker_id=2)
+          PY
+          espeak-ng -v ru -s 140 -w "$RUNNER_TEMP/ru-espeak.wav" "открой браузер"
           espeak-ng -v en-us -s 140 -w "$RUNNER_TEMP/en.wav" "what time is it now"
-          for f in ru en; do
+          for f in ru ru-espeak en; do
+            [ -f "$RUNNER_TEMP/$f.wav" ] || continue
             ffmpeg -nostdin -loglevel error -y -i "$RUNNER_TEMP/$f.wav" -ar 16000 -ac 1 -f s16le "$RUNNER_TEMP/$f.raw"
           done
           python tests/voice/check.py --models "$RUNNER_TEMP/models" \
-            --phrase "ru:$RUNNER_TEMP/ru.raw:погод" --phrase "en:$RUNNER_TEMP/en.raw:time" | tee -a "$GITHUB_STEP_SUMMARY"
+            --phrase "ru:$RUNNER_TEMP/ru.raw:погод" --phrase "en:$RUNNER_TEMP/en.raw:time" \
+            --phrase "?ru:$RUNNER_TEMP/ru-espeak.raw:брауз" | tee -a "$GITHUB_STEP_SUMMARY"

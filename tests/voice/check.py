@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """The voice service end to end, with real models and a file for a microphone.
 
-    check.py --models DIR --phrase ru:FILE.raw:expected,words [--phrase …] [--engine none]
+    check.py --models DIR --phrase ru:FILE.raw:expected,words [--phrase ?ru:…] [--engine none]
 
 Starts `svoya-voice` on a private socket with the phrase as its microphone (tests/voice/mic.py)
 and the speaker going nowhere, asks it to listen, and checks that the transcript has the expected
 words; then has it say two sentences and waits until they are spoken. Prints a Markdown report.
+A phrase whose spec starts with `?` is reported but does not fail the check (robotic speech).
 """
 
 from __future__ import annotations
@@ -95,10 +96,16 @@ async def run_phrase(args: argparse.Namespace, lang: str, raw: str, expected: li
 async def main_async(args: argparse.Namespace) -> int:
     rows, ok_all = [], True
     for spec in args.phrase:
-        lang, raw, words = spec.split(":", 2)
-        ok, row = await run_phrase(args, lang, raw, [w for w in words.split(",") if w])
+        optional = spec.startswith("?")
+        lang, raw, words = spec.lstrip("?").split(":", 2)
+        if not Path(raw).exists():
+            rows.append(f"| {lang} | (no phrase {raw}) | {'—' if optional else 'NO'} | |")
+            ok_all = ok_all and optional
+            continue
+        ok, row = await run_phrase(args, lang + (" (optional)" if optional else ""), raw,
+                                   [w for w in words.split(",") if w])
         rows.append(row)
-        ok_all = ok_all and ok
+        ok_all = ok_all and (ok or optional)
     print("| lang | heard | ok | details |\n|---|---|---|---|")
     print("\n".join(rows))
     return 0 if ok_all else 1

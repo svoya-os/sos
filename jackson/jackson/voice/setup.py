@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
-from .stt import PARAKEET
+from .stt import GIGAAM, PARAKEET
 
 
 def _size(path: Path) -> float:
@@ -47,6 +47,8 @@ def fetch(models: Path, engine: str) -> None:
     fetch_dir(models / "silero-vad", lambda d: onnx_asr.load_vad("silero", d), "Silero VAD")
     fetch_dir(models / "parakeet-tdt-0.6b-v3", lambda d: onnx_asr.load_model(PARAKEET, d, quantization="int8"),
               "Parakeet TDT 0.6B v3 (int8)")
+    fetch_dir(models / "gigaam-v3-e2e-rnnt", lambda d: onnx_asr.load_model(GIGAAM, d, quantization="int8"),
+              "GigaAM v3 e2e RNN-T (int8, Russian)")
     cls = engine_class(engine)
     if hasattr(cls, "fetch"):
         cls.fetch(models, fetch_dir)
@@ -54,13 +56,13 @@ def fetch(models: Path, engine: str) -> None:
 
 def check(models: Path, engine: str) -> int:
     import numpy as np
-    from .stt import ParakeetSTT
+    from .stt import BilingualSTT, GigaAMSTT, ParakeetSTT
     from .tts import load_engine
     from .vad import FRAME, SileroVAD
     t0 = time.monotonic()
     vad = SileroVAD(str(models / "silero-vad" / "silero_vad.onnx"))
     print(f"VAD: silence → {vad(np.zeros(FRAME, dtype=np.float32)):.2f}")
-    stt = ParakeetSTT(models / "parakeet-tdt-0.6b-v3")
+    stt = BilingualSTT(ParakeetSTT(models / "parakeet-tdt-0.6b-v3"), GigaAMSTT(models / "gigaam-v3-e2e-rnnt"))
     print(f"STT: {stt.name}, silence → {stt.recognize(np.zeros(16000, dtype=np.float32))!r}")
     tts = load_engine(engine, models=models)
     audio = tts.synth("Проверка связи.", "ru", tts.voices()[0])

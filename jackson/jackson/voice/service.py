@@ -113,6 +113,19 @@ class VoiceService:
             log.info("voice ready in %.1f s: %s + %s", time.monotonic() - t0, self.stt.name, self.tts.name)
         self.ready.set()
 
+    async def close(self) -> None:
+        """Stop listening and speaking, and the background tasks (SIGTERM)."""
+        if self.capture:
+            self.capture.cancelled = True
+            if self.capture.task:
+                await asyncio.gather(self.capture.task, return_exceptions=True)
+        player, self.player = self.player, None
+        if player:
+            await player.hush()
+        for task in self._tasks:
+            task.cancel()
+        await asyncio.gather(*self._tasks, return_exceptions=True)
+
     def status(self) -> dict[str, Any]:
         ok = self.ready.is_set() and not self.error
         return {"type": "status", "ready": ok, "loading": not self.ready.is_set(), "error": self.error,
@@ -265,7 +278,8 @@ class VoiceService:
             await cap.conn.send({"type": "error", "id": cap.id, "message": f"recognition failed: {exc}"})
             return
         ms = int((time.monotonic() - t0) * 1000)
-        log.info("heard %.1f s of speech, recognized in %d ms", len(audio) / 16000, ms)
+        log.info("heard %.1f s of speech, recognized in %d ms%s", len(audio) / 16000, ms,
+                 f" ({self.stt.last})" if getattr(self.stt, "last", "") else "")
         if not text.strip():
             await cap.conn.send({"type": "nothing", "id": cap.id})
         else:
@@ -386,12 +400,18 @@ def socket_path() -> Path:
 
 
 def default_loaders(models: Path, engine: str, engine_options: dict[str, Any]) -> dict[str, Callable[[], Any]]:
-    from .stt import ParakeetSTT
+    from .stt import BilingualSTT, GigaAMSTT, ParakeetSTT
     from .tts import load_engine
     from .vad import SileroVAD
+
+    def stt() -> Any:
+        russian = models / "gigaam-v3-e2e-rnnt"
+        return BilingualSTT(ParakeetSTT(models / "parakeet-tdt-0.6b-v3"),
+                            GigaAMSTT(russian) if russian.is_dir() else None)
+
     return {
         "load_vad": lambda: SileroVAD(str(models / "silero-vad" / "silero_vad.onnx")),
-        "load_stt": lambda: ParakeetSTT(models / "parakeet-tdt-0.6b-v3"),
+        "load_stt": stt,
         "load_tts": lambda: load_engine(engine, models=models, **engine_options),
     }
 
@@ -413,13 +433,24 @@ def main(argv: list[str] | None = None) -> int:
         engine = pick_engine(models)
     options = dict(cfg.get("engine_options") or {})
     service = VoiceService(**default_loaders(models, engine, options), sounds=cfg.get("sounds", True) is not False)
-    loop = asyncio.new_event_loop()
-    for sig in (signal.SIGTERM, signal.SIGINT):
-        loop.add_signal_handler(sig, loop.stop)
-    try:
-        loop.run_until_complete(service.serve(Path(args.socket) if args.socket else socket_path()))
-    except RuntimeError:
-        pass
+    path = Path(args.socket) if args.socket else socket_path()
+
+    async def run() -> None:
+        stop = asyncio.Event()
+        loop = asyncio.get_running_loop()
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            loop.add_signal_handler(sig, stop.set)
+        serving = asyncio.create_task(service.serve(path))
+        await asyncio.wait([serving, asyncio.create_task(stop.wait())], return_when=asyncio.FIRST_COMPLETED)
+        await service.close()
+        serving.cancel()
+        await asyncio.gather(serving, return_exceptions=True)
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+    asyncio.run(run())
     return 0
 
 
