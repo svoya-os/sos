@@ -174,3 +174,21 @@ class RunnerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ServeTests(unittest.TestCase):
+    def test_a_plan_serves_its_files_to_the_guest(self):
+        import tempfile
+        import urllib.request
+        out = pathlib.Path(tempfile.mkdtemp())
+        plan = {"serve": {"files": "tests/vm/voice"}, "steps": [{"action": "sleep", "seconds": 0}]}
+        run.validate_plan(plan)
+        url = run.start_serving(plan, out)
+        self.assertTrue(url.startswith("http://10.0.2.2:"))
+        local = url.replace("10.0.2.2", "127.0.0.1")        # the host's view of it
+        with urllib.request.urlopen(local + "/bot.sh", timeout=5) as resp:
+            self.assertIn(b"pw-loopback", resp.read())
+
+    def test_serve_must_name_a_folder_of_the_repository(self):
+        with self.assertRaises(ValueError):
+            run.validate_plan({"serve": {"files": "no/such/folder"}, "steps": [{"action": "sleep", "seconds": 0}]})

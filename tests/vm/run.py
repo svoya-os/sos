@@ -21,6 +21,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -59,6 +60,12 @@ def load_plan(path: pathlib.Path) -> dict:
 def validate_plan(plan: dict) -> None:
     if not isinstance(plan.get("steps"), list) or not plan["steps"]:
         raise ValueError("plan needs a non-empty 'steps' list")
+    serve = plan.get("serve")
+    if serve is not None:
+        if not isinstance(serve, dict) or not (HERE.parent.parent / str(serve.get("files", ""))).is_dir():
+            raise ValueError("'serve' needs 'files': a folder of the repository the VM may download")
+        if serve.get("prepare") and not (HERE.parent.parent / str(serve["prepare"])).is_file():
+            raise ValueError(f"'serve.prepare' {serve['prepare']} does not exist")
     display = plan.get("vm", {}).get("display", "virtio")
     if display not in DISPLAYS:
         raise ValueError(f"vm.display must be one of {sorted(DISPLAYS)}, not {display!r}")
@@ -166,6 +173,7 @@ class Runner:
         self.proc = proc
         self.resolution = resolution
         self.shots: dict[str, image.Image] = {}
+        self.serve_url = ""          # what the guest downloads the plan's files from ({serve})
         self.results: list[dict] = []
         (out / "screens").mkdir(parents=True, exist_ok=True)
 
@@ -274,7 +282,8 @@ class Runner:
         return "reset"
 
     def do_type(self, step: dict) -> str:
-        for combo in keys.text_to_combos(step["text"]):
+        text = step["text"].replace("{serve}", self.serve_url)
+        for combo in keys.text_to_combos(text):
             self.qmp.send_key(combo, 50)
             time.sleep(0.05)
         return f"typed {len(step['text'])} characters"
@@ -318,6 +327,34 @@ def write_reports(out: pathlib.Path, meta: dict, results: list[dict], ok: bool) 
         detail = str(r.get("detail", "")).replace("|", "\\|")[:160]
         lines.append(f"| {r['n']} | {r['id']} | {r['action']} | {r['status']} | {r['seconds']}s | {detail} |")
     (out / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def start_serving(plan: dict, out: pathlib.Path) -> str:
+    """The plan's files (plus what its prepare script makes) over HTTP for the guest: QEMU's user
+    network shows the host's loopback as 10.0.2.2."""
+    serve = plan.get("serve")
+    if not serve:
+        return ""
+    import functools
+    import http.server
+    root = HERE.parent.parent
+    folder = out / "serve"
+    shutil.rmtree(folder, ignore_errors=True)
+    shutil.copytree(root / serve["files"], folder)
+    if serve.get("prepare"):
+        with open(out / "serve-prepare.log", "w") as log:
+            done = subprocess.run(["bash", str(root / serve["prepare"]), str(folder)], stdout=log,
+                                  stderr=subprocess.STDOUT, timeout=900)
+        print(f"serve: {serve['prepare']} → exit {done.returncode}", flush=True)
+
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, fmt: str, *args: object) -> None:
+            with open(out / "serve.log", "a") as log:
+                log.write(fmt % args + "\n")
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=str(folder)))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return f"http://10.0.2.2:{server.server_address[1]}"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -367,6 +404,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ISO not found: {args.iso}", file=sys.stderr)
         return 2
 
+    serve_url = start_serving(plan, out)
     (out / "serial.log").write_text("")
     (out / "qemu-command.txt").write_text(" ".join(cmd) + "\n")
     qemu_log = open(out / "qemu.log", "w")
@@ -387,6 +425,7 @@ def main(argv: list[str] | None = None) -> int:
                     scale = 4.0
                 print(f"KVM did not initialise; running under TCG (timeout scale {scale})", flush=True)
         runner = Runner(qmp, out, scale, proc, tuple(plan.get("vm", {}).get("resolution", [1440, 900])))
+        runner.serve_url = serve_url
         ok = runner.run(plan["steps"])
         qmp.quit()
     finally:

@@ -1,7 +1,8 @@
 {
   "name": "voice",
-  "description": "Talking to Jackson the way a user does, with the VM's own speech for a microphone: `sos install voice`, a virtual microphone (pw-loopback; the voice service listens to it through SVOYA_VOICE_SOURCE), phrases spoken by espeak-ng into it, the microphone opened from the panel's IPC (`jackson talk`). «который час» is answered by the fast path, then Jackson listens again by himself (conversation) and «спасибо, всё» ends it. A helper follows the voice service's journal and speaks each phrase when it says it listens. The VM has a sound card whose output is recorded: speaker.ogg is what Jackson said.",
+  "description": "Talking to Jackson the way a user does, with a phrase for a microphone: `sos install voice`, then the bot fetches its phrases (spoken by Vosk TTS on the CI host, tests/vm/voice/prepare.sh) and a small script from the host (\"serve\"), makes a virtual microphone (pw-loopback; the voice service listens to it through SVOYA_VOICE_SOURCE) and opens Jackson's microphone over the shell's IPC (`jackson talk`). The script says each phrase when the voice service says it listens: «Который час?» is answered by the fast path, then Jackson listens again by himself (conversation) and «Спасибо, всё.» ends it. The VM has a sound card whose output is recorded: speaker.ogg is what Jackson said. (ISO #17: one long typed line lagged and garbled in the VM — the script is fetched with a short one.)",
   "vm": {"memory_mib": 8192, "smp": 4, "resolution": [1440, 900], "smbios_product": "sos-vm-test", "audio": true},
+  "serve": {"files": "tests/vm/voice", "prepare": "tests/vm/voice/prepare.sh"},
   "steps": [
     {"id": "boot", "action": "wait_serial", "pattern": "SOS 26\\.10", "timeout_s": 60, "optional": true},
     {"id": "boot", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
@@ -20,14 +21,14 @@
     {"id": "install", "action": "wait_serial", "pattern": "SOS-STEP voice-ready", "fail_pattern": "SOS-STEP voice-failed", "timeout_s": 1800},
     {"id": "install", "action": "sleep", "seconds": 2},
     {"id": "install", "action": "screenshot", "name": "03-voice-installed", "continue_on_failure": true},
-    {"id": "mic", "action": "type", "text": "clear; sudo apt-get install -y -qq espeak-ng >/dev/null; python3 -c \"open('/tmp/q1.txt','w').write('\\u043a\\u043e\\u0442\\u043e\\u0440\\u044b\\u0439 \\u0447\\u0430\\u0441'); open('/tmp/q2.txt','w').write('\\u0441\\u043f\\u0430\\u0441\\u0438\\u0431\\u043e, \\u0432\\u0441\\u0451')\"; espeak-ng -v ru -s 140 -f /tmp/q1.txt -w /tmp/q1.wav; espeak-ng -v ru -s 140 -f /tmp/q2.txt -w /tmp/q2.wav; logger -t sos-vm-test SOS-STEP phrases-ready\n"},
-    {"id": "mic", "action": "wait_serial", "pattern": "SOS-STEP phrases-ready", "timeout_s": 300},
-    {"id": "mic", "action": "type", "text": "clear; mkdir -p ~/.config/svoya; echo SVOYA_VOICE_SOURCE=vmic >~/.config/svoya/voice.env; (pw-loopback -m '[ MONO ]' --capture-props='media.class=Audio/Sink node.name=vmic-in' --playback-props='media.class=Audio/Source node.name=vmic node.description=vmic' >/dev/null 2>&1 &); sleep 2; systemctl --user start svoya-voice; wpctl status | grep -A4 -i sources\n"},
+    {"id": "mic", "action": "type", "text": "clear; curl -sf {serve}/bot.sh -o /tmp/bot.sh && bash /tmp/bot.sh {serve} setup\n"},
+    {"id": "mic", "action": "wait_serial", "pattern": "SOS-STEP mic-ready", "fail_pattern": "SOS-STEP phrases-missing", "timeout_s": 180},
     {"id": "mic", "action": "wait_serial", "pattern": "voice ready in|voice models did not load", "timeout_s": 300, "continue_on_failure": true},
     {"id": "mic", "action": "sleep", "seconds": 2},
     {"id": "mic", "action": "screenshot", "name": "04-microphone", "continue_on_failure": true},
-    {"id": "mic", "action": "type", "text": "clear; (journalctl --user -f -n0 -u svoya-voice | while read -r l; do case \"$l\" in *'listening (tap)'*) sleep 1; pw-play --target vmic-in /tmp/q1.wav;; *'listening (follow)'*) sleep 1; pw-play --target vmic-in /tmp/q2.wav;; esac; done >/dev/null 2>&1 &); sleep 1; quickshell -p /usr/share/svoya/shell ipc call jackson talk\n"},
-    {"id": "talk", "action": "sleep", "seconds": 3},
+    {"id": "mic", "action": "type", "text": "clear; bash /tmp/bot.sh {serve} talk\n"},
+    {"id": "talk", "action": "wait_serial", "pattern": "listening \\(tap\\)", "timeout_s": 60, "continue_on_failure": true},
+    {"id": "talk", "action": "sleep", "seconds": 1},
     {"id": "talk", "action": "screenshot", "name": "05-listening", "continue_on_failure": true},
     {"id": "talk", "action": "wait_serial", "pattern": "jackson\\.engine: turn done", "fail_pattern": "jackson\\.engine: turn failed", "timeout_s": 120, "continue_on_failure": true},
     {"id": "talk", "action": "sleep", "seconds": 1},
@@ -39,7 +40,7 @@
     {"id": "talk", "action": "sleep", "seconds": 4},
     {"id": "talk", "action": "screenshot", "name": "08-bye", "continue_on_failure": true},
     {"id": "talk", "action": "key", "keys": ["esc"], "continue_on_failure": true},
-    {"id": "status", "action": "type", "text": "clear; journalctl --user -u svoya-voice --no-pager | tail -n 12\n", "continue_on_failure": true},
+    {"id": "status", "action": "type", "text": "clear; journalctl --user -u svoya-voice --no-pager | tail -n 14\n", "continue_on_failure": true},
     {"id": "status", "action": "sleep", "seconds": 4},
     {"id": "status", "action": "screenshot", "name": "09-voice-journal", "continue_on_failure": true}
   ]
