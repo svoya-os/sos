@@ -1,0 +1,24 @@
+{
+  "base": "convaiinnovations/laya (multilingual)",
+  "phrases": 2076,
+  "train": 1869,
+  "calibration": 207,
+  "calibration_right": 197,
+  "temperature": 1.138043999671936,
+  "calibration_report": {
+    "accuracy": 0.9517,
+    "mean_confidence": 0.9618,
+    "ece": 0.0101,
+    "at_0.8": {
+      "share": 0.9903,
+      "accuracy": 0.961
+    },
+    "at_0.9": {
+      "share": 0.9903,
+      "accuracy": 0.961
+    }
+  },
+  "target": 0.98,
+  "epochs": 3,
+  "seconds": 9182
+}
