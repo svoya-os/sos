@@ -1,0 +1,200 @@
+[  335.691128] llama-server[2320]: [50259] llama_params_fit_impl: no devices with dedicated memory found
+[  335.692062] llama-server[2320]: [50259] llama_params_fit: successfully fit params to free device memory
+[  335.692062] llama-server[2320]: [50259] llama_params_fit: fitting params to free memory took 0.88 seconds
+[  335.749159] llama-server[2320]: [50259] llama_model_loader: loaded meta data with 46 key-value pairs and 426 tensors from /srv/ai/views/llama.cpp/Qwen3.5-4B-Q4_K_M/Qwen3.5-4B-Q4_K_M.gguf (version GGUF V3 (latest))
+[  335.749292] llama-server[2320]: [50259] llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
+[  335.749347] llama-server[2320]: [50259] llama_model_loader: - kv   0:                       general.architecture str              = qwen35
+[  335.749393] llama-server[2320]: [50259] llama_model_loader: - kv   1:                               general.type str              = model
+[  335.749436] llama-server[2320]: [50259] llama_model_loader: - kv   2:                               general.name str              = Qwen3.5-4B
+[  335.749479] llama-server[2320]: [50259] llama_model_loader: - kv   3:                           general.basename str              = Qwen3.5-4B
+[  335.749521] llama-server[2320]: [50259] llama_model_loader: - kv   4:                       general.quantized_by str              = Unsloth
+[  335.749564] llama-server[2320]: [50259] llama_model_loader: - kv   5:                         general.size_label str              = 4B
+[  335.749607] llama-server[2320]: [50259] llama_model_loader: - kv   6:                            general.license str              = apache-2.0
+[  335.749650] llama-server[2320]: [50259] llama_model_loader: - kv   7:                       general.license.link str              = https://huggingface.co/Qwen/Qwen3.5-4...
+[  335.749693] llama-server[2320]: [50259] llama_model_loader: - kv   8:                           general.repo_url str              = https://huggingface.co/unsloth
+[  335.749744] llama-server[2320]: [50259] llama_model_loader: - kv   9:                   general.base_model.count u32              = 1
+[  335.749791] llama-server[2320]: [50259] llama_model_loader: - kv  10:                  general.base_model.0.name str              = Qwen3.5 4B
+[  335.749872] llama-server[2320]: [50259] llama_model_loader: - kv  11:          general.base_model.0.organization str              = Qwen
+[  335.749924] llama-server[2320]: [50259] llama_model_loader: - kv  12:              general.base_model.0.repo_url str              = https://huggingface.co/Qwen/Qwen3.5-4B
+[  335.749968] llama-server[2320]: [50259] llama_model_loader: - kv  13:                               general.tags arr[str,2]       = ["unsloth", "image-text-to-text"]
+[  335.750064] llama-server[2320]: [50259] llama_model_loader: - kv  14:                         qwen35.block_count u32              = 32
+[  335.750123] llama-server[2320]: [50259] llama_model_loader: - kv  15:                      qwen35.context_length u32              = 262144
+[  335.750167] llama-server[2320]: [50259] llama_model_loader: - kv  16:                    qwen35.embedding_length u32              = 2560
+[  335.750215] llama-server[2320]: [50259] llama_model_loader: - kv  17:                 qwen35.feed_forward_length u32              = 9216
+[  335.750263] llama-server[2320]: [50259] llama_model_loader: - kv  18:                qwen35.attention.head_count u32              = 16
+[  335.750307] llama-server[2320]: [50259] llama_model_loader: - kv  19:             qwen35.attention.head_count_kv u32              = 4
+[  335.750349] llama-server[2320]: [50259] llama_model_loader: - kv  20:             qwen35.rope.dimension_sections arr[i32,4]       = [11, 11, 10, 0]
+[  335.750396] llama-server[2320]: [50259] llama_model_loader: - kv  21:                      qwen35.rope.freq_base f32              = 10000000.000000
+[  335.750439] llama-server[2320]: [50259] llama_model_loader: - kv  22:    qwen35.attention.layer_norm_rms_epsilon f32              = 0.000001
+[  335.750482] llama-server[2320]: [50259] llama_model_loader: - kv  23:                qwen35.attention.key_length u32              = 256
+[  335.750533] llama-server[2320]: [50259] llama_model_loader: - kv  24:              qwen35.attention.value_length u32              = 256
+[  335.750575] llama-server[2320]: [50259] llama_model_loader: - kv  25:                     qwen35.ssm.conv_kernel u32              = 4
+[  335.750618] llama-server[2320]: [50259] llama_model_loader: - kv  26:                      qwen35.ssm.state_size u32              = 128
+[  335.750667] llama-server[2320]: [50259] llama_model_loader: - kv  27:                     qwen35.ssm.group_count u32              = 16
+[  335.750710] llama-server[2320]: [50259] llama_model_loader: - kv  28:                  qwen35.ssm.time_step_rank u32              = 32
+[  335.750752] llama-server[2320]: [50259] llama_model_loader: - kv  29:                      qwen35.ssm.inner_size u32              = 4096
+[  335.750796] llama-server[2320]: [50259] llama_model_loader: - kv  30:             qwen35.full_attention_interval u32              = 4
+[  335.750875] llama-server[2320]: [50259] llama_model_loader: - kv  31:                qwen35.rope.dimension_count u32              = 64
+[  335.750926] llama-server[2320]: [50259] llama_model_loader: - kv  32:                       tokenizer.ggml.model str              = gpt2
+[  335.750975] llama-server[2320]: [50259] llama_model_loader: - kv  33:                         tokenizer.ggml.pre str              = qwen35
+[  335.794129] llama-server[2320]: [50259] llama_model_loader: - kv  34:                      tokenizer.ggml.tokens arr[str,248320]  = ["!", "\"", "#", "$", "%", "&", "'", ...
+[  335.810116] llama-server[2320]: [50259] llama_model_loader: - kv  35:                  tokenizer.ggml.token_type arr[i32,248320]  = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  36:                      tokenizer.ggml.merges arr[str,247587]  = ["Ġ Ġ", "ĠĠ ĠĠ", "i n", "Ġ t",...
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  37:                tokenizer.ggml.eos_token_id u32              = 248046
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  38:            tokenizer.ggml.padding_token_id u32              = 248055
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  39:                    tokenizer.chat_template str              = {%- set image_count = namespace(value...
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  40:               general.quantization_version u32              = 2
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  41:                          general.file_type u32              = 15
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  42:                      quantize.imatrix.file str              = Qwen3.5-4B-GGUF/imatrix_unsloth.gguf
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  43:                   quantize.imatrix.dataset str              = unsloth_calibration_Qwen3.5-4B.txt
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  44:             quantize.imatrix.entries_count u32              = 248
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - kv  45:              quantize.imatrix.chunks_count u32              = 80
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - type  f32:  177 tensors
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - type q8_0:   48 tensors
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - type q4_K:  131 tensors
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - type q5_K:   48 tensors
+[  335.845177] llama-server[2320]: [50259] llama_model_loader: - type q6_K:   22 tensors
+[  335.845177] llama-server[2320]: [50259] print_info: file format = GGUF V3 (latest)
+[  335.845177] llama-server[2320]: [50259] print_info: file type   = Q4_K - Medium
+[  335.845177] llama-server[2320]: [50259] print_info: file size   = 2.54 GiB (5.19 BPW)
+[  336.058176] llama-server[2320]: [50259] load: 0 unused tokens
+[  336.109134] llama-server[2320]: [50259] load: printing all EOG tokens:
+[  336.109260] llama-server[2320]: [50259] load:   - 248044 ('<|endoftext|>')
+[  336.109322] llama-server[2320]: [50259] load:   - 248046 ('<|im_end|>')
+[  336.109366] llama-server[2320]: [50259] load:   - 248063 ('<|fim_pad|>')
+[  336.109409] llama-server[2320]: [50259] load:   - 248064 ('<|repo_name|>')
+[  336.109452] llama-server[2320]: [50259] load:   - 248065 ('<|file_sep|>')
+[  336.109545] llama-server[2320]: [50259] load: special tokens cache size = 33
+[  336.228909] llama-server[2320]: [50259] load: token to piece cache size = 1.7581 MB
+[  336.229135] llama-server[2320]: [50259] print_info: arch                  = qwen35
+[  336.229239] llama-server[2320]: [50259] print_info: vocab_only            = 0
+[  336.229344] llama-server[2320]: [50259] print_info: no_alloc              = 0
+[  336.229437] llama-server[2320]: [50259] print_info: n_ctx_train           = 262144
+[  336.230120] llama-server[2320]: [50259] print_info: n_embd                = 2560
+[  336.230215] llama-server[2320]: [50259] print_info: n_embd_inp            = 2560
+[  336.230352] llama-server[2320]: [50259] print_info: n_layer               = 32
+[  336.232247] llama-server[2320]: [50259] print_info: n_head                = 16
+[  336.232349] llama-server[2320]: [50259] print_info: n_head_kv             = 4
+[  336.232440] llama-server[2320]: [50259] print_info: n_rot                 = 64
+[  336.232530] llama-server[2320]: [50259] print_info: n_swa                 = 0
+[  336.232618] llama-server[2320]: [50259] print_info: is_swa_any            = 0
+[  336.232723] llama-server[2320]: [50259] print_info: n_embd_head_k         = 256
+[  336.232811] llama-server[2320]: [50259] print_info: n_embd_head_v         = 256
+[  336.232938] llama-server[2320]: [50259] print_info: n_gqa                 = 4
+[  336.233085] llama-server[2320]: [50259] print_info: n_embd_k_gqa          = 1024
+[  336.233182] llama-server[2320]: [50259] print_info: n_embd_v_gqa          = 1024
+[  336.233270] llama-server[2320]: [50259] print_info: f_norm_eps            = 0.0e+00
+[  336.233357] llama-server[2320]: [50259] print_info: f_norm_rms_eps        = 1.0e-06
+[  336.233447] llama-server[2320]: [50259] print_info: f_clamp_kqv           = 0.0e+00
+[  336.233541] llama-server[2320]: [50259] print_info: f_max_alibi_bias      = 0.0e+00
+[  336.233629] llama-server[2320]: [50259] print_info: f_logit_scale         = 0.0e+00
+[  336.233716] llama-server[2320]: [50259] print_info: f_attn_scale          = 0.0e+00
+[  336.233805] llama-server[2320]: [50259] print_info: n_ff                  = 9216
+[  336.233936] llama-server[2320]: [50259] print_info: n_expert              = 0
+[  336.234092] llama-server[2320]: [50259] print_info: n_expert_used         = 0
+[  336.234166] llama-server[2320]: [50259] print_info: n_expert_groups       = 0
+[  336.234228] llama-server[2320]: [50259] print_info: n_group_used          = 0
+[  336.234291] llama-server[2320]: [50259] print_info: causal attn           = 1
+[  336.234352] llama-server[2320]: [50259] print_info: pooling type          = -1
+[  336.234420] llama-server[2320]: [50259] print_info: rope type             = 40
+[  336.234479] llama-server[2320]: [50259] print_info: rope scaling          = linear
+[  336.234538] llama-server[2320]: [50259] print_info: freq_base_train       = 10000000.0
+[  336.234598] llama-server[2320]: [50259] print_info: freq_scale_train      = 1
+[  336.234665] llama-server[2320]: [50259] print_info: n_ctx_orig_yarn       = 262144
+[  336.234724] llama-server[2320]: [50259] print_info: rope_yarn_log_mul     = 0.0000
+[  336.234784] llama-server[2320]: [50259] print_info: rope_finetuned        = unknown
+[  336.234871] llama-server[2320]: [50259] print_info: mrope sections        = [11, 11, 10, 0]
+[  336.234936] llama-server[2320]: [50259] print_info: ssm_d_conv            = 4
+[  336.235059] llama-server[2320]: [50259] print_info: ssm_d_inner           = 4096
+[  336.235127] llama-server[2320]: [50259] print_info: ssm_d_state           = 128
+[  336.235185] llama-server[2320]: [50259] print_info: ssm_dt_rank           = 32
+[  336.235245] llama-server[2320]: [50259] print_info: ssm_n_group           = 16
+[  336.235313] llama-server[2320]: [50259] print_info: ssm_dt_b_c_rms        = 0
+[  336.235373] llama-server[2320]: [50259] print_info: model type            = 4B
+[  336.235433] llama-server[2320]: [50259] print_info: model params          = 4.21 B
+[  336.235493] llama-server[2320]: [50259] print_info: general.name          = Qwen3.5-4B
+[  336.235559] llama-server[2320]: [50259] print_info: vocab type            = BPE
+[  336.235618] llama-server[2320]: [50259] print_info: n_vocab               = 248320
+[  336.235676] llama-server[2320]: [50259] print_info: n_merges              = 247587
+[  336.235735] llama-server[2320]: [50259] print_info: BOS token             = 11 ','
+[  336.235796] llama-server[2320]: [50259] print_info: EOS token             = 248046 '<|im_end|>'
+[  336.235889] llama-server[2320]: [50259] print_info: EOT token             = 248046 '<|im_end|>'
+[  336.235962] llama-server[2320]: [50259] print_info: PAD token             = 248055 '<|vision_pad|>'
+[  336.236068] llama-server[2320]: [50259] print_info: LF token              = 198 'Ċ'
+[  336.236132] llama-server[2320]: [50259] print_info: FIM PRE token         = 248060 '<|fim_prefix|>'
+[  336.236190] llama-server[2320]: [50259] print_info: FIM SUF token         = 248062 '<|fim_suffix|>'
+[  336.236249] llama-server[2320]: [50259] print_info: FIM MID token         = 248061 '<|fim_middle|>'
+[  336.236309] llama-server[2320]: [50259] print_info: FIM PAD token         = 248063 '<|fim_pad|>'
+[  336.236368] llama-server[2320]: [50259] print_info: FIM REP token         = 248064 '<|repo_name|>'
+[  336.236426] llama-server[2320]: [50259] print_info: FIM SEP token         = 248065 '<|file_sep|>'
+[  336.236484] llama-server[2320]: [50259] print_info: EOG token             = 248044 '<|endoftext|>'
+[  336.236544] llama-server[2320]: [50259] print_info: EOG token             = 248046 '<|im_end|>'
+[  336.236612] llama-server[2320]: [50259] print_info: EOG token             = 248063 '<|fim_pad|>'
+[  336.236674] llama-server[2320]: [50259] print_info: EOG token             = 248064 '<|repo_name|>'
+[  336.236732] llama-server[2320]: [50259] print_info: EOG token             = 248065 '<|file_sep|>'
+[  336.236796] llama-server[2320]: [50259] print_info: max token length      = 256
+[  336.236887] llama-server[2320]: [50259] load_tensors: loading model tensors, this can take a while... (mmap = true, direct_io = false)
+[  339.146888] llama-server[2320]: [50259] load_tensors:   CPU_Mapped model buffer size =  2603.50 MiB
+[  339.147469] llama-server[2320]: [50259] load_tensors:   CPU_REPACK model buffer size =  1297.97 MiB
+[  341.587968] llama-server[2320]: [50259] ..................................................................................
+[  341.595067] llama-server[2320]: [50259] common_init_result: added <|endoftext|> logit bias = -inf
+[  341.595194] llama-server[2320]: [50259] common_init_result: added <|im_end|> logit bias = -inf
+[  341.595194] llama-server[2320]: [50259] common_init_result: added <|fim_pad|> logit bias = -inf
+[  341.595194] llama-server[2320]: [50259] common_init_result: added <|repo_name|> logit bias = -inf
+[  341.595194] llama-server[2320]: [50259] common_init_result: added <|file_sep|> logit bias = -inf
+[  341.595194] llama-server[2320]: [50259] llama_context: constructing llama_context
+[  341.595194] llama-server[2320]: [50259] llama_context: n_seq_max     = 4
+[  341.595194] llama-server[2320]: [50259] llama_context: n_ctx         = 262144
+[  341.595194] llama-server[2320]: [50259] llama_context: n_ctx_seq     = 262144
+[  341.595194] llama-server[2320]: [50259] llama_context: n_batch       = 2048
+[  341.595194] llama-server[2320]: [50259] llama_context: n_ubatch      = 512
+[  341.595194] llama-server[2320]: [50259] llama_context: causal_attn   = 1
+[  341.595194] llama-server[2320]: [50259] llama_context: flash_attn    = auto
+[  341.595194] llama-server[2320]: [50259] llama_context: kv_unified    = true
+[  341.595194] llama-server[2320]: [50259] llama_context: freq_base     = 10000000.0
+[  341.595194] llama-server[2320]: [50259] llama_context: freq_scale    = 1
+[  341.595194] llama-server[2320]: [50259] llama_context:        CPU  output buffer size =     3.79 MiB
+[  341.597143] llama-server[2320]: [50259] llama_kv_cache:        CPU KV buffer size =  8192.00 MiB
+[  372.720348] llama-server[2320]: [50259] llama_kv_cache: size = 8192.00 MiB (262144 cells,   8 layers,  4/1 seqs), K (f16): 4096.00 MiB, V (f16): 4096.00 MiB
+[  372.720348] llama-server[2320]: [50259] llama_kv_cache: attn_rot_k = 0
+[  372.720348] llama-server[2320]: [50259] llama_kv_cache: attn_rot_v = 0
+[  372.680179] systemd-oomd[750]: Considered 21 cgroups for killing, top candidates were:
+[  372.731629] systemd-journald[649]: Under memory pressure, flushing caches.
+[  372.680185] systemd-oomd[750]:         Path: /user.slice/user-1000.slice/user@1000.service/app.slice/svoya-llm.service
+[  372.680189] systemd-oomd[750]:                 Memory Pressure Limit: 0.00%
+[  372.680194] systemd-oomd[750]:                 Memory Pressure Duration: 0
+[  372.680197] systemd-oomd[750]:                 Pressure: Avg10: 86.89, Avg60: 32.80, Avg300: 7.97, Total: 25s
+[  372.680202] systemd-oomd[750]:                 Current Memory Usage: 7.1G
+[  372.680205] systemd-oomd[750]:                 Memory Min: 0B
+[  372.680209] systemd-oomd[750]:                 Memory Low: 0B
+[  372.680213] systemd-oomd[750]:                 Pgscan: 626612
+[  372.680218] systemd-oomd[750]:                 Last Pgscan: 608244
+[  372.680225] systemd-oomd[750]: Killed /user.slice/user-1000.slice/user@1000.service/app.slice/svoya-llm.service due to memory pressure for /user.slice/user-1000.slice/user@1000.service being 89.57% > 50.00% for > 20s with reclaim activity
+[  372.704428] systemd[1240]: svoya-llm.service: systemd-oomd killed 2 process(es) in this unit.
+[  372.704536] systemd[1240]: svoya-llm.service: Main process exited, code=killed, status=9/KILL
+[  372.704621] systemd[1240]: svoya-llm.service: Failed with result 'oom-kill'.
+[  372.705186] systemd[1240]: svoya-llm.service: Consumed 38.779s CPU time over 47.322s wall clock time, 7.6G memory peak, 2.3G memory swap peak.
+[  372.796387] jacksond[1391]: INFO jackson.engine: turn failed after 38119 ms: The model failed: local: cannot connect to 127.0.0.1:8080 (Connection refused)
+[  372.908768] systemd[1240]: svoya-llm.service: Scheduled restart job, restart counter is at 3.
+[  372.911611] systemd[1240]: Starting svoya-llm.service - Local LLM server (llama.cpp router over /srv/ai) — SOS...
+[  373.812996] systemd[1240]: Started svoya-llm.service - Local LLM server (llama.cpp router over /srv/ai) — SOS.
+[  373.940721] llama-server[2356]: load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-haswell.so
+[  373.944024] llama-server[2356]: main: n_parallel is set to auto, using n_parallel = 4 and kv_unified = true
+[  373.944139] llama-server[2356]: build_info: b8681-Debian
+[  373.944196] llama-server[2356]: system_info: n_threads = 4 (n_threads_batch = 4) / 4 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 |
+[  373.944245] llama-server[2356]: Running without SSL
+[  373.944290] llama-server[2356]: init: using 8 threads for HTTP server
+[  373.991684] llama-server[2356]: load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-haswell.so
+[  374.034382] llama-server[2356]: load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-haswell.so
+[  374.034990] llama-server[2356]: srv   load_models: Loaded 1 cached model presets
+[  374.035295] llama-server[2356]: srv   load_models: Loaded 1 local model presets from /srv/ai/views/llama.cpp
+[  374.035295] llama-server[2356]: srv   load_models: Available models (2) (*: custom preset)
+[  374.035295] llama-server[2356]: srv   load_models:     Qwen3.5-4B-Q4_K_M
+[  374.035295] llama-server[2356]: srv   load_models:     unsloth/Qwen3.5-4B-GGUF:Q4_K_M
+[  374.035416] llama-server[2356]: main: starting router server, no model will be loaded in this process
+[  374.035416] llama-server[2356]: start: binding port with default address family
+[  374.036716] llama-server[2356]: main: router server is listening on http://127.0.0.1:8080
+[  374.036716] llama-server[2356]: main: NOTE: router mode is experimental
+[  374.036716] llama-server[2356]: main:       it is not recommended to use this mode in untrusted environments
+[  374.251083] systemd-journald[649]: Under memory pressure, flushing caches.
+[  379.881730] systemd[1240]: Started kitty-2376-0.scope - kitty child process: 2389 launched by: 2376.
