@@ -1,0 +1,200 @@
+[    8.858753] sos greetd[1187]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[    9.206176] sos greetd[1187]: gkr-pam: couldn't unlock the login keyring.
+## user svoya: warnings and errors
+[    9.199070] sos pipewire[1255]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.199095] sos pipewire[1255]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.199801] sos pipewire[1255]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.199818] sos pipewire[1255]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.200365] sos pipewire[1255]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.200455] sos pipewire[1255]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.255698] sos pipewire-pulse[1270]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.258085] sos pipewire-pulse[1270]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.259806] sos pipewire-pulse[1270]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.259816] sos pipewire-pulse[1270]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.260210] sos pipewire-pulse[1270]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.260219] sos pipewire-pulse[1270]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.267787] sos wireplumber[1268]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.267805] sos wireplumber[1268]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.268787] sos wireplumber[1268]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.268889] sos wireplumber[1268]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.269425] sos wireplumber[1268]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.269441] sos wireplumber[1268]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.297749] sos wireplumber[1268]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x556a8cd12900> Failed to connect to snapd: No such file or directory
+[    9.539929] sos wireplumber[1268]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[    9.542430] sos wireplumber[1268]: spa.bluez5: BlueZ system service is not available
+[   12.013473] sos xdg-desktop-portal-gtk[1405]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[   12.318321] sos /usr/libexec/xdg-desktop-portal[1372]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.318804] sos /usr/libexec/xdg-desktop-portal[1372]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.319290] sos /usr/libexec/xdg-desktop-portal[1372]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+## /home/svoya/.local/state/svoya/session.log (tail)
+2026-09-26T16:59:42Z theme: ok graphite (sun)
+2026-09-26T16:59:42Z environment: ok WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP DISPLAY LANG
+2026-09-26T16:59:42Z jacksond: ok 
+2026-09-26T16:59:42Z shell: ok /usr/share/svoya/shell
+2026-09-26T16:59:42Z first-run: ok skipped (live session)
+2026-09-26T16:59:42Z skills: ok /home/svoya/.local/share/svoya/jackson/skills
+## /run/user/1000/sos-shell.log (tail)
+== 2026-09-26T16:59:42+00:00 quickshell -p /usr/share/svoya/shell
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/k21ivdzlt/log.qslog"
+  INFO: Configuration Loaded
+  WARN qt.svg.draw: The requested buffer size is too big, ignoring
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+## /home/svoya/.local/state/svoya/hyprland.log (834 lines: renderer, errors, the end)
+== SOS session 2026-09-26T16:59:40+00:00 (config /usr/share/svoya/hypr/hyprland.conf, rendering: software)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/hyprland.conf'
+Welcome to Hyprland!
+67:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+69:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/simple-framebuffer.0/drm/card0
+71:DEBUG from aquamarine ]: drm: Found 1 GPUs
+72:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card0, with driver simpledrm
+73:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card0
+74:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+75:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+76:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: true
+77:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: false
+78:DEBUG from aquamarine ]: drm: found 1 CRTCs
+79:DEBUG from aquamarine ]: drm: found 1 planes
+80:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+81:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+82:DEBUG from aquamarine ]: drm: Plane: checking for modifiers
+83:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card0
+84:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card0
+85:DEBUG from aquamarine ]: drm: Scanning connector id 38
+86:DEBUG from aquamarine ]: drm: Initializing connector id 38
+87:DEBUG from aquamarine ]: drm: Connector gets name Unknown-1
+88:DEBUG from aquamarine ]: drm: Connector 38 connection state: 1
+89:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+90:DEBUG from aquamarine ]: drm: Skipping connector Unknown-1, has crtc 36 and is connected
+91:DEBUG from aquamarine ]: drm: slot 0 crtc 36 taken by Unknown-1, skipping
+92:DEBUG from aquamarine ]: drm: Connector Unknown-1 connected
+93:DEBUG from aquamarine ]: drm: Connecting connector Unknown-1, CRTC ID 36
+94:DEBUG from aquamarine ]: drm: Dumping detected modes:
+95:DEBUG from aquamarine ]: drm: Mode 0: 1280x800@60.00Hz  (preferred)
+96:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 338, y: 211] (mm)
+97:ERR from aquamarine ]: drm: failed to parse edid
+98:DEBUG from aquamarine ]: drm: Description    (Unknown-1)
+99:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+100:DEBUG from aquamarine ]: drm: Explicit sync unsupported
+101:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support CTM
+102:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support HDR (0)
+103:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support Colorspace (0)
+104:DEBUG from aquamarine ]: drm: gpu /dev/dri/card0 becomes primary drm
+108:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+109:ERR from aquamarine ]: Requested backend (wayland) could not start, enabling fallbacks
+110:ERR from aquamarine ]: Implementation wayland failed, erasing.
+112:DEBUG from aquamarine ]: drm: Connectors size2 1
+114:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+115:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+116:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+117:ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+118:ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+119:DEBUG from aquamarine ]: drm: onReady: connector 38
+120:DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+123:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+124:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+125:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+126:ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+127:ERR from aquamarine ]: drm: initMgpu: no renderer
+128:ERR from aquamarine ]: drm: Failed initializing mgpu
+134:DEBUG ]: Supported EGL global extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+135:ERR ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+136:ERR ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+138:WARN ]: EGL: EXT_platform_device or EGL_EXT_device_query not supported, using gbm
+142:DEBUG ]: EGL: EXT_create_context_robustness supported, requesting lose on reset
+144:DEBUG ]: Using: OpenGL ES 3.2 Mesa 26.0.8-1ubuntu0.3
+145:DEBUG ]: Vendor: Mesa
+WARN ]: No rule found for Unknown-1, trying to use the first.
+DEBUG ]: Applying monitor rule for Unknown-1
+DEBUG ]: Monitor Unknown-1: requested preferred, using preferred mode 1280x800@60.00Hz
+DEBUG ]: output Unknown-1 succeeded basic test on format DRM_FORMAT_XRGB8888
+DEBUG from aquamarine ]: drm: Modesetting Unknown-1 with 1280x800@60.00Hz
+DEBUG ]: Monitor Unknown-1 data dump: res 1280x800@60.00Hz, scale 1.00, transform 0, pos 0x0, 10b 0
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: No rule found for Unknown-1, trying to use the first.
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+DEBUG ]: arrangeMonitors: 1 to arrange
+DEBUG ]: arrangeMonitors: Unknown-1 auto [0, 0]
+DEBUG ]: arrangeMonitors: Unknown-1 xwayland [0, 0]
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Hyprctl: new connection from pid 1612
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790441980_479331105/hyprland.log (renderer, errors, config, exec)
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: Couldn't commit output named Unknown-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 1 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 2 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 3 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 4 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 5 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 6 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 7 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 8 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 9 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 10 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 11 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 12 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 13 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 14 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 15 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 16 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 17 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 18 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 19 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 20 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 21 which we don't have?!
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: Couldn't commit output named Unknown-1
+SOS-DIAG end ready
+[   18.829337] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
