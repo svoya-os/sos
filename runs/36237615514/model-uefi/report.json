@@ -1,0 +1,405 @@
+{
+ "plan": "jackson-local-model",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": false,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 18.32 desktop-ready'",
+   "status": "ok",
+   "seconds": 21.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.1
+  },
+  {
+   "n": 7,
+   "id": "network",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 10.13 network-online'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 9,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 10,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+f",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 11,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 12,
+   "id": "install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 149 characters",
+   "status": "ok",
+   "seconds": 7.7
+  },
+  {
+   "n": 13,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 60s",
+   "status": "ok",
+   "seconds": 60.0
+  },
+  {
+   "n": 14,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 15,
+   "id": "install",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[   93.349471] sos-vm-test[2216]: SOS-STEP model-ready'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 16,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 17,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 18,
+   "id": "install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 103 characters",
+   "status": "ok",
+   "seconds": 5.3
+  },
+  {
+   "n": 19,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 20,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 21,
+   "id": "install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+q",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 22,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 23,
+   "id": "ask",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+j",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 24,
+   "id": "ask",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 25,
+   "id": "ask",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 28 characters",
+   "status": "ok",
+   "seconds": 1.5
+  },
+  {
+   "n": 26,
+   "id": "ask",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 27,
+   "id": "ask",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.3
+  },
+  {
+   "n": 28,
+   "id": "ask",
+   "action": "wait_serial",
+   "optional": false,
+   "status": "failed",
+   "detail": "serial reported failure: '[  487.976852] jacksond[1399]: INFO jackson.engine: turn failed after 361149 ms: The model failed: local: no answer from 127.0.0.1:8080 (timeout)'",
+   "seconds": 355.0
+  },
+  {
+   "n": 29,
+   "id": "ask",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 30,
+   "id": "ask",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.3
+  },
+  {
+   "n": 31,
+   "id": "skill",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 48 characters",
+   "status": "ok",
+   "seconds": 2.5
+  },
+  {
+   "n": 32,
+   "id": "skill",
+   "action": "wait_serial",
+   "optional": false,
+   "status": "failed",
+   "detail": "serial reported failure: '[  858.715318] jacksond[1399]: INFO jackson.engine: turn failed after 360293 ms: The model failed: local: no answer from 127.0.0.1:8080 (timeout)'",
+   "seconds": 365.3
+  },
+  {
+   "n": 33,
+   "id": "skill",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 34,
+   "id": "skill",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.7
+  },
+  {
+   "n": 35,
+   "id": "russian",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 34 characters",
+   "status": "ok",
+   "seconds": 1.8
+  },
+  {
+   "n": 36,
+   "id": "russian",
+   "action": "wait_serial",
+   "optional": false,
+   "status": "failed",
+   "detail": "serial reported failure: '[ 1228.549651] jacksond[1399]: INFO jackson.engine: turn failed after 360296 ms: The model failed: local: no answer from 127.0.0.1:8080 (timeout)'",
+   "seconds": 364.9
+  },
+  {
+   "n": 37,
+   "id": "russian",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 38,
+   "id": "russian",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.3
+  },
+  {
+   "n": 39,
+   "id": "russian",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 40,
+   "id": "status",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 41,
+   "id": "status",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 42,
+   "id": "status",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 43 characters",
+   "status": "ok",
+   "seconds": 2.2
+  },
+  {
+   "n": 43,
+   "id": "status",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 44,
+   "id": "status",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.2
+  }
+ ]
+}
