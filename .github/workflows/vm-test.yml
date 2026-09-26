@@ -133,36 +133,22 @@ jobs:
           # everything readable without logging in: screenshots, the step report, the serial
           # diagnostics (SOS-MARK milestones, SOS-GRUB, SOS-DIAG blocks, errors) — also when a run
           # fails before its first screenshot
-          work=$(mktemp -d)
-          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
-          if ! git clone -q --depth 1 --branch ci-screens "$url" "$work" 2>/dev/null; then
-              git init -q -b ci-screens "$work"
-              git -C "$work" remote add origin "$url"
-          fi
           sub="$FW"
           [ -n "$LABEL" ] && sub="$LABEL-$FW"
-          dest="$work/runs/$RUN/$sub"
-          mkdir -p "$dest"
-          cp "$dir"/screens/*.png "$dest"/ 2>/dev/null || true
-          cp "$dir/report.md" "$dest/README.md" 2>/dev/null || true
-          cp "$dir/report.json" "$dest/report.json" 2>/dev/null || true
+          out=$(mktemp -d)
+          cp "$dir"/screens/*.png "$out"/ 2>/dev/null || true
+          cp "$dir/report.md" "$out/README.md" 2>/dev/null || true
+          cp "$dir/report.json" "$out/report.json" 2>/dev/null || true
           if [ -f "$dir/serial.log" ]; then
               awk '/SOS-DIAG begin/{d=1} d{print} /SOS-DIAG end/{d=0; next}
                    !d && /SOS-MARK|SOS-GRUB|[Ee]rror|ERROR|[Ff]ail|FAIL|[Ww]arn|segfault|core dump|Hyprland|hyprland|quickshell|greetd|svoya|sos-/' \
-                  "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' | tail -n 1500 >"$dest/diag.txt"
-              tail -n 200 "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$dest/serial-tail.txt"
+                  "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' | tail -n 1500 >"$out/diag.txt"
+              tail -n 200 "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$out/serial-tail.txt"
           fi
-          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" add -A
-          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" \
-              commit -q -m "screens: run $RUN ($sub)" || exit 0
-          for i in 1 2 3 4 5 6 7 8; do
-              git -C "$work" pull -q --rebase origin ci-screens 2>/dev/null || true
-              git -C "$work" push -q origin HEAD:ci-screens && break
-              sleep $((i * 4))
-          done
+          scripts/ci-publish.sh "$out" "runs/$RUN/$sub" "screens: run $RUN ($sub)"
           {
             echo "### Screenshots ($sub)"
-            for f in "$dest"/*.png; do
+            for f in "$out"/*.png; do
               [ -e "$f" ] || continue
               n=$(basename "$f")
               echo "![${n}](https://github.com/${REPO}/raw/ci-screens/runs/${RUN}/${sub}/${n})"
