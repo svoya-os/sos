@@ -39,6 +39,8 @@ PREFIX = {"ru": ["", "", "Джексон, ", "слушай, ", "эй, ", "ну "
 SUFFIX = {"ru": ["", "", " пожалуйста", " плиз", "!", " срочно", " ок?", "."],
           "en": ["", "", " please", "!", " now", " thanks", "."]}
 MIN_PER_CLASS = {"ru": 60, "en": 30}
+SMOOTH = 0.02                 # label smoothing: the right option's target is 0.98
+TEMP_MIN, TEMP_MAX = 0.5, 5.0  # the temperatures Laya applies (laya.common.clamp_temperature)
 
 
 def norm(text: str) -> str:
@@ -99,8 +101,12 @@ def build_items(tok, cfg: dict, rows) -> list[dict]:
         if len(markers) != k:
             raise SystemExit(f"options cut off for «{text}»: {len(markers)} of {k} markers")
         label = names.index(intent)
-        target = [0.1 / (k - 1)] * k      # a soft target: calibrated probabilities, not certainty
-        target[label] = 0.9
+        # Nearly one-hot. Run 36241333457 trained toward 0.9 and learnt to say «0.9» about everything:
+        # on new phrases every answer, right or wrong, came out near 0.72, and Jackson's thresholds
+        # (0.8 to read, 0.9 to change something) let 17 of 88 commands through. Calibration is the
+        # temperature's job (fitted below), sureness the model's.
+        target = [SMOOTH / (k - 1)] * k
+        target[label] = 1.0 - SMOOTH
         items.append({"ids": seq, "markers": markers, "qtype": QTYPES["choice"], "target": target,
                       "label": label, "lang": lang, "text": text})
     return items
@@ -128,25 +134,48 @@ def collate(items, pad_id):
 
 
 def fit_one_temp(sel) -> float:
+    """Temperature scaling: the one temperature that makes the logits' probabilities honest on the
+    held-out slice (negative log-likelihood of the right answer), within Laya's limits [0.5, 5]."""
     import torch
     if len(sel) < 10:
         return 1.0
     kmax = max(len(z) for z, _ in sel)
     Z = torch.full((len(sel), kmax), -1e4)
-    T = torch.zeros((len(sel), kmax))
-    for i, (z, t) in enumerate(sel):
+    y = torch.tensor([label for _, label in sel])
+    for i, (z, _) in enumerate(sel):
         Z[i, :len(z)] = torch.tensor(z)
-        T[i, :len(t)] = torch.tensor(t, dtype=torch.float32)
     log_t = torch.zeros(1, requires_grad=True)
     opt = torch.optim.LBFGS([log_t], lr=0.1, max_iter=100)
 
     def closure():
         opt.zero_grad()
-        loss = -(T * torch.log_softmax(Z / log_t.exp(), -1)).sum(-1).mean()
+        loss = torch.nn.functional.cross_entropy(Z / log_t.exp(), y)
         loss.backward()
         return loss
     opt.step(closure)
-    return float(torch.clamp(log_t.exp(), 0.1, 10.0).item())
+    return float(torch.clamp(log_t.exp(), TEMP_MIN, TEMP_MAX).item())
+
+
+def calibration_report(sel, temp: float) -> dict:
+    """What the thresholds of jackson/fastpath.py let through on the held-out slice at *temp*."""
+    import numpy as np
+    conf, right = [], []
+    for z, label in sel:
+        p = np.exp((z - z.max()) / temp)
+        p /= p.sum()
+        conf.append(float(p.max()))
+        right.append(int(p.argmax() == label))
+    conf, right = np.array(conf), np.array(right)
+    bins = np.minimum((conf * 10).astype(int), 9)
+    ece = sum(abs(right[bins == b].mean() - conf[bins == b].mean()) * (bins == b).mean()
+              for b in range(10) if (bins == b).any())
+    out = {"accuracy": round(float(right.mean()), 4), "mean_confidence": round(float(conf.mean()), 4),
+           "ece": round(float(ece), 4)}
+    for th in (0.8, 0.9):
+        sure = conf >= th
+        out[f"at_{th}"] = {"share": round(float(sure.mean()), 4),
+                           "accuracy": round(float(right[sure].mean()), 4) if sure.any() else None}
+    return out
 
 
 def main() -> int:
@@ -166,6 +195,21 @@ def main() -> int:
         per[(lang, intent)] = per.get((lang, intent), 0) + 1
     print(f"{len(rows)} training phrases:", ", ".join(f"{l}/{i} {n}" for (l, i), n in sorted(per.items())))
     if args.dry_run:
+        # the calibration code once on made-up logits (it runs only after an hour of training): the
+        # logits of an honest model, three times too sure of themselves — the fit must find ~3
+        import numpy as np
+        rng = np.random.default_rng(0)
+        sel = []
+        for _ in range(600):
+            z = rng.normal(0, 1.5, 15)
+            z[int(rng.integers(15))] += rng.uniform(0, 5)
+            p = np.exp(z - z.max())
+            sel.append((z * 3.0, int(rng.choice(15, p=p / p.sum()))))
+        temp = fit_one_temp(sel)
+        report = calibration_report(sel, temp)
+        print(f"dry run: temperature {temp:.3f}; {json.dumps(report)}")
+        if not (2.5 < temp < 3.5 and report["ece"] < calibration_report(sel, 1.0)["ece"]):
+            raise SystemExit("temperature scaling does not calibrate made-up logits")
         return 0
 
     import torch
@@ -253,10 +297,11 @@ def main() -> int:
             logits, _ = model(cb["input_ids"], cb["attention_mask"], cb["marker_pos"], cb["marker_mask"], cb["qtype"])
             for i, it in enumerate(chunk):
                 z = logits[i, :len(it["markers"])].float().numpy()
-                preds.append((z, it["target"]))
+                preds.append((z, it["label"]))
                 right += int(z.argmax() == it["label"])
     temp = fit_one_temp(preds)
-    print(f"calibration slice: {right}/{len(calib)} right; temperature {temp:.3f}")
+    report = calibration_report(preds, temp)
+    print(f"calibration slice: {right}/{len(calib)} right; temperature {temp:.3f}; {json.dumps(report)}")
 
     out = args.out
     if os.path.isdir(out):
@@ -274,6 +319,7 @@ def main() -> int:
     with open(os.path.join(out, "TRAINING.json"), "w") as f:
         json.dump({"base": "convaiinnovations/laya (multilingual)", "phrases": len(rows), "train": len(train),
                    "calibration": len(calib), "calibration_right": right, "temperature": temp,
+                   "calibration_report": report, "target": 1.0 - SMOOTH,
                    "epochs": args.epochs, "seconds": round(time.time() - t0)}, f, indent=2)
     print(f"saved {out} ({time.time() - t0:.0f} s)")
     return 0

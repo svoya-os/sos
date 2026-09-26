@@ -63,21 +63,10 @@ jobs:
         run: |
           set -uo pipefail
           [ -f dist/eval/results.md ] && cat dist/eval/results.md >>"$GITHUB_STEP_SUMMARY"
-          work=$(mktemp -d)
-          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
-          git clone -q --depth 1 --branch ci-screens "$url" "$work" || exit 0
-          dest="$work/evals/decide-ft/$RUN"
-          mkdir -p "$dest"
-          cp dist/eval/results.md dist/eval/results.json dist/laya-jackson/TRAINING.json "$dest/" 2>/dev/null || true
-          [ -f dist/train.log ] && tail -n 200 dist/train.log >"$dest/train-log-tail.txt"
-          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" add -A
-          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" \
-              commit -q -m "evals: laya fine-tune run $RUN" || exit 0
-          for i in 1 2 3 4 5; do
-              git -C "$work" pull -q --rebase origin ci-screens 2>/dev/null || true
-              git -C "$work" push -q origin HEAD:ci-screens && break
-              sleep $((i * 4))
-          done
+          out=$(mktemp -d)
+          cp dist/eval/results.md dist/eval/results.json dist/laya-jackson/TRAINING.json "$out/" 2>/dev/null || true
+          [ -f dist/train.log ] && tail -n 200 dist/train.log >"$out/train-log-tail.txt"
+          scripts/ci-publish.sh "$out" "evals/decide-ft/$RUN" "evals: laya fine-tune run $RUN"
 
       - name: Keep the model for a week
         if: success()
