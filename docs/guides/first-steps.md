@@ -110,6 +110,9 @@ sos modules remove comfyui    # remove it again (or: sos undo)
 
 The profile you picked in the wizard is only a starting set. Change it any time.
 
+Containers work out of the box: `docker run …` runs on Podman, the same commands without a
+daemon or root. For the real Docker Engine: `sudo apt install docker.io`.
+
 ## Models
 
 All tools share one model store, `/srv/ai`, so a model is downloaded once.

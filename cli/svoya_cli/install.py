@@ -149,6 +149,27 @@ def remove_app(ctx: Ctx, app: dict, args) -> int:
     return ctx.runner.stream(c)
 
 
+def _ensure_engine(ctx: Ctx, thing: str, args) -> int:
+    """A chat model from the ladder answers through llama.cpp (module llm-local): «установи модель»
+    must end with Jackson answering, so the engine comes first when it is missing. 0 = ready."""
+    from .models.suggest import resolve as ladder
+    if ladder(thing) is None or ctx.runner.which("llama-server"):
+        return 0
+    try:
+        from .modules import load_state
+        if "llm-local" in load_state(ctx)["modules"]:
+            return 0
+    except Exception:  # an unreadable state file: let `modules add` decide
+        pass
+    ui.note(tr("the model runs on llama.cpp: installing the module llm-local first",
+               "модель работает на llama.cpp: сначала ставлю модуль «Локальные модели» (llm-local)"))
+    from . import modules
+    ns = _ns(modules_cmd="add", modules=["llm-local"], options=[], profile=None, offline=False,
+             dry_run=ctx.dry_run, yes=args.yes, json=args.json, force=False, show_scripts=False,
+             no_snapshot=False, root_only=False)
+    return modules.main(ns, ctx)
+
+
 def main(args, ctx: Ctx) -> int:
     rc = 0
     verb = args.cmd
@@ -173,6 +194,10 @@ def main(args, ctx: Ctx) -> int:
         else:
             from .models import cli as models_cli
             if verb == "install":
+                engine = _ensure_engine(ctx, obj, args)
+                if engine:
+                    rc = engine
+                    continue
                 ns = _ns(models_cmd="pull", repo=obj, files=[], revision="main", include=[], ctx=8192, yes=args.yes,
                          accept_license=False, dry_run=ctx.dry_run, json=args.json)
             else:

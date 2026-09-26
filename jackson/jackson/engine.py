@@ -232,6 +232,10 @@ class Engine:
             self.app.spend.add(turn.cost, bool(turn.left_to))
         await self._emit(turn, {"type": "error", "message": message, "retryable": bool(retryable),
                                 "costEur": round(turn.cost, 6), "leftMachine": bool(turn.left_to), **extra})
+        # one line per turn in the journal (never the question): what `journalctl --user -u jacksond`
+        # and the VM tests read
+        log.info("turn failed after %d ms: %s", int((time.monotonic() - turn.started) * 1000),
+                 (extra.get("code") or message.splitlines()[0] if message else "")[:160])
         await self._state(turn, "idle", detail="error")
 
     async def _done(self, turn: Turn, cancelled: bool = False, route_model: str | None = None) -> None:
@@ -261,6 +265,10 @@ class Engine:
         if cancelled:
             event["cancelled"] = True
         await self._emit(turn, event)
+        log.info("turn done in %d ms: %s, %d+%d tokens%s%s", int(round(latency)),
+                 "/".join(x for x in (turn.provider, route_model or turn.model) if x) or "fast path",
+                 turn.in_tokens, turn.out_tokens, " (left the machine)" if left else "",
+                 " (cancelled)" if cancelled else "")
 
     # ------------------------------------------------------------------
     # fast path

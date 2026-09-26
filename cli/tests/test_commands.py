@@ -79,6 +79,22 @@ class InstallResolveTest(SandboxTest):
         self.assertEqual(install.main(args, ctx), 0)
         self.assertIn("flatpak install --user -y --noninteractive flathub org.gimp.GIMP", self.output())
 
+    def test_a_chat_model_brings_its_engine(self):
+        r = FakeRunner(dry_run=True)
+        ctx = self.sb.ctx(r, dry_run=True)
+        args = argparse.Namespace(cmd="install", things=["qwen3.5-4b:Q4_K_M"], yes=True, json=False)
+        self.assertEqual(install.main(args, ctx), 0)
+        out = self.output()
+        self.assertIn("installing the module llm-local first", out)
+        self.assertLess(out.index("llm-local"), out.index("unsloth/Qwen3.5-4B-GGUF"))  # the engine, then the model
+        self.assertIn(["apt-get", "install", "-y", "python3-venv", "git", "git-lfs", "aria2", "nvtop", "jq", "curl",
+                       "zstd", "llama.cpp"], r.calls)
+        r2 = FakeRunner(dry_run=True, available={"llama-server"})          # the engine is there already
+        self.buf.truncate(0)
+        self.buf.seek(0)
+        self.assertEqual(install.main(args, self.sb.ctx(r2, dry_run=True)), 0)
+        self.assertNotIn("llm-local", self.output())
+
     def test_unknown_suggests(self):
         ctx = self.sb.ctx(FakeRunner())
         err = io.StringIO()

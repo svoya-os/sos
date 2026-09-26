@@ -10,6 +10,8 @@ git-lfs
 jq
 sqlite3
 podman
+# `docker …` runs Podman (the same commands; /etc/containers/nodocker, from svoya-base, hides its notice)
+?podman-docker
 uidmap
 passt
 ?fuse-overlayfs

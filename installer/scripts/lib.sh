@@ -10,9 +10,12 @@ POOL_LIST=/etc/apt/sos-installer.list     # private APT config: the medium's poo
 POOL_PARTS=/etc/apt/sos-installer.parts.d
 POOL_LISTS=/var/lib/sos-installer/lists
 
-log()  { printf '[sos-installer] %s\n' "$*"; }
-warn() { printf '[sos-installer] warning: %s\n' "$*" >&2; }
-die()  { printf '[sos-installer] error: %s\n' "$*" >&2; exit 1; }
+# Calamares keeps what they print in its session log (copied to /var/log/installer on the target);
+# the live journal gets it too (`journalctl -t sos-installer`), which a failed install leaves behind.
+_journal() { command -v logger >/dev/null 2>&1 && logger -t sos-installer -p "$1" -- "$2" 2>/dev/null || true; }
+log()  { printf '[sos-installer] %s\n' "$*"; _journal user.info "$*"; }
+warn() { printf '[sos-installer] warning: %s\n' "$*" >&2; _journal user.warning "warning: $*"; }
+die()  { printf '[sos-installer] error: %s\n' "$*" >&2; _journal user.err "error: $*"; exit 1; }
 
 need_root_arg() {
     ROOT=${1:-}
