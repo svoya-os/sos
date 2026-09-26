@@ -1,0 +1,28 @@
+{
+  "about": "The lines Jackson says in every candidate voice (render.py), and the voices designed for him with Qwen3-TTS VoiceDesign: one per character in jackson/prompts. 'say' is how a line is spoken when it holds numbers; score.py compares what a speech recognizer hears with it.",
+  "reference": {
+    "ru": "Йоу! Я Джексон. Скажи, что сделать, — и считай, что уже сделано.",
+    "en": "Yo! I'm Jackson. Tell me what you need, and consider it done."
+  },
+  "lines": [
+    {"id": "ru-hello", "lang": "ru", "text": "Здарова! Я Джексон. Говори, что делаем."},
+    {"id": "ru-done", "lang": "ru", "text": "Готово: громкость 70%, встреча в 15:30, до неё два часа.",
+     "say": "Готово: громкость семьдесят процентов, встреча в пятнадцать тридцать, до неё два часа."},
+    {"id": "ru-check", "lang": "ru", "text": "Проверил систему: всё чисто. Процессор отдыхает, памяти свободно две трети. Можем работать."},
+    {"id": "en-hello", "lang": "en", "text": "Hey! I'm Jackson. What are we doing?"},
+    {"id": "en-done", "lang": "en", "text": "Done: volume at 70%, the meeting is at 3:30 PM, two hours from now.",
+     "say": "Done: volume at seventy percent, the meeting is at three thirty PM, two hours from now."},
+    {"id": "en-check", "lang": "en", "text": "System check complete: all clear. The processor is resting and two thirds of the memory are free. Let's get to work."}
+  ],
+  "quick_lines": ["ru-hello", "ru-check", "en-hello", "en-check"],
+  "designs": [
+    {"id": "kent", "name": "Кентафурик", "persona": "kent",
+     "instruct": "Male, about 25 years old, warm baritone with a bright, lively tone. Speaks casually and a little fast, relaxed and confident, with a playful, cheeky smile in the voice, like a friendly host of a late-night internet radio show. Clear diction."},
+    {"id": "calm", "name": "Спокойный помощник", "persona": "sysop",
+     "instruct": "Male, about 45 years old, low and smooth voice, calm and composed. Speaks at an even, measured pace with precise diction and a subtle dry wit, like an unflappable, polite personal assistant who has everything under control. Warm, never hurried."},
+    {"id": "dispatcher", "name": "Диспетчер", "persona": "dispatcher",
+     "instruct": "Male, about 35 years old, crisp mid-range voice, energetic and focused. Short, clipped phrases with clear professional diction, like a radio dispatcher reading out a status report. Confident and efficient."},
+    {"id": "pirate", "name": "Пиратское радио", "persona": "pirate",
+     "instruct": "Male, about 40 years old, husky low voice with a lazy, charismatic drawl, like a late-night pirate radio DJ. Relaxed and smoky, with a grin in the voice and a slow groove in the phrasing."}
+  ]
+}

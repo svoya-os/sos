@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: Apache-2.0
+# Render Jackson's lines in candidate voices (tests/voice-samples) on this runner's CPU: a Qwen3-TTS
+# voice designed for each of his characters, Supertonic 3, Vosk TTS, Silero and Kokoro. A speech
+# recognizer says what it hears in each sample. The samples (Opus) and the table go to the
+# ci-screens branch (evals/voice/<run>/) so that the voice can be chosen by ear; nothing here ships.
+name: Voice samples
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tests/voice-samples/**"
+      - ".github/workflows/voice-samples.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: voice-samples-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    permissions:
+      contents: write   # the samples go to the ci-screens branch (never to main)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg sox >/dev/null
+          nproc; free -g | head -n 2; python3 --version
+
+      - name: ONNX voices (Supertonic 3, Vosk TTS, Kokoro) and the recognizer
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/onnx"
+          . "$RUNNER_TEMP/onnx/bin/activate"
+          pip install --quiet "onnx-asr[cpu,hub]" kokoro-onnx vosk-tts soundfile librosa pyyaml huggingface_hub
+          git clone --quiet https://github.com/supertone-oss-archive/supertonic.git "$RUNNER_TEMP/supertonic"
+          git -C "$RUNNER_TEMP/supertonic" log -1 --format='supertonic %h %cs'
+          hf download supertone-oss-archive/supertonic-3 --revision aafc6e32416a594460b32413efc49d7fe4ce6d46 \
+            --local-dir "$RUNNER_TEMP/supertonic/assets" >/dev/null
+          SUPERTONIC_DIR="$RUNNER_TEMP/supertonic" \
+            python3 tests/voice-samples/render.py supertonic vosk kokoro --out dist/voice
+
+      - name: PyTorch voices (Silero, Qwen3-TTS)
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/torch"
+          . "$RUNNER_TEMP/torch/bin/activate"
+          pip install --quiet --index-url https://download.pytorch.org/whl/cpu torch torchaudio
+          pip install --quiet qwen-tts silero-stress soundfile
+          python3 tests/voice-samples/render.py silero qwen --out dist/voice
+
+      - name: What a recognizer hears
+        if: always()
+        run: |
+          set -euo pipefail
+          . "$RUNNER_TEMP/onnx/bin/activate"
+          python3 tests/voice-samples/score.py dist/voice
+
+      - name: Publish
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          [ -f dist/voice/results.md ] && cat dist/voice/results.md >>"$GITHUB_STEP_SUMMARY"
+          out=$(mktemp -d)
+          if [ -d dist/voice ]; then
+            (cd dist/voice && find . -name '*.wav' -print0) | while IFS= read -r -d '' f; do
+              mkdir -p "$out/$(dirname "$f")"
+              ffmpeg -nostdin -loglevel error -y -i "dist/voice/$f" -c:a libopus -b:a 48k "$out/${f%.wav}.ogg"
+            done
+            cp dist/voice/results.md dist/voice/results.json dist/voice/samples.jsonl "$out/" 2>/dev/null || true
+          fi
+          scripts/ci-publish.sh "$out" "evals/voice/$RUN" "evals: voice samples run $RUN"
