@@ -50,8 +50,10 @@ Work towards v0.1 «Первый сигнал».
 - Wired Ethernet works out of the box: NetworkManager manages every network device, as on Ubuntu
   Desktop (a computer on a cable, or a virtual machine, stayed offline).
 - The console welcome, `/etc/issue` and `lsb_release` name SOS again: the build lost these files.
-- Steam starts: `sos install steam` adds an AppArmor profile that lets Steam's runtime create user
-  namespaces (it stopped with «Steam now requires user namespaces to be enabled»).
+- In the live session Steam, Flatpak apps and Jackson's sandbox start: no AppArmor profile is
+  loaded there, and Ubuntu's restriction of user namespaces denied every one («Steam now
+  requires user namespaces to be enabled»). Installed systems keep the restriction and Ubuntu's
+  profiles, which allow these programs.
 - Jackson no longer runs half of a request as a quick command: «скинь скриншот в телеграм» or
   «запиши видео с экрана» is not just a screenshot, the price of a battery is not its charge; such
   requests go to the model.

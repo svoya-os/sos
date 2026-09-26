@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-import re
 import subprocess
 
 from svoya_cli import modules as M
@@ -67,35 +66,21 @@ class CatalogTest(SandboxTest):
                         "sv_apt_available() { return 1; }\n"
                         "sv_apt_track_install() { sv_log apt \"$@\"; }\n"
                         "sv_flatpak_install() { sv_log flatpak \"$@\"; }\n"
-                        "sv_have() { command -v \"$1\" >/dev/null 2>&1; }\n"
-                        "sv_write() { sv_log write \"$1\"; cat >/dev/null; }\n"
                         "sv_say() { :; }\n")
             stubs = {"dpkg": "exit 0",                                      # no foreign architecture yet
                      "dpkg-query": "echo 'dpkg-query: no packages found matching' >&2; exit 1",
-                     "apt-get": "exit 0", "aa-enabled": "echo Yes", "apparmor_parser": "exit 0"}
+                     "apt-get": "exit 0"}
             for name, body in stubs.items():
                 path = os.path.join(bin_, name)
                 with open(path, "w") as f:
                     f.write("#!/bin/sh\n" + body + "\n")
                 os.chmod(path, 0o755)
-            env = {"PATH": bin_ + ":/usr/bin:/bin", "SVOYA_LIB": lib, "SVOYA_MODULE_DIR": str(MODDIR / "gaming")}
+            env = {"PATH": bin_ + ":/usr/bin:/bin", "SVOYA_LIB": lib}
             r = subprocess.run(["bash", str(MODDIR / "gaming/install.sh")], capture_output=True, text=True, env=env)
             self.assertEqual(r.returncode, 0, r.stderr)
             calls = open(log).read()
             self.assertIn("run dpkg --add-architecture i386", calls)
             self.assertIn("apt steam-installer", calls)
-            # ISO #12: «Steam now requires user namespaces to be enabled» — the profile that allows them
-            self.assertIn("write /etc/apparmor.d/sos-steam", calls)
-            self.assertIn("run apparmor_parser -r -W /etc/apparmor.d/sos-steam", calls)
-
-    def test_steam_apparmor_profile_grants_user_namespaces_to_steam_only(self):
-        text = (MODDIR / "gaming/files/sos-steam.apparmor").read_text()
-        profiles = re.findall(r"^profile (\S+) (\S+) flags=\(unconfined\) \{\n  userns,\n", text, re.M)
-        self.assertEqual([name for name, _ in profiles], ["sos-steam", "sos-steam-runtime"])
-        self.assertIn(".steam/debian-installation", profiles[0][1])        # Debian's steam-installer
-        self.assertIn(".local/share/Steam", profiles[0][1])                # Valve's package
-        self.assertIn("steamapps/common/SteamLinuxRuntime_", profiles[1][1])
-        self.assertEqual(text.count("userns,"), 2)
 
     def test_notes_module_is_obsidian_on_request(self):
         cat = M.load_catalog(MODDIR)
