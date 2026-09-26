@@ -1,6 +1,6 @@
 {
   "name": "jackson-local-model",
-  "description": "Jackson with a real local model, the way a user gets one: `sos install` of the model `sos models suggest` picks (llama.cpp, the llm-local module, comes first by itself), then questions only a model can answer — Jackson starts the model server by itself. The live session keeps the model in RAM, hence the bigger VM. Every answer leaves one 'turn done' line in the journal (jacksond), which the serial console carries. The runner's two CPU cores read Jackson's prompt at some 8 tokens a second (ISO #13), so the bot gives the local model 15 minutes an answer (/etc/svoya/jackson.toml); the unchanged beginning of the prompt is read once.",
+  "description": "Jackson with a real local model, the way a user gets one: `sos install` of the model `sos models suggest` picks (llama.cpp, the llm-local module, comes first by itself), then questions only a model can answer — Jackson starts the model server by itself. The live session keeps the model in RAM, hence the bigger VM. Every answer leaves one 'turn done' line in the journal (jacksond), which the serial console carries. The runner's two CPU cores read Jackson's prompt at some 8 tokens a second (ISO #13), six minutes for the first answer: llama.cpp reports every batch it has read, the panel shows «читаю запрос… N%» (05b) and Jackson's default wait (five minutes of silence) holds, so the bot runs with the settings a user has; the unchanged beginning of the prompt is read once.",
   "vm": {
     "memory_mib": 12288,
     "smp": 4,
@@ -29,8 +29,6 @@
     {"id": "install", "action": "type", "text": "clear; sos models list; ls /srv/ai/views/llama.cpp; systemctl --user cat svoya-llm.service | head -n 3\n", "continue_on_failure": true},
     {"id": "install", "action": "sleep", "seconds": 6},
     {"id": "install", "action": "screenshot", "name": "04-models-list", "continue_on_failure": true},
-    {"id": "install", "action": "type", "text": "printf '[providers.local]\\ntimeout = 900\\n' | sudo tee /etc/svoya/jackson.toml >/dev/null && systemctl --user restart jacksond\n"},
-    {"id": "install", "action": "sleep", "seconds": 6},
     {"id": "install", "action": "key", "keys": ["meta_l", "q"], "hold_ms": 120, "continue_on_failure": true},
     {"id": "install", "action": "sleep", "seconds": 2},
 
@@ -39,6 +37,8 @@
     {"id": "ask", "action": "type", "text": "write a haiku about the sea\n", "continue_on_failure": true},
     {"id": "ask", "action": "sleep", "seconds": 8},
     {"id": "ask", "action": "screenshot", "name": "05-jackson-starts-the-model", "continue_on_failure": true},
+    {"id": "ask", "action": "sleep", "seconds": 150},
+    {"id": "ask", "action": "screenshot", "name": "05b-reading-the-request", "continue_on_failure": true},
     {"id": "ask", "action": "wait_serial", "pattern": "jackson\\.engine: turn done", "fail_pattern": "jackson\\.engine: turn failed", "timeout_s": 1200, "continue_on_failure": true},
     {"id": "ask", "action": "sleep", "seconds": 2},
     {"id": "ask", "action": "screenshot", "name": "06-haiku", "continue_on_failure": true},

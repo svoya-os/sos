@@ -115,6 +115,11 @@ Singleton {
     readonly property string jacksonConnecting: root.t("подключение…", "connecting…")
     readonly property string jacksonListening: root.t("слушаю…", "listening…")
     readonly property string jacksonThinking: root.t("думаю…", "thinking…")
+    // a local model reads the request before it answers: minutes on a CPU
+    function jacksonReading(done, total) {
+        const pct = total > 0 ? Math.max(0, Math.min(100, Math.floor(done * 100 / total))) : 0;
+        return root.t("читаю запрос… ", "reading the request… ") + pct + "%";
+    }
     readonly property string local: root.t("локально", "local")
     readonly property string cloud: root.t("облако", "cloud")
     readonly property string refine: root.t("уточнить", "refine")

@@ -12,8 +12,11 @@ import time
 import uuid
 from typing import Any, Iterator
 
-from .base import (ChatRequest, CancelToken, End, Event, Health, Provider, ProviderError, TextDelta,
+from .base import (ChatRequest, CancelToken, End, Event, Health, Progress, Provider, ProviderError, TextDelta,
                    ThinkFilter, ToolCall, Usage, chars_to_tokens)
+
+# what a server may not know: the request goes again without these when it answers 400 naming one
+OPTIONAL = ("stream_options", "chat_template_kwargs", "return_progress")
 from .http import get_json, iter_sse, post_sse
 
 
@@ -73,6 +76,9 @@ class OpenAIProvider(Provider):
             payload["temperature"] = req.temperature
         if not self.cfg.thinking:
             payload["chat_template_kwargs"] = {"enable_thinking": False}
+        if self.cfg.local:
+            # llama.cpp says how far it has read the prompt (minutes on a CPU); others ignore it
+            payload["return_progress"] = True
         return payload
 
     # ------------------------------------------------------------------
@@ -85,12 +91,11 @@ class OpenAIProvider(Provider):
                                   connect_timeout=self.cfg.connect_timeout, read_timeout=self.cfg.timeout,
                                   use_proxy=not self.cfg.local, cancel=cancel, provider=self.name)
         except ProviderError as exc:
-            # a server that knows neither usage in the stream nor chat template options: without them
-            if exc.kind != "bad_request" or not any(k in exc.message and k in payload
-                                                    for k in ("stream_options", "chat_template_kwargs")):
+            # a server that knows neither usage in the stream nor template options nor progress: without them
+            if exc.kind != "bad_request" or not any(k in exc.message and k in payload for k in OPTIONAL):
                 raise
-            payload.pop("stream_options", None)
-            payload.pop("chat_template_kwargs", None)
+            for key in OPTIONAL:
+                payload.pop(key, None)
             conn, resp = post_sse(url, payload, self._headers(),
                                   connect_timeout=self.cfg.connect_timeout, read_timeout=self.cfg.timeout,
                                   use_proxy=not self.cfg.local, cancel=cancel, provider=self.name)
@@ -124,6 +129,13 @@ class OpenAIProvider(Provider):
             timings = chunk.get("timings")
             if usage is None and isinstance(timings, dict) and timings.get("predicted_n"):
                 usage = Usage(int(timings.get("prompt_n") or 0), int(timings.get("predicted_n") or 0))
+            progress = chunk.get("prompt_progress")
+            if isinstance(progress, dict):
+                try:
+                    yield Progress(int(progress.get("processed") or 0), int(progress.get("total") or 0),
+                                   int(progress.get("cache") or 0), float(progress.get("time_ms") or 0))
+                except (TypeError, ValueError):
+                    pass
             for choice in chunk.get("choices") or []:
                 if not isinstance(choice, dict):
                     continue

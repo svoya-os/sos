@@ -7,7 +7,8 @@ import unittest
 
 from jackson.config import ProviderConfig, build_config, DEFAULTS
 from jackson.providers import (AnthropicProvider, CancelToken, Cancelled, ChatRequest, End, GeminiProvider,
-                               OpenAIProvider, ProviderError, TextDelta, ToolCall, ToolSpec, Usage, cost_eur)
+                               OpenAIProvider, Progress, ProviderError, TextDelta, ToolCall, ToolSpec, Usage,
+                               cost_eur)
 from jackson.providers.base import ThinkFilter
 from jackson.providers.gemini import sanitize_schema
 from tests.fakes import FakeAnthropic, FakeGemini, FakeOpenAI
@@ -59,30 +60,77 @@ class OpenAICompatibleTest(unittest.TestCase):
             collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
             self.assertEqual(srv.requests[0]["chat_template_kwargs"], {"enable_thinking": False})
 
+    def _refusing(self, srv, key: str, message: str) -> None:
+        """Make *srv* answer 400 to a request that carries *key*, as a server that does not know it."""
+        original = srv._handler()
+
+        class Refusing(original):  # type: ignore[misc, valid-type]
+            def do_POST(self) -> None:  # noqa: N802
+                length = int(self.headers.get("Content-Length") or 0)
+                raw = self.rfile.read(length)
+                body = json.loads(raw or b"{}")
+                if key in body:
+                    srv.requests.append(body)
+                    self._json(400, {"error": {"message": message, "type": "invalid_request_error"}})
+                    return
+                self.rfile = io.BytesIO(raw)
+                self.headers.replace_header("Content-Length", str(len(raw)))
+                super().do_POST()
+
+        srv.httpd.RequestHandlerClass = Refusing
+
     def test_a_server_without_template_options_is_asked_again_without_them(self) -> None:
         with FakeOpenAI([{"text": "ok"}]) as srv:
-            original = srv._handler()
-
-            class Refusing(original):  # type: ignore[misc, valid-type]
-                def do_POST(self) -> None:  # noqa: N802
-                    length = int(self.headers.get("Content-Length") or 0)
-                    raw = self.rfile.read(length)
-                    body = json.loads(raw or b"{}")
-                    if "chat_template_kwargs" in body:
-                        srv.requests.append(body)
-                        self._json(400, {"error": {"message": "unknown field chat_template_kwargs",
-                                                   "type": "invalid_request_error"}})
-                        return
-                    self.rfile = io.BytesIO(raw)
-                    self.headers.replace_header("Content-Length", str(len(raw)))
-                    super().do_POST()
-
-            srv.httpd.RequestHandlerClass = Refusing
+            self._refusing(srv, "chat_template_kwargs", "unknown field chat_template_kwargs")
             prov = OpenAIProvider(ProviderConfig("local", base_url=f"http://127.0.0.1:{srv.port}/v1", local=True,
                                                  thinking=False))
             text, _calls, _usage, _end = collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
         self.assertEqual(text, "ok")
         self.assertEqual(["chat_template_kwargs" in r for r in srv.requests], [True, False])
+
+    def test_a_local_server_says_how_far_it_has_read_the_prompt(self) -> None:
+        # ISO #15: the runner's CPU read Jackson's 2,949-token prompt for six and a half minutes with
+        # nothing on the wire. llama.cpp reports every batch it has read when asked (return_progress).
+        script = [{"text": "ok", "progress": [(2000, 3000, 2000), (2512, 3000, 2000), (3000, 3000, 2000)]}]
+        with FakeOpenAI(script) as srv:
+            prov = OpenAIProvider(ProviderConfig("local", base_url=f"http://127.0.0.1:{srv.port}/v1", local=True))
+            events = list(prov.stream(ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS),
+                                      CancelToken()))
+            body = srv.requests[0]
+        self.assertTrue(body["return_progress"])
+        progress = [e for e in events if isinstance(e, Progress)]
+        # the 2,000 tokens reused from the cache are not read again: 0 → 512 → 1,000 of 1,000
+        self.assertEqual([(p.done, p.todo) for p in progress], [(0, 1000), (512, 1000), (1000, 1000)])
+        self.assertEqual(progress[1].ms, 40 * 512)
+        first_text = next(i for i, e in enumerate(events) if isinstance(e, TextDelta))
+        self.assertLess(events.index(progress[-1]), first_text)
+        self.assertEqual("".join(e.text for e in events if isinstance(e, TextDelta)), "ok")
+
+    def test_cloud_providers_are_not_asked_for_progress(self) -> None:
+        with FakeOpenAI([{"text": "ok"}]) as srv:
+            prov = OpenAIProvider(ProviderConfig("deepseek", base_url=f"http://127.0.0.1:{srv.port}/v1"))
+            collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
+        self.assertNotIn("return_progress", srv.requests[0])
+
+    def test_a_server_that_does_not_know_progress_is_asked_again_without_it(self) -> None:
+        with FakeOpenAI([{"text": "ok"}]) as srv:
+            self._refusing(srv, "return_progress", "Unrecognized request argument supplied: return_progress")
+            prov = OpenAIProvider(ProviderConfig("local", base_url=f"http://127.0.0.1:{srv.port}/v1", local=True))
+            text, _calls, _usage, _end = collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
+        self.assertEqual(text, "ok")
+        self.assertEqual(["return_progress" in r for r in srv.requests], [True, False])
+
+    def test_progress_keeps_a_slow_prompt_from_timing_out(self) -> None:
+        # the read timeout is per read: a server that reads for longer than it, batch by batch, is fine
+        script = [{"text": "ok", "progress": [(0, 2048, 0), (512, 2048, 0), (1024, 2048, 0), (1536, 2048, 0),
+                                               (2048, 2048, 0)]}]
+        with FakeOpenAI(script, delay=0.15) as srv:
+            prov = OpenAIProvider(ProviderConfig("local", base_url=f"http://127.0.0.1:{srv.port}/v1", local=True,
+                                                 timeout=0.5))
+            t0 = time.monotonic()
+            text, _calls, _usage, _end = collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
+        self.assertEqual(text, "ok")
+        self.assertGreater(time.monotonic() - t0, 0.5)
 
     def test_replays_tool_calls_and_results(self) -> None:
         with FakeOpenAI([{"text": "ok"}]) as srv:

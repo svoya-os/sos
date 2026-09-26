@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from ..config import Config, ProviderConfig
 from .anthropic import AnthropicProvider
-from .base import (CancelToken, Cancelled, ChatRequest, End, Event, Health, Provider, ProviderError,
+from .base import (CancelToken, Cancelled, ChatRequest, End, Event, Health, Progress, Provider, ProviderError,
                    TextDelta, ToolCall, ToolSpec, Usage)
 from .gemini import GeminiProvider
 from .openai_compat import OpenAIProvider
@@ -18,7 +18,7 @@ KINDS: dict[str, type[Provider]] = {
 
 __all__ = [
     "AnthropicProvider", "CancelToken", "Cancelled", "ChatRequest", "End", "Event", "GeminiProvider",
-    "Health", "KINDS", "OpenAIProvider", "Provider", "ProviderError", "TextDelta", "ToolCall", "ToolSpec",
+    "Health", "KINDS", "OpenAIProvider", "Progress", "Provider", "ProviderError", "TextDelta", "ToolCall", "ToolSpec",
     "Usage", "make_provider", "price_for", "cost_eur",
 ]
 

@@ -25,8 +25,8 @@ from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
 from .persona import context_blocks, context_note, mood_for, system_prompt
-from .providers import (CancelToken, Cancelled, ChatRequest, End, Provider, ProviderError, TextDelta, ToolCall,
-                        Usage, cost_eur)
+from .providers import (CancelToken, Cancelled, ChatRequest, End, Progress, Provider, ProviderError, TextDelta,
+                        ToolCall, Usage, cost_eur)
 from .router import Candidate, RouteDecision, RouteError
 from .tools.base import Tool, ToolContext, ToolResult, UndoSpec, validate_args
 
@@ -594,6 +594,10 @@ class Engine:
                     usage = item
                 elif isinstance(item, End):
                     native = item.native
+                elif isinstance(item, Progress) and not started and item.todo:
+                    # a local model reading the prompt: minutes on a CPU, the client shows how far it got
+                    await self._emit(turn, {"type": "progress", "stage": "prompt", "done": item.done,
+                                            "total": item.todo, "ms": int(item.ms)})
         except asyncio.CancelledError:
             cancel.cancel()
             raise

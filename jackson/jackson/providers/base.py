@@ -53,7 +53,29 @@ class End:
     native: dict[str, Any] | None = None
 
 
-Event = TextDelta | ToolCall | Usage | End
+@dataclass
+class Progress:
+    """How far a local server has read the prompt before the answer starts (llama.cpp's ``prompt_progress``).
+
+    A CPU reads a few thousand tokens for minutes; these events say how far it got, and keep the
+    connection busy meanwhile."""
+    processed: int          # prompt tokens handled so far, those reused from the cache included
+    total: int              # tokens in the whole prompt
+    cached: int = 0         # tokens reused from the cache: not read again
+    ms: float = 0.0         # time spent reading so far
+
+    @property
+    def done(self) -> int:
+        """Tokens read this time."""
+        return max(0, min(self.processed, self.total) - self.cached)
+
+    @property
+    def todo(self) -> int:
+        """Tokens to read this time."""
+        return max(0, self.total - self.cached)
+
+
+Event = TextDelta | ToolCall | Usage | End | Progress
 
 
 # ---------------------------------------------------------------------------

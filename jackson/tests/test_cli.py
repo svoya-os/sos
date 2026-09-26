@@ -86,6 +86,36 @@ class CliTest(unittest.TestCase):
         self.assertEqual(res.returncode, 0, res.stderr)
         self.assertEqual(asked(self.srv.requests[-1]["messages"][-1]["content"]), "вопрос целиком из пайпа")
 
+    def test_reading_progress_is_one_line_that_the_answer_replaces(self):
+        import asyncio
+        import io
+        from jackson.cli import Renderer
+
+        class Conn:
+            def __init__(self, events):
+                self.events = list(events)
+
+            async def recv(self):
+                return self.events.pop(0) if self.events else None
+
+        events = [{"type": "progress", "id": "t1", "done": 0, "total": 1000},
+                  {"type": "progress", "id": "t1", "done": 512, "total": 1000},
+                  {"type": "token", "id": "t1", "text": "Готово."},
+                  {"type": "done", "id": "t1", "latencyMs": 1200, "usage": {"inTokens": 1000, "outTokens": 3}}]
+        out, err = io.StringIO(), io.StringIO()
+        r = Renderer(Conn(events), "t1", "ru", out, err, False, self.paths)
+        r.err_tty = True     # a terminal
+        self.assertEqual(asyncio.run(r.run()), 0)
+        self.assertEqual(out.getvalue(), "Готово.\n")
+        shown = err.getvalue()
+        self.assertIn("\r\x1b[Kчитаю запрос… 0%\r\x1b[Kчитаю запрос… 51%\r\x1b[K", shown)   # cleared before the answer
+        self.assertTrue(shown.split("\r\x1b[K")[-1].endswith("данные не покидали компьютер\n"))
+        # piped: no progress line at all
+        err2 = io.StringIO()
+        r2 = Renderer(Conn(events), "t1", "ru", io.StringIO(), err2, False, self.paths)
+        asyncio.run(r2.run())
+        self.assertNotIn("читаю", err2.getvalue())
+
     def test_json_mode_prints_protocol_events(self):
         res = self.run_cli("--json", "расскажи о себе")
         events = [json.loads(line) for line in res.stdout.splitlines()]

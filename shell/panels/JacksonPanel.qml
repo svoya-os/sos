@@ -492,8 +492,12 @@ PanelFrame {
                     text: {
                         const r = Jackson.result;
                         if (!r) {
-                            if (Jackson.busy)
-                                return Jackson.mode === "listening" ? Strings.jacksonListening : Strings.jacksonThinking;
+                            if (Jackson.busy) {
+                                if (Jackson.mode === "listening")
+                                    return Strings.jacksonListening;
+                                const p = Jackson.progress;
+                                return p ? Strings.jacksonReading(p.done, p.total) : Strings.jacksonThinking;
+                            }
                             return "";
                         }
                         const parts = [];

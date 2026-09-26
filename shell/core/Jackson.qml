@@ -97,6 +97,7 @@ Singleton {
     property var decisions: ({})    // callId -> "once" | "always-project" | "deny"
     property var result: null       // the `done` event
     property var error: null        // {message, retryable, code}: code "no_local_model" on a fresh system
+    property var progress: null     // {done, total}: how far a local model has read the request (minutes on a CPU)
     property bool busy: false
     property var suggestions: []    // optional done.suggestions: [{id, label, primary, prompt}]
     property string screenshot: ""  // path attached to the next ask
@@ -213,6 +214,7 @@ Singleton {
         root.decisions = ({});
         root.result = null;
         root.error = null;
+        root.progress = null;
         root.route = null;
         root.suggestions = [];
     }
@@ -302,9 +304,15 @@ Singleton {
             if (!foreign)
                 root.route = root.normalizeRoute(msg);
             break;
+        case "progress":
+            if (!foreign && Number(msg.total) > 0)
+                root.progress = { done: Number(msg.done) || 0, total: Number(msg.total) };
+            break;
         case "token":
-            if (!foreign && typeof msg.text === "string")
+            if (!foreign && typeof msg.text === "string") {
                 root.answer += msg.text;
+                root.progress = null;
+            }
             break;
         case "tool":
             if (!foreign) {
@@ -329,6 +337,7 @@ Singleton {
             if (!foreign) {
                 root.result = msg;
                 root.busy = false;
+                root.progress = null;
                 root.listening = false;
                 root.approvals = [];
                 root.suggestions = Array.isArray(msg.suggestions) ? msg.suggestions : [];
@@ -343,6 +352,7 @@ Singleton {
             if (!foreign) {
                 root.error = { message: msg.message || "", retryable: msg.retryable === true, code: msg.code || "" };
                 root.busy = false;
+                root.progress = null;
                 root.listening = false;
                 root.daemonState = "idle";
             }

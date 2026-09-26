@@ -86,6 +86,7 @@ Jackson → client:
 | `welcome` | `version`, `models`, `route` (*mode, policy, offline, model, provider, local, reason*), *`protocol`, `persona` {id, name, humor}, `avatar` (full avatar.json object), `name`, `ai` {enabled, off}, `capabilities`, `client`, `lang`* |
 | `route` | `model`, `provider`, `local`, `reason`, *`task`, `label`* |
 | `token` | `text` |
+| *`progress`* | *`stage` (`prompt`), `done`, `total`, `ms`: how many tokens of the request a local model has read so far and has to read (without those it reuses from its cache), before the first `token`* |
 | `tool` | `callId`, `name`, `args`, `tier`, `state`, `summary`, *`verified`, `actions`* |
 | `approval` | `callId`, `name`, `preview`, `tier`, *`decisions` (allowed answers), `reasons`, `args`* |
 | `done` | `usage`, `costEur`, `latencyMs`, `leftMachine`, `actions`, *`leftTo`, `costEstimated`, `model`, `provider`, `meta` (ready-made footer), `cancelled`, `undone`* |

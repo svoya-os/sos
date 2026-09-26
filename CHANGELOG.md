@@ -35,6 +35,9 @@ Work towards v0.1 «Первый сигнал».
 - Licensing recorded per file with [REUSE.toml](REUSE.toml): Apache-2.0 for code, CC BY-SA 4.0
   for artwork and documentation, fonts under OFL-1.1 and MIT.
 - Issue forms for bugs, feature requests and hardware reports; pull request template.
+- While a local model reads a request before it answers (minutes on a computer without a graphics
+  card), the Jackson panel and `j` show how far it got: «читаю запрос… 45%». A long read no longer
+  counts as a model that stopped answering.
 
 ### Changed
 

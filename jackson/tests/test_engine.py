@@ -231,6 +231,19 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(len([r for r in srv.requests if r.get("stream")]), 1)
         self.assertEqual(kinds(events)[-1], "error")
 
+    def test_a_local_model_reading_the_request_says_how_far_it_got(self):
+        # ISO #15: minutes of «думаю…» on a CPU; the panel and `j` now show «читаю запрос… 45%»
+        app, _srv = self.app_with([{"text": "Готово.",
+                                    "progress": [(900, 1900, 900), (1412, 1900, 900), (1900, 1900, 900)]}])
+        events = asyncio.run(run_turn(app, "расскажи о себе"))
+        progress = [e for e in events if e["type"] == "progress"]
+        self.assertEqual([(e["stage"], e["done"], e["total"]) for e in progress],
+                         [("prompt", 0, 1000), ("prompt", 512, 1000), ("prompt", 1000, 1000)])
+        self.assertTrue(all(e["id"] == "t-1" for e in progress))
+        order = kinds(events)
+        self.assertLess(order.index("progress"), order.index("token"))
+        self.assertEqual(order[-1], "done")
+
     def test_local_model_that_is_not_running_says_how_to_start_it(self):
         from jackson.providers import ProviderError
         app = make_app(self.root, "http://127.0.0.1:9/v1")

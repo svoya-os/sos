@@ -121,6 +121,7 @@ Daemon → client (events, all carry `id` of the turn when relevant):
 | `welcome` | `version`, `models`, `route` |
 | `route` | `model`, `provider`, `local` (bool), `reason` |
 | `token` | `text` (streamed answer chunk, Markdown) |
+| `progress` | `stage` (`prompt`), `done`, `total`: how far a local model has read the request before it answers (additive) |
 | `tool` | `callId`, `name`, `args`, `tier` (0–4), `state` (`running`/`done`/`failed`), `summary` |
 | `approval` | `callId`, `name`, `preview` (exact action text/diff), `tier` |
 | `done` | `usage` (`inTokens`,`outTokens`), `costEur`, `latencyMs`, `leftMachine` (bool), `actions` (list of undoable action ids) |

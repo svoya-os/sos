@@ -154,6 +154,13 @@ class FakeOpenAI(_Server):
             events.append(f"data: {json.dumps(obj, ensure_ascii=False)}\n\n")
 
         base = {"id": "chatcmpl-1", "object": "chat.completion.chunk", "model": body.get("model")}
+        if body.get("return_progress"):
+            # llama.cpp reading the prompt: [(processed, total, cached), …] — processed counts the cached tokens
+            for processed, total, cached in reply.get("progress") or []:
+                data({**base, "choices": [{"finish_reason": None, "index": 0,
+                                           "delta": {"role": "assistant", "content": None}}],
+                      "prompt_progress": {"total": total, "cache": cached, "processed": processed,
+                                          "time_ms": 40 * (processed - cached)}})
         data({**base, "choices": [{"index": 0, "delta": {"role": "assistant"}}]})
         for piece in self.pieces(reply.get("text", "")) if reply.get("text") else []:
             data({**base, "choices": [{"index": 0, "delta": {"content": piece}}]})

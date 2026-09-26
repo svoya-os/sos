@@ -105,6 +105,13 @@ def my_name(lang: str, paths: Paths | None = None) -> str:
 # ---------------------------------------------------------------------------
 # asking
 
+def _isatty(stream: Any) -> bool:
+    try:
+        return os.isatty(stream.fileno())
+    except (AttributeError, OSError, ValueError):
+        return False
+
+
 class Renderer:
     def __init__(self, conn: Any, turn_id: str, lang: str, out: TextIO, err: TextIO, json_mode: bool,
                  paths: Paths) -> None:
@@ -118,13 +125,9 @@ class Renderer:
         self.se = Style(err, paths)
         self.mid_line = False
         self.route_local = True
-        self.shared_tty = self._same_tty()
-
-    def _same_tty(self) -> bool:
-        try:
-            return os.isatty(self.out.fileno()) and os.isatty(self.err.fileno())
-        except (AttributeError, OSError, ValueError):
-            return False
+        self.shared_tty = _isatty(out) and _isatty(err)
+        self.err_tty = _isatty(err) and os.environ.get("TERM") != "dumb"   # the progress line redraws itself
+        self.progress_shown = False
 
     def _break_line(self) -> None:
         if self.mid_line:
@@ -133,10 +136,30 @@ class Renderer:
             self.mid_line = False
 
     def meta(self, text: str) -> None:
+        self._clear_progress()
         if self.shared_tty:
             self._break_line()
         self.err.write(text + "\n")
         self.err.flush()
+
+    def progress(self, ev: dict[str, Any]) -> None:
+        """«читаю запрос… 45%» on one line of the terminal until the answer starts."""
+        total = int(ev.get("total") or 0)
+        if not self.err_tty or total <= 0:
+            return
+        pct = max(0, min(100, int(ev.get("done") or 0) * 100 // total))
+        if self.shared_tty:
+            self._break_line()
+        self.err.write("\r\033[K" + self.se.dim(say(self.lang, f"читаю запрос… {pct}%",
+                                                      f"reading the request… {pct}%")))
+        self.err.flush()
+        self.progress_shown = True
+
+    def _clear_progress(self) -> None:
+        if self.progress_shown:
+            self.err.write("\r\033[K")
+            self.err.flush()
+            self.progress_shown = False
 
     async def run(self) -> int:
         while True:
@@ -157,7 +180,10 @@ class Renderer:
                     model = f"{ev.get('label') or ev.get('provider')} · {model}"
                 dot = self.se.dot("ok" if ev.get("local") else "cloud")
                 self.meta(f"{dot} {self.se.dim(model + ' — ' + str(ev.get('reason') or ''))}")
+            elif kind == "progress" and not self.json_mode:
+                self.progress(ev)
             elif kind == "token" and not self.json_mode:
+                self._clear_progress()
                 text = str(ev.get("text") or "")
                 self.out.write(text)
                 self.out.flush()
@@ -172,6 +198,7 @@ class Renderer:
                 await self.approval(ev)
             elif kind == "done":
                 if not self.json_mode:
+                    self._clear_progress()
                     self._break_line()
                     self.footer(ev)
                 return 0
