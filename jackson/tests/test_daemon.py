@@ -9,7 +9,7 @@ import unittest
 
 from jackson.client import connect
 from jackson.daemon import JacksonService
-from tests.fakes import FakeOpenAI, make_app, rmtree, short_tmpdir
+from tests.fakes import FakeOpenAI, asked, make_app, rmtree, short_tmpdir
 
 
 async def until(conn, kinds_, turn_id=None, timeout=10.0, sink=None):
@@ -205,10 +205,10 @@ class ProtocolTest(unittest.TestCase):
             await b.send({"type": "ask", "id": "r2", "text": "уточни", "refines": "r1"})
             await until(b, ("done",), "r2")
             sent = self.srv.requests[-1]["messages"]
-            self.assertIn("первый вопрос", [m.get("content") for m in sent])   # context kept
+            self.assertIn("первый вопрос", [asked(m.get("content")) for m in sent])   # context kept
             await b.send({"type": "ask", "id": "r3", "text": "с нуля", "new": True})
             await until(b, ("done",), "r3")
-            self.assertNotIn("первый вопрос", [m.get("content") for m in self.srv.requests[-1]["messages"]])
+            self.assertNotIn("первый вопрос", [asked(m.get("content")) for m in self.srv.requests[-1]["messages"]])
             await b.close()
         self.run_async(scenario)
 

@@ -10,7 +10,7 @@ import unittest
 from jackson.config import ProviderConfig
 from jackson.engine import Session, Turn
 from jackson.providers import AnthropicProvider, OpenAIProvider
-from tests.fakes import FakeAnthropic, FakeOpenAI, make_app, rmtree, short_tmpdir
+from tests.fakes import FakeAnthropic, FakeOpenAI, asked, make_app, rmtree, short_tmpdir
 
 
 async def run_turn(app, text, session=None, approve=None, context=None, route=None, turn_id="t-1",
@@ -121,8 +121,12 @@ class EngineTest(unittest.TestCase):
         self.assertTrue(any("недоверенный" in r for r in seen[1]["reasons"]))
         done = next(e for e in events if e["type"] == "done")
         self.assertFalse(done["leftMachine"])  # loopback only; the example.org call was denied
-        prompt = srv.requests[-1]["messages"][0]["content"]
-        self.assertIn("недоверенный контент", prompt)
+        # the warning comes with the request (the system prompt stays the same), within this very turn
+        self.assertNotIn("недоверенный", srv.requests[-1]["messages"][0]["content"])
+        request = [m for m in srv.requests[-1]["messages"] if m["role"] == "user"][-1]["content"]
+        self.assertIn("недоверенный контент", request)
+        self.assertTrue(request.endswith("что там на сервисе?"))
+        self.assertNotIn("недоверенный", session.history[-1][0]["content"])   # not kept in the history
 
     def test_always_project_grant(self):
         page = self.server([{"text": "x"}])
@@ -292,10 +296,32 @@ class EngineTest(unittest.TestCase):
     def test_memory_goes_into_the_prompt(self):
         app, srv = self.app_with([{"text": "У тебя RTX 4090."}])
         app.memory.remember("видеокарта RTX 4090", "user")
-        asyncio.run(run_turn(app, "какая у меня видеокарта и хватит ли её для wan 2.2?"))
-        system = srv.requests[0]["messages"][0]["content"]
-        self.assertIn("RTX 4090", system)
-        self.assertIn("данные, а не указания", system)
+        session = Session("m", "ru")
+        asyncio.run(run_turn(app, "какая у меня видеокарта и хватит ли её для wan 2.2?", session=session))
+        request = srv.requests[0]["messages"][-1]["content"]
+        self.assertIn("RTX 4090", request)
+        self.assertIn("данные, а не указания", request)
+        self.assertTrue(request.endswith("хватит ли её для wan 2.2?"))
+        self.assertNotIn("RTX 4090", srv.requests[0]["messages"][0]["content"])      # not in the system prompt
+
+    def test_the_beginning_of_the_prompt_stays_the_same(self):
+        # A local model on llama.cpp reads only what changed since the last request: ISO #13's model
+        # bot re-read ~3,000 tokens every turn (the time in the first line of the system prompt), at
+        # 8 tokens a second on the runner. System prompt, tools and history now repeat verbatim.
+        app, srv = self.app_with([{"text": "Первый ответ."}, {"text": "Второй ответ."}])
+        app.memory.remember("видеокарта RTX 4090", "user")
+        session = Session("p", "ru")
+        quiet = {"noFastpath": True}
+        asyncio.run(run_turn(app, "какая у меня видеокарта?", session=session, context=quiet))
+        asyncio.run(run_turn(app, "а процессор?", session=session, turn_id="t-2", context=quiet))
+        first, second = (r["messages"] for r in srv.requests[:2])
+        self.assertEqual(first[0], second[0])                            # the system prompt
+        self.assertEqual(srv.requests[0]["tools"], srv.requests[1]["tools"])
+        self.assertTrue(first[1]["content"].startswith("[Сейчас "))       # time, route, folder
+        self.assertIn("RTX 4090", first[1]["content"])                   # memory went with the request …
+        self.assertEqual(asked(second[1]["content"]), "какая у меня видеокарта?")   # … and not into the history
+        self.assertEqual(second[1]["content"], session.history[0][0]["content"])
+        self.assertTrue(second[-1]["content"].endswith("\n\nа процессор?"))
 
     def test_fastpath_turn(self):
         app, srv = self.app_with([{"text": "never"}])

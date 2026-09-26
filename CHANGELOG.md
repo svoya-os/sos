@@ -45,6 +45,13 @@ Work towards v0.1 «Первый сигнал».
   repeat a joke or a quip until the others had their turn; the login and lock screens vary his
   lines too.
 
+- A local model answers much sooner after the first question: Jackson's system prompt no longer
+  changes from one request to the next (the time, route and folder come with the request, memory
+  and skills only with the request they match), so llama.cpp reuses what it has already read of
+  the prompt and the conversation instead of reading some 3,000 tokens again every time.
+- Local models answer without thinking first: Qwen3.5's template thinks by default, minutes on a CPU
+  of text nobody sees (`thinking = true` under `[providers.local]` brings it back).
+
 ### Fixed
 
 - Wired Ethernet works out of the box: NetworkManager manages every network device, as on Ubuntu

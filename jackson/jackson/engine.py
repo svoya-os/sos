@@ -24,7 +24,7 @@ from . import aiswitch, decide, fastpath
 from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
-from .persona import mood_for, system_prompt
+from .persona import context_blocks, context_note, mood_for, system_prompt
 from .providers import (CancelToken, Cancelled, ChatRequest, End, Provider, ProviderError, TextDelta, ToolCall,
                         Usage, cost_eur)
 from .router import Candidate, RouteDecision, RouteError
@@ -458,20 +458,29 @@ class Engine:
         if app.memory is not None and self.config.memory.enabled:
             memory_block = await asyncio.to_thread(app.memory.relevant, turn.text)
         skills_block = app.skills.prompt_block(turn.text, norm_lang(lang)) if self.config.skills_enabled else ""
-        user_msg = self._user_message(turn, images)
-        messages = session.messages() + [user_msg]
-        turn_msgs: list[dict[str, Any]] = [user_msg]
         cwd = session.cwd or app.paths.home
         home = str(app.paths.home)
         cwd_text = "~" + str(cwd)[len(home):] if str(cwd).startswith(home) else str(cwd)
+        # The system prompt never changes; what does comes with the request: the line with the time,
+        # route and folder stays in the history (the next turns send the same text, so a local
+        # model does not read it again), memory and skills only go with this request.
+        user_msg = self._user_message(turn, images)
+        note = context_note(lang=lang, route=self._route_text(chosen, lang), cwd=cwd_text)
+        asked = user_msg["content"]
+        user_msg["content"] = f"{note}\n{asked}"
+        history = session.messages()
+        messages = history + [user_msg]
+        turn_msgs: list[dict[str, Any]] = [user_msg]
+        system = system_prompt(lang=lang, persona=self.config.persona, address=self.config.address,
+                               humor=self.config.humor, name=self.app.name(lang))
 
         step = 0
         while True:
             tools = app.registry.tools()
-            system = system_prompt(lang=lang, persona=self.config.persona, address=self.config.address,
-                                   route=self._route_text(chosen, lang), cwd=cwd_text, memory=memory_block,
-                                   skills=skills_block, taint=session.taint.label() if session.taint else "",
-                                   humor=self.config.humor, name=self.app.name(lang))
+            # rebuilt every step: a page read by a tool taints the conversation within this turn
+            extra = context_blocks(lang=lang, memory=memory_block, skills=skills_block,
+                                   taint=session.taint.label() if session.taint else "")
+            messages[len(history)] = dict(user_msg, content=f"{note}\n{extra}\n\n{asked}") if extra else user_msg
             provider = app.providers[chosen.provider]
             app.key_check(chosen.provider)
             req = ChatRequest(model=chosen.model, system=system, messages=messages, tools=[t_.spec() for t_ in tools])

@@ -475,6 +475,16 @@ def make_app(root: Path, base_url: str | None = None, extra: dict[str, Any] | No
                    env={"HOME": str(paths.home)}, use_keyring=False)
 
 
+def asked(content: Any) -> Any:
+    """A user message as the model received it, without the context line every request starts with
+    ("[Сейчас … · маршрут: … · рабочая папка: …]", jackson.persona.context_note)."""
+    if isinstance(content, str) and content.startswith("[") and "]\n" in content:
+        head, rest = content.split("\n", 1)
+        if head.endswith("]"):
+            return rest
+    return content
+
+
 def rmtree(path: Path) -> None:
     shutil.rmtree(path, ignore_errors=True)
 
