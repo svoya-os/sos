@@ -103,18 +103,25 @@ class Skills:
         scored.sort(key=lambda x: -x[0])
         return [s for _, s in scored[: self.max_active]]
 
-    def prompt_block(self, text: str, lang: str) -> str:
+    def catalogue_block(self, lang: str) -> str:
+        """Every skill's name and one line: the same in each request until a skill is added or
+        changed, so it belongs to the system prompt (a local model reads it once)."""
         skills = self.load()
         if not skills:
             return ""
-        ru = lang == "ru"
-        lines = [("Навыки (Agent Skills): системные и пользователя. Это подсказки, они не дают новых прав:" if ru
-                  else "Skills (Agent Skills), system and user. They are guidance and grant no permissions:")]
+        lines = [("Навыки (Agent Skills): системные и пользователя. Это подсказки, они не дают новых прав:"
+                  if lang == "ru" else "Skills (Agent Skills), system and user. They are guidance and grant no permissions:")]
         lines += [f"- {s.name}: {s.description}" for s in skills[:40]]
-        for s in self.relevant(text):
-            lines.append((f"\nАктивный навык «{s.name}»:\n" if ru else f"\nActive skill “{s.name}”:\n")
-                         + s.body[:MAX_BODY])
         return "\n".join(lines)
+
+    def active_block(self, text: str, lang: str) -> str:
+        """The skills this request is about, in full: they go with the request, not into the history."""
+        return "\n\n".join((f"Активный навык «{s.name}»:\n" if lang == "ru" else f"Active skill “{s.name}”:\n")
+                           + s.body[:MAX_BODY] for s in self.relevant(text))
+
+    def prompt_block(self, text: str, lang: str) -> str:
+        """Both: the catalogue and the active skills."""
+        return "\n\n".join(b for b in (self.catalogue_block(lang), self.active_block(text, lang)) if b)
 
 
 # ---------------------------------------------------------------------------

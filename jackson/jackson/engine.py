@@ -457,7 +457,7 @@ class Engine:
         memory_block = ""
         if app.memory is not None and self.config.memory.enabled:
             memory_block = await asyncio.to_thread(app.memory.relevant, turn.text)
-        skills_block = app.skills.prompt_block(turn.text, norm_lang(lang)) if self.config.skills_enabled else ""
+        skills_block = app.skills.active_block(turn.text, norm_lang(lang)) if self.config.skills_enabled else ""
         cwd = session.cwd or app.paths.home
         home = str(app.paths.home)
         cwd_text = "~" + str(cwd)[len(home):] if str(cwd).startswith(home) else str(cwd)
@@ -472,7 +472,8 @@ class Engine:
         messages = history + [user_msg]
         turn_msgs: list[dict[str, Any]] = [user_msg]
         system = system_prompt(lang=lang, persona=self.config.persona, address=self.config.address,
-                               humor=self.config.humor, name=self.app.name(lang))
+                               humor=self.config.humor, name=self.app.name(lang),
+                               skills=app.skills.catalogue_block(norm_lang(lang)) if self.config.skills_enabled else "")
 
         step = 0
         while True:

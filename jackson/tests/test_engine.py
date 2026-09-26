@@ -323,6 +323,28 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(second[1]["content"], session.history[0][0]["content"])
         self.assertTrue(second[-1]["content"].endswith("\n\nа процессор?"))
 
+    def test_skills_catalogue_is_fixed_and_only_active_skills_go_with_the_request(self):
+        # ISO #14: every request carried the list of all skills in the user's message, which the
+        # history did not keep, so the next turn re-read everything after the first question
+        app, srv = self.app_with([{"text": "Хайку."}, {"text": "Так рендерят."}, {"text": "Ок."}])
+        skill = app.paths.skills_dir / "video-render"
+        skill.mkdir(parents=True)
+        (skill / "SKILL.md").write_text("---\nname: video-render\ndescription: Render video with ComfyUI and Wan\n"
+                                        "---\nCheck VRAM first.\n", encoding="utf-8")
+        session = Session("k", "ru")
+        quiet = {"noFastpath": True}
+        asyncio.run(run_turn(app, "напиши хайку про море", session=session, context=quiet))
+        asyncio.run(run_turn(app, "render video with comfyui", session=session, turn_id="t-2", context=quiet))
+        asyncio.run(run_turn(app, "спасибо", session=session, turn_id="t-3", context=quiet))
+        first, second, third = (r["messages"] for r in srv.requests[:3])
+        self.assertIn("- video-render: Render video with ComfyUI and Wan", first[0]["content"])   # the catalogue
+        self.assertEqual(first[0], third[0])
+        self.assertEqual(first[1], second[1])                     # sent as it is kept: nothing to re-read
+        self.assertNotIn("Check VRAM", first[1]["content"])
+        self.assertIn("Check VRAM first.", second[-1]["content"])  # the active skill goes with its request …
+        self.assertNotIn("Check VRAM", third[3]["content"])        # … and not into the history
+        self.assertEqual(first[1:], third[1:2])
+
     def test_fastpath_turn(self):
         app, srv = self.app_with([{"text": "never"}])
         t0 = time.monotonic()

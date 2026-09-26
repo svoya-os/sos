@@ -154,19 +154,22 @@ def mood_for(state: str, detail: str | None = None) -> str:
     return MOODS.get(state, "calm")
 
 
-def system_prompt(*, lang: str, persona: str, address: str = "ty", humor: int = 1, name: str = "") -> str:
+def system_prompt(*, lang: str, persona: str, address: str = "ty", humor: int = 1, name: str = "",
+                  skills: str = "") -> str:
     """Who Jackson is, his style and his rules — the same text in every turn.
 
     Nothing here changes from one request to the next: a local model on llama.cpp keeps what it has
     read of an unchanged beginning (the system prompt and the tools, some 2,500 tokens) and reads
     only what is new, and a cloud provider's prompt cache hits. The time, the route, the folder,
-    memory and skills go with the request itself (context_note).
+    memory and the skills a request is about go with the request itself (context_note); *skills* is
+    the catalogue of all of them, which only changes when a skill is added.
     """
     lang = norm_lang(lang)
     values = {
         "name": name or ("Джексон" if lang == "ru" else "Jackson"),
         "persona": persona_text(persona, lang, humor),
         "address": ADDRESS.get(address, ADDRESS["ty"]) if lang == "ru" else "",
+        "skills": skills,
     }
     text = _template(lang)
     for key, value in values.items():
