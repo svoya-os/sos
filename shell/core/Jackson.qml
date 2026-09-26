@@ -210,16 +210,11 @@ Singleton {
     }
 
     // The microphone button: talk; again while listening: that's it (or never mind, before a word
-    // was heard); while Jackson talks: quiet.
+    // was heard); while Jackson talks: he stops and listens (interrupt him with the next question).
     function talk() {
         if (!root.voice) {
             root.voiceState = "unavailable";
             root.voiceNote = "";
-            return;
-        }
-        if (root.mode === "speaking") {
-            root.conversation = false;
-            root.send({ type: "listen", action: "hush" });
             return;
         }
         if (root.listening) {

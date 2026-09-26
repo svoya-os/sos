@@ -158,6 +158,8 @@ ShellRoot {
         }
         // the microphone button from a key or a script: talk (again: that's it; while he talks: quiet)
         function talk(): void {
+            if (Ui.locked)
+                return;
             Ui.show("jackson");
             Jackson.talk();
         }

@@ -348,8 +348,9 @@ unit `svoya-voice.service`), which jacksond starts on the first press of the mic
 itself stays on the standard library. The microphone is recorded through PipeWire only while a
 client asked to listen; no audio is kept.
 
-- The panel's microphone button: talk, press again when done (or just pause), press while Jackson
-  speaks to silence him. Super+J held: push-to-talk.
+- The panel's microphone button (or `jackson talk` over the shell's IPC): talk, press again when
+  done (or just pause); pressed while Jackson speaks, he stops and listens. Super+J held:
+  push-to-talk. A typed question silences him too.
 - The transcript becomes a turn with `context.voice`; the model is told the answer will be heard
   (short, no tables). The answer is said sentence by sentence while it streams
   (`jackson/voice/speech.py`: no code or tables read out, links as their text, numbers spelled out

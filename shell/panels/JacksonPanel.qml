@@ -324,7 +324,7 @@ PanelFrame {
                 elide: Text.ElideRight
             }
 
-            // the microphone (voice, v0.2): talk · again: that's it · while Jackson talks: quiet
+            // the microphone (voice, v0.2): talk · again: that's it · while Jackson talks: he stops and listens
             Item {
                 id: mic
 
