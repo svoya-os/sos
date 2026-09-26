@@ -51,13 +51,19 @@ def load_phrases() -> list[dict]:
     return rows
 
 
-def action(text: str, index: int | None, p: float) -> str:
-    """What Jackson does: only a candidate goes to the decider, and only a sure pick acts."""
+def action(text: str, index: int | None, p: float) -> tuple[str, str]:
+    """What Jackson does, and how: a fast-path pattern first (no decider), then a candidate goes to the
+    decider and only a sure pick acts; everything else is a full model turn (no command)."""
+    m = fastpath.match(text)
+    if m is not None:
+        return (m.name if m.name in INTENTS else "none"), "pattern"
     norm = fastpath.decision_candidate(text)
-    if norm is None or index is None:
-        return "none"
+    if norm is None:
+        return "none", "model"
+    if index is None:
+        return "none", "decider"
     match = fastpath.decided_match(index, p, norm)
-    return match.name if match else "none"
+    return (match.name if match else "none"), "decider"
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -131,9 +137,10 @@ def evaluate(name: str, run, rows: list[dict]) -> dict:
             index, p, probs, error = None, 0.0, None, f"{type(exc).__name__}: {exc}"
         ms = (time.monotonic() - t0) * 1000
         picked = "none" if index is None or index >= len(INTENTS) else INTENTS[index]
-        did = action(row["text"], index, p)
-        out.append({**row, "picked": picked, "p": round(p, 4), "did": did, "ms": round(ms, 1), "error": error})
-        print(f"[{name}] {row['lang']} {row['expected']:>15} → {picked:>15} p={p:.2f} did={did:>15} "
+        did, route = action(row["text"], index, p)
+        out.append({**row, "picked": picked, "p": round(p, 4), "did": did, "route": route, "ms": round(ms, 1),
+                    "error": error})
+        print(f"[{name}] {row['lang']} {row['expected']:>15} → {picked:>15} p={p:.2f} did={did:>15} ({route:>7}) "
               f"{ms:7.0f} ms  {row['text']}", flush=True)
     return {"decider": name, "rows": out}
 
@@ -149,7 +156,7 @@ def summary(result: dict) -> list[str]:
         neg = [r for r in sel if r["expected"] == "none"]
         picked_ok = sum(r["picked"] == r["expected"] for r in sel)
         did_ok = sum(r["did"] == r["expected"] for r in cmd)
-        wrong = sum(r["did"] not in ("none", r["expected"]) for r in sel)
+        wrong = sum(r["did"] not in ("none", r["expected"]) and r.get("route") != "pattern" for r in sel)
         ms = sorted(r["ms"] for r in sel if not r["error"])
         p50 = statistics.median(ms) if ms else 0
         p95 = ms[min(len(ms) - 1, int(len(ms) * 0.95))] if ms else 0
@@ -179,9 +186,9 @@ def main() -> int:
     store.write_text(json.dumps(results, ensure_ascii=False, indent=1))
     md = ["# Jackson's decision step: which command did the user mean?", "",
           f"{len(rows)} phrases (tests/decide-eval/phrases.tsv). *picked*: the decider's top option; *acted*: "
-          "what Jackson would run at his thresholds (p ≥ 0.9 to change something, 0.8 to read), commands only; "
-          "*wrong*: an action other than the expected one (the number that must stay 0); *stayed out*: "
-          "phrases that are not commands and ran nothing.", "",
+          "what Jackson would run — a fast-path pattern first, else the decider at his thresholds (p ≥ 0.9 to "
+          "change something, 0.8 to read), commands only; *wrong*: a command the decider ran that nobody asked "
+          "for (the number that must stay 0); *stayed out*: phrases that are not commands and ran nothing.", "",
           "| decider | lang | n | picked right | acted right | wrong | stayed out | ms p50 / p95 | errors |",
           "|---|---|---|---|---|---|---|---|---|"]
     for r in results:

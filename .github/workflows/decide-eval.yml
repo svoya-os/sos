@@ -10,6 +10,8 @@ on:
     branches: [main]
     paths:
       - "tests/decide-eval/**"
+      - "jackson/jackson/fastpath.py"
+      - "jackson/jackson/decide.py"
       - ".github/workflows/decide-eval.yml"
   workflow_dispatch:
 

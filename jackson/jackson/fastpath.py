@@ -1328,28 +1328,33 @@ def _match(norm: str, text: str, osc: OsControl | None, names: tuple[str, ...]) 
 # an intent by the local model in one step (jackson/decide.py), and run only when the model is sure
 
 # (intent, what it does in Russian, in English) — commands without arguments only
+# The words in brackets are how people say it: a small model mixed «вайфай» up with Bluetooth and «верни
+# звук» with «громче» without them (tests/decide-eval).
 DECIDABLE: list[tuple[str, str, str]] = [
-    ("volume_up", "сделать звук громче", "make the sound louder"),
-    ("volume_down", "сделать звук тише", "make the sound quieter"),
-    ("mute", "выключить звук совсем", "mute the sound"),
-    ("unmute", "снова включить звук", "unmute the sound"),
-    ("brightness_up", "сделать экран ярче", "make the screen brighter"),
-    ("brightness_down", "сделать экран темнее", "make the screen dimmer"),
-    ("wifi_on", "включить Wi-Fi", "turn Wi-Fi on"),
-    ("wifi_off", "выключить Wi-Fi", "turn Wi-Fi off"),
-    ("bluetooth_on", "включить Bluetooth", "turn Bluetooth on"),
-    ("bluetooth_off", "выключить Bluetooth", "turn Bluetooth off"),
-    ("lock", "заблокировать экран", "lock the screen"),
-    ("screenshot", "сделать снимок экрана", "take a screenshot"),
-    ("battery", "сказать заряд батареи", "tell the battery level"),
-    ("time", "сказать, который час", "tell the time"),
+    ("volume_up", "сделать звук громче (прибавить громкость)", "make the sound louder (volume up)"),
+    ("volume_down", "сделать звук тише (убавить громкость)", "make the sound quieter (volume down)"),
+    ("mute", "выключить звук совсем (тишина, без звука)", "mute the sound (silence)"),
+    ("unmute", "вернуть выключенный звук (снова со звуком)", "unmute: bring the muted sound back"),
+    ("brightness_up", "сделать экран ярче (прибавить яркость)", "make the screen brighter"),
+    ("brightness_down", "сделать экран темнее (убавить яркость)", "make the screen dimmer"),
+    ("wifi_on", "включить Wi-Fi (вайфай, беспроводной интернет)", "turn Wi-Fi (wireless internet) on"),
+    ("wifi_off", "выключить Wi-Fi (вайфай, беспроводной интернет)", "turn Wi-Fi (wireless internet) off"),
+    ("bluetooth_on", "включить Bluetooth (блютуз для наушников и колонок)", "turn Bluetooth on (headphones, speakers)"),
+    ("bluetooth_off", "выключить Bluetooth (блютуз)", "turn Bluetooth off"),
+    ("lock", "заблокировать экран (блокировка компьютера)", "lock the screen (lock the computer)"),
+    ("screenshot", "сделать снимок экрана (скриншот, одна картинка)", "take a screenshot (one picture)"),
+    ("battery", "сказать заряд батареи (сколько осталось)", "tell the battery level (charge left)"),
+    ("time", "сказать, который сейчас час", "tell the current time"),
 ]
-NOT_A_COMMAND = ("ничего из этого: вопрос «как», «почему», «что», просьба о другом или разговор",
-                 "none of these: a how/why/what question, another request or a chat")
-DECIDE_HINT = re.compile(r"(звук|громк|громч|тиш|тих|прибав|убав|музык|колонк|наушник|яркост|ярч|светле|посветл|темн|"
-                         r"экран|вай ?фай|wi ?fi|интернет|"
+NOT_A_COMMAND = ("ничего из этого: вопрос «как», «почему», «что», другая просьба (настройки, видео, отправить, "
+                 "купить, найти) или разговор",
+                 "none of these: a how/why/what question, another request (settings, video, send, buy, search) "
+                 "or a chat")
+DECIDE_HINT = re.compile(r"(звук|громк|громч|тиш|тих|слыш|прибав|убав|музык|колонк|наушник|динамик|яркост|ярч|светле|"
+                         r"посветл|темн|экран|вай[ -]?фай|wi[ -]?fi|интернет|беспровод|"
                          r"блют|bluetooth|блок|скрин|снимок|заряд|батаре|который час|сколько времени|врем|"
-                         r"sound|volume|loud|quiet|music|bright|dim|screen|internet|lock|screenshot|battery|"
+                         r"sound|volume|loud|quiet|hear|speaker|silence|mute|music|bright|dim|screen|internet|"
+                         r"wireless|lock|screenshot|battery|"
                          r"charge|time)")
 READ_ONLY_HINT = re.compile(r"(заряд|батаре|который час|сколько времени|врем|battery|charge|time)")
 QUESTION_RE = re.compile(r"^(почему|зачем|как|что|какой|какая|какие|где|когда|откуда|можно ли|правда ли|"
