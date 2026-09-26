@@ -57,6 +57,8 @@ Work towards v0.1 «Первый сигнал».
 - Wired Ethernet works out of the box: NetworkManager manages every network device, as on Ubuntu
   Desktop (a computer on a cable, or a virtual machine, stayed offline).
 - The console welcome, `/etc/issue` and `lsb_release` name SOS again: the build lost these files.
+- After `sos install steam` the launcher and the top bar call Steam «Steam», not Debian's «Install
+  Steam».
 - In the live session Steam, Flatpak apps and Jackson's sandbox start: no AppArmor profile is
   loaded there, and Ubuntu's restriction of user namespaces denied every one («Steam now
   requires user namespaces to be enabled»). Installed systems keep the restriction and Ubuntu's

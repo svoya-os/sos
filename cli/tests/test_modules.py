@@ -66,7 +66,13 @@ class CatalogTest(SandboxTest):
                         "sv_apt_available() { return 1; }\n"
                         "sv_apt_track_install() { sv_log apt \"$@\"; }\n"
                         "sv_flatpak_install() { sv_log flatpak \"$@\"; }\n"
+                        "sv_write() { sv_log write \"$1\"; cat >\"$1\"; }\n"
                         "sv_say() { :; }\n")
+            entry = os.path.join(tmp, "steam.desktop")          # Debian's, as steam-installer ships it
+            with open(entry, "w") as f:
+                f.write("[Desktop Entry]\nName=Install Steam\nName[ru]=Установить Steam\nExec=/usr/games/steam %U\n"
+                        "Icon=steam\nType=Application\nActions=Store;\n\n[Desktop Action Store]\nName=Store\n"
+                        "Name[ru]=Магазин\nExec=steam steam://store\n")
             stubs = {"dpkg": "exit 0",                                      # no foreign architecture yet
                      "dpkg-query": "echo 'dpkg-query: no packages found matching' >&2; exit 1",
                      "apt-get": "exit 0"}
@@ -75,12 +81,22 @@ class CatalogTest(SandboxTest):
                 with open(path, "w") as f:
                     f.write("#!/bin/sh\n" + body + "\n")
                 os.chmod(path, 0o755)
-            env = {"PATH": bin_ + ":/usr/bin:/bin", "SVOYA_LIB": lib}
+            override = os.path.join(tmp, "local", "steam.desktop")
+            os.makedirs(os.path.dirname(override))
+            env = {"PATH": bin_ + ":/usr/bin:/bin", "SVOYA_LIB": lib, "SVOYA_STEAM_DESKTOP": entry,
+                   "SVOYA_STEAM_DESKTOP_OVERRIDE": override}
             r = subprocess.run(["bash", str(MODDIR / "gaming/install.sh")], capture_output=True, text=True, env=env)
             self.assertEqual(r.returncode, 0, r.stderr)
             calls = open(log).read()
             self.assertIn("run dpkg --add-architecture i386", calls)
             self.assertIn("apt steam-installer", calls)
+            # the launcher says «Steam», not Debian's «Install Steam», once Steam is installed
+            with open(override) as f:
+                text = f.read()
+            self.assertIn("\nName=Steam\n", text)
+            self.assertNotIn("Install Steam", text)
+            self.assertIn("Exec=/usr/games/steam %U", text)
+            self.assertIn("[Desktop Action Store]\nName=Store\nName[ru]=Магазин\n", text)   # actions keep their names
 
     def test_notes_module_is_obsidian_on_request(self):
         cat = M.load_catalog(MODDIR)

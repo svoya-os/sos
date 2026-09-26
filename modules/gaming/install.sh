@@ -24,6 +24,18 @@ if [[ -n "$nv" ]] && sv_apt_available "$nv:i386"; then
   extra+=("$nv:i386")
 fi
 sv_apt_track_install steam-installer "${extra[@]}"
+# Debian names its launcher entry «Install Steam» (the package is steam-installer), and the launcher
+# and the top bar kept saying so after Steam was installed (the games bot). The same entry as
+# «Steam» in /usr/local/share, which comes first in XDG_DATA_DIRS; the packaged file stays as it is.
+steam_entry=${SVOYA_STEAM_DESKTOP:-/usr/share/applications/steam.desktop}
+if [[ -f "$steam_entry" ]]; then
+  # the entry's own name only: the actions (Store, Library…) keep theirs
+  awk '/^\[/ { main = ($0 == "[Desktop Entry]") }
+       main && /^Name=/ { print "Name=Steam"; next }
+       main && /^Name\[/ { next }
+       { print }' "$steam_entry" |
+    sv_write "${SVOYA_STEAM_DESKTOP_OVERRIDE:-/usr/local/share/applications/steam.desktop}"
+fi
 [[ "${SVOYA_OPT_HEROIC:-}" == 1 ]] && sv_flatpak_install com.heroicgameslauncher.hgl
 [[ "${SVOYA_OPT_LUTRIS:-}" == 1 ]] && sv_flatpak_install net.lutris.Lutris
 [[ "${SVOYA_OPT_PROTONPLUS:-}" == 1 ]] && sv_flatpak_install com.vysp3r.ProtonPlus
