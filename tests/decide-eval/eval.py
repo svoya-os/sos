@@ -75,6 +75,8 @@ def decide_llm(url: str):
 
 def load_laya(model: str):
     import laya  # noqa: F401  (pip install laya)
+    if model == "router":                                   # Laya picks the checkpoint by language
+        return laya.Router()
     attempts = []
     if "/" in model and model.count("/") == 2:            # repo/subfolder
         repo, sub = model.rsplit("/", 1)

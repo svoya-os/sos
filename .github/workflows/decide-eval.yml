@@ -39,6 +39,7 @@ jobs:
           pip install --quiet --index-url https://download.pytorch.org/whl/cpu torch
           pip install --quiet laya
           python3 tests/decide-eval/eval.py --laya --out dist/eval
+          python3 tests/decide-eval/eval.py --laya router --name "laya (Router: checkpoint by language)" --out dist/eval
 
       - name: llama.cpp and Qwen3.5 4B Q4_K_M (the decider SOS uses today)
         continue-on-error: true
@@ -47,8 +48,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/llama" && cd "$RUNNER_TEMP/llama"
-          gh release download -R ggml-org/llama.cpp --pattern '*bin-ubuntu-x64.zip' --clobber
-          unzip -q -o ./*bin-ubuntu-x64.zip
+          # the newest build with a plain CPU binary for Ubuntu ("latest" is not always a build)
+          url=$(gh api 'repos/ggml-org/llama.cpp/releases?per_page=10' \
+                --jq '[.[].assets[] | select(.name | test("^llama-b[0-9]+-bin-ubuntu-x64[.]tar[.]gz$")) | .browser_download_url][0]')
+          echo "llama.cpp: $url"
+          curl -fsSL -o llama.tar.gz "$url"
+          tar -xzf llama.tar.gz
           server=$(find . -name llama-server -type f | head -n 1)
           curl -fsSL -o qwen.gguf \
             https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf
