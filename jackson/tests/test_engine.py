@@ -195,6 +195,35 @@ class EngineTest(unittest.TestCase):
         self.assertTrue(error["retryable"])
         self.assertEqual(events[-1]["state"], "idle")
 
+    def test_local_model_that_never_answers_says_what_to_do(self):
+        # ISO #11: «The model failed: local: no answer from 127.0.0.1:8080 (timeout)» — true, and no help
+        def hang(body):
+            time.sleep(1.5)
+            return {"text": "поздно"}
+        srv = self.server(hang)
+        url = f"http://127.0.0.1:{srv.port}/v1"
+        app = make_app(self.root, url, providers={"local": OpenAIProvider(ProviderConfig(
+            "local", base_url=url, local=True, region="local", label="llama.cpp", timeout=0.3))})
+        events = asyncio.run(run_turn(app, "расскажи о себе"))
+        error = next(e for e in events if e["type"] == "error")
+        self.assertIn("Локальная модель так и не ответила", error["message"])
+        self.assertIn("sos models serve --status", error["message"])
+        self.assertNotIn("127.0.0.1", error["message"])
+        self.assertTrue(error["retryable"])
+
+    def test_local_model_that_is_not_running_says_how_to_start_it(self):
+        from jackson.providers import ProviderError
+        app = make_app(self.root, "http://127.0.0.1:9/v1")
+        err = ProviderError("cannot connect to 127.0.0.1:9 (Connection refused)", kind="network", retryable=True,
+                            provider="local")
+
+        async def fail(turn):
+            raise err
+        app.engine._model_turn = fail
+        events = asyncio.run(run_turn(app, "расскажи о себе"))
+        error = next(e for e in events if e["type"] == "error")
+        self.assertEqual(error["message"], "Локальная модель не запущена. Запустить: `sos models serve`.")
+
     def test_fallback_to_cloud_when_local_stream_fails(self):
         bad = self.server([{"text": "x"}], status=500)
         cloud = self.server([{"text": "Ответ из облака.", "in": 1000, "out": 100}], cls=FakeAnthropic)

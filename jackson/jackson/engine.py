@@ -210,11 +210,16 @@ class Engine:
             if exc.kind == "cancelled":
                 await self._done(turn, cancelled=True)
             else:
-                if exc.kind in ("network", "timeout", "server", "rate") and exc.provider:
-                    prov = self.app.providers.get(exc.provider)
-                    if prov is not None and not prov.cfg.local:
-                        self.app.health.mark_failed(exc.provider, exc.message)
-                await self._error(turn, t("err.provider", lang, why=str(exc)), exc.retryable)
+                prov = self.app.providers.get(exc.provider) if exc.provider else None
+                if exc.kind in ("network", "timeout", "server", "rate") and prov is not None and not prov.cfg.local:
+                    self.app.health.mark_failed(exc.provider, exc.message)
+                if prov is not None and prov.cfg.local and exc.kind in ("network", "timeout"):
+                    # the person gets what to do; the address and the socket error go to the journal
+                    log.info("local model: %s", exc)
+                    message = t("err.local." + exc.kind, lang)
+                else:
+                    message = t("err.provider", lang, why=str(exc))
+                await self._error(turn, message, exc.retryable)
         except Exception as exc:  # pragma: no cover - defensive
             log.exception("turn %s failed", turn.id)
             await self._error(turn, t("err.internal", lang, why=f"{exc.__class__.__name__}: {exc}"), False)

@@ -226,6 +226,16 @@ MESSAGES: dict[str, dict[str, str]] = {
     "err.shutdown": {"ru": "{name} перезапускается — повтори запрос.", "en": "{name} is restarting — please retry."},
     "err.bad_message": {"ru": "Не понял сообщение клиента: {why}", "en": "Malformed client message: {why}"},
     "err.provider": {"ru": "Модель не ответила: {why}", "en": "The model failed: {why}"},
+    "err.local.timeout": {
+        "ru": "Локальная модель так и не ответила — возможно, она ещё загружается или компьютеру не хватает "
+              "памяти. Проверить: `sos models serve --status`.",
+        "en": "The local model never answered — it may still be loading, or the computer is short on memory. "
+              "Check: `sos models serve --status`.",
+    },
+    "err.local.network": {
+        "ru": "Локальная модель не запущена. Запустить: `sos models serve`.",
+        "en": "The local model is not running. Start it: `sos models serve`.",
+    },
     "err.internal": {"ru": "Внутренняя ошибка: {why}", "en": "Internal error: {why}"},
     "err.max_steps": {
         "ru": "Остановился: слишком много шагов с инструментами ({n}). Уточни задачу.",
