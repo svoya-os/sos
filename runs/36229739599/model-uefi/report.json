@@ -1,0 +1,135 @@
+{
+ "plan": "jackson-local-model",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": false,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 16.36 desktop-ready'",
+   "status": "ok",
+   "seconds": 18.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 7,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 9,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+f",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 10,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 11,
+   "id": "install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 149 characters",
+   "status": "ok",
+   "seconds": 7.6
+  },
+  {
+   "n": 12,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 60s",
+   "status": "ok",
+   "seconds": 60.0
+  },
+  {
+   "n": 13,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 14,
+   "id": "install",
+   "action": "wait_serial",
+   "optional": false,
+   "status": "failed",
+   "detail": "serial reported failure: '[   59.200729] sos-vm-test[1692]: SOS-STEP model-failed'",
+   "seconds": 0.2
+  }
+ ]
+}
