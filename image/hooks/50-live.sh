@@ -65,6 +65,18 @@ polkit.addRule(function (action, subject) {
 });
 EOF
 
+# --- user namespaces in the live session -----------------------------------------------------------
+# apparmor.service does not load any profile on a live system (ConditionPathExists=!/rofs/etc/apparmor.d,
+# "Don't start this unit on the Ubuntu Live CD"), but Ubuntu's restriction of unprivileged user
+# namespaces stays on, and without the profiles that allow them (unprivileged_userns, bwrap, flatpak,
+# steam) it denied every one: Steam stopped, Flatpak apps and Jackson's bwrap sandbox could not
+# start. Nothing is confined in the live session anyway; the installed system loads the profiles
+# and keeps the restriction.
+write_file "$root/etc/sysctl.d/99-sos-live-userns.conf" 0644 <<'EOF'
+# SOS live session only (image/hooks/50-live.sh): AppArmor's profiles are not loaded here.
+kernel.apparmor_restrict_unprivileged_userns = 0
+EOF
+
 # --- live-only units: VM test agent (inert unless the SMBIOS product is sos-vm-test), user groups -----
 # Not `cp -a overlay/. root/`: that re-applies the checkout's owner (the CI runner's uid) and modes to
 # existing directories, including / and /usr. Files are root-owned; existing directories keep theirs.
@@ -78,7 +90,9 @@ write_file "$root/usr/share/svoya/live-exclude.rsync" 0644 <<'EOF'
 /etc/svoya/greetd-live.toml
 /etc/systemd/system/greetd.service.d/90-svoya-live.conf
 /etc/polkit-1/rules.d/49-svoya-live.rules
+/etc/sysctl.d/99-sos-live-userns.conf
 /usr/lib/svoya/vm-test-agent
+/usr/lib/svoya/vm-test-installer
 /usr/lib/svoya/live-user-groups
 /usr/lib/systemd/system/sos-vm-test.service
 /etc/systemd/system/multi-user.target.wants/sos-vm-test.service

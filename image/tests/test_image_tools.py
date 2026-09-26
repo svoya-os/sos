@@ -258,6 +258,23 @@ class ListsAndBootTests(unittest.TestCase):
         self.assertEqual(self.gpu_env("vmwgfx", True, SVOYA_GPU="hardware"), hw)
         self.assertEqual(self.gpu_env("simple-framebuffer", False, SVOYA_GPU="hardware"), hw)
 
+    def test_live_only_files_stay_off_the_installed_system(self):
+        hook = (ROOT / "image/hooks/50-live.sh").read_text()
+        excluded = set(hook.split("live-exclude.rsync\" 0644 <<'EOF'\n", 1)[1].split("\nEOF", 1)[0].splitlines())
+        overlay = ROOT / "image/overlay-live"
+        for path in overlay.rglob("*"):
+            if path.is_file():
+                with self.subTest(path=path):
+                    self.assertIn("/" + str(path.relative_to(overlay)), excluded)
+        for target in re.findall(r'write_file "\$root(/etc/[^"]+)"', hook):
+            if target != "/etc/casper.conf":                     # casper is a live-only package
+                with self.subTest(target=target):
+                    self.assertIn(target, excluded)
+        # ISO #13: no AppArmor profile is loaded in the live session (Ubuntu's apparmor.service skips a
+        # live system) while the user-namespace restriction stayed on — Steam, Flatpak, bwrap failed
+        self.assertRegex(hook, r"(?m)^kernel\.apparmor_restrict_unprivileged_userns = 0$")
+        self.assertIn("/etc/sysctl.d/99-sos-live-userns.conf", excluded)
+
     def test_grub_menu_entries(self):
         cfg = (ROOT / "image/boot/grub.cfg").read_text()
         self.assertIn('menuentry "SOS @VERSION@"', cfg)
