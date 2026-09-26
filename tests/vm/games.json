@@ -46,6 +46,16 @@
     {"id": "steam", "action": "sleep", "seconds": 180},
     {"id": "steam", "action": "screenshot", "name": "08-steam-updating", "continue_on_failure": true},
     {"id": "steam", "action": "sleep", "seconds": 240},
-    {"id": "steam", "action": "screenshot", "name": "09-steam-window", "continue_on_failure": true}
+    {"id": "steam", "action": "screenshot", "name": "09-steam-window", "continue_on_failure": true},
+    {"id": "after", "action": "key", "keys": ["meta_l", "spc"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "after", "action": "sleep", "seconds": 2},
+    {"id": "after", "action": "type", "text": "steam", "continue_on_failure": true},
+    {"id": "after", "action": "sleep", "seconds": 2},
+    {"id": "after", "action": "screenshot", "name": "10-launcher-after-first-start", "continue_on_failure": true},
+    {"id": "after", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+    {"id": "after", "action": "key", "keys": ["meta_l", "ret"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "after", "action": "sleep", "seconds": 5},
+    {"id": "after", "action": "type", "text": "grep -H -E '^(Name|Exec|NoDisplay)=' /usr/share/applications/*team*.desktop ~/.local/share/applications/*team*.desktop | logger -t sos-vm-test-steam\n", "continue_on_failure": true},
+    {"id": "after", "action": "sleep", "seconds": 3}
   ]
 }
