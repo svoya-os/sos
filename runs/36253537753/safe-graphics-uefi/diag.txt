@@ -1,0 +1,438 @@
+SOS-GRUB platform=efi unicode=1 theme-fonts=1 lockdown= gfxmode=auto
+         Starting sos-live-user.service - SOS live session user groups...
+[  OK  ] Started sos-vm-test.service - SOS VM test agent (serial milestones).
+sos-vm-test.service
+SOS-MARK 8.58 agent-start
+[    8.532429] systemd[1]: Starting sos-live-user.service - SOS live session user groups...
+[    8.536001] systemd[1]: Started sos-vm-test.service - SOS VM test agent (serial milestones).
+SOS-MARK 8.68 network-online
+[    8.621999] systemd[1]: sos-live-user.service: Deactivated successfully.
+[    8.622417] systemd[1]: Finished sos-live-user.service - SOS live session user groups.
+[    8.624960] systemd[1]: Started greetd.service - Greeter daemon.
+[    8.800158] greetd[1187]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[    8.840550] systemd-logind[1012]: New session '1' of user 'svoya' with class 'user' and type 'tty'.
+[    8.873185] (systemd)[1234]: pam_unix(systemd-user:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[    8.875140] systemd-logind[1012]: New session '2' of user 'svoya' with class 'manager' and type 'unspecified'.
+[    9.092319] systemd[1]: Started session-1.scope - Session 1 of User svoya.
+[    9.145505] pipewire[1258]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.145930] pipewire[1258]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.146329] pipewire[1258]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.147814] greetd[1187]: gkr-pam: couldn't unlock the login keyring.
+[    9.195058] pipewire-pulse[1271]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.195380] pipewire-pulse[1271]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.195760] pipewire-pulse[1271]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.273516] wireplumber[1269]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.273922] wireplumber[1269]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.274328] wireplumber[1269]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.292296] wireplumber[1269]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x57bf170309d0> Failed to connect to snapd: No such file or directory
+[    9.470929] wireplumber[1269]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+SOS-MARK 9.68 greetd-active
+SOS-MARK 10.72 hyprland-running
+[   11.183880] dbus-daemon[1257]: [session uid=1000 pid=1257 pidfd=5] Activating via systemd: service name='ca.desrt.dconf' unit='dconf.service' requested by ':1.13' (uid=1000 pid=1330 comm="Hyprland --watchdog-fd 4 --config /usr/share/svoya" label="unconfined")
+[   11.236195] systemd[1234]: Started hyprpolkitagent.service - Hyprland Polkit Authentication Agent.
+[   11.932701] xdg-desktop-portal-gtk[1412]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[   12.184697] /usr/libexec/xdg-desktop-portal[1377]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.185289] /usr/libexec/xdg-desktop-portal[1377]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.185794] /usr/libexec/xdg-desktop-portal[1377]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.235882] dbus-daemon[1257]: [session uid=1000 pid=1257 pidfd=5] Activating via systemd: service name='org.freedesktop.impl.portal.desktop.hyprland' unit='xdg-desktop-portal-hyprland.service' requested by ':1.18' (uid=1000 pid=1377 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[   12.240329] systemd[1234]: Starting xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation)...
+[   12.262834] dbus-daemon[1257]: [session uid=1000 pid=1257 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.hyprland'
+[   12.263061] systemd[1234]: Started xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation).
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG] Initializing xdph...
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG] XDG_CURRENT_DESKTOP set to Hyprland
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG] Gathering exported interfaces
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_seat (ver 9)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_data_device_manager (ver 3)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_compositor (ver 6)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_subcompositor (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_shm (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_viewporter (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_tearing_control_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_fractional_scale_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zxdg_output_manager_v1 (ver 3)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_cursor_shape_manager_v1 (ver 2)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_idle_inhibit_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_relative_pointer_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zxdg_decoration_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_alpha_modifier_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_gamma_control_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: ext_foreign_toplevel_list_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_pointer_gestures_v1 (ver 3)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_foreign_toplevel_manager_v1 (ver 3)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG] [toplevel] (activate) locks: 1
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_keyboard_shortcuts_inhibit_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_text_input_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_text_input_manager_v3 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_pointer_constraints_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_output_power_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: xdg_activation_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: ext_idle_notifier_v1 (ver 2)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_lock_notifier_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: ext_session_lock_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_input_method_manager_v2 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_virtual_keyboard_manager_v1 (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_virtual_pointer_manager_v1 (ver 2)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_output_manager_v1 (ver 4)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: org_kde_kwin_server_decoration_manager (ver 1)
+[   12.273231] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_focus_grab_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_tablet_manager_v2 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_layer_shell_v1 (ver 5)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_presentation (ver 2)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: xdg_wm_base (ver 7)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_data_control_manager_v1 (ver 2)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_primary_selection_device_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: xwayland_shell_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwlr_screencopy_manager_v1 (ver 3)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [pipewire] connected
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [screencopy] init successful
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_toplevel_export_manager_v1 (ver 2)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_toplevel_mapping_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [toplevel mapping] registered manager
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_global_shortcuts_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [globalshortcuts] registered
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: xdg_wm_dialog_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_single_pixel_buffer_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_security_context_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_ctm_control_manager_v1 (ver 2)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: hyprland_surface_manager_v1 (ver 2)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_content_type_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: xdg_toplevel_tag_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: xdg_system_bell_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: ext_workspace_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: ext_data_control_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_pointer_warp_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_fifo_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_commit_timing_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_color_manager_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wp_drm_lease_device_v1 (ver 1)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_drm (ver 2)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: zwp_linux_dmabuf_v1 (ver 5)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG]  | Got interface: wl_output (ver 4)
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [core] dmabufFeedbackMainDevice
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [ERR] [core] Couldn't find a render node
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [ERR] [core] Couldn't find a render node
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] Found output name Unknown-1
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [toplevel] Activated, bound to 1, toplevels: 0
+[   12.274370] xdg-desktop-portal-hyprland[1473]: [LOG] [screencopy] Registered for toplevel export
+[   12.294875] hyprpolkitagent[1371]: qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for ''")
+[   12.365571] jacksond[1381]: INFO jackson.service: listening on /run/user/1000/svoya/jackson.sock
+[   12.615068] dbus-daemon[1004]: [system] Activating via systemd: service name='org.freedesktop.UPower' unit='upower.service' requested by ':1.32' (uid=1000 pid=1392 comm="quickshell -p /usr/share/svoya/shell" label="unconfined")
+SOS-MARK 16.84 desktop-ready
+SOS-DIAG begin ready
+## processes
+    PID USER     ELAPSED COMMAND
+      1 root          16 /sbin/init noprompt splash ---
+    643 root          11 /usr/lib/systemd/systemd-journald
+    693 systemd+      11 /usr/lib/systemd/systemd-resolved
+    696 root          11 /usr/lib/systemd/systemd-udevd
+    742 systemd+      11 /usr/lib/systemd/systemd-oomd
+   1001 root           8 /usr/libexec/accounts-daemon
+   1002 root           8 /bin/sh /usr/lib/systemd/scripts/chronyd-starter.sh -n -F 1
+   1004 message+       8 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1008 root           8 /usr/lib/podman/netavark dhcp-proxy -a 30
+   1010 root           8 /usr/sbin/snapperd
+   1012 root           8 /usr/lib/systemd/systemd-logind
+   1013 root           8 /usr/libexec/udisks2/udisksd
+   1054 _chrony        8 /usr/sbin/chronyd -n -F 1
+   1055 _chrony        8 /usr/sbin/chronyd -n -F 1
+   1068 root           8 /usr/sbin/NetworkManager --no-daemon
+   1069 root           8 /usr/sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+   1071 polkitd        8 /usr/lib/polkit-1/polkitd --no-debug --log-level=notice
+   1085 root           8 /usr/lib/systemd/systemd-hostnamed
+   1109 root           8 /usr/libexec/nm-dispatcher
+   1125 root           8 /bin/bash /usr/lib/svoya/vm-test-agent
+   1167 root           8 /bin/bash /usr/lib/svoya/vm-test-agent
+   1169 root           8 journalctl -b -f -o short-monotonic --no-hostname --cursor-file=/run/sos-vm-test.journal-cursor
+   1177 root           8 /usr/sbin/greetd --config /etc/svoya/greetd-live.toml
+   1183 root           8 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d - linux
+   1184 root           8 /usr/libexec/power-profiles-daemon
+   1187 root           8 /usr/sbin/greetd --session-worker 11
+   1234 svoya          8 /usr/lib/systemd/systemd --user
+   1238 svoya          7 (sd-pam)
+   1257 svoya          7 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1258 svoya          7 /usr/bin/pipewire
+   1260 svoya          7 /usr/bin/gnome-keyring-daemon --foreground --components=pkcs11,secrets --control-directory=/run/user/1000/keyring
+   1266 svoya          7 /usr/bin/mpris-proxy
+   1267 svoya          7 start-hyprland -- --config /usr/share/svoya/hypr/hyprland.conf
+   1269 svoya          7 /usr/bin/wireplumber
+   1270 svoya          7 /usr/bin/pipewire -c filter-chain.conf
+   1271 svoya          7 /usr/bin/pipewire-pulse
+   1330 svoya          6 Hyprland --watchdog-fd 4 --config /usr/share/svoya/hypr/hyprland.conf
+   1356 svoya          5 /usr/libexec/dconf-service
+   1363 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type text --watch cliphist store'
+   1365 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type image --watch cliphist store'
+   1367 svoya          5 wl-paste --type text --watch cliphist store
+   1369 svoya          5 wl-paste --type image --watch cliphist store
+   1371 svoya          5 /usr/libexec/hyprpolkitagent
+   1377 svoya          5 /usr/libexec/xdg-desktop-portal
+   1381 svoya          5 /usr/bin/python3 /usr/lib/svoya/jacksond
+   1385 svoya          5 /bin/bash /usr/lib/svoya/shell-run /usr/share/svoya/shell
+   1386 svoya          5 /usr/libexec/xdg-permission-store
+   1389 svoya          5 sh -c  for _ in $(seq 1 30); do     busctl --user status org.freedesktop.Notifications >/dev/null 2>&1 && break     sleep 1 done a=$(notify-send -a "$1" -i sos -t 20000 -A install="$4" "$2" "$3") || exit 0 [ "$a" = install ] && exec "$5" exit 0  sh Jackson Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk. Install SOS /usr/bin/sos-install
+   1392 svoya          5 quickshell -p /usr/share/svoya/shell
+   1400 svoya          5 /usr/libexec/xdg-document-portal
+   1408 root           5 fusermount3 -o rw,nosuid,nodev,fsname=portal,auto_unmount,subtype=portal -- /run/user/1000/doc
+   1412 svoya          5 /usr/libexec/xdg-desktop-portal-gtk
+   1432 svoya          5 Xwayland :0 -rootless -core -listenfd 57 -listenfd 58 -displayfd 82 -wm 79
+   1455 svoya          4 /usr/libexec/gvfsd
+   1473 svoya          4 /usr/libexec/xdg-desktop-portal-hyprland
+   1490 root           4 /usr/libexec/upowerd
+   1493 svoya          4 /usr/bin/python3 -I /usr/bin/sos status --json --watch 2
+   1521 svoya          3 notify-send -a Jackson -i sos -t 20000 -A install=Install SOS Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk.
+   1528 svoya          3 /usr/bin/systemd-inhibit --what=sleep --mode=delay --who=SOS Shell --why=Lock the screen before sleep sleep infinity
+   1530 svoya          3 /usr/bin/sh -c bluetoothctl show 2>/dev/null; echo @connected; bluetoothctl devices Connected 2>/dev/null sh
+   1532 svoya          3 bluetoothctl show
+   1533 svoya          3 /usr/bin/nmcli monitor
+   1562 svoya          2 sleep infinity
+   1626 root           0 tail -n 70
+## sessions
+1 1000 svoya seat0 1187 user    tty7 no -
+2 1000 svoya -     1234 manager -    no -
+## failed system units
+## drm
+BOOT_IMAGE=/casper/vmlinuz boot=casper hostname=sos username=svoya locale=en_US.UTF-8 fsck.mode=skip noprompt console=ttyS0,115200 console=tty1 systemd.show_status=1 systemd.mask=serial-getty@ttyS0.service sos.vmtest=1 nomodeset quiet splash ---
+total 0
+drwxr-xr-x  3 root root      80 Sep 26 16:20 .
+drwxr-xr-x 19 root root    4060 Sep 26 16:20 ..
+drwxr-xr-x  2 root root      60 Sep 26 16:20 by-path
+crw-rw----+ 1 root video 226, 0 Sep 26 16:20 card0
+/sys/class/drm/card0-Unknown-1: connected
+/sys/class/drm/card0: simple-framebuffer
+## Hyprland rendering: GBM_ALWAYS_SOFTWARE=1 LIBGL_ALWAYS_SOFTWARE=1 SVOYA_RENDERER=software 
+## network (NetworkManager devices, addresses, DNS, netplan)
+enp0s1:ethernet:connected:Wired connection 1
+lo:loopback:connected (externally):lo
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp0s1           UP             10.0.2.15/24 fec0::4b4e:4259:29cd:4f9e/64 fec0::5b8d:b9f9:a9cd:79b1/64 fe80::6132:1e9f:d757:ef3b/64 
+Global:
+Link 2 (enp0s1): 10.0.2.3
+/etc/netplan:
+total 0
+drwxr-xr-x 2 root root  50 Sep 26 15:33 .
+drwxr-xr-x 1 root root 600 Sep 26 16:20 ..
+-rw------- 1 root root 402 Sep 26 15:33 01-network-manager-all.yaml
+
+/run/NetworkManager/conf.d:
+total 0
+drwxr-xr-x 2 root root  60 Sep 26 16:20 .
+drwxr-xr-x 5 root root 140 Sep 26 16:20 ..
+-rw-r--r-- 1 root root   0 Sep 26 16:20 10-globally-managed-devices.conf
+## apparmor (user namespaces)
+apparmor.service: inactive; enabled: Y
+kernel.apparmor_restrict_unprivileged_userns = 0
+kernel.unprivileged_userns_clone = 1
+profiles loaded: 0
+/etc/apparmor.d: 153 files; bwrap-userns-restrict flatpak podman steam unprivileged_userns 
+apparmor.service - Load AppArmor profiles skipped, unmet condition check ConditionPathExists=!/rofs/etc/apparmor.d
+## identity (console welcome: /etc/update-motd.d/00-header)
+-rw-r--r-- 1 root root 123 Sep 26 15:33 /etc/lsb-release
+lrwxrwxrwx 1 root root  21 Aug 24 10:33 /etc/os-release -> ../usr/lib/os-release
+-rw-r--r-- 1 root root 751 Sep 26 15:33 /usr/lib/os-release
+/etc/lsb-release:DISTRIB_DESCRIPTION="SOS 26.10 «Первый сигнал»"
+22:[ -r /etc/lsb-release ] && . /etc/lsb-release
+24:if [ -z "$DISTRIB_DESCRIPTION" ] && [ -x /usr/bin/lsb_release ]; then
+25:	# Fall back to using the very slow lsb_release utility
+26:	DISTRIB_DESCRIPTION=$(lsb_release -s -d)
+29:printf "Welcome to %s (%s %s %s)\n" "$DISTRIB_DESCRIPTION" "$(uname -o)" "$(uname -r)" "$(uname -m)"
+Welcome to SOS 26.10 «Первый сигнал» (GNU/Linux 7.0.0-31-generic x86_64)
+## greetd
+[    8.624960] sos systemd[1]: Started greetd.service - Greeter daemon.
+[    8.800158] sos greetd[1187]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[    9.147814] sos greetd[1187]: gkr-pam: couldn't unlock the login keyring.
+## user svoya: warnings and errors
+[    9.145505] sos pipewire[1258]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.145524] sos pipewire[1258]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.145930] sos pipewire[1258]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.145943] sos pipewire[1258]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.146329] sos pipewire[1258]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.146348] sos pipewire[1258]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.195058] sos pipewire-pulse[1271]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.195077] sos pipewire-pulse[1271]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.195380] sos pipewire-pulse[1271]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.195389] sos pipewire-pulse[1271]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.195760] sos pipewire-pulse[1271]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.195775] sos pipewire-pulse[1271]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.273516] sos wireplumber[1269]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.273544] sos wireplumber[1269]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.273922] sos wireplumber[1269]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.273937] sos wireplumber[1269]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.274328] sos wireplumber[1269]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.274339] sos wireplumber[1269]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.292296] sos wireplumber[1269]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x57bf170309d0> Failed to connect to snapd: No such file or directory
+[    9.470929] sos wireplumber[1269]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[    9.472798] sos wireplumber[1269]: spa.bluez5: BlueZ system service is not available
+[   11.932701] sos xdg-desktop-portal-gtk[1412]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[   12.184697] sos /usr/libexec/xdg-desktop-portal[1377]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.185289] sos /usr/libexec/xdg-desktop-portal[1377]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   12.185794] sos /usr/libexec/xdg-desktop-portal[1377]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+## /home/svoya/.local/state/svoya/session.log (tail)
+2026-09-26T16:20:09Z theme: ok graphite (sun)
+2026-09-26T16:20:09Z environment: ok WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP DISPLAY LANG
+2026-09-26T16:20:09Z jacksond: ok 
+2026-09-26T16:20:09Z shell: ok /usr/share/svoya/shell
+2026-09-26T16:20:09Z first-run: ok skipped (live session)
+2026-09-26T16:20:09Z skills: ok /home/svoya/.local/share/svoya/jackson/skills
+## /run/user/1000/sos-shell.log (tail)
+== 2026-09-26T16:20:08+00:00 quickshell -p /usr/share/svoya/shell
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/o21l1czlt/log.qslog"
+  INFO: Configuration Loaded
+  WARN qt.svg.draw: The requested buffer size is too big, ignoring
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+## /home/svoya/.local/state/svoya/hyprland.log (833 lines: renderer, errors, the end)
+== SOS session 2026-09-26T16:20:07+00:00 (config /usr/share/svoya/hypr/hyprland.conf, rendering: software)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/hyprland.conf'
+Welcome to Hyprland!
+67:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+69:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/simple-framebuffer.0/drm/card0
+71:DEBUG from aquamarine ]: drm: Found 1 GPUs
+72:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card0, with driver simpledrm
+73:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card0
+74:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+75:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+76:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: true
+77:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: false
+78:DEBUG from aquamarine ]: drm: found 1 CRTCs
+79:DEBUG from aquamarine ]: drm: found 1 planes
+80:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+81:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+82:DEBUG from aquamarine ]: drm: Plane: checking for modifiers
+83:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card0
+84:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card0
+85:DEBUG from aquamarine ]: drm: Scanning connector id 38
+86:DEBUG from aquamarine ]: drm: Initializing connector id 38
+87:DEBUG from aquamarine ]: drm: Connector gets name Unknown-1
+88:DEBUG from aquamarine ]: drm: Connector 38 connection state: 1
+89:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+90:DEBUG from aquamarine ]: drm: Skipping connector Unknown-1, has crtc 36 and is connected
+91:DEBUG from aquamarine ]: drm: slot 0 crtc 36 taken by Unknown-1, skipping
+92:DEBUG from aquamarine ]: drm: Connector Unknown-1 connected
+93:DEBUG from aquamarine ]: drm: Connecting connector Unknown-1, CRTC ID 36
+94:DEBUG from aquamarine ]: drm: Dumping detected modes:
+95:DEBUG from aquamarine ]: drm: Mode 0: 1280x800@60.00Hz  (preferred)
+96:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 338, y: 211] (mm)
+97:ERR from aquamarine ]: drm: failed to parse edid
+98:DEBUG from aquamarine ]: drm: Description    (Unknown-1)
+99:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+100:DEBUG from aquamarine ]: drm: Explicit sync unsupported
+101:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support CTM
+102:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support HDR (0)
+103:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support Colorspace (0)
+104:DEBUG from aquamarine ]: drm: gpu /dev/dri/card0 becomes primary drm
+108:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+109:ERR from aquamarine ]: Requested backend (wayland) could not start, enabling fallbacks
+110:ERR from aquamarine ]: Implementation wayland failed, erasing.
+112:DEBUG from aquamarine ]: drm: Connectors size2 1
+114:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+115:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+116:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+117:ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+118:ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+119:DEBUG from aquamarine ]: drm: onReady: connector 38
+120:DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+123:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+124:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+125:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+126:ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+127:ERR from aquamarine ]: drm: initMgpu: no renderer
+128:ERR from aquamarine ]: drm: Failed initializing mgpu
+134:DEBUG ]: Supported EGL global extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+135:ERR ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+136:ERR ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+138:WARN ]: EGL: EXT_platform_device or EGL_EXT_device_query not supported, using gbm
+142:DEBUG ]: EGL: EXT_create_context_robustness supported, requesting lose on reset
+144:DEBUG ]: Using: OpenGL ES 3.2 Mesa 26.0.8-1ubuntu0.3
+145:DEBUG ]: Vendor: Mesa
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+DEBUG ]: Applying monitor rule for Unknown-1
+DEBUG ]: Monitor Unknown-1: requested preferred, using preferred mode 1280x800@60.00Hz
+DEBUG ]: output Unknown-1 succeeded basic test on format DRM_FORMAT_XRGB8888
+DEBUG from aquamarine ]: drm: Modesetting Unknown-1 with 1280x800@60.00Hz
+DEBUG ]: Monitor Unknown-1 data dump: res 1280x800@60.00Hz, scale 1.00, transform 0, pos 0x0, 10b 0
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: No rule found for Unknown-1, trying to use the first.
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+DEBUG ]: arrangeMonitors: 1 to arrange
+DEBUG ]: arrangeMonitors: Unknown-1 auto [0, 0]
+DEBUG ]: arrangeMonitors: Unknown-1 xwayland [0, 0]
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Hyprctl: new connection from pid 1620
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790439607_912275034/hyprland.log (renderer, errors, config, exec)
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: Couldn't commit output named Unknown-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 1 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 2 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 3 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 4 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 5 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 6 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 7 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 8 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 9 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 10 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 11 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 12 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 13 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 14 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 15 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 16 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 17 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 18 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 19 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 20 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 21 which we don't have?!
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Unknown-1, trying to use the first.
+ERR ]: Couldn't commit output named Unknown-1
+SOS-DIAG end ready
