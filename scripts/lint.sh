@@ -60,6 +60,14 @@ python3 -c 'import json,sys; [json.load(open(p)) for p in sys.argv[1:]]; print(l
 echo "== QML (shell/tools/qmlcheck.py: syntax, imports, API, names QML refuses)"
 python3 shell/tools/qmlcheck.py || rc=1
 
+mapfile -t aa_profiles < <(find modules packages -name '*.apparmor' | sort)
+if command -v apparmor_parser >/dev/null && [ -d /etc/apparmor.d/tunables ]; then
+    echo "== AppArmor (${#aa_profiles[@]} profiles, parsed without loading)"
+    for f in "${aa_profiles[@]}"; do apparmor_parser -Q -K "$f" >/dev/null || { echo "$f: invalid" >&2; rc=1; }; done
+else
+    echo "== AppArmor: apparmor_parser not installed; ${#aa_profiles[@]} profiles not parsed"
+fi
+
 echo "== Python"
 python3 -m py_compile tests/vm/*.py installer/scripts/*.py image/lib/*.py packages/lib/*.py installer/branding/generate.py || rc=1
 

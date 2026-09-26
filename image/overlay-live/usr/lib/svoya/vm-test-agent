@@ -53,6 +53,17 @@ diag() {
         ip -brief address 2>&1 | head -n 8
         resolvectl dns 2>&1 | head -n 4
         ls -la /etc/netplan /run/NetworkManager/conf.d 2>&1 | head -n 12
+        # user namespaces (Steam's runtime, Flatpak's bwrap, rootless Podman): Ubuntu allows them only
+        # under an AppArmor profile that says so, and falls back to the unprivileged_userns profile
+        echo "## apparmor (user namespaces)"
+        echo "apparmor.service: $(systemctl is-active apparmor.service 2>&1); enabled: $(cat /sys/module/apparmor/parameters/enabled 2>&1)"
+        sysctl kernel.apparmor_restrict_unprivileged_userns kernel.unprivileged_userns_clone 2>&1
+        echo "profiles loaded: $(grep -c . /sys/kernel/security/apparmor/profiles 2>&1)"
+        grep -E '^(unprivileged_userns|steam|sos-steam|bwrap|flatpak|podman|crun|runc)\b' \
+            /sys/kernel/security/apparmor/profiles 2>&1 | head -n 12
+        echo "/etc/apparmor.d: $(find /etc/apparmor.d -maxdepth 1 -type f 2>/dev/null | wc -l) files;" \
+             "$(cd /etc/apparmor.d 2>/dev/null && ls -d unprivileged_userns steam bwrap* flatpak podman 2>/dev/null | tr '\n' ' ')"
+        journalctl -b -u apparmor.service --no-pager -o cat 2>&1 | tail -n 8
         echo "## identity (console welcome: /etc/update-motd.d/00-header)"
         ls -la /etc/lsb-release /etc/os-release /usr/lib/os-release 2>&1
         grep -H DESCRIPTION /etc/lsb-release 2>&1

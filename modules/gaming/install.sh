@@ -24,6 +24,13 @@ if [[ -n "$nv" ]] && sv_apt_available "$nv:i386"; then
   extra+=("$nv:i386")
 fi
 sv_apt_track_install steam-installer "${extra[@]}"
+# Steam's runtime creates user namespaces (the requirements check at every start, pressure-vessel for
+# games); Ubuntu allows that only under an AppArmor profile that says so. Without one Steam stopped
+# with «Steam now requires user namespaces to be enabled» (the games bot found it).
+sv_write /etc/apparmor.d/sos-steam <"$SVOYA_MODULE_DIR/files/sos-steam.apparmor"
+if sv_have apparmor_parser && aa-enabled >/dev/null 2>&1; then
+  sv_run apparmor_parser -r -W /etc/apparmor.d/sos-steam
+fi
 [[ "${SVOYA_OPT_HEROIC:-}" == 1 ]] && sv_flatpak_install com.heroicgameslauncher.hgl
 [[ "${SVOYA_OPT_LUTRIS:-}" == 1 ]] && sv_flatpak_install net.lutris.Lutris
 [[ "${SVOYA_OPT_PROTONPLUS:-}" == 1 ]] && sv_flatpak_install com.vysp3r.ProtonPlus
