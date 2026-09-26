@@ -1,6 +1,6 @@
 {
   "name": "games",
-  "description": "Games the way a user sets them up: `sos install steam` (the gaming module: Steam with 32-bit drivers, GameMode, MangoHud, gamescope), then Steam from the launcher until its own window: Debian's first-run dialog («Steam installer») gets its «Install» clicked, Steam downloads its client. Steam asks to accept Valve's license during the install; in this throwaway VM the answer «I AGREE» is given beforehand through debconf (agreed by the project owner), a person answers the same question in the terminal.",
+  "description": "Games the way a user sets them up: `sos install steam` (the gaming module: Steam with 32-bit drivers, GameMode, MangoHud, gamescope), then Steam from the launcher until its own window: Debian's first-run dialog («Steam installer») gets its «Install» clicked, Steam downloads its client. Steam asks to accept Valve's license during the install; in this throwaway VM the answer «I AGREE» is given beforehand through debconf (agreed by the project owner), a person answers the same question in the terminal. A long command takes the VM a while to type (ISO #16: the launcher steps ran while it was still typing), so the bot waits until the command itself says it ran.",
   "vm": {
     "memory_mib": 8192,
     "smp": 4,
@@ -26,8 +26,9 @@
     {"id": "install", "action": "wait_serial", "pattern": "SOS-STEP games-ready", "fail_pattern": "SOS-STEP games-failed", "timeout_s": 2400},
     {"id": "install", "action": "sleep", "seconds": 2},
     {"id": "install", "action": "screenshot", "name": "03-installed", "continue_on_failure": true},
-    {"id": "tools", "action": "type", "text": "clear; dpkg --print-foreign-architectures; dpkg -l steam-installer gamemode mangohud gamescope | tail -n 4; command -v steam gamemoderun mangohud gamescope; sos modules list | grep -i gaming; grep -H -E '^(Name|Exec)=' /usr/share/applications/*team*.desktop /usr/local/share/applications/*team*.desktop | logger -s -t sos-vm-test-steam\n", "continue_on_failure": true},
-    {"id": "tools", "action": "sleep", "seconds": 8},
+    {"id": "tools", "action": "type", "text": "clear; dpkg --print-foreign-architectures; dpkg -l steam-installer gamemode mangohud gamescope | tail -n 4; command -v steam gamemoderun mangohud gamescope; sos modules list | grep -i gaming; grep -H -E '^(Name|Exec)=' /usr/share/applications/*team*.desktop /usr/local/share/applications/*team*.desktop | logger -s -t sos-vm-test-steam; logger -t sos-vm-test SOS-STEP tools-shown\n", "continue_on_failure": true},
+    {"id": "tools", "action": "wait_serial", "pattern": "SOS-STEP tools-shown", "timeout_s": 180, "continue_on_failure": true},
+    {"id": "tools", "action": "sleep", "seconds": 2},
     {"id": "tools", "action": "screenshot", "name": "04-tools", "continue_on_failure": true},
     {"id": "tools", "action": "key", "keys": ["meta_l", "q"], "hold_ms": 120, "continue_on_failure": true},
     {"id": "tools", "action": "sleep", "seconds": 2},
