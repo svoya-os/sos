@@ -1346,7 +1346,8 @@ DECIDABLE: list[tuple[str, str, str]] = [
 ]
 NOT_A_COMMAND = ("ничего из этого: вопрос «как», «почему», «что», просьба о другом или разговор",
                  "none of these: a how/why/what question, another request or a chat")
-DECIDE_HINT = re.compile(r"(звук|громк|тиш|тих|музык|колонк|наушник|яркост|ярч|темн|экран|вай ?фай|wi ?fi|интернет|"
+DECIDE_HINT = re.compile(r"(звук|громк|громч|тиш|тих|прибав|убав|музык|колонк|наушник|яркост|ярч|светле|посветл|темн|"
+                         r"экран|вай ?фай|wi ?fi|интернет|"
                          r"блют|bluetooth|блок|скрин|снимок|заряд|батаре|который час|сколько времени|врем|"
                          r"sound|volume|loud|quiet|music|bright|dim|screen|internet|lock|screenshot|battery|"
                          r"charge|time)")

@@ -38,6 +38,10 @@ class FastDecisionTest(unittest.TestCase):
         self.assertIsNone(fastpath.decision_candidate("звук " * 13))                            # too long
         self.assertIsNone(fastpath.decision_candidate("почему не работает вай-фай?"))           # a question…
         self.assertIsNotNone(fastpath.decision_candidate("сколько там заряда?"))               # …unless read-only
+        # «погромче» and «посветлее» said in passing (tests/decide-eval found them missing)
+        self.assertIsNotNone(fastpath.decision_candidate("слушай, сделай-ка погромче, ничего не слышно"))
+        self.assertIsNotNone(fastpath.decision_candidate("можно экран посветлее"))
+        self.assertIsNotNone(fastpath.decision_candidate("звук тихий, прибавь"))
         self.assertEqual(len(fastpath.decision_options("ru")), len(fastpath.DECIDABLE) + 1)
 
     def test_thresholds_and_questions(self):
