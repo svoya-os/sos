@@ -94,6 +94,8 @@ class VoiceService:
         self.hushed: set[str] = set()
         self.speaking_id = ""
         self.speaking_conn: Conn | None = None
+        self.synthesizing: Line | None = None
+        self.said_ids: collections.deque[str] = collections.deque(maxlen=64)   # answers played to the end
         self._tasks: list[asyncio.Task[Any]] = []
 
     # ---- models ---------------------------------------------------------------------------
@@ -171,7 +173,7 @@ class VoiceService:
             self.lines.put_nowait(Line(tid, str(msg.get("text") or ""), str(msg.get("lang") or "ru"),
                                        str(msg.get("voice") or ""), bool(msg.get("final")), conn))
         elif kind == "hush":
-            await self.hush()
+            await self.hush(tid, conn)
         elif kind == "ping":
             await conn.send({"type": "pong"})
 
@@ -274,11 +276,14 @@ class VoiceService:
             if line.id in self.hushed:
                 continue
             if line.text.strip() and self.tts is not None:
+                self.synthesizing = line
                 try:
                     line.audio = await asyncio.to_thread(self.tts.synth, line.text, line.lang, line.voice)
                 except Exception as exc:  # noqa: BLE001 - one bad sentence is skipped
                     log.warning("could not say %r: %s", line.text[:60], exc)
                     line.audio = None
+                finally:
+                    self.synthesizing = None
             if line.id in self.hushed:
                 continue
             await self.voiced.put(line)
@@ -299,12 +304,15 @@ class VoiceService:
                     if self.player is None:
                         self.player = self.player_factory(self.tts.rate, on_level)
                     await self.player.play(line.audio)
+                if line.id in self.hushed:           # silenced while it played: hush() has told
+                    continue
                 if line.final:
                     player, self.player = self.player, None
                     if player:
                         await player.finish()
                     self.speaking_id = ""
                     self.speaking_conn = None
+                    self.said_ids.append(line.id)
                     await conn.send({"type": "spoken", "id": line.id, "hushed": False})
             except AudioError as exc:
                 self.player = None
@@ -312,27 +320,39 @@ class VoiceService:
                 self.speaking_conn = None
                 await conn.send({"type": "error", "id": line.id, "message": str(exc)})
 
-    async def hush(self) -> None:
-        """Silence now: drop what is queued, stop what is playing; each silenced answer gets
-        ``spoken {hushed: true}``."""
+    async def hush(self, tid: str = "", conn: Conn | None = None) -> None:
+        """Silence now: drop what is queued, stop what is playing (with *tid*: that answer only,
+        including what jacksond has not sent yet). Each silenced answer gets ``spoken {hushed: true}``."""
         told: dict[str, Conn] = {}
-        if self.speaking_id and self.speaking_conn:
+        if self.speaking_id and self.speaking_conn and (not tid or self.speaking_id == tid):
             told[self.speaking_id] = self.speaking_conn
+        if self.synthesizing and (not tid or self.synthesizing.id == tid):
+            told.setdefault(self.synthesizing.id, self.synthesizing.conn)
         for q in (self.lines, self.voiced):
+            keep = []
             while not q.empty():
                 item = q.get_nowait()
-                if item is not None:
+                if item is None:
+                    continue
+                if tid and item.id != tid:
+                    keep.append(item)
+                else:
                     told.setdefault(item.id, item.conn)
-        player, self.player = self.player, None
-        if player:
-            await player.hush()
-        self.speaking_id = ""
-        self.speaking_conn = None
+            for item in keep:
+                q.put_nowait(item)
+        if tid and tid not in told and tid not in self.hushed and tid not in self.said_ids and conn is not None:
+            told[tid] = conn                     # not started yet: whatever comes for it is dropped
+        if not tid or self.speaking_id in told:
+            player, self.player = self.player, None
+            if player:
+                await player.hush()
+            self.speaking_id = ""
+            self.speaking_conn = None
         self.hushed |= set(told)
         if len(self.hushed) > 64:
             self.hushed = set(list(self.hushed)[-32:])
-        for tid, conn in told.items():
-            await conn.send({"type": "spoken", "id": tid, "hushed": True})
+        for hushed_id, who in told.items():
+            await who.send({"type": "spoken", "id": hushed_id, "hushed": True})
 
 
 # ---------------------------------------------------------------------------------------------

@@ -18,6 +18,7 @@ class FakeVoice:
         self.path = path
         self.heard = heard
         self.follow_heard = ""
+        self.hold_spoken = False
         self.ready = ready
         self.got = []
         self.writers = []
@@ -57,14 +58,18 @@ class FakeVoice:
             elif kind == "listen" and msg["mode"] == "follow":
                 await send({"type": "level", "id": tid, "source": "mic", "level": 0.1})
                 await send({"type": "nothing", "id": tid})
+            elif kind == "listen" and not self.heard:
+                await send({"type": "nothing", "id": tid})
             elif kind == "listen":
                 await send({"type": "level", "id": tid, "source": "mic", "level": 0.6})
                 await send({"type": "speech", "id": tid, "state": "start"})
                 await send({"type": "speech", "id": tid, "state": "end"})
                 await send({"type": "transcript", "id": tid, "text": self.heard, "ms": 120})
-            elif kind == "say" and msg.get("final"):
+            elif kind == "say" and msg.get("final") and not self.hold_spoken:
                 await send({"type": "level", "id": tid, "source": "voice", "level": 0.4})
                 await send({"type": "spoken", "id": tid, "hushed": False})
+            elif kind == "hush" and tid:
+                await send({"type": "spoken", "id": tid, "hushed": True})
 
 
 class VoiceProtocolTest(unittest.TestCase):
@@ -170,15 +175,33 @@ class VoiceProtocolTest(unittest.TestCase):
             await conn.close()
         self.run_async(scenario)
 
-    def test_a_typed_question_and_the_button_silence_jackson(self):
+    def test_a_typed_question_silences_jackson_and_is_not_read_out(self):
         async def scenario(svc, fake):
+            fake.hold_spoken = True                   # the answer is still being said…
             conn, _ = await self.ready_client(svc)
-            await conn.send({"type": "ask", "id": "t1", "text": "расскажи о себе"})
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "tap"})
             await until(conn, ("done",), "t1")
-            await conn.send({"type": "listen", "action": "hush"})
-            await asyncio.sleep(0.2)
-            self.assertEqual([m["type"] for m in fake.got].count("hush"), 2)
-            self.assertEqual(fake.said(), [])          # typed questions are not read out
+            await conn.send({"type": "ask", "id": "t2", "text": "расскажи о себе"})   # …and the user types
+            events = await until(conn, ("done",), "t2")
+            spoken = next(e for e in events if e["type"] == "spoken")
+            self.assertEqual((spoken["id"], spoken["hushed"]), ("t1", True))
+            self.assertIn({"type": "hush", "id": "t1"}, fake.got)
+            self.assertFalse(any(m.get("id") == "t2" for m in fake.said()))      # typed answers stay silent
+            self.assertEqual([m["mode"] for m in fake.got if m["type"] == "listen"], ["tap"])   # no follow-up
+            await conn.close()
+        self.run_async(scenario)
+
+    def test_the_button_while_jackson_talks_interrupts_him(self):
+        async def scenario(svc, fake):
+            fake.hold_spoken = True
+            conn, _ = await self.ready_client(svc)
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "tap"})
+            await until(conn, ("done",), "t1")
+            fake.heard = ""                            # the second press hears nothing
+            await conn.send({"type": "listen", "id": "t2", "action": "start", "mode": "tap"})
+            events = await until(conn, ("spoken",), "t1", timeout=5)
+            self.assertTrue(events[-1]["hushed"])
+            self.assertIn({"type": "hush", "id": "t1"}, fake.got)
             await conn.close()
         self.run_async(scenario)
 

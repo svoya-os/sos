@@ -206,6 +206,16 @@ class ServiceTest(unittest.TestCase):
         self.assertTrue(self.players[0].hushed)
         self.assertNotIn("ещё", [t for t, _, _ in self.tts.said])
 
+    def test_an_answer_hushed_before_it_starts_is_never_said(self):
+        svc = self.make([])
+        conn = asyncio.run(self.drive(svc, {"type": "hush", "id": "t1"},
+                                      {"type": "say", "id": "t1", "text": "поздно", "lang": "ru"},
+                                      {"type": "say", "id": "t1", "text": "", "final": True},
+                                      {"type": "say", "id": "t2", "text": "другое", "lang": "ru", "final": True}))
+        self.assertEqual([t for t, _, _ in self.tts.said], ["другое"])
+        self.assertEqual([(m["id"], m["hushed"]) for m in conn.got if m["type"] == "spoken"],
+                         [("t1", True), ("t2", False)])
+
     def test_listening_silences_the_voice_first(self):
         svc = self.make([0] * 60)
         long = " ".join(["слово"] * 400)

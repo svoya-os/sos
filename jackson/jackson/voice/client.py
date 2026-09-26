@@ -143,6 +143,7 @@ class Talk:
     follow: bool
     finished: bool = False       # the turn is over (done/error)
     spoken: bool = False         # the voice has said everything
+    hushed: bool = False         # silenced: nothing more of it is said
     ok: bool = True
     said: int = 0
     started: float = field(default_factory=time.monotonic)
@@ -242,8 +243,11 @@ class VoiceDesk:
             self.listening.pop(li.id, None)
         if not follow_of:
             self.cancel(client)                        # pressing the button again starts over
-        for talk in [t for t in self.talks.values() if t.client is client]:
+        for talk in [t for t in self.talks.values() if t.client is client and t.id != follow_of]:
             talk.follow = False                        # a new question replaces the answer
+            if not talk.hushed:
+                talk.hushed = True
+                await self.link.send({"type": "hush", "id": talk.id})
         self.listening[tid] = Listening(tid, client, mode)
         event: Event = {"type": "listen", "id": tid, "state": "listening", "mode": mode}
         if follow_of:
@@ -255,7 +259,9 @@ class VoiceDesk:
     async def hush(self, client: Any) -> None:
         for talk in [t for t in self.talks.values() if t.client is client]:
             talk.follow = False
-        await self.link.send({"type": "hush"})
+            if not talk.hushed:
+                talk.hushed = True
+                await self.link.send({"type": "hush", "id": talk.id})
 
     def forget(self, client: Any) -> None:
         """The client went away: nothing more is heard or said for it."""
@@ -337,7 +343,7 @@ class VoiceDesk:
         async def voiced(event: Event) -> None:
             talk = self.talks.get(turn_id)
             kind = event.get("type")
-            if talk is not None and not talk.finished:
+            if talk is not None and not talk.finished and not talk.hushed:
                 if kind == "token":
                     for sentence in talk.stream.feed(str(event.get("text") or "")):
                         await self._say(talk, sentence)
