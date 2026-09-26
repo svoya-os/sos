@@ -1,0 +1,200 @@
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+SOS-DIAG end ready
+[   20.274002] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+[   32.298972] systemd[1242]: Started kitty-1717-0.scope - kitty child process: 1730 launched by: 1717.
+[   39.674669] netavark[1017]: timeout met: exiting after 30 secs of inactivity
+[   39.676560] systemd[1]: netavark-dhcp-proxy.service: Deactivated successfully.
+[   39.998991] systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+[   62.968587] sudo[1758]:    svoya : TTY=pts/0 ; PWD=/home/svoya ; USER=root ; COMMAND=/usr/bin/debconf-set-selections
+[   62.969350] sudo[1758]: pam_unix(sudo:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   63.057733] sudo[1758]: pam_unix(sudo:session): session closed for user root
+[   63.067899] sudo[1764]:    svoya : TTY=pts/0 ; PWD=/home/svoya ; USER=root ; COMMAND=/usr/bin/debconf-set-selections
+[   63.068722] sudo[1764]: pam_unix(sudo:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   63.156616] sudo[1764]: pam_unix(sudo:session): session closed for user root
+[   63.317420] pkexec[1771]: pam_unix(polkit-1:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   63.321113] pkexec[1771]: svoya: Executing command [USER=root] [TTY=/dev/pts/0] [CWD=/home/svoya] [COMMAND=/usr/bin/sos modules add gaming --yes --root-only]
+[   73.573645] systemd[1]: snapperd.service: Deactivated successfully.
+[   74.491266] dbus-daemon[1266]: [session uid=1000 pid=1266 pidfd=5] Reloaded configuration
+[   74.512707] dbus-daemon[1266]: [session uid=1000 pid=1266 pidfd=5] Reloaded configuration
+[   80.723231] systemd[1]: Reload requested from client PID 2525 ('systemctl') (unit user@1000.service)...
+[   80.723625] systemd[1]: Reloading...
+[   80.946313] systemd[1]: Reloading finished in 217 ms.
+[   81.167720] systemd[1]: Reload requested from client PID 2605 ('systemctl') (unit user@1000.service)...
+[   81.167762] systemd[1]: Reloading...
+[   81.389902] systemd[1]: Reloading finished in 221 ms.
+[   81.468053] systemd[1]: Started seatd.service - Seat management daemon.
+[   81.482623] seatd[2682]: 00:00:00.000 [INFO] [seatd/seat.c:48] Created VT-bound seat seat0
+[   81.482623] seatd[2682]: 00:00:00.000 [INFO] [seatd/seatd.c:194] seatd started
+[   83.394062] chronyd[1062]: Selected source 91.189.91.112 (3.ntp.ubuntu.com)
+[  117.561804] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.561876] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.561951] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.562079] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.562210] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.567253] dbus-daemon[1012]: [system] Reloaded configuration
+[  117.568606] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.568676] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.568746] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.568816] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.568946] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.574160] dbus-daemon[1012]: [system] Reloaded configuration
+[  117.587265] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.587363] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.587427] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.587494] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.587636] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.591577] dbus-daemon[1012]: [system] Reloaded configuration
+[  117.592635] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.592703] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.592778] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.592846] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.592952] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.596329] dbus-daemon[1012]: [system] Reloaded configuration
+[  117.613646] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.613691] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.613762] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.613833] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.613950] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.617286] dbus-daemon[1012]: [system] Reloaded configuration
+[  117.618084] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.618138] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.618196] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.618267] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.618412] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.621562] dbus-daemon[1012]: [system] Reloaded configuration
+[  117.622660] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  117.622730] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.622807] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  117.622877] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  117.623061] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  117.626170] dbus-daemon[1012]: [system] Reloaded configuration
+[  122.229437] dbus-daemon[1266]: [session uid=1000 pid=1266 pidfd=5] Reloaded configuration
+[  122.232220] dbus-daemon[1266]: [session uid=1000 pid=1266 pidfd=5] Reloaded configuration
+[  135.822473] addgroup[5192]: The group `netdev' already exists as a system group.
+[  136.212902] systemd[1]: Reload requested from client PID 5208 ('systemctl') (unit user@1000.service)...
+[  136.212932] systemd[1]: Reloading...
+[  136.419215] systemd[1]: Reloading finished in 205 ms.
+[  136.496158] systemd[1]: Stopping NetworkManager.service - Network Manager...
+[  136.501580] NetworkManager[1070]: <info>  [1790445637.0630] caught SIGTERM, shutting down normally.
+[  136.502127] NetworkManager[1070]: <info>  [1790445637.0636] dhcp4 (enp0s1): canceled DHCP transaction
+[  136.502159] NetworkManager[1070]: <info>  [1790445637.0636] dhcp4 (enp0s1): activation: beginning transaction (timeout in 45 seconds)
+[  136.502173] NetworkManager[1070]: <info>  [1790445637.0636] dhcp4 (enp0s1): state changed no lease
+[  136.502386] NetworkManager[1070]: <info>  [1790445637.0639] manager: NetworkManager state is now CONNECTED_SITE
+[  136.502904] dbus-daemon[1012]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.8' (uid=0 pid=1070 comm="/usr/sbin/NetworkManager --no-daemon" label="unconfined")
+[  136.502887] NetworkManager[1070]: <info>  [1790445637.0644] exiting (success)
+[  136.506439] systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+[  136.514666] systemd[1]: NetworkManager.service: Deactivated successfully.
+[  136.516287] systemd[1]: Stopped NetworkManager.service - Network Manager.
+[  136.518376] systemd[1]: Starting NetworkManager.service - Network Manager...
+[  136.525635] dbus-daemon[1012]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+[  136.525835] systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+[  136.542684] NetworkManager[5288]: <info>  [1790445637.1041] NetworkManager (version 1.54.3) is starting... (after a restart, boot:cb05e953-f4b2-4874-a8c0-f8c475f954da)
+[  136.542728] NetworkManager[5288]: <info>  [1790445637.1042] Read config: /etc/NetworkManager/NetworkManager.conf, /usr/lib/NetworkManager/conf.d/{10-default-firewall-use-iptables.conf,no-mac-addr-change.conf}, /etc/NetworkManager/conf.d/{10-globally-managed-devices.conf,default-wifi-powersave-on.conf}
+[  136.547266] NetworkManager[5288]: <info>  [1790445637.1087] manager[0x57be0ba01a50]: monitoring kernel firmware directory '/lib/firmware'.
+[  136.547323] NetworkManager[5288]: <info>  [1790445637.1088] monitoring ifupdown state file '/run/network/ifstate'.
+[  136.547949] dbus-daemon[1012]: [system] Activating via systemd: service name='org.freedesktop.hostname1' unit='dbus-org.freedesktop.hostname1.service' requested by ':1.52' (uid=0 pid=5288 comm="/usr/sbin/NetworkManager --no-daemon" label="unconfined")
+[  136.551317] systemd[1]: Starting systemd-hostnamed.service - Hostname Service...
+[  136.615728] systemd[1]: Started systemd-hostnamed.service - Hostname Service.
+[  136.616110] dbus-daemon[1012]: [system] Successfully activated service 'org.freedesktop.hostname1'
+[  136.618622] NetworkManager[5288]: <info>  [1790445637.1801] hostname: hostname: using hostnamed
+[  136.618655] NetworkManager[5288]: <info>  [1790445637.1801] hostname: static hostname changed from (none) to "sos"
+[  136.619073] NetworkManager[5288]: <info>  [1790445637.1805] dns-mgr: init: dns=systemd-resolved rc-manager=unmanaged (auto), plugin=systemd-resolved
+[  136.619362] NetworkManager[5288]: <info>  [1790445637.1808] manager[0x57be0ba01a50]: rfkill: Wi-Fi hardware radio set enabled
+[  136.619373] NetworkManager[5288]: <info>  [1790445637.1809] manager[0x57be0ba01a50]: rfkill: WWAN hardware radio set enabled
+[  136.620387] NetworkManager[5288]: <info>  [1790445637.1819] Loaded device plugin: NMAtmManager (/usr/lib/x86_64-linux-gnu/NetworkManager/1.54.3/libnm-device-plugin-adsl.so)
+[  136.621312] NetworkManager[5288]: <info>  [1790445637.1828] Loaded device plugin: NMBluezManager (/usr/lib/x86_64-linux-gnu/NetworkManager/1.54.3/libnm-device-plugin-bluetooth.so)
+[  136.621876] NetworkManager[5288]: <info>  [1790445637.1833] Loaded device plugin: NMTeamFactory (/usr/lib/x86_64-linux-gnu/NetworkManager/1.54.3/libnm-device-plugin-team.so)
+[  136.622238] NetworkManager[5288]: <info>  [1790445637.1837] Loaded device plugin: NMWifiFactory (/usr/lib/x86_64-linux-gnu/NetworkManager/1.54.3/libnm-device-plugin-wifi.so)
+[  136.622405] NetworkManager[5288]: <info>  [1790445637.1839] Loaded device plugin: NMWwanFactory (/usr/lib/x86_64-linux-gnu/NetworkManager/1.54.3/libnm-device-plugin-wwan.so)
+[  136.622682] NetworkManager[5288]: <info>  [1790445637.1842] manager: rfkill: Wi-Fi enabled by radio killswitch; enabled by state file
+[  136.622767] NetworkManager[5288]: <info>  [1790445637.1842] manager: rfkill: WWAN enabled by radio killswitch; enabled by state file
+[  136.622805] NetworkManager[5288]: <info>  [1790445637.1843] manager: Networking is enabled by state file
+[  136.623211] NetworkManager[5288]: <info>  [1790445637.1847] settings: Loaded settings plugin: ifupdown ("/usr/lib/x86_64-linux-gnu/NetworkManager/1.54.3/libnm-settings-plugin-ifupdown.so")
+[  136.623265] NetworkManager[5288]: <info>  [1790445637.1847] settings: Loaded settings plugin: keyfile (internal)
+[  136.623282] NetworkManager[5288]: <info>  [1790445637.1848] ifupdown: management mode: unmanaged
+[  136.623295] NetworkManager[5288]: <info>  [1790445637.1848] ifupdown: interfaces file /etc/network/interfaces doesn't exist
+[  136.630962] NetworkManager[5288]: <info>  [1790445637.1924] dhcp: init: Using DHCP client 'internal'
+[  136.631246] NetworkManager[5288]: <info>  [1790445637.1927] manager: (lo): new Loopback device (/org/freedesktop/NetworkManager/Devices/1)
+[  136.631723] NetworkManager[5288]: <info>  [1790445637.1932] device (lo): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
+[  136.632163] NetworkManager[5288]: <info>  [1790445637.1936] device (lo): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
+[  136.632876] NetworkManager[5288]: <info>  [1790445637.1943] device (lo): Activation: starting connection 'lo' (041c353e-5abc-42c7-82a8-a2fdbe278c12)
+[  136.633563] NetworkManager[5288]: <info>  [1790445637.1950] device (enp0s1): carrier: link connected
+[  136.634084] NetworkManager[5288]: <info>  [1790445637.1956] manager: (enp0s1): new Ethernet device (/org/freedesktop/NetworkManager/Devices/2)
+[  136.634536] NetworkManager[5288]: <info>  [1790445637.1960] manager: (enp0s1): assume: will attempt to assume matching connection 'Wired connection 1' (935e3614-5a54-3523-b15d-d30632c9290d) (indicated)
+[  136.634584] NetworkManager[5288]: <info>  [1790445637.1961] device (enp0s1): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'assume')
+[  136.635176] NetworkManager[5288]: <info>  [1790445637.1966] device (enp0s1): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'assume')
+[  136.635723] NetworkManager[5288]: <info>  [1790445637.1972] device (enp0s1): Activation: starting connection 'Wired connection 1' (935e3614-5a54-3523-b15d-d30632c9290d)
+[  136.635896] NetworkManager[5288]: <info>  [1790445637.1974] failed to open /run/network/ifstate
+[  136.636658] systemd[1]: Started NetworkManager.service - Network Manager.
+[  136.638579] NetworkManager[5288]: <info>  [1790445637.2000] bus-manager: acquired D-Bus service "org.freedesktop.NetworkManager"
+[  136.640466] NetworkManager[5288]: <info>  [1790445637.2019] device (lo): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
+[  136.640754] NetworkManager[5288]: <info>  [1790445637.2022] device (lo): state change: prepare -> config (reason 'none', managed-type: 'external')
+[  136.640873] NetworkManager[5288]: <info>  [1790445637.2023] device (lo): state change: config -> ip-config (reason 'none', managed-type: 'external')
+[  136.641096] NetworkManager[5288]: <info>  [1790445637.2026] device (enp0s1): state change: disconnected -> prepare (reason 'none', managed-type: 'assume')
+[  136.641278] NetworkManager[5288]: <info>  [1790445637.2027] device (enp0s1): state change: prepare -> config (reason 'none', managed-type: 'assume')
+[  136.641429] NetworkManager[5288]: <info>  [1790445637.2029] device (lo): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
+[  136.641871] NetworkManager[5288]: <info>  [1790445637.2033] device (enp0s1): state change: config -> ip-config (reason 'none', managed-type: 'assume')
+[  136.642792] NetworkManager[5288]: <info>  [1790445637.2043] dhcp4 (enp0s1): activation: beginning transaction (timeout in 45 seconds)
+[  136.643288] NetworkManager[5288]: <info>  [1790445637.2048] modem-manager: oFono is not available
+[  136.647652] NetworkManager[5288]: <info>  [1790445637.2091] dhcp4 (enp0s1): state changed new lease, address=10.0.2.15, acd pending
+[  136.648093] NetworkManager[5288]: <info>  [1790445637.2096] device (lo): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
+[  136.648575] NetworkManager[5288]: <info>  [1790445637.2100] dhcp4 (enp0s1): state changed new lease, address=10.0.2.15
+[  136.649123] NetworkManager[5288]: <info>  [1790445637.2106] device (lo): state change: secondaries -> activated (reason 'none', managed-type: 'external')
+[  136.650350] NetworkManager[5288]: <info>  [1790445637.2118] device (lo): Activation: successful, device activated.
+[  136.651173] NetworkManager[5288]: <info>  [1790445637.2126] policy: set 'Wired connection 1' (enp0s1) as default for IPv4 routing and DNS
+[  136.656357] NetworkManager[5288]: <info>  [1790445637.2178] device (enp0s1): state change: ip-config -> ip-check (reason 'none', managed-type: 'assume')
+[  136.658674] NetworkManager[5288]: <info>  [1790445637.2201] device (enp0s1): state change: ip-check -> secondaries (reason 'none', managed-type: 'assume')
+[  136.659209] NetworkManager[5288]: <info>  [1790445637.2207] device (enp0s1): state change: secondaries -> activated (reason 'none', managed-type: 'assume')
+[  136.659474] NetworkManager[5288]: <info>  [1790445637.2209] manager: NetworkManager state is now CONNECTED_SITE
+[  136.659647] NetworkManager[5288]: <info>  [1790445637.2211] device (enp0s1): Activation: successful, device activated.
+[  136.659873] NetworkManager[5288]: <info>  [1790445637.2213] manager: NetworkManager state is now CONNECTED_GLOBAL
+[  136.659959] NetworkManager[5288]: <info>  [1790445637.2214] manager: startup complete
+[  136.692440] NetworkManager[5288]: <info>  [1790445637.2539] ifupdown: interfaces file /etc/network/interfaces doesn't exist
+[  136.699555] NetworkManager[5288]: <info>  [1790445637.2610] audit: op="connections-reload" pid=5315 uid=0 result="success"
+[  136.869396] NetworkManager[5288]: <info>  [1790445637.4309] policy: set 'Wired connection 1' (enp0s1) as default for IPv6 routing and DNS
+[  137.120134] systemd[1242]: Received SIGRTMIN+25 from PID 1 (systemd).
+[  137.122082] systemd[1]: user@1000.service: Sent signal SIGRTMIN+25 to main process 1242 (systemd) on client request.
+[  137.123731] systemd[1242]: Reexecuting.
+[  137.165281] systemd[1]: Received SIGRTMIN+25 from PID 5398 (kill).
+[  137.169988] systemd[1]: Reexecuting.
+[  137.205245] systemd-xdg-autostart-generator[5419]: Exec binary '/usr/bin/casper-a11y-enable' does not exist: No such file or directory
+[  137.205259] systemd-xdg-autostart-generator[5419]: /etc/xdg/autostart/screen-reader-profile.desktop: not generating unit, executable specified in Exec= does not exist.
+[  137.274050] systemd[1]: systemd 259.5-0ubuntu3.4 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK +BTF -XKBCOMMON -UTMP +SYSVINIT +LIBARCHIVE)
+[  137.274112] systemd[1]: Detected virtualization kvm.
+[  137.274138] systemd[1]: Detected architecture x86-64.
+[  137.407157] systemd[1]: bpf-restrict-fs: BPF LSM hook not enabled in the kernel, BPF LSM not supported.
+[  138.619967] dbus-daemon[1012]: Unknown username "malcontent-timer-ext-agent" in message bus configuration file
+[  138.620082] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  138.620147] dbus-daemon[1012]: Unknown username "malcontent-timerd" in message bus configuration file
+[  138.620209] dbus-daemon[1012]: Unknown username "malcontent-webd" in message bus configuration file
+[  138.620314] dbus-daemon[1012]: Unknown username "whoopsie" in message bus configuration file
+[  138.624809] dbus-daemon[1012]: [system] Reloaded configuration
+[  139.074460] sos-vm-test[5527]: SOS-STEP games-ready
+[  146.737935] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+[  166.653857] systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+[  176.995782] systemd[1242]: kitty-1717-0.scope: Consumed 58.477s CPU time over 2min 24.696s wall clock time, 1.7G memory peak.
+[  614.397270] dbus-daemon[1012]: [system] Activating via systemd: service name='org.opensuse.Snapper' unit='snapperd.service' requested by ':1.64' (uid=1000 pid=5632 comm="snapper --utc --jsonout -c root list --disable-use" label="unconfined")
+[  614.399580] systemd[1]: Starting snapperd.service - DBus interface for snapper...
+[  614.431085] dbus-daemon[1012]: [system] Successfully activated service 'org.opensuse.Snapper'
+[  614.431331] systemd[1]: Started snapperd.service - DBus interface for snapper.
+[  674.496532] systemd[1]: snapperd.service: Deactivated successfully.
