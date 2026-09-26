@@ -70,17 +70,18 @@ DEFAULTS: dict[str, Any] = {
     "providers": {
         # llama.cpp `llama-server` (router mode: --models-dir), OpenAI-compatible. The timeout is long:
         # on a CPU the first answer loads the model and reads Jackson's whole prompt (some 3,500
-        # tokens with the tools) before its first word.
+        # tokens with the tools) before its first word. No thinking first (Qwen3.5's template thinks
+        # by default): on a CPU that is minutes of text nobody sees. `thinking = true` to allow it.
         "local": {
             "kind": "openai", "label": "llama.cpp", "base_url": "http://127.0.0.1:8080/v1",
             "local": True, "region": "local", "needs_key": False, "models": [],
-            "context": {"*": 32768}, "timeout": 300.0, "connect_timeout": 1.0,
+            "context": {"*": 32768}, "timeout": 300.0, "connect_timeout": 1.0, "thinking": False,
         },
         # Ollama (OpenAI-compatible endpoint).
         "ollama": {
             "kind": "openai", "label": "Ollama", "base_url": "http://127.0.0.1:11434/v1",
             "local": True, "region": "local", "needs_key": False, "models": [],
-            "context": {"*": 32768}, "timeout": 300.0, "connect_timeout": 1.0,
+            "context": {"*": 32768}, "timeout": 300.0, "connect_timeout": 1.0, "thinking": False,
         },
         "anthropic": {
             "kind": "anthropic", "label": "Anthropic", "base_url": "https://api.anthropic.com",
@@ -149,6 +150,7 @@ class ProviderConfig:
     headers: dict[str, str] = field(default_factory=dict)
     max_tokens: int = 4096
     stream_usage: bool = True
+    thinking: bool = True      # False: ask the server's chat template not to think first (llama.cpp, vLLM)
 
     @property
     def display(self) -> str:
@@ -395,6 +397,7 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
             headers={str(k): str(v) for k, v in (p.get("headers") or {}).items()},
             max_tokens=int(_as_num(p.get("max_tokens"), 4096, 16)),
             stream_usage=_as_bool(p.get("stream_usage"), True),
+            thinking=_as_bool(p.get("thinking"), True),
         )
         if pc.local:
             pc.region = "local"

@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
+import io
+import json
 import threading
 import time
 import unittest
@@ -41,6 +43,46 @@ class OpenAICompatibleTest(unittest.TestCase):
         self.assertTrue(body["stream"])
         self.assertEqual(body["tools"][0]["function"]["name"], "fs__read")
         self.assertEqual(body["stream_options"], {"include_usage": True})
+        self.assertNotIn("chat_template_kwargs", body)           # thinking is the server's default
+
+    def test_local_models_answer_without_thinking_first(self) -> None:
+        # ISO #13: llama.cpp's Qwen3.5 template thinks by default ("thinking = 1"); on a CPU that is
+        # minutes of text nobody sees. The shipped local providers ask it not to.
+        from jackson.config import DEFAULTS, build_config
+        cfg = build_config(DEFAULTS)
+        self.assertFalse(cfg.providers["local"].thinking)
+        self.assertFalse(cfg.providers["ollama"].thinking)
+        self.assertTrue(cfg.providers["anthropic"].thinking)
+        with FakeOpenAI([{"text": "ok"}]) as srv:
+            prov = OpenAIProvider(ProviderConfig("local", base_url=f"http://127.0.0.1:{srv.port}/v1", local=True,
+                                                 thinking=False))
+            collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
+            self.assertEqual(srv.requests[0]["chat_template_kwargs"], {"enable_thinking": False})
+
+    def test_a_server_without_template_options_is_asked_again_without_them(self) -> None:
+        with FakeOpenAI([{"text": "ok"}]) as srv:
+            original = srv._handler()
+
+            class Refusing(original):  # type: ignore[misc, valid-type]
+                def do_POST(self) -> None:  # noqa: N802
+                    length = int(self.headers.get("Content-Length") or 0)
+                    raw = self.rfile.read(length)
+                    body = json.loads(raw or b"{}")
+                    if "chat_template_kwargs" in body:
+                        srv.requests.append(body)
+                        self._json(400, {"error": {"message": "unknown field chat_template_kwargs",
+                                                   "type": "invalid_request_error"}})
+                        return
+                    self.rfile = io.BytesIO(raw)
+                    self.headers.replace_header("Content-Length", str(len(raw)))
+                    super().do_POST()
+
+            srv.httpd.RequestHandlerClass = Refusing
+            prov = OpenAIProvider(ProviderConfig("local", base_url=f"http://127.0.0.1:{srv.port}/v1", local=True,
+                                                 thinking=False))
+            text, _calls, _usage, _end = collect(prov, ChatRequest("m", "", [{"role": "user", "content": "q"}], TOOLS))
+        self.assertEqual(text, "ok")
+        self.assertEqual(["chat_template_kwargs" in r for r in srv.requests], [True, False])
 
     def test_replays_tool_calls_and_results(self) -> None:
         with FakeOpenAI([{"text": "ok"}]) as srv:

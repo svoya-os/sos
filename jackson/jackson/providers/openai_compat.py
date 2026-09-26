@@ -71,20 +71,27 @@ class OpenAIProvider(Provider):
             payload["max_tokens"] = max_tokens
         if req.temperature is not None:
             payload["temperature"] = req.temperature
+        if not self.cfg.thinking:
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
         return payload
 
     # ------------------------------------------------------------------
     def stream(self, req: ChatRequest, cancel: CancelToken) -> Iterator[Event]:
         url = self.cfg.base_url + "/chat/completions"
         stream_usage = self.cfg.stream_usage
+        payload = self.build_payload(req, stream_usage)
         try:
-            conn, resp = post_sse(url, self.build_payload(req, stream_usage), self._headers(),
+            conn, resp = post_sse(url, payload, self._headers(),
                                   connect_timeout=self.cfg.connect_timeout, read_timeout=self.cfg.timeout,
                                   use_proxy=not self.cfg.local, cancel=cancel, provider=self.name)
         except ProviderError as exc:
-            if exc.kind != "bad_request" or "stream_options" not in exc.message or not stream_usage:
+            # a server that knows neither usage in the stream nor chat template options: without them
+            if exc.kind != "bad_request" or not any(k in exc.message and k in payload
+                                                    for k in ("stream_options", "chat_template_kwargs")):
                 raise
-            conn, resp = post_sse(url, self.build_payload(req, False), self._headers(),
+            payload.pop("stream_options", None)
+            payload.pop("chat_template_kwargs", None)
+            conn, resp = post_sse(url, payload, self._headers(),
                                   connect_timeout=self.cfg.connect_timeout, read_timeout=self.cfg.timeout,
                                   use_proxy=not self.cfg.local, cancel=cancel, provider=self.name)
         try:
