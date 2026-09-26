@@ -139,6 +139,26 @@ class QMPClient:
     def send_key(self, keys: Iterable[str], hold_ms: int = 100) -> None:
         self.execute("send-key", {"keys": key_events(keys), "hold-time": int(hold_ms)})
 
+    def pointer(self, x: float, y: float, width: int, height: int, button: str | None = "left") -> None:
+        """Move the absolute pointer (the usb-tablet) to pixel (x, y) of a width×height screen, then
+        press and release *button* (None: only move)."""
+        ax = round(min(max(x, 0), width - 1) * 32767 / max(1, width - 1))
+        ay = round(min(max(y, 0), height - 1) * 32767 / max(1, height - 1))
+        self.execute("input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": ax}},
+                                                     {"type": "abs", "data": {"axis": "y", "value": ay}}]})
+        if button:
+            for down in (True, False):
+                time.sleep(0.05)
+                self.execute("input-send-event", {"events": [{"type": "btn", "data": {"down": down, "button": button}}]})
+
+    def eject(self, device_id: str) -> None:
+        """Open the tray of a removable drive (the ISO), also while the guest holds it."""
+        self.execute("eject", {"id": device_id, "force": True})
+
+    def reset(self) -> None:
+        """Hard reset, like the machine's reset button."""
+        self.execute("system_reset")
+
     def status(self) -> str:
         return str((self.execute("query-status") or {}).get("status", "unknown"))
 

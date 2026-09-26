@@ -1,0 +1,60 @@
+{
+  "name": "jackson-local-model",
+  "description": "Jackson with a real local model, the way a user gets one: `sos install` of the model `sos models suggest` picks (llama.cpp, the llm-local module, comes first by itself), then questions only a model can answer — Jackson starts the model server by itself. The live session keeps the model in RAM, hence the bigger VM. Every answer leaves one 'turn done' line in the journal (jacksond), which the serial console carries.",
+  "vm": {
+    "memory_mib": 12288,
+    "smp": 4,
+    "resolution": [1440, 900],
+    "smbios_product": "sos-vm-test"
+  },
+  "steps": [
+    {"id": "boot", "action": "wait_serial", "pattern": "SOS 26\\.10", "timeout_s": 60, "optional": true},
+    {"id": "boot", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
+    {"id": "boot", "action": "key", "keys": ["ret"]},
+    {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
+    {"id": "desktop", "action": "sleep", "seconds": 10},
+    {"id": "desktop", "action": "screenshot", "name": "01-desktop", "assert": "not_blank"},
+
+    {"id": "terminal", "action": "key", "keys": ["meta_l", "ret"], "hold_ms": 120},
+    {"id": "terminal", "action": "sleep", "seconds": 5},
+    {"id": "terminal", "action": "key", "keys": ["meta_l", "f"], "hold_ms": 120},
+    {"id": "terminal", "action": "sleep", "seconds": 2},
+    {"id": "install", "action": "type", "text": "sos models suggest; sos install qwen3.5-4b:Q4_K_M --yes && logger -t sos-vm-test SOS-STEP model-ready || logger -t sos-vm-test SOS-STEP model-failed\n"},
+    {"id": "install", "action": "sleep", "seconds": 60},
+    {"id": "install", "action": "screenshot", "name": "02-installing", "continue_on_failure": true},
+    {"id": "install", "action": "wait_serial", "pattern": "SOS-STEP model-ready", "fail_pattern": "SOS-STEP model-failed", "timeout_s": 1800},
+    {"id": "install", "action": "sleep", "seconds": 2},
+    {"id": "install", "action": "screenshot", "name": "03-model-installed", "continue_on_failure": true},
+    {"id": "install", "action": "type", "text": "clear; sos models list; ls /srv/ai/views/llama.cpp; systemctl --user cat svoya-llm.service | head -n 3\n", "continue_on_failure": true},
+    {"id": "install", "action": "sleep", "seconds": 6},
+    {"id": "install", "action": "screenshot", "name": "04-models-list", "continue_on_failure": true},
+    {"id": "install", "action": "key", "keys": ["meta_l", "q"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "install", "action": "sleep", "seconds": 2},
+
+    {"id": "ask", "action": "key", "keys": ["meta_l", "j"], "hold_ms": 150, "continue_on_failure": true},
+    {"id": "ask", "action": "sleep", "seconds": 3},
+    {"id": "ask", "action": "type", "text": "write a haiku about the sea\n", "continue_on_failure": true},
+    {"id": "ask", "action": "sleep", "seconds": 8},
+    {"id": "ask", "action": "screenshot", "name": "05-jackson-starts-the-model", "continue_on_failure": true},
+    {"id": "ask", "action": "wait_serial", "pattern": "jackson\\.engine: turn done", "fail_pattern": "jackson\\.engine: turn failed", "timeout_s": 420, "continue_on_failure": true},
+    {"id": "ask", "action": "sleep", "seconds": 2},
+    {"id": "ask", "action": "screenshot", "name": "06-haiku", "continue_on_failure": true},
+
+    {"id": "skill", "action": "type", "text": "how do I install Telegram on SOS? two sentences\n", "continue_on_failure": true},
+    {"id": "skill", "action": "wait_serial", "pattern": "jackson\\.engine: turn done", "fail_pattern": "jackson\\.engine: turn failed", "count": 2, "timeout_s": 420, "continue_on_failure": true},
+    {"id": "skill", "action": "sleep", "seconds": 2},
+    {"id": "skill", "action": "screenshot", "name": "07-sos-skill-answer", "continue_on_failure": true},
+
+    {"id": "russian", "action": "type", "text": "answer in Russian: what is 17*23?\n", "continue_on_failure": true},
+    {"id": "russian", "action": "wait_serial", "pattern": "jackson\\.engine: turn done", "fail_pattern": "jackson\\.engine: turn failed", "count": 3, "timeout_s": 420, "continue_on_failure": true},
+    {"id": "russian", "action": "sleep", "seconds": 2},
+    {"id": "russian", "action": "screenshot", "name": "08-math", "continue_on_failure": true},
+    {"id": "russian", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+
+    {"id": "status", "action": "key", "keys": ["meta_l", "ret"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "status", "action": "sleep", "seconds": 5},
+    {"id": "status", "action": "type", "text": "clear; sos models serve --status; j status\n", "continue_on_failure": true},
+    {"id": "status", "action": "sleep", "seconds": 8},
+    {"id": "status", "action": "screenshot", "name": "09-server-status", "continue_on_failure": true}
+  ]
+}

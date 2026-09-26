@@ -24,6 +24,43 @@ class PlanTests(unittest.TestCase):
         self.assertIn(["meta_l", "spc"], combos)
         self.assertIn(["meta_l", "j"], combos)
 
+    def test_every_shipped_plan_is_valid(self):
+        plans = sorted(HERE.glob("*.json"))
+        self.assertGreaterEqual(len(plans), 4)
+        for path in plans:
+            with self.subTest(plan=path.name):
+                plan = run.load_plan(path)
+                self.assertTrue(plan.get("name"))
+                memory = plan.get("vm", {}).get("memory_mib", 6144)
+                self.assertLessEqual(memory, 12288)          # GitHub's runners have 16 GB
+                for step in plan["steps"]:
+                    if "count" in step:
+                        self.assertEqual(step["action"], "wait_serial")
+
+    def test_install_plan_boots_the_installed_disk(self):
+        plan = run.load_plan(HERE / "install.json")
+        self.assertEqual((plan["vm"]["disk_gib"], plan["vm"]["reboot"]), (64, True))
+        actions = [s["action"] for s in plan["steps"]]
+        self.assertLess(actions.index("eject"), actions.index("reset"))   # the ISO out first, then the reset
+        waits = [s for s in plan["steps"] if s["action"] == "wait_serial" and "installation finalized" in s["pattern"]]
+        self.assertEqual(len(waits), 1)
+        for s in plan["steps"]:
+            if s["action"] == "type":
+                keys.text_to_combos(s["text"])
+        lib = (HERE.parents[1] / "installer/scripts/lib.sh").read_text()
+        self.assertIn("logger -t sos-installer", lib)                  # what the wait above reads
+        self.assertIn('log "installation finalized"', (HERE.parents[1] / "installer/scripts/finalize.sh").read_text())
+
+    def test_model_plan_waits_for_each_answer(self):
+        plan = run.load_plan(HERE / "model.json")
+        answers = [s for s in plan["steps"] if s["action"] == "wait_serial" and "turn done" in s["pattern"]]
+        self.assertEqual([s.get("count", 1) for s in answers], [1, 2, 3])
+        typed = " ".join(s.get("text", "") for s in plan["steps"] if s["action"] == "type")
+        self.assertIn("sos install qwen3.5-4b:Q4_K_M --yes", typed)
+        for s in plan["steps"]:
+            if s["action"] == "type":
+                keys.text_to_combos(s["text"])                  # US keys only
+
     def test_safe_graphics_plan_boots_the_second_entry(self):
         plan = run.load_plan(HERE / "safe-graphics.json")
         keys_pressed = [keys.parse_combo(s["keys"]) for s in plan["steps"] if s["action"] == "key"]
@@ -68,6 +105,22 @@ class QemuCommandTests(unittest.TestCase):
     def args(self, firmware: str) -> argparse.Namespace:
         return argparse.Namespace(iso="/tmp/sos.iso", firmware=firmware, accel="tcg", memory=None, smp=None,
                                   qemu="qemu-system-x86_64")
+
+    def test_install_disk_and_reboot(self):
+        plan = {"vm": {"disk_gib": 64, "reboot": True}, "steps": [{"action": "click", "at": [10, 20]}]}
+        run.validate_plan(plan)
+        cmd = " ".join(run.qemu_command(self.args("uefi"), plan, pathlib.Path("/tmp/out"), "/tmp/out/VARS.fd",
+                                        "/x/CODE.fd", disk="/tmp/out/disk.qcow2"))
+        self.assertIn("file=/tmp/out/disk.qcow2,if=none,id=hd0,format=qcow2", cmd)
+        self.assertIn("nvme,drive=hd0,serial=SOS-VM-TEST,bootindex=1", cmd)
+        self.assertIn("ide-cd,drive=cd0,bus=ide.0,bootindex=0,id=cdrom", cmd)
+        self.assertNotIn("-no-reboot", cmd)
+        smoke = " ".join(run.qemu_command(self.args("uefi"), run.load_plan(HERE / "plan.json"),
+                                          pathlib.Path("/tmp/out"), "/tmp/out/VARS.fd", "/x/CODE.fd"))
+        self.assertIn("-no-reboot", smoke)
+        self.assertNotIn("nvme", smoke)
+        with self.assertRaises(ValueError):
+            run.validate_plan({"steps": [{"action": "click", "at": [10]}]})
 
     def test_uefi_secure_boot_command(self):
         plan = run.load_plan(HERE / "plan.json")

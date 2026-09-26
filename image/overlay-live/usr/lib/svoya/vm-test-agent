@@ -44,6 +44,11 @@ diag() {
         if [ -n "$pid" ]; then
             echo "## Hyprland rendering: $(tr '\0' '\n' <"/proc/$pid/environ" | grep -E '^(MESA_LOADER_DRIVER_OVERRIDE|LIBGL_ALWAYS_SOFTWARE|SVOYA_RENDERER)=' | tr '\n' ' ')"
         fi
+        echo "## identity (console welcome: /etc/update-motd.d/00-header)"
+        ls -la /etc/lsb-release /etc/os-release /usr/lib/os-release 2>&1
+        grep -H DESCRIPTION /etc/lsb-release 2>&1
+        grep -nE 'lsb|os-release|DESCRIPTION|PRETTY|printf' /etc/update-motd.d/00-header 2>&1 | head -n 12
+        sh /etc/update-motd.d/00-header 2>&1 | head -n 3
         echo "## greetd"
         journalctl -b -u greetd --no-pager -o short-monotonic 2>&1 | tail -n 30
         echo "## user $user: warnings and errors"

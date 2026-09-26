@@ -30,7 +30,7 @@ import image  # noqa: E402
 import keys  # noqa: E402
 from qmp import QMPClient, QMPError, QMPTimeout  # noqa: E402
 
-ACTIONS = {"sleep", "screenshot", "wait_screen", "wait_serial", "key", "type"}
+ACTIONS = {"sleep", "screenshot", "wait_screen", "wait_serial", "key", "type", "click", "eject", "reset"}
 OVMF_DIRS = ["/usr/share/OVMF", "/usr/share/ovmf", "/usr/share/edk2/ovmf", "/usr/share/edk2-ovmf/x64",
              "/usr/share/qemu"]
 OVMF_SETS = {
@@ -77,6 +77,10 @@ def validate_plan(plan: dict) -> None:
                 re.compile(step["fail_pattern"])
         if action == "sleep" and not isinstance(step.get("seconds"), (int, float)):
             raise ValueError(f"step {n}: sleep needs 'seconds'")
+        if action == "click":
+            at = step.get("at")
+            if not (isinstance(at, list) and len(at) == 2 and all(isinstance(v, (int, float)) for v in at)):
+                raise ValueError(f"step {n}: click needs 'at': [x, y] in screenshot pixels")
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -96,7 +100,7 @@ def kvm_usable() -> bool:
 
 
 def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_copy: str | None,
-                 code: str | None) -> list[str]:
+                 code: str | None, disk: str | None = None) -> list[str]:
     vm = plan.get("vm", {})
     if args.accel == "auto":
         # /dev/kvm can be accessible and still fail to initialise (nested virtualisation off):
@@ -114,12 +118,17 @@ def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_c
            "-vga", "none", "-device", f"virtio-vga,xres={xres},yres={yres}",
            "-display", "none",
            "-drive", f"file={args.iso},media=cdrom,if=none,id=cd0,readonly=on",
-           "-device", "ide-cd,drive=cd0,bus=ide.0,bootindex=0",
+           "-device", "ide-cd,drive=cd0,bus=ide.0,bootindex=0,id=cdrom",
            "-device", "qemu-xhci", "-device", "usb-tablet",
            "-nic", "user,model=virtio-net-pci",
            "-serial", f"file:{out / 'serial.log'}",
-           "-qmp", f"unix:{out / 'qmp.sock'},server=on,wait=off",
-           "-no-reboot"]
+           "-qmp", f"unix:{out / 'qmp.sock'},server=on,wait=off"]
+    if disk:
+        # an empty NVMe disk to install onto; it boots once the ISO is ejected ("eject", "reset")
+        cmd += ["-drive", f"file={disk},if=none,id=hd0,format=qcow2,cache=unsafe",
+                "-device", "nvme,drive=hd0,serial=SOS-VM-TEST,bootindex=1"]
+    if not vm.get("reboot"):
+        cmd += ["-no-reboot"]           # a reboot ends the test run, unless the plan expects one
     if args.firmware in ("uefi", "uefi-sb"):
         cmd += ["-drive", f"if=pflash,format=raw,unit=0,readonly=on,file={code}",
                 "-drive", f"if=pflash,format=raw,unit=1,file={vars_copy}"]
@@ -132,11 +141,13 @@ def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_c
 # runner
 # ---------------------------------------------------------------------------------------------------
 class Runner:
-    def __init__(self, qmp: QMPClient, out: pathlib.Path, scale: float, proc: subprocess.Popen | None):
+    def __init__(self, qmp: QMPClient, out: pathlib.Path, scale: float, proc: subprocess.Popen | None,
+                 resolution: tuple[int, int] = (1440, 900)):
         self.qmp = qmp
         self.out = out
         self.scale = scale
         self.proc = proc
+        self.resolution = resolution
         self.shots: dict[str, image.Image] = {}
         self.results: list[dict] = []
         (out / "screens").mkdir(parents=True, exist_ok=True)
@@ -202,24 +213,48 @@ class Runner:
         raise StepFailed("timed out waiting for the screen to show something")
 
     def do_wait_serial(self, step: dict) -> str:
+        """Wait for a line on the serial log. "count": N waits for the Nth match (a pattern that
+        repeats, e.g. one journal line per Jackson answer); "fail_pattern" counts the same way."""
         pat = re.compile(step["pattern"])
         fail = re.compile(step["fail_pattern"]) if step.get("fail_pattern") else None
+        want = int(step.get("count", 1))
         deadline = time.monotonic() + step.get("timeout_s", 300) * self.scale
         while time.monotonic() < deadline:
             self.alive()
             text = self.serial()
-            m = pat.search(text)
-            if m:
-                return f"matched {m.group(0)!r}"
-            if fail and fail.search(text):
-                raise StepFailed(f"serial reported failure: {fail.pattern}")
+            # every success and failure in order of appearance; the Nth one decides
+            events = sorted([(m.start(), True) for m in pat.finditer(text)]
+                            + ([(m.start(), False) for m in fail.finditer(text)] if fail else []))
+            if len(events) >= want:
+                at, ok = events[want - 1]
+                end = text.find("\n", at)
+                line = text[text.rfind("\n", 0, at) + 1:end if end >= 0 else None].strip()[:200]
+                if not ok:
+                    raise StepFailed(f"serial reported failure: {line!r}")
+                return f"matched {line!r}" + (f" (#{want})" if want > 1 else "")
             time.sleep(self.poll_interval())
-        raise StepFailed(f"timed out waiting for serial pattern {pat.pattern!r}")
+        raise StepFailed(f"timed out waiting for serial pattern {pat.pattern!r}" + (f" (#{want})" if want > 1 else ""))
 
     def do_key(self, step: dict) -> str:
         combo = keys.parse_combo(step["keys"])
         self.qmp.send_key(combo, step.get("hold_ms", 100))
         return "+".join(combo)
+
+    def do_click(self, step: dict) -> str:
+        """Click at [x, y] of the screenshots (the last one's size; the plan's resolution before any)."""
+        x, y = step["at"]
+        last = next(reversed(self.shots.values()), None)
+        w, h = (last.width, last.height) if last else tuple(self.resolution)
+        self.qmp.pointer(x, y, w, h, step.get("button", "left"))
+        return f"clicked {x},{y} of {w}x{h}"
+
+    def do_eject(self, step: dict) -> str:
+        self.qmp.eject("cdrom")
+        return "ejected the ISO"
+
+    def do_reset(self, step: dict) -> str:
+        self.qmp.reset()
+        return "reset"
 
     def do_type(self, step: dict) -> str:
         for combo in keys.text_to_combos(step["text"]):
@@ -298,7 +333,13 @@ def main(argv: list[str] | None = None) -> int:
         vars_copy = str(out / "OVMF_VARS.fd")
         if found:
             shutil.copyfile(varsf, vars_copy)
-    cmd = qemu_command(args, plan, out, vars_copy, code)
+    disk = None
+    if plan.get("vm", {}).get("disk_gib"):
+        disk = str(out / "disk.qcow2")
+        if not args.dry_run:
+            subprocess.run(["qemu-img", "create", "-q", "-f", "qcow2", disk, f"{int(plan['vm']['disk_gib'])}G"],
+                           check=True)
+    cmd = qemu_command(args, plan, out, vars_copy, code, disk)
     accel = "kvm" if "accel=kvm" in " ".join(cmd) else "tcg"
     scale = args.timeout_scale or (1.0 if accel == "kvm" else 4.0)
     if args.dry_run:
@@ -328,7 +369,7 @@ def main(argv: list[str] | None = None) -> int:
                 if args.timeout_scale is None:
                     scale = 4.0
                 print(f"KVM did not initialise; running under TCG (timeout scale {scale})", flush=True)
-        runner = Runner(qmp, out, scale, proc)
+        runner = Runner(qmp, out, scale, proc, tuple(plan.get("vm", {}).get("resolution", [1440, 900])))
         ok = runner.run(plan["steps"])
         qmp.quit()
     finally:

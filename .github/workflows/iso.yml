@@ -170,3 +170,48 @@ jobs:
       plan: tests/vm/safe-graphics.json
       firmwares: '["uefi"]'
       label: safe-graphics
+
+  # Jackson with a real local model: `sos install` of the suggested model (llama.cpp comes with it),
+  # then questions only a model answers; Jackson starts the server itself (tests/vm/model.json).
+  model:
+    needs: iso
+    if: ${{ !inputs.release && (github.event_name != 'workflow_dispatch' || inputs.vm_test) }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
+      actions: read
+    with:
+      artifact: sos-iso
+      plan: tests/vm/model.json
+      firmwares: '["uefi"]'
+      label: model
+
+  # Install to an empty NVMe disk with the real installer, reboot into the installed system,
+  # log in through the greeter (tests/vm/install.json).
+  install:
+    needs: iso
+    if: ${{ !inputs.release && (github.event_name != 'workflow_dispatch' || inputs.vm_test) }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
+      actions: read
+    with:
+      artifact: sos-iso
+      plan: tests/vm/install.json
+      firmwares: '["uefi"]'
+      label: install
+
+  # Games: `sos install steam` (Steam, 32-bit drivers, GameMode, MangoHud, gamescope), then Steam
+  # from the launcher (tests/vm/games.json).
+  games:
+    needs: iso
+    if: ${{ !inputs.release && (github.event_name != 'workflow_dispatch' || inputs.vm_test) }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
+      actions: read
+    with:
+      artifact: sos-iso
+      plan: tests/vm/games.json
+      firmwares: '["uefi"]'
+      label: games
