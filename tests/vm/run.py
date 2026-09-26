@@ -284,9 +284,9 @@ class Runner:
     def do_type(self, step: dict) -> str:
         text = step["text"].replace("{serve}", self.serve_url)
         for combo in keys.text_to_combos(text):
-            self.qmp.send_key(combo, 50)
-            time.sleep(0.05)
-        return f"typed {len(step['text'])} characters"
+            self.qmp.press(combo, 0.025)
+            time.sleep(0.035)
+        return f"typed {len(text)} characters"
 
     def run(self, steps: list[dict]) -> bool:
         ok = True

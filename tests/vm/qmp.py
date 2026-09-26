@@ -139,6 +139,17 @@ class QMPClient:
     def send_key(self, keys: Iterable[str], hold_ms: int = 100) -> None:
         self.execute("send-key", {"keys": key_events(keys), "hold-time": int(hold_ms)})
 
+    def press(self, keys: Iterable[str], hold_s: float = 0.025) -> None:
+        """Press and release a key combo with explicit down and up events, timed here. send-key's
+        hold-time goes through QEMU's delayed input queue, which drops events past ~50: long typed
+        lines arrived half a minute late and a dropped key-up made the guest repeat the key (ISO #17:
+        screens full of empty prompts)."""
+        codes = key_events(keys)
+        self.execute("input-send-event", {"events": [{"type": "key", "data": {"down": True, "key": k}} for k in codes]})
+        time.sleep(hold_s)
+        self.execute("input-send-event",
+                     {"events": [{"type": "key", "data": {"down": False, "key": k}} for k in reversed(codes)]})
+
     def pointer(self, x: float, y: float, width: int, height: int, button: str | None = "left") -> None:
         """Move the absolute pointer (the usb-tablet) to pixel (x, y) of a width×height screen, then
         press and release *button* (None: only move)."""

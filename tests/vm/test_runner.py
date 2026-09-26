@@ -21,6 +21,7 @@ class ScreenQEMU(threading.Thread):
     def __init__(self, sock: socket.socket, frames: list[bytes]):
         super().__init__(daemon=True)
         self.sock, self.frames, self.keys, self.commands = sock, list(frames), [], []
+        self.typed: list[tuple[str, str]] = []
 
     def send(self, obj: dict) -> None:
         self.sock.sendall((json.dumps(obj) + "\n").encode())
@@ -44,6 +45,10 @@ class ScreenQEMU(threading.Thread):
                     pathlib.Path(msg["arguments"]["filename"]).write_bytes(frame)
                 elif msg["execute"] == "send-key":
                     self.keys.append([k["data"] for k in msg["arguments"]["keys"]])
+                elif msg["execute"] == "input-send-event":
+                    for ev in msg["arguments"]["events"]:
+                        if ev["type"] == "key":
+                            self.typed.append(("down" if ev["data"]["down"] else "up", ev["data"]["key"]["data"]))
                 self.commands.append((msg["execute"], msg.get("arguments")))
                 self.send({"return": {}, "id": msg.get("id")})
 
@@ -174,6 +179,27 @@ class RunnerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TypeTests(unittest.TestCase):
+    def test_typing_sends_each_key_down_then_up(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp)
+            (out / "serial.log").write_text("")
+            a, b = socket.socketpair()
+            fake = ScreenQEMU(b, [frame((0, 0, 0))])
+            fake.start()
+            qmp = QMPClient(a, timeout=2)
+            qmp.negotiate()
+            runner = run.Runner(qmp, out, scale=0.01, proc=None)
+            runner.serve_url = "http://10.0.2.2:8000"
+            self.assertTrue(runner.run([{"id": "t", "action": "type", "text": "A{serve}\n"}]), runner.results)
+            self.assertEqual(fake.typed[:4], [("down", "shift"), ("down", "a"), ("up", "a"), ("up", "shift")])
+            self.assertEqual(fake.typed[-2:], [("down", "ret"), ("up", "ret")])
+            # shift+a, the URL (its two colons with shift), return
+            self.assertEqual(sum(1 for d, _ in fake.typed if d == "down"), 2 + len("http://10.0.2.2:8000") + 2 + 1)
+            self.assertIn("typed 22 characters", runner.results[-1]["detail"])
+            qmp.close()
 
 
 class ServeTests(unittest.TestCase):
