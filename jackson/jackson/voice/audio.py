@@ -40,9 +40,10 @@ def record_command(rate: int = RATE) -> list[str]:
         return os.environ["SVOYA_VOICE_RECORD"].split()
     if _RAW is None:
         _RAW = _pw_raw()
+    source = os.environ.get("SVOYA_VOICE_SOURCE", "")      # a microphone other than the default one
     if _RAW:
         return ["pw-record", "--raw", "--rate", str(rate), "--channels", "1", "--format", "s16",
-                "--latency", "32ms", "-"]
+                "--latency", "32ms", *(["--target", source] if source else []), "-"]
     return ["arecord", "-q", "-t", "raw", "-f", "S16_LE", "-r", str(rate), "-c", "1", "-"]
 
 

@@ -140,6 +140,10 @@ def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_c
         # an empty NVMe disk to install onto; it boots once the ISO is ejected ("eject", "reset")
         cmd += ["-drive", f"file={disk},if=none,id=hd0,format=qcow2,cache=unsafe",
                 "-device", "nvme,drive=hd0,serial=SOS-VM-TEST,bootindex=1"]
+    if vm.get("audio"):
+        # a sound card: what the guest plays is recorded (speaker.wav, 16 kHz mono), its input is silent
+        cmd += ["-audiodev", f"wav,id=snd0,path={out / 'speaker.wav'},out.frequency=16000,out.channels=1",
+                "-device", "intel-hda", "-device", "hda-duplex,audiodev=snd0"]
     if not vm.get("reboot"):
         cmd += ["-no-reboot"]           # a reboot ends the test run, unless the plan expects one
     if args.firmware in ("uefi", "uefi-sb"):

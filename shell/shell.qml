@@ -156,6 +156,11 @@ ShellRoot {
         function customize(): void {
             Actions.customizeJackson();
         }
+        // the microphone button from a key or a script: talk (again: that's it; while he talks: quiet)
+        function talk(): void {
+            Ui.show("jackson");
+            Jackson.talk();
+        }
         // for people who bind push-to-talk to another key in user.conf (bind + bindr)
         function press(): void {
             ptt.press();

@@ -203,6 +203,7 @@ class VoiceService:
         peak = 0.0
         rec = self.recorder()
         outcome = "nothing"
+        log.info("listening (%s)", cap.mode)
         try:
             await rec.start()
             async for data in rec.frames():

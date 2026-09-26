@@ -66,6 +66,7 @@ class SilentTTS:
 ENGINES: dict[str, str] = {
     "tone": "jackson.voice.tts:ToneTTS",
     "none": "jackson.voice.tts:SilentTTS",
+    "qwen3": "jackson.voice.engines:QwenTTS",
 }
 
 
@@ -94,5 +95,5 @@ def pick_engine(models: Any) -> str:
 
 
 # engine → the folder under /srv/ai/voice that says it is installed; best first
-ENGINE_DIRS: dict[str, str] = {}
-PREFERENCE: list[str] = []
+ENGINE_DIRS: dict[str, str] = {"qwen3": "qwen3-tts"}
+PREFERENCE: list[str] = ["qwen3"]

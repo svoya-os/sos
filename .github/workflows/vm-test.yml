@@ -146,6 +146,13 @@ jobs:
                   "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' | tail -n 1500 >"$out/diag.txt"
               tail -n 200 "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$out/serial-tail.txt"
           fi
+          if [ -s "$dir/speaker.wav" ]; then
+              # what the VM said out loud (the voice bot): only the parts that are not silence
+              command -v ffmpeg >/dev/null || sudo apt-get install -y -qq ffmpeg >/dev/null
+              ffmpeg -nostdin -loglevel error -y -i "$dir/speaker.wav" \
+                  -af "silenceremove=start_periods=1:stop_periods=-1:stop_duration=1:stop_threshold=-50dB" \
+                  -c:a libopus -b:a 32k "$out/speaker.ogg" || true
+          fi
           scripts/ci-publish.sh "$out" "runs/$RUN/$sub" "screens: run $RUN ($sub)"
           {
             echo "### Screenshots ($sub)"

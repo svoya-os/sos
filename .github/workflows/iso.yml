@@ -215,3 +215,19 @@ jobs:
       plan: tests/vm/games.json
       firmwares: '["uefi"]'
       label: games
+
+  # Voice: `sos install voice`, then a spoken question into a virtual microphone, the answer, the
+  # conversation going on by itself and «спасибо, всё» (tests/vm/voice.json); speaker.ogg is what
+  # Jackson said.
+  voice:
+    needs: iso
+    if: ${{ !inputs.release && (github.event_name != 'workflow_dispatch' || inputs.vm_test) }}
+    uses: ./.github/workflows/vm-test.yml
+    permissions:
+      contents: write   # publishes screenshots to the ci-screens branch (never to main)
+      actions: read
+    with:
+      artifact: sos-iso
+      plan: tests/vm/voice.json
+      firmwares: '["uefi"]'
+      label: voice
