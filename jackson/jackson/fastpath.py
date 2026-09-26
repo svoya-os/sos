@@ -1362,6 +1362,19 @@ QUESTION_RE = re.compile(r"^(почему|зачем|как|что|какой|к
 DECIDE_MAX_WORDS = 12
 DECIDE_MIN_P = 0.8          # read-only intents (battery, time)
 DECIDE_MIN_P_CHANGE = 0.9   # intents that change something (volume, Wi-Fi, lock)
+# Requests that want more than the intent does: a screenshot that is to be sent somewhere or is really
+# a video, the price of a battery, how long something takes, a site to block, Wi-Fi to share. The
+# decider still picked the intent now and then (tests/decide-eval: «скинь скриншот в телеграм»,
+# «запиши видео с экрана»); doing half of a request is worse than handing all of it to the model.
+BEYOND: dict[str, re.Pattern[str]] = {
+    "screenshot": re.compile(r"(видео|запис|стрим|скин|отправ|пошли|перешли|телеграм|почт|"
+                             r"\b(video|record|recording|stream|send|share|post|telegram|mail|email)\b)"),
+    "battery": re.compile(r"(\b(стоит|стоимост|цен|куп|покуп|замен|заказ)|\b(price|cost|costs|buy|order|replace|new)\b)"),
+    "time": re.compile(r"(займ|уйдет|потреб|долго|\b(how long|take|takes|until)\b)"),
+    "lock": re.compile(r"(сайт|номер|контакт|приложени|\b(site|website|number|contact|apps?)\b)"),
+    "wifi_on": re.compile(r"(разда|пароль|\b(hotspot|share|password)\b)"),
+    "wifi_off": re.compile(r"(разда|пароль|\b(hotspot|share|password)\b)"),
+}
 
 
 def decision_candidate(text: str, names: tuple[str, ...] = ()) -> str | None:
@@ -1391,6 +1404,9 @@ def decided_match(index: int, p: float, norm: str, question: bool | None = None)
     intent = next((i for i in INTENTS if i.name == name), None)
     if intent is None:
         return None
+    beyond = BEYOND.get(name)
+    if beyond is not None and beyond.search(norm):
+        return None                                   # more than this intent does: the model's turn
     changes = intent.tier != T0
     if question is None:
         question = bool(QUESTION_RE.match(norm)) or norm.endswith("?")

@@ -50,6 +50,9 @@ Work towards v0.1 «Первый сигнал».
 - Wired Ethernet works out of the box: NetworkManager manages every network device, as on Ubuntu
   Desktop (a computer on a cable, or a virtual machine, stayed offline).
 - The console welcome, `/etc/issue` and `lsb_release` name SOS again: the build lost these files.
+- Jackson no longer runs half of a request as a quick command: «скинь скриншот в телеграм» or
+  «запиши видео с экрана» is not just a screenshot, the price of a battery is not its charge; such
+  requests go to the model.
 - When the local model does not answer, Jackson says what to check (`sos models serve --status`)
   or how to start it, instead of an address and a socket error.
 - **Privacy:** the local model server (`sos models serve`, the llm-local module) loads the models in

@@ -54,6 +54,27 @@ class FastDecisionTest(unittest.TestCase):
         self.assertIsNone(fastpath.decided_match(idx["wifi_off"], 0.99, "почему не работает вай фай"))
         self.assertIsNone(fastpath.decided_match(len(fastpath.DECIDABLE), 0.99, "как дела"))     # «none»
 
+    def test_a_request_that_wants_more_than_the_intent_goes_to_the_model(self):
+        idx = {name: i for i, (name, _, _) in enumerate(fastpath.DECIDABLE)}
+
+        def picked(name, text):
+            m = fastpath.decided_match(idx[name], 0.99, fastpath.normalize(text))
+            return m.name if m else None
+        for name, text in [("screenshot", "сделай скрин и отправь Маше"), ("screenshot", "сними экран на видео"),
+                           ("screenshot", "screenshot this and send it to Bob"),
+                           ("battery", "где купить батарею подешевле"), ("battery", "how much does a new battery cost"),
+                           ("time", "сколько времени уйдёт на обновление"), ("time", "how long does the update take"),
+                           ("lock", "заблокируй этот сайт"), ("lock", "lock the app"),
+                           ("wifi_on", "раздай вайфай на телефон"), ("wifi_on", "share my wifi password")]:
+            with self.subTest(text=text):
+                self.assertIsNone(picked(name, text))
+        # the plain commands still run
+        for name, text in [("screenshot", "сделай скрин"), ("screenshot", "take a screenshot"),
+                           ("battery", "проверь заряд батареи"), ("battery", "оцени заряд"), ("time", "который час"),
+                           ("time", "what time is it"), ("lock", "заблокируй экран"), ("wifi_on", "включи вайфай")]:
+            with self.subTest(text=text):
+                self.assertEqual(picked(name, text), name)
+
 
 class EngineDecisionTest(unittest.TestCase):
     def setUp(self):
