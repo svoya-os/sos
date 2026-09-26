@@ -1,0 +1,315 @@
+{
+ "plan": "games",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": true,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 14.42 desktop-ready'",
+   "status": "ok",
+   "seconds": 16.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 7,
+   "id": "network",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 7.42 network-online'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 9,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 10,
+   "id": "install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+f",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 11,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 12,
+   "id": "install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 229 characters",
+   "status": "ok",
+   "seconds": 11.6
+  },
+  {
+   "n": 13,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 90s",
+   "status": "ok",
+   "seconds": 90.0
+  },
+  {
+   "n": 14,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 15,
+   "id": "install",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  117.866216] sos-vm-test[5487]: SOS-STEP games-ready'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 16,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 17,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 18,
+   "id": "tools",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 191 characters",
+   "status": "ok",
+   "seconds": 9.7
+  },
+  {
+   "n": 19,
+   "id": "tools",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 20,
+   "id": "tools",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 21,
+   "id": "tools",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+q",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 22,
+   "id": "tools",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 23,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 24,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 25,
+   "id": "launcher",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 5 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 26,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 27,
+   "id": "launcher",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 28,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 29,
+   "id": "steam",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 45s",
+   "status": "ok",
+   "seconds": 45.0
+  },
+  {
+   "n": 30,
+   "id": "steam",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 31,
+   "id": "steam",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 120s",
+   "status": "ok",
+   "seconds": 120.0
+  },
+  {
+   "n": 32,
+   "id": "steam",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 33,
+   "id": "steam",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 180s",
+   "status": "ok",
+   "seconds": 180.0
+  },
+  {
+   "n": 34,
+   "id": "steam",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  }
+ ]
+}
