@@ -26,6 +26,7 @@ from .audio import AudioError, Player, Recorder
 from .vad import EndpointConfig, Endpointer, level
 
 log = logging.getLogger("jackson.voice")
+SOUND_DIRS = ("/usr/share/sounds/svoya/stereo", "/usr/share/svoya/sounds/stereo")
 
 
 @dataclass
@@ -77,7 +78,7 @@ class VoiceService:
     def __init__(self, *, load_stt: Callable[[], Any], load_tts: Callable[[], Any], load_vad: Callable[[], Any],
                  recorder: Callable[[], Recorder] = Recorder,
                  player: Callable[[int, Callable[[float], Any]], Player] | None = None,
-                 endpoint: EndpointConfig | None = None) -> None:
+                 endpoint: EndpointConfig | None = None, sounds: bool = False) -> None:
         self._load = {"stt": load_stt, "tts": load_tts, "vad": load_vad}
         self.stt: Any = None
         self.tts: Any = None
@@ -85,6 +86,7 @@ class VoiceService:
         self.recorder = recorder
         self.player_factory = player or (lambda rate, on_level: Player(rate, on_level=on_level))
         self.endpoint = endpoint or EndpointConfig()
+        self.sounds = sounds                # the earcons: the microphone opens, the phrase was heard
         self.ready = asyncio.Event()
         self.error = ""
         self.capture: Capture | None = None
@@ -206,6 +208,7 @@ class VoiceService:
         rec = self.recorder()
         outcome = "nothing"
         log.info("listening (%s)", cap.mode)
+        await self.earcon("jackson-listen")       # before the microphone opens: it must not hear it
         try:
             await rec.start()
             async for data in rec.frames():
@@ -254,6 +257,7 @@ class VoiceService:
             await cap.conn.send({"type": "nothing", "id": cap.id})
             return
         audio = np.concatenate(heard).astype(np.float32) / 32768.0
+        asyncio.get_running_loop().create_task(self.earcon("jackson-thinking"))
         t0 = time.monotonic()
         try:
             text = await asyncio.to_thread(self.stt.recognize, audio)
@@ -266,6 +270,24 @@ class VoiceService:
             await cap.conn.send({"type": "nothing", "id": cap.id})
         else:
             await cap.conn.send({"type": "transcript", "id": cap.id, "text": text.strip(), "ms": ms})
+
+    async def earcon(self, name: str) -> None:
+        """A short sound from the SOS sound theme (branding/sounds), played to its end."""
+        if not self.sounds:
+            return
+        for base in SOUND_DIRS:
+            path = Path(base) / f"{name}.oga"
+            if path.is_file():
+                break
+        else:
+            return
+        try:
+            proc = await asyncio.create_subprocess_exec("pw-play", str(path), stdin=asyncio.subprocess.DEVNULL,
+                                                        stdout=asyncio.subprocess.DEVNULL,
+                                                        stderr=asyncio.subprocess.DEVNULL)
+            await asyncio.wait_for(proc.wait(), 2)
+        except (OSError, asyncio.TimeoutError):
+            pass
 
     # ---- speaking -------------------------------------------------------------------------
     async def _synthesizer(self) -> None:
@@ -390,7 +412,7 @@ def main(argv: list[str] | None = None) -> int:
         from .tts import pick_engine
         engine = pick_engine(models)
     options = dict(cfg.get("engine_options") or {})
-    service = VoiceService(**default_loaders(models, engine, options))
+    service = VoiceService(**default_loaders(models, engine, options), sounds=cfg.get("sounds", True) is not False)
     loop = asyncio.new_event_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, loop.stop)

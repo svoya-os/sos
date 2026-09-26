@@ -357,7 +357,8 @@ client asked to listen; no audio is kept.
   for engines that read digits badly).
 - Conversation: after a spoken answer Jackson listens again for a few seconds (`follow`);
   «спасибо, всё» ends it without the model. `[voice] follow = false` turns that off, `speak = false`
-  keeps the answers silent, `voice = "…"` picks another voice than the persona's.
+  keeps the answers silent, `voice = "…"` picks another voice than the persona's, `sounds = false`
+  drops the two short sounds (the microphone opens; the phrase was heard).
 
 Protocol additions: see `jackson/voice/__init__.py` (the speech service) and ARCHITECTURE §8.
 External agents (Claude Code, Codex CLI, OpenCode, goose) will run over ACP inside the same
