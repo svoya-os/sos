@@ -53,7 +53,7 @@
 
     {"id": "install", "action": "sleep", "seconds": 90},
     {"id": "install", "action": "screenshot", "name": "09-installing", "continue_on_failure": true},
-    {"id": "install", "action": "wait_serial", "pattern": "sos-installer\\S*: installation finalized", "fail_pattern": "sos-installer\\S*: error:", "timeout_s": 2400},
+    {"id": "install", "action": "wait_serial", "pattern": "sos-installer\\S*: installation finalized", "fail_pattern": "sos-installer\\S*: error:|SOS-STEP installer-exit", "timeout_s": 2400},
     {"id": "install", "action": "sleep", "seconds": 30},
     {"id": "install", "action": "screenshot", "name": "10-finished"},
 

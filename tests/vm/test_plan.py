@@ -53,7 +53,11 @@ class PlanTests(unittest.TestCase):
         self.assertTrue(helper.stat().st_mode & 0o111)
         text = helper.read_text()
         self.assertIn("initialPartitioningChoice: erase", text)
-        self.assertIn('exec sos-install -c "$cfg"', text)
+        self.assertIn('sos-install -c "$cfg"', text)
+        self.assertIn('ln -s /usr/share/calamares/qml "$cfg/qml"', text)    # -c needs the QML modules
+        self.assertIn("SOS-STEP installer-exit", text)
+        final = [s for s in plan["steps"] if s["action"] == "wait_serial" and "finalized" in s["pattern"]][0]
+        self.assertIn("installer-exit", final["fail_pattern"])            # an early exit fails at once
         self.assertIn("SOS-STEP installer-start", text)
         lib = (HERE.parents[1] / "installer/scripts/lib.sh").read_text()
         self.assertIn("logger -t sos-installer", lib)                  # what the wait above reads

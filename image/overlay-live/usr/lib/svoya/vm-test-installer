@@ -7,9 +7,16 @@ set -euo pipefail
 cfg=/tmp/sos-vm-test-calamares
 rm -rf "$cfg"
 cp -r /etc/calamares "$cfg"
+# An explicit settings directory (-c) must hold Calamares' QML modules too, or it refuses to start
+# ("Cowardly refusing to continue startup without a QML directory": ISO #9's install bot).
+if [ -d /usr/share/calamares/qml ]; then ln -s /usr/share/calamares/qml "$cfg/qml"; else mkdir "$cfg/qml"; fi
 sed -i 's/^initialPartitioningChoice: none/initialPartitioningChoice: erase/' "$cfg/modules/partition.conf"
 grep -q '^initialPartitioningChoice: erase$' "$cfg/modules/partition.conf"
 printf 'presets:\n    fullName:\n        value: "SOS Tester"\n    loginName:\n        value: "tester"\n' \
     >>"$cfg/modules/users.conf"
 logger -t sos-vm-test "SOS-STEP installer-start"
-exec sos-install -c "$cfg"
+# The bot waits for the installer's last step; if the installer ends before it, fail at once.
+rc=0
+sos-install -c "$cfg" || rc=$?
+logger -t sos-vm-test "SOS-STEP installer-exit $rc"
+exit "$rc"
