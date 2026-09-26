@@ -26,7 +26,7 @@
     {"id": "install", "action": "wait_serial", "pattern": "SOS-STEP games-ready", "fail_pattern": "SOS-STEP games-failed", "timeout_s": 2400},
     {"id": "install", "action": "sleep", "seconds": 2},
     {"id": "install", "action": "screenshot", "name": "03-installed", "continue_on_failure": true},
-    {"id": "tools", "action": "type", "text": "clear; dpkg --print-foreign-architectures; dpkg -l steam-installer gamemode mangohud gamescope | tail -n 4; command -v steam gamemoderun mangohud gamescope; sos modules list | grep -i gaming; grep -H -E '^(Name|Exec)=' /usr/share/applications/*team*.desktop\n", "continue_on_failure": true},
+    {"id": "tools", "action": "type", "text": "clear; dpkg --print-foreign-architectures; dpkg -l steam-installer gamemode mangohud gamescope | tail -n 4; command -v steam gamemoderun mangohud gamescope; sos modules list | grep -i gaming; grep -H -E '^(Name|Exec)=' /usr/share/applications/*team*.desktop | logger -s -t sos-vm-test-steam\n", "continue_on_failure": true},
     {"id": "tools", "action": "sleep", "seconds": 8},
     {"id": "tools", "action": "screenshot", "name": "04-tools", "continue_on_failure": true},
     {"id": "tools", "action": "key", "keys": ["meta_l", "q"], "hold_ms": 120, "continue_on_failure": true},
