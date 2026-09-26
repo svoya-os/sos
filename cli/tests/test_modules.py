@@ -48,6 +48,40 @@ class CatalogTest(SandboxTest):
             if s.parent.name != "files" and s.name != "common.sh":
                 self.assertIn('source "${SVOYA_LIB:?}/common.sh"', text, str(s))
 
+    def test_gaming_install_runs_without_nvidia(self):
+        # `set -euo pipefail` (common.sh) and a dpkg-query that matches nothing: ISO #9's games bot
+        # stopped right after `apt-get update`. Run the script with stubs for common.sh and the tools.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            lib = os.path.join(tmp, "lib")
+            bin_ = os.path.join(tmp, "bin")
+            os.makedirs(lib)
+            os.makedirs(bin_)
+            log = os.path.join(tmp, "calls")
+            with open(os.path.join(lib, "common.sh"), "w") as f:
+                f.write("set -euo pipefail\n"
+                        f"sv_log() {{ echo \"$*\" >>{log}; }}\n"
+                        "sv_require_root() { :; }\n"
+                        "sv_run() { sv_log run \"$@\"; \"$@\"; }\n"
+                        "sv_apt_available() { return 1; }\n"
+                        "sv_apt_track_install() { sv_log apt \"$@\"; }\n"
+                        "sv_flatpak_install() { sv_log flatpak \"$@\"; }\n"
+                        "sv_say() { :; }\n")
+            stubs = {"dpkg": "exit 0",                                      # no foreign architecture yet
+                     "dpkg-query": "echo 'dpkg-query: no packages found matching' >&2; exit 1",
+                     "apt-get": "exit 0"}
+            for name, body in stubs.items():
+                path = os.path.join(bin_, name)
+                with open(path, "w") as f:
+                    f.write("#!/bin/sh\n" + body + "\n")
+                os.chmod(path, 0o755)
+            env = {"PATH": bin_ + ":/usr/bin:/bin", "SVOYA_LIB": lib}
+            r = subprocess.run(["bash", str(MODDIR / "gaming/install.sh")], capture_output=True, text=True, env=env)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            calls = open(log).read()
+            self.assertIn("run dpkg --add-architecture i386", calls)
+            self.assertIn("apt steam-installer", calls)
+
     def test_notes_module_is_obsidian_on_request(self):
         cat = M.load_catalog(MODDIR)
         n = M.find(cat, "obsidian")

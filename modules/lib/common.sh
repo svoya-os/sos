@@ -84,7 +84,7 @@ sv_github_install() {
     *) mv "$tmpd/$name" "$tmpd/$member" ;;
   esac
   local found
-  found=$(find "$tmpd" -type f -name "$member" | head -n1)
+  found=$(find "$tmpd" -type f -name "$member" -print -quit)
   [[ -n "$found" ]] || { rm -rf "$tmpd"; sv_die "$member not found in $name"; }
   sv_run install -D -m 0755 "$found" "$bin"
   rm -rf "$tmpd"

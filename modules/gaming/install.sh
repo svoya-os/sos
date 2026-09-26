@@ -16,8 +16,10 @@ for p in libgl1-mesa-dri:i386 mesa-vulkan-drivers:i386; do
   sv_apt_available "$p" && extra+=("$p")
 done
 # NVIDIA: Mesa does not drive the card, the driver's own 32-bit libraries are needed (same branch).
+# (dpkg-query fails when nothing matches: without `|| true` pipefail ended the install on every
+# computer without NVIDIA — the games bot found it.)
 nv=$(dpkg-query -W -f='${binary:Package} ${db:Status-Abbrev}\n' 'libnvidia-gl-*' 2>/dev/null |
-  awk '$2 == "ii" && $1 !~ /:i386$/ { print $1; exit }')
+  awk '$2 == "ii" && $1 !~ /:i386$/ { print $1; exit }') || true
 if [[ -n "$nv" ]] && sv_apt_available "$nv:i386"; then
   extra+=("$nv:i386")
 fi

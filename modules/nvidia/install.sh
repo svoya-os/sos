@@ -31,7 +31,7 @@ if ! sv_have nvidia-ctk; then
     key=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
     tmp=$(mktemp)
     sv_run curl --proto '=https' -fsSL -o "$tmp" https://nvidia.github.io/libnvidia-container/gpgkey
-    fpr=$(gpg --show-keys --with-colons "$tmp" 2>/dev/null | awk -F: '/^fpr/ {print $10; exit}')
+    fpr=$(gpg --show-keys --with-colons "$tmp" 2>/dev/null | awk -F: '/^fpr/ {print $10; exit}') || true
     [[ "$fpr" == "$NV_CTK_FPR" ]] || { rm -f "$tmp"; sv_die "unexpected NVIDIA repository key ($fpr) — not adding it"; }
     gpg --dearmor <"$tmp" | sv_write "$key"
     rm -f "$tmp"
