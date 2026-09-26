@@ -1,0 +1,513 @@
+{
+ "plan": "install-to-disk",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": true,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 18.69 desktop-ready'",
+   "status": "ok",
+   "seconds": 21.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 7,
+   "id": "installer",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "installer",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 9,
+   "id": "installer",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 33 characters",
+   "status": "ok",
+   "seconds": 1.7
+  },
+  {
+   "n": 10,
+   "id": "installer",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[   41.279968] sos-vm-test[1785]: SOS-STEP installer-start'",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 11,
+   "id": "installer",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 25s",
+   "status": "ok",
+   "seconds": 25.0
+  },
+  {
+   "n": 12,
+   "id": "welcome",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 60.7% changed vs 01-live-desktop",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 13,
+   "id": "welcome",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+n",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 14,
+   "id": "locale",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 15,
+   "id": "locale",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 16,
+   "id": "locale",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+n",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 17,
+   "id": "keyboard",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 18,
+   "id": "keyboard",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 19,
+   "id": "keyboard",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+n",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 20,
+   "id": "partition",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 21,
+   "id": "partition",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 22,
+   "id": "partition",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+n",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 23,
+   "id": "users",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 24,
+   "id": "users",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 25,
+   "id": "users",
+   "action": "key",
+   "optional": false,
+   "detail": "tab",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 26,
+   "id": "users",
+   "action": "key",
+   "optional": false,
+   "detail": "tab",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 27,
+   "id": "users",
+   "action": "key",
+   "optional": false,
+   "detail": "tab",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 28,
+   "id": "users",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 16 characters",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 29,
+   "id": "users",
+   "action": "key",
+   "optional": false,
+   "detail": "tab",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 30,
+   "id": "users",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 16 characters",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 31,
+   "id": "users",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 32,
+   "id": "users",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 33,
+   "id": "users",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+n",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 34,
+   "id": "summary",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 35,
+   "id": "summary",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 36,
+   "id": "summary",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+i",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 37,
+   "id": "summary",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 38,
+   "id": "summary",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 39,
+   "id": "summary",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+i",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 40,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 90s",
+   "status": "ok",
+   "seconds": 90.0
+  },
+  {
+   "n": 41,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 42,
+   "id": "install",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  286.759241] sos-installer[9668]: installation finalized'",
+   "status": "ok",
+   "seconds": 95.1
+  },
+  {
+   "n": 43,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 30s",
+   "status": "ok",
+   "seconds": 30.0
+  },
+  {
+   "n": 44,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 45,
+   "id": "reboot",
+   "action": "eject",
+   "optional": false,
+   "detail": "ejected the ISO",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 46,
+   "id": "reboot",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 47,
+   "id": "reboot",
+   "action": "reset",
+   "optional": false,
+   "detail": "reset",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 48,
+   "id": "reboot",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 20s",
+   "status": "ok",
+   "seconds": 20.0
+  },
+  {
+   "n": 49,
+   "id": "reboot",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 50,
+   "id": "greeter",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 70s",
+   "status": "ok",
+   "seconds": 70.0
+  },
+  {
+   "n": 51,
+   "id": "greeter",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 52,
+   "id": "login",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 17 characters",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 53,
+   "id": "login",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 45s",
+   "status": "ok",
+   "seconds": 45.0
+  },
+  {
+   "n": 54,
+   "id": "login",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 30.6% changed vs 12-greeter",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 55,
+   "id": "login",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 30s",
+   "status": "ok",
+   "seconds": 30.0
+  },
+  {
+   "n": 56,
+   "id": "login",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  }
+ ]
+}
