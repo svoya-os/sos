@@ -1,0 +1,375 @@
+SOS-GRUB platform=efi unicode=1 theme-fonts=1 lockdown= gfxmode=auto
+         Starting sos-live-user.service - SOS live session user groups...
+[  OK  ] Started sos-vm-test.service - SOS VM test agent (serial milestones).
+sos-vm-test.service
+SOS-MARK 10.02 agent-start
+[    9.969209] systemd[1]: Starting sos-live-user.service - SOS live session user groups...
+[    9.974379] systemd[1]: Started sos-vm-test.service - SOS VM test agent (serial milestones).
+SOS-MARK 10.11 network-online
+[   10.078944] systemd[1]: sos-live-user.service: Deactivated successfully.
+[   10.079363] systemd[1]: Finished sos-live-user.service - SOS live session user groups.
+[   10.081586] systemd[1]: Started greetd.service - Greeter daemon.
+[   10.215954] greetd[1205]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[   10.235810] systemd-logind[1019]: New session '1' of user 'svoya' with class 'user' and type 'tty'.
+[   10.315940] (systemd)[1241]: pam_unix(systemd-user:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[   10.317586] systemd-logind[1019]: New session '2' of user 'svoya' with class 'manager' and type 'unspecified'.
+[   10.541290] systemd[1]: Started session-1.scope - Session 1 of User svoya.
+[   10.606171] pipewire[1266]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.606931] pipewire[1266]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.608195] pipewire[1266]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.612738] greetd[1205]: gkr-pam: couldn't unlock the login keyring.
+[   10.725784] pipewire-pulse[1282]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.726434] pipewire-pulse[1282]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.726832] pipewire-pulse[1282]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.743290] wireplumber[1279]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.743705] wireplumber[1279]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.744075] wireplumber[1279]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.768469] wireplumber[1279]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x5a8ec6fb9950> Failed to connect to snapd: No such file or directory
+[   10.946318] wireplumber[1279]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+SOS-MARK 11.14 greetd-active
+SOS-MARK 12.19 hyprland-running
+[   12.769278] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='ca.desrt.dconf' unit='dconf.service' requested by ':1.13' (uid=1000 pid=1336 comm="Hyprland --watchdog-fd 4 --config /usr/share/svoya" label="unconfined")
+[   12.857316] systemd[1241]: Started hyprpolkitagent.service - Hyprland Polkit Authentication Agent.
+[   13.518136] xdg-desktop-portal-gtk[1438]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[   13.781778] /usr/libexec/xdg-desktop-portal[1393]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.786574] /usr/libexec/xdg-desktop-portal[1393]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.787118] /usr/libexec/xdg-desktop-portal[1393]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.830992] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.freedesktop.impl.portal.desktop.hyprland' unit='xdg-desktop-portal-hyprland.service' requested by ':1.18' (uid=1000 pid=1393 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[   13.841265] systemd[1241]: Starting xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation)...
+[   13.867300] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.hyprland'
+[   13.867474] systemd[1241]: Started xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation).
+[   13.951077] hyprpolkitagent[1386]: qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for ''")
+[   14.117641] jacksond[1395]: INFO jackson.service: listening on /run/user/1000/svoya/jackson.sock
+[   14.302150] dbus-daemon[1010]: [system] Activating via systemd: service name='org.freedesktop.UPower' unit='upower.service' requested by ':1.32' (uid=1000 pid=1403 comm="quickshell -p /usr/share/svoya/shell" label="unconfined")
+SOS-MARK 18.33 desktop-ready
+SOS-DIAG begin ready
+## processes
+    PID USER     ELAPSED COMMAND
+      1 root          18 /sbin/init noprompt splash ---
+    651 root          11 /usr/lib/systemd/systemd-journald
+    701 systemd+      11 /usr/lib/systemd/systemd-resolved
+    704 root          11 /usr/lib/systemd/systemd-udevd
+    748 systemd+      11 /usr/lib/systemd/systemd-oomd
+   1008 root           8 /usr/libexec/accounts-daemon
+   1009 root           8 /bin/sh /usr/lib/systemd/scripts/chronyd-starter.sh -n -F 1
+   1010 message+       8 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1017 root           8 /usr/lib/podman/netavark dhcp-proxy -a 30
+   1018 root           8 /usr/sbin/snapperd
+   1019 root           8 /usr/lib/systemd/systemd-logind
+   1020 root           8 /usr/libexec/udisks2/udisksd
+   1054 _chrony        8 /usr/sbin/chronyd -n -F 1
+   1059 _chrony        8 /usr/sbin/chronyd -n -F 1
+   1075 root           8 /usr/sbin/NetworkManager --no-daemon
+   1077 root           8 /usr/sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+   1079 polkitd        8 /usr/lib/polkit-1/polkitd --no-debug --log-level=notice
+   1088 root           8 /usr/lib/systemd/systemd-hostnamed
+   1116 root           8 /usr/libexec/nm-dispatcher
+   1131 root           8 /bin/bash /usr/lib/svoya/vm-test-agent
+   1158 root           8 /bin/bash /usr/lib/svoya/vm-test-agent
+   1161 root           8 journalctl -b -f -o short-monotonic --no-hostname --cursor-file=/run/sos-vm-test.journal-cursor
+   1172 root           8 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d - linux
+   1190 root           8 /usr/sbin/greetd --config /etc/svoya/greetd-live.toml
+   1191 root           8 /usr/libexec/power-profiles-daemon
+   1205 root           8 /usr/sbin/greetd --session-worker 11
+   1241 svoya          8 /usr/lib/systemd/systemd --user
+   1245 svoya          8 (sd-pam)
+   1265 svoya          7 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1266 svoya          7 /usr/bin/pipewire
+   1268 svoya          7 /usr/bin/gnome-keyring-daemon --foreground --components=pkcs11,secrets --control-directory=/run/user/1000/keyring
+   1278 svoya          7 /usr/bin/mpris-proxy
+   1279 svoya          7 /usr/bin/wireplumber
+   1280 svoya          7 /usr/bin/pipewire -c filter-chain.conf
+   1281 svoya          7 start-hyprland -- --config /usr/share/svoya/hypr/hyprland.conf
+   1282 svoya          7 /usr/bin/pipewire-pulse
+   1336 svoya          6 Hyprland --watchdog-fd 4 --config /usr/share/svoya/hypr/hyprland.conf
+   1371 svoya          5 /usr/libexec/dconf-service
+   1378 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type text --watch cliphist store'
+   1380 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type image --watch cliphist store'
+   1381 svoya          5 wl-paste --type text --watch cliphist store
+   1384 svoya          5 wl-paste --type image --watch cliphist store
+   1386 svoya          5 /usr/libexec/hyprpolkitagent
+   1393 svoya          5 /usr/libexec/xdg-desktop-portal
+   1395 svoya          5 /usr/bin/python3 /usr/lib/svoya/jacksond
+   1396 svoya          5 /bin/bash /usr/lib/svoya/shell-run /usr/share/svoya/shell
+   1400 svoya          5 sh -c  for _ in $(seq 1 30); do     busctl --user status org.freedesktop.Notifications >/dev/null 2>&1 && break     sleep 1 done a=$(notify-send -a "$1" -i sos -t 20000 -A install="$4" "$2" "$3") || exit 0 [ "$a" = install ] && exec "$5" exit 0  sh Jackson Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk. Install SOS /usr/bin/sos-install
+   1403 svoya          5 quickshell -p /usr/share/svoya/shell
+   1410 svoya          5 /usr/libexec/xdg-permission-store
+   1416 svoya          5 /usr/libexec/xdg-document-portal
+   1429 root           5 fusermount3 -o rw,nosuid,nodev,fsname=portal,auto_unmount,subtype=portal -- /run/user/1000/doc
+   1438 svoya          5 /usr/libexec/xdg-desktop-portal-gtk
+   1441 svoya          5 Xwayland :0 -rootless -core -listenfd 57 -listenfd 58 -displayfd 84 -wm 81
+   1474 svoya          4 /usr/libexec/gvfsd
+   1490 svoya          4 /usr/libexec/xdg-desktop-portal-hyprland
+   1507 root           4 /usr/libexec/upowerd
+   1516 svoya          3 /usr/bin/python3 -I /usr/bin/sos status --json --watch 2
+   1538 svoya          3 notify-send -a Jackson -i sos -t 20000 -A install=Install SOS Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk.
+   1543 svoya          2 /usr/bin/systemd-inhibit --what=sleep --mode=delay --who=SOS Shell --why=Lock the screen before sleep sleep infinity
+   1545 svoya          2 /usr/bin/sh -c bluetoothctl show 2>/dev/null; echo @connected; bluetoothctl devices Connected 2>/dev/null sh
+   1547 svoya          2 bluetoothctl show
+   1549 svoya          2 /usr/bin/nmcli monitor
+   1567 svoya          2 sleep infinity
+   1641 root           0 tail -n 70
+## sessions
+1 1000 svoya seat0 1205 user    tty7 no -
+2 1000 svoya -     1241 manager -    no -
+## failed system units
+## drm
+BOOT_IMAGE=/casper/vmlinuz boot=casper hostname=sos username=svoya locale=en_US.UTF-8 fsck.mode=skip noprompt console=ttyS0,115200 console=tty1 systemd.show_status=1 systemd.mask=serial-getty@ttyS0.service sos.vmtest=1 quiet splash ---
+total 0
+drwxr-xr-x  3 root root        100 Sep 26 17:59 .
+drwxr-xr-x 19 root root       4060 Sep 26 17:59 ..
+drwxr-xr-x  2 root root         80 Sep 26 17:59 by-path
+crw-rw----+ 1 root video  226,   1 Sep 26 17:59 card1
+crw-rw----+ 1 root render 226, 128 Sep 26 17:59 renderD128
+/sys/class/drm/card1-Virtual-1: connected
+/sys/class/drm/card1: virtio-pci
+## Hyprland rendering: 
+## network (NetworkManager devices, addresses, DNS, netplan)
+enp0s1:ethernet:connected:Wired connection 1
+lo:loopback:connected (externally):lo
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp0s1           UP             10.0.2.15/24 fec0::c49c:d3ae:30da:b78c/64 fec0::d39e:efb2:2290:fa16/64 fe80::f241:17c5:893f:585d/64 
+Global:
+Link 2 (enp0s1): 10.0.2.3
+/etc/netplan:
+total 0
+drwxr-xr-x 2 root root  50 Sep 26 17:28 .
+drwxr-xr-x 1 root root 600 Sep 26 17:59 ..
+-rw------- 1 root root 402 Sep 26 17:28 01-network-manager-all.yaml
+
+/run/NetworkManager/conf.d:
+total 0
+drwxr-xr-x 2 root root  60 Sep 26 17:59 .
+drwxr-xr-x 5 root root 140 Sep 26 17:59 ..
+-rw-r--r-- 1 root root   0 Sep 26 17:59 10-globally-managed-devices.conf
+## apparmor (user namespaces)
+apparmor.service: inactive; enabled: Y
+kernel.apparmor_restrict_unprivileged_userns = 0
+kernel.unprivileged_userns_clone = 1
+profiles loaded: 0
+/etc/apparmor.d: 153 files; bwrap-userns-restrict flatpak podman steam unprivileged_userns 
+apparmor.service - Load AppArmor profiles skipped, unmet condition check ConditionPathExists=!/rofs/etc/apparmor.d
+## identity (console welcome: /etc/update-motd.d/00-header)
+-rw-r--r-- 1 root root 123 Sep 26 17:28 /etc/lsb-release
+lrwxrwxrwx 1 root root  21 Aug 24 10:33 /etc/os-release -> ../usr/lib/os-release
+-rw-r--r-- 1 root root 751 Sep 26 17:28 /usr/lib/os-release
+/etc/lsb-release:DISTRIB_DESCRIPTION="SOS 26.10 «Первый сигнал»"
+22:[ -r /etc/lsb-release ] && . /etc/lsb-release
+24:if [ -z "$DISTRIB_DESCRIPTION" ] && [ -x /usr/bin/lsb_release ]; then
+25:	# Fall back to using the very slow lsb_release utility
+26:	DISTRIB_DESCRIPTION=$(lsb_release -s -d)
+29:printf "Welcome to %s (%s %s %s)\n" "$DISTRIB_DESCRIPTION" "$(uname -o)" "$(uname -r)" "$(uname -m)"
+Welcome to SOS 26.10 «Первый сигнал» (GNU/Linux 7.0.0-31-generic x86_64)
+## greetd
+[   10.081586] sos systemd[1]: Started greetd.service - Greeter daemon.
+[   10.215954] sos greetd[1205]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[   10.612738] sos greetd[1205]: gkr-pam: couldn't unlock the login keyring.
+## user svoya: warnings and errors
+[   10.606171] sos pipewire[1266]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.606183] sos pipewire[1266]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[   10.606931] sos pipewire[1266]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.606999] sos pipewire[1266]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[   10.608195] sos pipewire[1266]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.608268] sos pipewire[1266]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[   10.725784] sos pipewire-pulse[1282]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.725801] sos pipewire-pulse[1282]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[   10.726434] sos pipewire-pulse[1282]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.726447] sos pipewire-pulse[1282]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[   10.726832] sos pipewire-pulse[1282]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.726844] sos pipewire-pulse[1282]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[   10.743290] sos wireplumber[1279]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.743322] sos wireplumber[1279]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[   10.743705] sos wireplumber[1279]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.743715] sos wireplumber[1279]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[   10.744075] sos wireplumber[1279]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.744091] sos wireplumber[1279]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[   10.768469] sos wireplumber[1279]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x5a8ec6fb9950> Failed to connect to snapd: No such file or directory
+[   10.946318] sos wireplumber[1279]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[   10.982505] sos wireplumber[1279]: spa.bluez5: BlueZ system service is not available
+[   13.518136] sos xdg-desktop-portal-gtk[1438]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[   13.781778] sos /usr/libexec/xdg-desktop-portal[1393]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.786574] sos /usr/libexec/xdg-desktop-portal[1393]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.787118] sos /usr/libexec/xdg-desktop-portal[1393]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+## /home/svoya/.local/state/svoya/session.log (tail)
+2026-09-26T17:59:09Z theme: ok graphite (sun)
+2026-09-26T17:59:09Z environment: ok WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP DISPLAY LANG
+2026-09-26T17:59:09Z jacksond: ok 
+2026-09-26T17:59:09Z shell: ok /usr/share/svoya/shell
+2026-09-26T17:59:09Z first-run: ok skipped (live session)
+2026-09-26T17:59:09Z skills: ok /home/svoya/.local/share/svoya/jackson/skills
+## /run/user/1000/sos-shell.log (tail)
+== 2026-09-26T17:59:08+00:00 quickshell -p /usr/share/svoya/shell
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/z21kmgzlt/log.qslog"
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: egl: failed to create dri2 screen
+  INFO: Configuration Loaded
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+## /home/svoya/.local/state/svoya/hyprland.log (896 lines: renderer, errors, the end)
+== SOS session 2026-09-26T17:59:06+00:00 (config /usr/share/svoya/hypr/hyprland.conf)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/hyprland.conf'
+Welcome to Hyprland!
+67:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+69:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/drm/card1
+71:DEBUG from aquamarine ]: drm: Found 1 GPUs
+72:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card1, with driver virtio_gpu
+73:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card1
+74:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+75:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+76:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: false
+77:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: true
+78:DEBUG from aquamarine ]: drm: found 1 CRTCs
+79:DEBUG from aquamarine ]: drm: found 1 planes
+80:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+81:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+82:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card1
+83:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card1
+84:DEBUG from aquamarine ]: drm: Scanning connector id 39
+85:DEBUG from aquamarine ]: drm: Initializing connector id 39
+86:DEBUG from aquamarine ]: drm: Connector gets name Virtual-1
+87:DEBUG from aquamarine ]: drm: Connector 39 connection state: 1
+88:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+89:DEBUG from aquamarine ]: drm: Skipping connector Virtual-1, has crtc 38 and is connected
+90:DEBUG from aquamarine ]: drm: slot 0 crtc 38 taken by Virtual-1, skipping
+91:DEBUG from aquamarine ]: drm: Connector Virtual-1 connected
+92:DEBUG from aquamarine ]: drm: Connecting connector Virtual-1, CRTC ID 38
+93:DEBUG from aquamarine ]: drm: Dumping detected modes:
+94:DEBUG from aquamarine ]: drm: Mode 0: 1440x900@75.00Hz  (preferred)
+95:DEBUG from aquamarine ]: drm: Mode 1: 5120x2160@50.00Hz 
+96:DEBUG from aquamarine ]: drm: Mode 2: 4096x2160@50.00Hz 
+97:DEBUG from aquamarine ]: drm: Mode 3: 3840x2160@60.00Hz 
+98:DEBUG from aquamarine ]: drm: Mode 4: 3840x2160@59.94Hz 
+99:DEBUG from aquamarine ]: drm: Mode 5: 3840x2160@50.00Hz 
+100:DEBUG from aquamarine ]: drm: Mode 6: 1920x1440@60.00Hz 
+101:DEBUG from aquamarine ]: drm: Mode 7: 2560x1080@50.00Hz 
+102:DEBUG from aquamarine ]: drm: Mode 8: 1856x1392@59.99Hz 
+103:DEBUG from aquamarine ]: drm: Mode 9: 1792x1344@60.00Hz 
+104:DEBUG from aquamarine ]: drm: Mode 10: 2048x1152@60.00Hz 
+105:DEBUG from aquamarine ]: drm: Mode 11: 1920x1200@59.88Hz 
+106:DEBUG from aquamarine ]: drm: Mode 12: 1920x1080@60.00Hz 
+107:DEBUG from aquamarine ]: drm: Mode 13: 1920x1080@50.00Hz 
+108:DEBUG from aquamarine ]: drm: Mode 14: 1600x1200@60.00Hz 
+109:DEBUG from aquamarine ]: drm: Mode 15: 1680x1050@59.95Hz 
+110:DEBUG from aquamarine ]: drm: Mode 16: 1400x1050@59.98Hz 
+111:DEBUG from aquamarine ]: drm: Mode 17: 1280x1024@60.02Hz 
+112:DEBUG from aquamarine ]: drm: Mode 18: 1440x900@59.89Hz 
+113:DEBUG from aquamarine ]: drm: Mode 19: 1280x960@60.00Hz 
+114:DEBUG from aquamarine ]: drm: Mode 20: 1360x768@60.02Hz 
+115:DEBUG from aquamarine ]: drm: Mode 21: 1280x768@59.87Hz 
+116:DEBUG from aquamarine ]: drm: Mode 22: 1024x768@60.00Hz 
+117:DEBUG from aquamarine ]: drm: Mode 23: 800x600@60.32Hz 
+118:DEBUG from aquamarine ]: drm: Mode 24: 640x480@60.00Hz 
+119:DEBUG from aquamarine ]: drm: Mode 25: 640x480@59.94Hz 
+120:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 360, y: 220] (mm)
+121:DEBUG from aquamarine ]: drm: Description Red Hat, Inc. QEMU Monitor  (Virtual-1)
+122:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+123:DEBUG from aquamarine ]: drm: Explicit sync supported
+124:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support CTM
+125:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support HDR (0)
+126:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support Colorspace (0)
+127:DEBUG from aquamarine ]: drm: gpu /dev/dri/card1 becomes primary drm
+131:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: Applying monitor rule for Virtual-1
+DEBUG ]: Monitor Virtual-1: requested preferred, using preferred mode 1440x900@75.00Hz
+DEBUG ]: output Virtual-1 succeeded basic test on format DRM_FORMAT_XRGB8888
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+ERR from aquamarine ]: drm: Cannot commit when a page-flip is awaiting
+ERR ]: Couldn't commit output named Virtual-1
+DEBUG ]: Monitor Virtual-1 data dump: res 1440x900@75.00Hz, scale 1.00, transform 0, pos 0x0, 10b 0
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+DEBUG ]: arrangeMonitors: 1 to arrange
+DEBUG ]: arrangeMonitors: Virtual-1 auto [0, 0]
+DEBUG ]: arrangeMonitors: Virtual-1 xwayland [0, 0]
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+ERR ]: CConfigWatcher: got an event for wd 29 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 30 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 31 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 32 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 33 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 34 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 35 which we don't have?!
+DEBUG ]: Hyprctl: new connection from pid 1403
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+DEBUG ]: Hyprctl: new connection from pid 1403
+DEBUG ]: Hyprctl: new connection from pid 1403
+DEBUG ]: Hyprctl: new connection from pi## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790445547_690167458/hyprland.log (renderer, errors, config, exec)
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 1 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 2 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 3 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 4 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 5 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 6 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 7 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 8 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 9 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 10 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 11 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 12 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 13 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 14 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 15 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 16 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 17 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 18 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 19 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 20 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 21 which we don't have?!
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+SOS-DIAG end ready
+[  188.174660] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.xfce.Xfconf' unit='xfconfd.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  188.372154] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.gtk.vfs.UDisks2VolumeMonitor' unit='gvfs-udisks2-volume-monitor.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  188.435448] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.gtk.vfs.MTPVolumeMonitor' unit='gvfs-mtp-volume-monitor.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  188.496074] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.gtk.vfs.GPhoto2VolumeMonitor' unit='gvfs-gphoto2-volume-monitor.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  188.548885] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.gtk.vfs.GoaVolumeMonitor' unit='gvfs-goa-volume-monitor.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  188.678730] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.gtk.vfs.AfcVolumeMonitor' unit='gvfs-afc-volume-monitor.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  188.835826] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.gtk.vfs.Metadata' unit='gvfs-metadata.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  189.268682] dbus-daemon[1265]: [session uid=1000 pid=1265 pidfd=5] Activating via systemd: service name='org.freedesktop.thumbnails.Thumbnailer1' unit='tumblerd.service' requested by ':1.46' (uid=1000 pid=1998 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  208.573071] jacksond[1395]: INFO jackson.engine: turn failed after 3 ms: no_local_model
+[  273.568546] unix_chkpwd[2902]: password check failed for user (svoya)
+[  273.569436] quickshell[2901]: pam_unix(svoya-lock:auth): authentication failure; logname=svoya uid=1000 euid=1000 tty= ruser= rhost=  user=svoya
