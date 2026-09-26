@@ -56,6 +56,8 @@
     {"id": "status", "action": "sleep", "seconds": 5},
     {"id": "status", "action": "type", "text": "clear; sos models serve --status; j status\n", "continue_on_failure": true},
     {"id": "status", "action": "sleep", "seconds": 8},
-    {"id": "status", "action": "screenshot", "name": "09-server-status", "continue_on_failure": true}
+    {"id": "status", "action": "screenshot", "name": "09-server-status", "continue_on_failure": true},
+    {"id": "status", "action": "type", "text": "journalctl --user -u svoya-llm -n 80 --no-pager -o cat | logger -t sos-vm-test-llm\n", "continue_on_failure": true},
+    {"id": "status", "action": "sleep", "seconds": 3}
   ]
 }

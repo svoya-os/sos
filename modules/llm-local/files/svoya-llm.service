@@ -13,6 +13,10 @@ ConditionPathExists=!/etc/svoya/ai.off
 # 16k tokens fit Jackson's conversations and most documents in a few hundred MB. Your own value:
 # LLAMA_ARG_CTX_SIZE=32768 in ~/.config/svoya/llm.env
 Environment=LLAMA_ARG_CTX_SIZE=16384
+# Offline: the models are the ones in /srv/ai (the store is a Hugging Face cache, which llama.cpp
+# lists by repository name). Online, loading one first asked Hugging Face about it and hung there
+# (the model bot's answers timed out); nothing leaves the machine this way either.
+Environment=LLAMA_ARG_OFFLINE=1
 EnvironmentFile=-%h/.config/svoya/llm.env
 ExecStartPre=-/usr/bin/sos models views --quiet
 ExecStart=/usr/bin/llama-server --host 127.0.0.1 --port 8080 --models-dir /srv/ai/views/llama.cpp --models-max 2 --jinja

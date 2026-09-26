@@ -331,6 +331,10 @@ class ServeTest(SandboxTest):
         args = argparse.Namespace(port=18080, stop=False, status=False, foreground=False, json=False)
         self.assertEqual(mcli.cmd_serve(args, self.sb.ctx(r)), 0)
         self.assertEqual(seen["env"]["LLAMA_ARG_CTX_SIZE"], "16384")
+        # llama.cpp lists the store (a Hugging Face cache) by repository name and, online, asked
+        # Hugging Face before loading: the model bot's answers timed out
+        self.assertEqual(seen["env"]["LLAMA_ARG_OFFLINE"], "1")
+        self.assertIn("Environment=LLAMA_ARG_OFFLINE=1", unit)
 
     def test_serve_without_server_explains(self):
         import contextlib

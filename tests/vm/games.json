@@ -1,6 +1,6 @@
 {
   "name": "games",
-  "description": "Games the way a user sets them up: `sos install steam` (the gaming module: Steam with 32-bit drivers, GameMode, MangoHud, gamescope), then Steam from the launcher until its own window. Steam asks to accept Valve's license during the install; in this throwaway VM the answer «I AGREE» is given beforehand through debconf (agreed by the project owner), a person answers the same question in the terminal.",
+  "description": "Games the way a user sets them up: `sos install steam` (the gaming module: Steam with 32-bit drivers, GameMode, MangoHud, gamescope), then Steam from the launcher until its own window: Debian's first-run dialog («Steam installer») gets its «Install» clicked, Steam downloads its client. Steam asks to accept Valve's license during the install; in this throwaway VM the answer «I AGREE» is given beforehand through debconf (agreed by the project owner), a person answers the same question in the terminal.",
   "vm": {
     "memory_mib": 8192,
     "smp": 4,
@@ -38,11 +38,14 @@
     {"id": "launcher", "action": "sleep", "seconds": 2},
     {"id": "launcher", "action": "screenshot", "name": "05-launcher-steam", "continue_on_failure": true},
     {"id": "launcher", "action": "key", "keys": ["ret"], "continue_on_failure": true},
-    {"id": "steam", "action": "sleep", "seconds": 45},
-    {"id": "steam", "action": "screenshot", "name": "06-steam-first-start", "continue_on_failure": true},
-    {"id": "steam", "action": "sleep", "seconds": 120},
-    {"id": "steam", "action": "screenshot", "name": "07-steam-updating", "continue_on_failure": true},
+    {"id": "steam", "action": "sleep", "seconds": 20},
+    {"id": "steam", "action": "screenshot", "name": "06-steam-installer", "continue_on_failure": true},
+    {"id": "steam", "action": "click", "at": [889, 568], "continue_on_failure": true},
+    {"id": "steam", "action": "sleep", "seconds": 60},
+    {"id": "steam", "action": "screenshot", "name": "07-steam-downloading", "continue_on_failure": true},
     {"id": "steam", "action": "sleep", "seconds": 180},
-    {"id": "steam", "action": "screenshot", "name": "08-steam-window", "continue_on_failure": true}
+    {"id": "steam", "action": "screenshot", "name": "08-steam-updating", "continue_on_failure": true},
+    {"id": "steam", "action": "sleep", "seconds": 240},
+    {"id": "steam", "action": "screenshot", "name": "09-steam-window", "continue_on_failure": true}
   ]
 }

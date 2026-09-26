@@ -562,7 +562,8 @@ def cmd_serve(args, ctx: Ctx) -> int:
                 "--models-max", "2", "--jinja"]
         # the context window of svoya-llm.service: llama.cpp's default (the model's training context)
         # does not fit in memory
-        env = {**os.environ, "LLAMA_ARG_CTX_SIZE": os.environ.get("LLAMA_ARG_CTX_SIZE") or SERVE_CTX}
+        env = {**os.environ, "LLAMA_ARG_CTX_SIZE": os.environ.get("LLAMA_ARG_CTX_SIZE") or SERVE_CTX,
+               "LLAMA_ARG_OFFLINE": "1"}      # the models in /srv/ai only, no questions to Hugging Face
         if args.foreground and not ctx.dry_run:
             os.execvpe(argv[0], argv, env)
         r.spawn(argv, env=env)
