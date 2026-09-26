@@ -1,0 +1,200 @@
+[   10.488116] sos wireplumber[1222]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[   10.490392] sos wireplumber[1222]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.490473] sos wireplumber[1222]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[   10.490833] sos wireplumber[1222]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[   10.490911] sos wireplumber[1222]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[   10.526764] sos wireplumber[1222]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x5a2b9abfd8d0> Failed to connect to snapd: No such file or directory
+[   10.690531] sos wireplumber[1222]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[   10.692778] sos wireplumber[1222]: spa.bluez5: BlueZ system service is not available
+[   13.249568] sos xdg-desktop-portal-gtk[1365]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[   13.548384] sos /usr/libexec/xdg-desktop-portal[1330]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.549306] sos /usr/libexec/xdg-desktop-portal[1330]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[   13.549815] sos /usr/libexec/xdg-desktop-portal[1330]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+## /home/svoya/.local/state/svoya/session.log (tail)
+2026-09-26T08:55:52Z theme: ok paper (sun)
+2026-09-26T08:55:52Z environment: ok WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP DISPLAY LANG
+2026-09-26T08:55:52Z jacksond: ok 
+2026-09-26T08:55:52Z shell: ok /usr/share/svoya/shell
+2026-09-26T08:55:52Z first-run: ok skipped (live session)
+2026-09-26T08:55:52Z skills: ok /home/svoya/.local/share/svoya/jackson/skills
+## /run/user/1000/sos-shell.log (tail)
+== 2026-09-26T08:55:51+00:00 quickshell -p /usr/share/svoya/shell
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/f113hrylt/log.qslog"
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: egl: failed to create dri2 screen
+  INFO: Configuration Loaded
+  WARN qt.svg.draw: The requested buffer size is too big, ignoring
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+## /home/svoya/.local/state/svoya/hyprland.log (843 lines: renderer, errors, the end)
+== SOS session 2026-09-26T08:55:49+00:00 (config /usr/share/svoya/hypr/hyprland.conf)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/hyprland.conf'
+Welcome to Hyprland!
+67:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+69:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/drm/card1
+71:DEBUG from aquamarine ]: drm: Found 1 GPUs
+72:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card1, with driver virtio_gpu
+73:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card1
+74:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+75:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+76:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: false
+77:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: true
+78:DEBUG from aquamarine ]: drm: found 1 CRTCs
+79:DEBUG from aquamarine ]: drm: found 1 planes
+80:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+81:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+82:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card1
+83:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card1
+84:DEBUG from aquamarine ]: drm: Scanning connector id 39
+85:DEBUG from aquamarine ]: drm: Initializing connector id 39
+86:DEBUG from aquamarine ]: drm: Connector gets name Virtual-1
+87:DEBUG from aquamarine ]: drm: Connector 39 connection state: 1
+88:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+89:DEBUG from aquamarine ]: drm: Skipping connector Virtual-1, has crtc 38 and is connected
+90:DEBUG from aquamarine ]: drm: slot 0 crtc 38 taken by Virtual-1, skipping
+91:DEBUG from aquamarine ]: drm: Connector Virtual-1 connected
+92:DEBUG from aquamarine ]: drm: Connecting connector Virtual-1, CRTC ID 38
+93:DEBUG from aquamarine ]: drm: Dumping detected modes:
+94:DEBUG from aquamarine ]: drm: Mode 0: 1440x900@75.00Hz  (preferred)
+95:DEBUG from aquamarine ]: drm: Mode 1: 5120x2160@50.00Hz 
+96:DEBUG from aquamarine ]: drm: Mode 2: 4096x2160@50.00Hz 
+97:DEBUG from aquamarine ]: drm: Mode 3: 3840x2160@60.00Hz 
+98:DEBUG from aquamarine ]: drm: Mode 4: 3840x2160@59.94Hz 
+99:DEBUG from aquamarine ]: drm: Mode 5: 3840x2160@50.00Hz 
+100:DEBUG from aquamarine ]: drm: Mode 6: 1920x1440@60.00Hz 
+101:DEBUG from aquamarine ]: drm: Mode 7: 2560x1080@50.00Hz 
+102:DEBUG from aquamarine ]: drm: Mode 8: 1856x1392@59.99Hz 
+103:DEBUG from aquamarine ]: drm: Mode 9: 1792x1344@60.00Hz 
+104:DEBUG from aquamarine ]: drm: Mode 10: 2048x1152@60.00Hz 
+105:DEBUG from aquamarine ]: drm: Mode 11: 1920x1200@59.88Hz 
+106:DEBUG from aquamarine ]: drm: Mode 12: 1920x1080@60.00Hz 
+107:DEBUG from aquamarine ]: drm: Mode 13: 1920x1080@50.00Hz 
+108:DEBUG from aquamarine ]: drm: Mode 14: 1600x1200@60.00Hz 
+109:DEBUG from aquamarine ]: drm: Mode 15: 1680x1050@59.95Hz 
+110:DEBUG from aquamarine ]: drm: Mode 16: 1400x1050@59.98Hz 
+111:DEBUG from aquamarine ]: drm: Mode 17: 1280x1024@60.02Hz 
+112:DEBUG from aquamarine ]: drm: Mode 18: 1440x900@59.89Hz 
+113:DEBUG from aquamarine ]: drm: Mode 19: 1280x960@60.00Hz 
+114:DEBUG from aquamarine ]: drm: Mode 20: 1360x768@60.02Hz 
+115:DEBUG from aquamarine ]: drm: Mode 21: 1280x768@59.87Hz 
+116:DEBUG from aquamarine ]: drm: Mode 22: 1024x768@60.00Hz 
+117:DEBUG from aquamarine ]: drm: Mode 23: 800x600@60.32Hz 
+118:DEBUG from aquamarine ]: drm: Mode 24: 640x480@60.00Hz 
+119:DEBUG from aquamarine ]: drm: Mode 25: 640x480@59.94Hz 
+120:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 360, y: 220] (mm)
+121:DEBUG from aquamarine ]: drm: Description Red Hat, Inc. QEMU Monitor  (Virtual-1)
+122:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+123:DEBUG from aquamarine ]: drm: Explicit sync supported
+124:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support CTM
+125:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support HDR (0)
+126:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support Colorspace (0)
+127:DEBUG from aquamarine ]: drm: gpu /dev/dri/card1 becomes primary drm
+131:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+DEBUG ]: Forcing an unmap of a LS that did a straight destroy!
+DEBUG ]: LayerSurface 64bf00f51bd0 unmapped
+DEBUG ]: [hookSystem] New hook event registered: closeLayer
+DEBUG ]: renderer: making a snapshot of 64bf00f44cd0
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: [CPrimarySelectionProtocol] CPrimarySelectionProtocol::updateSelection: cannot send selection to a client without a data_device
+DEBUG ]: CWLSurface 64bf00f3c950 called destroy()
+DEBUG ]: Cleanup: destroyed a layersurface
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: Framebuffer created, status 36053
+DEBUG ]: cursorImage request: shape 1 -> default
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: Applying monitor rule for Virtual-1
+DEBUG ]: Monitor Virtual-1: requested preferred, using preferred mode 1440x900@75.00Hz
+DEBUG ]: output Virtual-1 succeeded basic test on format DRM_FORMAT_XRGB8888
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+[1;32## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790412949_854188097/hyprland.log (renderer, errors, config, exec)
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 1 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 2 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 3 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 4 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 5 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 6 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 7 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 8 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 9 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 10 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 11 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 12 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 13 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 14 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 15 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 16 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 17 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 18 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 19 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 20 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 21 which we don't have?!
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+SOS-DIAG end ready
+[   19.887235] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+[   31.757238] systemd[1189]: Started kitty-1622-0.scope - kitty child process: 1635 launched by: 1622.
+[   39.537359] netavark[1015]: timeout met: exiting after 30 secs of inactivity
+[   39.539256] systemd[1]: netavark-dhcp-proxy.service: Deactivated successfully.
+[   39.835961] systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+[   62.418112] sudo[1667]:    svoya : TTY=pts/0 ; PWD=/home/svoya ; USER=root ; COMMAND=/usr/bin/debconf-set-selections
+[   62.418864] sudo[1667]: pam_unix(sudo:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   62.516111] sudo[1667]: pam_unix(sudo:session): session closed for user root
+[   62.525891] sudo[1673]:    svoya : TTY=pts/0 ; PWD=/home/svoya ; USER=root ; COMMAND=/usr/bin/debconf-set-selections
+[   62.526501] sudo[1673]: pam_unix(sudo:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   62.610974] sudo[1673]: pam_unix(sudo:session): session closed for user root
+[   62.770781] pkexec[1680]: pam_unix(polkit-1:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   62.772503] pkexec[1680]: svoya: Executing command [USER=root] [TTY=/dev/pts/0] [CWD=/home/svoya] [COMMAND=/usr/bin/sos modules add gaming --yes --root-only]
+[   70.045812] sos-vm-test[1699]: SOS-STEP games-failed
+[   73.427090] systemd[1]: snapperd.service: Deactivated successfully.
