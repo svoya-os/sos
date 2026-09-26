@@ -1,0 +1,1251 @@
+{
+ "plan": "user-journeys",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": true,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 16.33 desktop-ready'",
+   "status": "ok",
+   "seconds": 18.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 7,
+   "id": "cheatsheet",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+k",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "cheatsheet",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 9,
+   "id": "cheatsheet",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 30.4% changed vs 01-desktop",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 10,
+   "id": "cheatsheet",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 11,
+   "id": "cheatsheet",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 12,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 13,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 14,
+   "id": "launcher",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 4 characters",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 15,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 16,
+   "id": "launcher",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 30.3% changed vs 01-desktop",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 17,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 18,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 19,
+   "id": "terminal",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 20,
+   "id": "doctor-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 11 characters",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 21,
+   "id": "doctor-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 22,
+   "id": "doctor-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 23,
+   "id": "models",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 26 characters",
+   "status": "ok",
+   "seconds": 1.3
+  },
+  {
+   "n": 24,
+   "id": "models",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 25,
+   "id": "models",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 26,
+   "id": "accent",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 30 characters",
+   "status": "ok",
+   "seconds": 1.5
+  },
+  {
+   "n": 27,
+   "id": "accent",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 28,
+   "id": "accent",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 29,
+   "id": "accent",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 24 characters",
+   "status": "ok",
+   "seconds": 1.2
+  },
+  {
+   "n": 30,
+   "id": "accent",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 31,
+   "id": "accent",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 32,
+   "id": "jackson-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 29 characters",
+   "status": "ok",
+   "seconds": 1.5
+  },
+  {
+   "n": 33,
+   "id": "jackson-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 34,
+   "id": "jackson-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 35,
+   "id": "fun-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 49 characters",
+   "status": "ok",
+   "seconds": 2.5
+  },
+  {
+   "n": 36,
+   "id": "fun-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 37,
+   "id": "fun-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 38,
+   "id": "apps-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 27 characters",
+   "status": "ok",
+   "seconds": 1.4
+  },
+  {
+   "n": 39,
+   "id": "apps-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 40,
+   "id": "apps-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 41,
+   "id": "skills-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 56 characters",
+   "status": "ok",
+   "seconds": 2.9
+  },
+  {
+   "n": 42,
+   "id": "skills-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 43,
+   "id": "skills-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 44,
+   "id": "upsil-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 92 characters",
+   "status": "ok",
+   "seconds": 4.7
+  },
+  {
+   "n": 45,
+   "id": "upsil-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 46,
+   "id": "upsil-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 47,
+   "id": "upsil-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 5 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 48,
+   "id": "jackson",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+j",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 49,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 50,
+   "id": "jackson",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 31 characters",
+   "status": "ok",
+   "seconds": 1.6
+  },
+  {
+   "n": 51,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 52,
+   "id": "jackson",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 53,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 12 characters",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 54,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 55,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 56,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 11 characters",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 57,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 58,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 59,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 15 characters",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 60,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 61,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 62,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 10 characters",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 63,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 64,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 65,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 12 characters",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 66,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 67,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 68,
+   "id": "jackson-fun",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 69,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 70,
+   "id": "jackson-fun",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+q",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 71,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 72,
+   "id": "jackson-install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+j",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 73,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 74,
+   "id": "jackson-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 17 characters",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 75,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 76,
+   "id": "jackson-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 77,
+   "id": "jackson-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 2 characters",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 78,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 79,
+   "id": "jackson-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 1 characters",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 80,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 81,
+   "id": "jackson",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 82,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 83,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 84,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 85,
+   "id": "launcher-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 9 characters",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 86,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 87,
+   "id": "launcher-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 88,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 89,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 90,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 91,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 92,
+   "id": "launcher-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 4 characters",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 93,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 94,
+   "id": "launcher-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 95,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 96,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 97,
+   "id": "launcher-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 98,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 99,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 100,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 101,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 102,
+   "id": "launcher-eggs",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 5 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 103,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 104,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 105,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 106,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 107,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 108,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 109,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 110,
+   "id": "launcher-eggs",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 2 characters",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 111,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 112,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 113,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 114,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 115,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 116,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 117,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+z",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 118,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 119,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 120,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 121,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 122,
+   "id": "control",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+a",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 123,
+   "id": "control",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 124,
+   "id": "control",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 125,
+   "id": "control",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 126,
+   "id": "control",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 127,
+   "id": "doctor",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 128,
+   "id": "doctor",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 129,
+   "id": "doctor",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 130,
+   "id": "doctor",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 131,
+   "id": "doctor",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 132,
+   "id": "lock",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+l",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 133,
+   "id": "lock",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 134,
+   "id": "lock",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 15 characters",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 135,
+   "id": "lock",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 136,
+   "id": "lock",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 137,
+   "id": "lock",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 138,
+   "id": "lock",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  }
+ ]
+}
