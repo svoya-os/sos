@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: Apache-2.0
+# Fine-tune Laya's multilingual checkpoint on Jackson's commands (tests/decide-eval/train) on this
+# runner's CPU, then measure it on the held-out phrases (tests/decide-eval/phrases.tsv) the same way
+# as the Decide eval workflow. The report goes to the ci-screens branch (evals/decide-ft/<run>/), the
+# model stays a workflow artifact for a week: nothing is published until the numbers say it is worth it.
+name: Laya fine-tune
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tests/decide-eval/train/**"
+      - ".github/workflows/laya-finetune.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: laya-finetune-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  finetune:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    permissions:
+      contents: write   # the report goes to the ci-screens branch (never to main)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Python with CPU PyTorch and Laya
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/laya"
+          . "$RUNNER_TEMP/laya/bin/activate"
+          pip install --quiet --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --quiet laya transformers huggingface_hub safetensors
+          python3 tests/decide-eval/train/train.py --dry-run
+          nproc; free -g | head -n 2
+
+      - name: Fine-tune (CPU)
+        run: |
+          set -euo pipefail
+          . "$RUNNER_TEMP/laya/bin/activate"
+          mkdir -p dist
+          python3 tests/decide-eval/train/train.py --out dist/laya-jackson 2>&1 | tee dist/train.log
+
+      - name: Measure on the held-out phrases
+        run: |
+          set -euo pipefail
+          . "$RUNNER_TEMP/laya/bin/activate"
+          python3 tests/decide-eval/eval.py --laya dist/laya-jackson --name "laya fine-tuned (multilingual)" \
+            --out dist/eval
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          [ -f dist/eval/results.md ] && cat dist/eval/results.md >>"$GITHUB_STEP_SUMMARY"
+          work=$(mktemp -d)
+          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git clone -q --depth 1 --branch ci-screens "$url" "$work" || exit 0
+          dest="$work/evals/decide-ft/$RUN"
+          mkdir -p "$dest"
+          cp dist/eval/results.md dist/eval/results.json dist/laya-jackson/TRAINING.json "$dest/" 2>/dev/null || true
+          [ -f dist/train.log ] && tail -n 200 dist/train.log >"$dest/train-log-tail.txt"
+          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" add -A
+          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" \
+              commit -q -m "evals: laya fine-tune run $RUN" || exit 0
+          for i in 1 2 3 4 5; do
+              git -C "$work" pull -q --rebase origin ci-screens 2>/dev/null || true
+              git -C "$work" push -q origin HEAD:ci-screens && break
+              sleep $((i * 4))
+          done
+
+      - name: Keep the model for a week
+        if: success()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: laya-jackson
+          path: dist/laya-jackson
+          retention-days: 7
+          compression-level: 0

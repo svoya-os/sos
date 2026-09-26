@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - "tests/decide-eval/**"
+      - "!tests/decide-eval/train/**"       # the fine-tune has its own workflow (laya-finetune.yml)
       - "jackson/jackson/fastpath.py"
       - "jackson/jackson/decide.py"
       - ".github/workflows/decide-eval.yml"
