@@ -53,9 +53,18 @@ diag() {
         journalctl -b -u greetd --no-pager -o short-monotonic 2>&1 | tail -n 30
         echo "## user $user: warnings and errors"
         journalctl -b "_UID=$uid" -p warning --no-pager -o short-monotonic 2>&1 | tail -n 80
-        for f in "/home/$user/.local/state/svoya/session.log" "/run/user/$uid/sos-shell.log" \
-                 "/run/user/$uid/sos-session.log"; do
+        for f in "/home/$user/.local/state/svoya/session.log" "/run/user/$uid/sos-shell.log"; do
             [ -f "$f" ] && { echo "## $f (tail)"; tail -n 120 "$f"; }
+        done
+        # The compositors' output (svoya-session, greeter-session; Hyprland logs with sos.vmtest=1):
+        # the renderer, errors and assertions, and how each run ended.
+        for f in /home/"$user"/.local/state/svoya/hyprland.log /home/"$user"/.local/state/svoya/hyprland.log.old \
+                 /var/lib/svoya-greeter/.local/state/svoya/greeter.log /var/lib/svoya-greeter/.local/state/svoya/greeter.log.old; do
+            [ -f "$f" ] || continue
+            echo "## $f ($(wc -l <"$f") lines: renderer, errors, the end)"
+            head -n 3 "$f"
+            grep -anE 'ASSERTION|CRIT|ERR|EGL|Renderer:|Vendor:|Using:|[Ff]ailed|abort|terminate|what\(\)|drm: ' "$f" | head -n 60
+            tail -n 30 "$f"
         done
         # Hyprland's own log: only what matters (the full file is thousands of lines of DRM detail)
         for f in /run/user/"$uid"/hypr/*/hyprland.log; do

@@ -114,7 +114,7 @@ Item {
             if (root.busy)
                 return Strings.jChecking;
             if (root.error && (line.ghost > 0 || line.length === 0))
-                return Strings.jWrong(line.capsOn, Hypr.layoutCode);
+                return Strings.jWrong(line.capsOn, Hypr.layoutCount > 1 ? Hypr.layoutCode : "");
             if (root.job !== null && line.length === 0)
                 return Strings.whileAway + " " + (root.job.label || "") + (root.job.progress !== undefined ? " " + Math.round(root.job.progress * 100) + "%" : "");
             return Strings.jLocked;

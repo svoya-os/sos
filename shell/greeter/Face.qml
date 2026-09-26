@@ -172,7 +172,7 @@ Item {
             if (root.greeter.busy)
                 return Strings.jChecking;
             if (root.greeter.failed && (line.ghost > 0 || line.length === 0))
-                return Strings.jWrong(line.capsOn, Hypr.layoutCode);
+                return Strings.jWrong(line.capsOn, Hypr.layoutCount > 1 ? Hypr.layoutCode : "");
             if (root.greeter.askingName)
                 return Strings.jWho;
             if (root.greeter.prompt.length > 0)

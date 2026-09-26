@@ -25,6 +25,18 @@ if ! command -v quickshell >/dev/null || [ ! -f "$greeter_dir/shell.qml" ]; then
 fi
 
 /usr/lib/svoya/session-keyboard >"$run/input.conf" 2>/dev/null || : >"$run/input.conf"
+# Hyprland's own log, as in svoya-session (kernel parameter sos.debug); greeter.conf sources it.
+if grep -qwE 'sos\.debug|sos\.vmtest=1' /proc/cmdline 2>/dev/null; then
+    printf 'debug {\n    disable_logs = false\n    enable_stdout_logs = true\n}\n' >"$run/debug.conf"
+else
+    : >"$run/debug.conf"
+fi
+# Its output goes to a file, not onto the login screen's console (a crash used to leave its log
+# there); the previous one is kept for the next boot's diagnosis.
+glog="${XDG_STATE_HOME:-${HOME:-/var/lib/svoya-greeter}/.local/state}/svoya/greeter.log"
+if mkdir -p "${glog%/*}" 2>/dev/null && { [ ! -f "$glog" ] || mv -f "$glog" "$glog.old"; } && : >"$glog" 2>/dev/null; then
+    exec >>"$glog" 2>&1
+fi
 
 conf=/usr/share/svoya/hypr/greeter.conf
 if [ ! -f "$conf" ]; then

@@ -41,9 +41,6 @@ jobs:
       contents: read
     outputs:
       artifact: sos-repo
-    env:
-      EXTERNAL: quickshell,uv,grub-btrfs
-      OURS: svoya-base,svoya-fonts,svoya-branding,svoya-cli,svoya-jackson,svoya-shell,svoya-session,svoya-installer
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -55,7 +52,7 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: dist/external-cache
-          key: external-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
+          key: external-v2-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
 
       - name: Build
         env:
@@ -63,14 +60,28 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/repo/pool
+          # Every directory is a package: a hand-kept list once missed upsil, and every ISO built
+          # from the cache shipped without it.
+          external=$(cd packages/external && ls -d -- */ | tr -d / | paste -sd, -)
+          ours=$(cd packages && ls -d -- svoya-*/ | tr -d / | paste -sd, -)
+          echo "external: $external · ours: $ours"
           if [ "${{ steps.external.outputs.cache-hit }}" = "true" ]; then
             cp dist/external-cache/*.deb dist/repo/pool/
-            packages/build-all.sh --only "$OURS"
+            missing=""
+            for p in ${external//,/ }; do
+              compgen -G "dist/repo/pool/${p}_*.deb" >/dev/null || missing="$missing,$p"
+            done
+            [ -z "$missing" ] || echo "::warning::not in the third-party cache, building: ${missing#,}"
+            packages/build-all.sh --only "$ours$missing"
           else
             packages/build-all.sh
             mkdir -p dist/external-cache
-            for p in ${EXTERNAL//,/ }; do cp dist/repo/pool/"${p}"_*.deb dist/external-cache/; done
+            for p in ${external//,/ }; do cp dist/repo/pool/"${p}"_*.deb dist/external-cache/; done
           fi
+          # the ISO needs every package: fail here, not with a system missing a command
+          for p in ${external//,/ } ${ours//,/ }; do
+            compgen -G "dist/repo/pool/${p}_*.deb" >/dev/null || { echo "::error::no .deb for $p"; exit 1; }
+          done
           ls -la dist/repo/pool
           {
             echo "### SOS packages"
@@ -84,7 +95,7 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: dist/external-cache
-          key: external-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
+          key: external-v2-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
 
       - name: Upload repository
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
