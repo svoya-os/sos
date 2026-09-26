@@ -480,6 +480,12 @@ class Engine:
             except ProviderError as exc:
                 if exc.kind == "cancelled" or exc.output_started or step > 0 or not candidates:
                     raise
+                if provider.cfg.local and exc.kind == "timeout":
+                    # another model on the same server shares the same CPU: as slow, and loading it
+                    # costs memory (the model bot waited 6 minutes for two copies of one model)
+                    candidates = [c for c in candidates if c.provider != chosen.provider]
+                    if not candidates:
+                        raise
                 if not provider.cfg.local:
                     app.health.mark_failed(provider.name, exc.message)
                 failed = chosen

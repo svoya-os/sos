@@ -211,6 +211,22 @@ class EngineTest(unittest.TestCase):
         self.assertNotIn("127.0.0.1", error["message"])
         self.assertTrue(error["retryable"])
 
+    def test_a_slow_local_server_is_not_asked_again_with_another_model(self):
+        # ISO #12: after a timeout the turn went on to the next local model — the same weights under
+        # another name — and the server loaded a second copy on the same CPU
+        def hang(body):
+            time.sleep(1.0)
+            return {"text": "поздно"}
+        srv = self.server(hang, models=["qwen3.5-4b", "qwen3.5-9b"])
+        url = f"http://127.0.0.1:{srv.port}/v1"
+        app = make_app(self.root, url, providers={"local": OpenAIProvider(ProviderConfig(
+            "local", base_url=url, local=True, region="local", label="llama.cpp", timeout=0.3))})
+        events = asyncio.run(run_turn(app, "расскажи о себе"))
+        routes = [e for e in events if e["type"] == "route"]
+        self.assertEqual(len(routes), 1)
+        self.assertEqual(len([r for r in srv.requests if r.get("stream")]), 1)
+        self.assertEqual(kinds(events)[-1], "error")
+
     def test_local_model_that_is_not_running_says_how_to_start_it(self):
         from jackson.providers import ProviderError
         app = make_app(self.root, "http://127.0.0.1:9/v1")

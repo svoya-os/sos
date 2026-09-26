@@ -68,17 +68,19 @@ DEFAULTS: dict[str, Any] = {
         },
     },
     "providers": {
-        # llama.cpp `llama-server` (router mode: --models-dir), OpenAI-compatible.
+        # llama.cpp `llama-server` (router mode: --models-dir), OpenAI-compatible. The timeout is long:
+        # on a CPU the first answer loads the model and reads Jackson's whole prompt (some 3,500
+        # tokens with the tools) before its first word.
         "local": {
             "kind": "openai", "label": "llama.cpp", "base_url": "http://127.0.0.1:8080/v1",
             "local": True, "region": "local", "needs_key": False, "models": [],
-            "context": {"*": 32768}, "timeout": 180.0, "connect_timeout": 1.0,
+            "context": {"*": 32768}, "timeout": 300.0, "connect_timeout": 1.0,
         },
         # Ollama (OpenAI-compatible endpoint).
         "ollama": {
             "kind": "openai", "label": "Ollama", "base_url": "http://127.0.0.1:11434/v1",
             "local": True, "region": "local", "needs_key": False, "models": [],
-            "context": {"*": 32768}, "timeout": 180.0, "connect_timeout": 1.0,
+            "context": {"*": 32768}, "timeout": 300.0, "connect_timeout": 1.0,
         },
         "anthropic": {
             "kind": "anthropic", "label": "Anthropic", "base_url": "https://api.anthropic.com",

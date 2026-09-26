@@ -140,8 +140,9 @@ jobs:
           cp "$dir/report.md" "$out/README.md" 2>/dev/null || true
           cp "$dir/report.json" "$out/report.json" 2>/dev/null || true
           if [ -f "$dir/serial.log" ]; then
+              # (llama-server: its requests, slots and prompt progress — what a slow local answer is made of)
               awk '/SOS-DIAG begin/{d=1} d{print} /SOS-DIAG end/{d=0; next}
-                   !d && /SOS-MARK|SOS-GRUB|[Ee]rror|ERROR|[Ff]ail|FAIL|[Ww]arn|segfault|core dump|Hyprland|hyprland|quickshell|greetd|svoya|sos-/' \
+                   !d && /SOS-MARK|SOS-GRUB|[Ee]rror|ERROR|[Ff]ail|FAIL|[Ww]arn|segfault|core dump|Hyprland|hyprland|quickshell|greetd|svoya|sos-|llama-server.*(srv |slot |spawn|n_ctx )/' \
                   "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' | tail -n 1500 >"$out/diag.txt"
               tail -n 200 "$dir/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$out/serial-tail.txt"
           fi

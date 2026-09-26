@@ -55,8 +55,10 @@ Work towards v0.1 «Первый сигнал».
   requests go to the model.
 - When the local model does not answer, Jackson says what to check (`sos models serve --status`)
   or how to start it, instead of an address and a socket error.
-- **Privacy:** the local model server (`sos models serve`, the llm-local module) loads the models in
-  `/srv/ai` without asking Hugging Face about them first. Online, that question made Jackson's
-  local answers hang.
+- **Privacy:** the local model server (`sos models serve`, the llm-local module) serves the models
+  in `/srv/ai` once each and never asks Hugging Face about them. It listed the store a second time
+  under repository names, asked Hugging Face before loading those, and ran two copies of one
+  model: Jackson's local answers timed out. Jackson now waits up to five minutes for a local
+  answer (a CPU reads his whole prompt first) and does not load another model after a timeout.
 
 [Unreleased]: https://github.com/svoya-os/sos/commits/main

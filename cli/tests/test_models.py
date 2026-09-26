@@ -324,7 +324,7 @@ class ServeTest(SandboxTest):
 
         class Spawning(FakeRunner):
             def spawn(self, argv, *, env=None, cwd=None, mutating=True):
-                seen["env"] = env
+                seen["env"], seen["argv"] = env, list(argv)
                 return super().spawn(argv, env=env, cwd=cwd, mutating=mutating)
 
         r = Spawning(available={"llama-server"})
@@ -332,9 +332,13 @@ class ServeTest(SandboxTest):
         self.assertEqual(mcli.cmd_serve(args, self.sb.ctx(r)), 0)
         self.assertEqual(seen["env"]["LLAMA_ARG_CTX_SIZE"], "16384")
         # llama.cpp lists the store (a Hugging Face cache) by repository name and, online, asked
-        # Hugging Face before loading: the model bot's answers timed out
+        # Hugging Face before loading: the model bot's answers timed out. Only the views, offline.
         self.assertEqual(seen["env"]["LLAMA_ARG_OFFLINE"], "1")
-        self.assertIn("Environment=LLAMA_ARG_OFFLINE=1", unit)
+        self.assertIn("--offline", seen["argv"])
+        for var in ("LLAMA_CACHE", "HF_HUB_CACHE", "HF_HOME"):
+            self.assertNotIn("/srv/ai", seen["env"][var])
+            self.assertRegex(unit, rf"(?m)^Environment=.*\b{var}=%t/svoya-llm/")
+        self.assertRegex(unit, r"(?m)^ExecStart=/usr/bin/llama-server .*--models-dir /srv/ai/views/llama.cpp .*--offline$")
 
     def test_serve_without_server_explains(self):
         import contextlib

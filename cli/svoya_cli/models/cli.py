@@ -559,11 +559,14 @@ def cmd_serve(args, ctx: Ctx) -> int:
         from types import SimpleNamespace
         cmd_views(SimpleNamespace(out=None, json=False, quiet=True), ctx)
         argv = ["llama-server", "--host", "127.0.0.1", "--port", str(args.port), "--models-dir", str(views_dir),
-                "--models-max", "2", "--jinja"]
-        # the context window of svoya-llm.service: llama.cpp's default (the model's training context)
-        # does not fit in memory
+                "--models-max", "2", "--jinja", "--offline"]
+        # as svoya-llm.service: a context window that fits in memory (llama.cpp's default is the model's
+        # training context), and the views only — an empty Hugging Face cache, or llama.cpp lists the
+        # store a second time under repository names and asks Hugging Face before loading those
+        empty = ctx.paths.runtime_dir / "svoya-llm"
         env = {**os.environ, "LLAMA_ARG_CTX_SIZE": os.environ.get("LLAMA_ARG_CTX_SIZE") or SERVE_CTX,
-               "LLAMA_ARG_OFFLINE": "1"}      # the models in /srv/ai only, no questions to Hugging Face
+               "LLAMA_ARG_OFFLINE": "1", "LLAMA_CACHE": str(empty / "cache"), "HF_HUB_CACHE": str(empty / "cache"),
+               "HF_HOME": str(empty / "hf")}
         if args.foreground and not ctx.dry_run:
             os.execvpe(argv[0], argv, env)
         r.spawn(argv, env=env)
