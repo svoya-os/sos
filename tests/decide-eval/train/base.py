@@ -201,3 +201,70 @@ EN = {
         "turn on the lights", "my screen flickers", "time flies", "loud news today",
     ],
 }
+
+# Second round, after run 36249658179 (94% picked right, but 3 wrong actions on the held-out
+# phrases: "darker" read as brighter, a full-screen window and a meal time read as commands). The
+# English lists were the thinnest; the none class gets requests that name the screen, the sound,
+# the time or the battery without asking for one of the commands. Categories, not the held-out
+# phrases themselves (train.py drops any exact match with tests/decide-eval/phrases.tsv).
+MORE_EN = {
+    "volume_up": ["turn it up", "increase the volume", "make it louder", "raise the volume", "sound up",
+                  "I can't hear anything, louder", "pump up the volume", "a little louder"],
+    "volume_down": ["lower the volume", "turn the volume down", "make it softer", "volume lower please",
+                    "softer please", "reduce the sound", "the sound is too loud", "less loud"],
+    "mute": ["mute it", "cut the sound", "turn off all sound", "switch the sound off", "no more sound please",
+             "mute audio", "shut the sound off", "zero volume"],
+    "unmute": ["unmute", "unmute the sound", "sound on", "turn the audio back on", "restore the sound",
+               "I want sound again", "switch the sound back on", "unmute the speakers"],
+    "brightness_up": ["make the screen brighter", "turn up the brightness", "raise the brightness",
+                      "the display is too dark", "brighten the display", "screen brightness up",
+                      "I can barely see the screen, brighter", "bump up the brightness", "full brightness",
+                      "boost the brightness", "increase screen brightness", "lighter screen"],
+    "brightness_down": ["make the screen darker", "turn down the brightness a bit", "less brightness",
+                        "the display is too bright", "dim the display", "reduce screen brightness",
+                        "bring the brightness down", "it's too bright, dim the screen", "tone down the screen",
+                        "lower screen brightness", "make the display darker", "darken the screen"],
+    "wifi_on": ["turn on wifi", "wifi on", "connect to wi-fi", "switch on wireless", "enable wireless",
+                "turn the wireless on", "wi-fi on please", "start the wifi"],
+    "wifi_off": ["turn off wifi", "wifi off", "switch off wireless", "disable wireless", "turn the wi-fi off",
+                 "disconnect wi-fi", "shut the wifi off", "wireless off please"],
+    "bluetooth_on": ["turn on bluetooth", "bluetooth on", "enable bluetooth", "switch bluetooth on",
+                     "start bluetooth", "I need bluetooth for my speaker", "bluetooth on please",
+                     "activate bluetooth"],
+    "bluetooth_off": ["turn off bluetooth", "bluetooth off", "disable bluetooth", "stop bluetooth",
+                      "bluetooth off please", "deactivate bluetooth", "shut bluetooth off",
+                      "I don't need bluetooth anymore, turn it off"],
+    "lock": ["lock my computer", "lock the pc", "lock the laptop", "lock the session", "lock screen now",
+             "I'm leaving, lock it", "secure the screen", "lock the desktop"],
+    "screenshot": ["take a screenshot", "screenshot", "screenshot please", "snap the screen", "save a screenshot",
+                   "make a screen capture", "take a screen shot", "print screen"],
+    "battery": ["battery level", "how much battery do I have", "battery status", "what's my battery at",
+                "is the battery low?", "charge level", "battery percentage", "show the battery"],
+    "time": ["what's the time now", "tell me the time", "clock", "what hour is it", "show the time",
+             "current time please", "what's the current time?", "time now"],
+    "none": ["make the window fullscreen", "go fullscreen", "change the screen resolution", "zoom in on the screen",
+             "rotate the screen", "set a new wallpaper", "open the screen recorder", "share my screen in the call",
+             "put the screen on the tv", "time to go to bed", "it's time for lunch, find a restaurant",
+             "how much time is left in the movie?", "set the time zone to Tallinn", "what's the weather today?",
+             "play the next song", "pause the video", "my headphones crackle, why?", "download a notification sound",
+             "record a voice note", "where can I buy a laptop battery?", "my phone is dying, what do I do?",
+             "put a password on this file", "shut down the computer in an hour", "what's my wifi password?",
+             "share the wifi with my phone", "take a screenshot and email it to me", "make a gif of the screen",
+             "turn on the tv", "is it time to update the system?", "the screen went black, help"],
+}
+MORE_RU = {
+    "none": ["разверни окно на весь экран", "сделай окно на весь экран", "поменяй разрешение экрана",
+             "увеличь масштаб", "поверни экран", "поставь заставку на экран", "поставь новые обои",
+             "покажи экран в звонке", "выведи экран на телевизор", "пора обедать, найди кафе",
+             "сколько осталось до конца фильма", "поставь часовой пояс Таллин", "какая погода сегодня",
+             "следующий трек", "поставь видео на паузу", "в наушниках треск, почему",
+             "скачай звук для уведомлений", "запиши голосовую заметку", "где купить батарею для ноутбука",
+             "телефон разряжается, что делать", "поставь пароль на файл", "выключи компьютер через час",
+             "какой пароль от вайфая", "раздай вайфай на телефон", "сделай скриншот и отправь на почту",
+             "сделай гифку с экрана", "экран погас, помоги", "пора обновить систему?",
+             "сделай окно поменьше", "яркая тема или тёмная, что лучше?"],
+}
+for _table, _more in ((EN, MORE_EN), (RU, MORE_RU)):
+    for _intent, _phrases in _more.items():
+        _known = {p.lower() for p in _table[_intent]}
+        _table[_intent].extend(p for p in _phrases if p.lower() not in _known)
