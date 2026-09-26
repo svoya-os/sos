@@ -1,0 +1,180 @@
+{
+ "plan": "live-iso-smoke",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": true,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot-menu",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot-menu",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot-menu",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1280x800 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 4,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 5,
+   "id": "plymouth",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "plymouth",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 7,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 18.23 desktop-ready'",
+   "status": "ok",
+   "seconds": 11.0
+  },
+  {
+   "n": 8,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 9,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 10,
+   "id": "network",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 10.09 network-online'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 11,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 12,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 13,
+   "id": "launcher",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 28.0% changed vs 03-live-desktop",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 14,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 15,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 16,
+   "id": "jackson",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+j",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 17,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 18,
+   "id": "jackson",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 18.6% changed vs 03-live-desktop",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 19,
+   "id": "jackson",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.0
+  }
+ ]
+}
