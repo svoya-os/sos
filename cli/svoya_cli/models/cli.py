@@ -559,7 +559,7 @@ def cmd_serve(args, ctx: Ctx) -> int:
         from types import SimpleNamespace
         cmd_views(SimpleNamespace(out=None, json=False, quiet=True), ctx)
         argv = ["llama-server", "--host", "127.0.0.1", "--port", str(args.port), "--models-dir", str(views_dir),
-                "--models-max", "2", "--jinja", "--offline"]
+                "--models-max", "2", "--jinja", "--batch-size", "512", "--offline"]
         # as svoya-llm.service: a context window that fits in memory (llama.cpp's default is the model's
         # training context), and the views only — an empty Hugging Face cache, or llama.cpp lists the
         # store a second time under repository names and asks Hugging Face before loading those

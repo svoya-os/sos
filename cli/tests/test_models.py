@@ -339,6 +339,9 @@ class ServeTest(SandboxTest):
             self.assertNotIn("/srv/ai", seen["env"][var])
             self.assertRegex(unit, rf"(?m)^Environment=.*\b{var}=%t/svoya-llm/")
         self.assertRegex(unit, r"(?m)^ExecStart=/usr/bin/llama-server .*--models-dir /srv/ai/views/llama.cpp .*--offline$")
+        # a cancelled request stops after 512 tokens, not 2048 (minutes on a slow CPU)
+        self.assertIn("--batch-size 512", unit)
+        self.assertEqual(seen["argv"][seen["argv"].index("--batch-size") + 1], "512")
 
     def test_serve_without_server_explains(self):
         import contextlib

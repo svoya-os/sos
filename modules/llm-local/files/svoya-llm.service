@@ -22,7 +22,9 @@ Environment=LLAMA_CACHE=%t/svoya-llm/cache HF_HUB_CACHE=%t/svoya-llm/cache HF_HO
 Environment=LLAMA_ARG_OFFLINE=1
 EnvironmentFile=-%h/.config/svoya/llm.env
 ExecStartPre=-/usr/bin/sos models views --quiet
-ExecStart=/usr/bin/llama-server --host 127.0.0.1 --port 8080 --models-dir /srv/ai/views/llama.cpp --models-max 2 --jinja --offline
+# --batch-size 512: a request is read in pieces of 512 tokens, so a cancelled one stops after the
+# current piece (with 2048, a CPU kept reading an abandoned question for minutes, next to the new one).
+ExecStart=/usr/bin/llama-server --host 127.0.0.1 --port 8080 --models-dir /srv/ai/views/llama.cpp --models-max 2 --jinja --batch-size 512 --offline
 Restart=on-failure
 
 [Install]
