@@ -1,0 +1,200 @@
+	VERSION_ID="26.10"
+	VERSION_CODENAME=signal
+	ID=sos
+	ID_LIKE="ubuntu debian"
+	UBUNTU_CODENAME=resolute
+	HOME_URL="https://github.com/svoya-os/sos"
+	DOCUMENTATION_URL="https://github.com/svoya-os/sos/tree/main/docs"
+	SUPPORT_URL="https://github.com/svoya-os/sos/discussions"
+	BUG_REPORT_URL="https://github.com/svoya-os/sos/issues"
+	PRIVACY_POLICY_URL="https://github.com/svoya-os/sos/blob/main/docs/VISION.md#3-the-promise-published-binding"
+	LOGO=sos
+	ANSI_COLOR="1;37"
+
+Libraries:
+Hyprgraphics: built against 0.5.0, system has unknown
+Hyprutils: built against 0.11.0, system has unknown
+Hyprcursor: built against 0.1.13, system has unknown
+Hyprlang: built against 0.6.8, system has unknown
+Aquamarine: built against 0.10.0, system has unknown
+
+Backtrace:
+	# | Hyprland(_Z12getBacktracev+0x60) [0x629da6dc7a00]
+		getBacktrace()
+		??:?
+	#1 | Hyprland(_ZN13CrashReporter18createAndSaveCrashEi+0xc34) [0x629da6d30ad4]
+		CrashReporter::createAndSaveCrash(int)
+		??:?
+	#2 | Hyprland(+0x28323c) [0x629da6c8323c]
+		std::__format::_Formatting_scanner<std::__format::_Sink_iter<char>, char>::_M_format_arg(unsigned long)
+		??:?
+	#3 | /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x73466f3c7cb0]
+		??
+		??:0
+SOS-DIAG end t+240s
+[  249.538772] runuser[2543]: pam_unix(runuser:session): session opened for user svoya(uid=1000) by (uid=0)
+[  249.572252] kernel: quickshell[2544]: segfault at 0 ip 0000773ed0e6cbc8 sp 00007ffc24c67460 error 4 in libQt6Core.so.6.10.2[137bc8,773ed0df3000+371000] likely on CPU 1 (core 1, socket 0)
+[  249.572309] kernel: Code: 04 f0 83 00 01 48 8b 45 d8 64 48 2b 04 25 28 00 00 00 0f 85 70 02 00 00 48 83 c4 78 48 89 d8 5b 41 5c 41 5d 5d c3 0f 1f 40 00 <4d> 8b 6d 00 66 0f 76 c0 48 b8 fe fe fe fe fe fe fe fe 66 0f fc c0
+[  249.575265] runuser[2543]: pam_unix(runuser:session): session closed for user svoya
+SOS-DIAG begin t+480s
+## processes
+    PID USER     ELAPSED COMMAND
+      1 root         488 /sbin/init noprompt splash ---
+    641 root         483 /usr/lib/systemd/systemd-journald
+    692 systemd+     483 /usr/lib/systemd/systemd-resolved
+    694 root         483 /usr/lib/systemd/systemd-udevd
+    738 systemd+     482 /usr/lib/systemd/systemd-oomd
+   1000 root         480 /usr/libexec/accounts-daemon
+   1001 root         480 /bin/sh /usr/lib/systemd/scripts/chronyd-starter.sh -n -F 1
+   1002 message+     480 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1010 root         480 /usr/lib/systemd/systemd-logind
+   1012 root         480 /usr/libexec/udisks2/udisksd
+   1050 _chrony      480 /usr/sbin/chronyd -n -F 1
+   1054 _chrony      480 /usr/sbin/chronyd -n -F 1
+   1067 root         480 /usr/sbin/NetworkManager --no-daemon
+   1068 root         480 /usr/sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+   1071 polkitd      480 /usr/lib/polkit-1/polkitd --no-debug --log-level=notice
+   1121 root         480 /bin/bash /usr/lib/svoya/vm-test-agent
+   1140 root         480 /bin/bash /usr/lib/svoya/vm-test-agent
+   1144 root         480 journalctl -b -f -o short-monotonic --no-hostname --cursor-file=/run/sos-vm-test.journal-cursor
+   1157 root         480 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d - linux
+   1158 root         480 /usr/libexec/power-profiles-daemon
+   3258 root           0 tail -n 70
+## sessions
+## failed system units
+greetd.service loaded failed failed Greeter daemon
+## drm
+BOOT_IMAGE=/casper/vmlinuz boot=casper hostname=sos username=svoya locale=en_US.UTF-8 fsck.mode=skip noprompt console=ttyS0,115200 console=tty1 systemd.show_status=1 systemd.mask=serial-getty@ttyS0.service sos.vmtest=1 nomodeset quiet splash ---
+total 0
+drwxr-xr-x  3 root root      80 Sep 26 08:00 .
+drwxr-xr-x 19 root root    4060 Sep 26 08:01 ..
+drwxr-xr-x  2 root root      60 Sep 26 08:00 by-path
+crw-rw----+ 1 root video 226, 0 Sep 26 08:01 card0
+/sys/class/drm/card0-Unknown-1: connected
+/sys/class/drm/card0: simple-framebuffer
+## greetd
+[   11.121808] sos greetd[1154]: error: check_children: greeter exited without creating a session
+[   11.122826] sos systemd[1]: greetd.service: Deactivated successfully.
+[   12.127328] sos systemd[1]: greetd.service: Scheduled restart job, restart counter is at 1.
+[   12.249680] sos systemd[1]: Started greetd.service - Greeter daemon.
+[   12.291819] sos greetd[1413]: pam_unix(greetd-greeter:session): session opened for user svoya-greeter(uid=980) by svoya-greeter(uid=0)
+[   12.591502] sos greetd[1413]: pam_unix(greetd-greeter:session): session closed for user svoya-greeter
+[   12.619770] sos greetd[1412]: error: check_children: greeter exited without creating a session
+[   12.620408] sos systemd[1]: greetd.service: Deactivated successfully.
+[   13.627247] sos systemd[1]: greetd.service: Scheduled restart job, restart counter is at 2.
+[   13.745339] sos systemd[1]: Started greetd.service - Greeter daemon.
+[   13.790785] sos greetd[1495]: pam_unix(greetd-greeter:session): session opened for user svoya-greeter(uid=980) by svoya-greeter(uid=0)
+[   14.079712] sos greetd[1495]: pam_unix(greetd-greeter:session): session closed for user svoya-greeter
+[   14.104964] sos greetd[1494]: error: check_children: greeter exited without creating a session
+[   14.106407] sos systemd[1]: greetd.service: Deactivated successfully.
+[   15.127329] sos systemd[1]: greetd.service: Scheduled restart job, restart counter is at 3.
+[   15.241958] sos systemd[1]: Started greetd.service - Greeter daemon.
+[   15.286707] sos greetd[1574]: pam_unix(greetd-greeter:session): session opened for user svoya-greeter(uid=980) by svoya-greeter(uid=0)
+[   15.579661] sos greetd[1574]: pam_unix(greetd-greeter:session): session closed for user svoya-greeter
+[   15.603715] sos greetd[1573]: error: check_children: greeter exited without creating a session
+[   15.604797] sos systemd[1]: greetd.service: Deactivated successfully.
+[   16.627314] sos systemd[1]: greetd.service: Scheduled restart job, restart counter is at 4.
+[   16.750373] sos systemd[1]: Started greetd.service - Greeter daemon.
+[   16.797311] sos greetd[1656]: pam_unix(greetd-greeter:session): session opened for user svoya-greeter(uid=980) by svoya-greeter(uid=0)
+[   17.087147] sos greetd[1656]: pam_unix(greetd-greeter:session): session closed for user svoya-greeter
+[   17.092828] sos greetd[1654]: error: check_children: greeter exited without creating a session
+[   17.116501] sos systemd[1]: greetd.service: Deactivated successfully.
+[   18.127412] sos systemd[1]: greetd.service: Scheduled restart job, restart counter is at 5.
+[   18.241451] sos systemd[1]: greetd.service: Start request repeated too quickly.
+[   18.241474] sos systemd[1]: greetd.service: Failed with result 'start-limit-hit'.
+[   18.241531] sos systemd[1]: Failed to start greetd.service - Greeter daemon.
+## user svoya: warnings and errors
+[    8.975844] sos pipewire[1205]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    8.975880] sos pipewire[1205]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    8.976351] sos pipewire[1205]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    8.976361] sos pipewire[1205]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    8.976697] sos pipewire[1205]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    8.976759] sos pipewire[1205]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.033153] sos pipewire-pulse[1216]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.033224] sos pipewire-pulse[1216]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.042751] sos pipewire-pulse[1216]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.042769] sos pipewire-pulse[1216]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.045074] sos pipewire-pulse[1216]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.045089] sos pipewire-pulse[1216]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.051324] sos wireplumber[1214]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.051339] sos wireplumber[1214]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[    9.051743] sos wireplumber[1214]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.051754] sos wireplumber[1214]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[    9.052240] sos wireplumber[1214]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[    9.052253] sos wireplumber[1214]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[    9.069659] sos wireplumber[1214]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x61e8fabb7920> Failed to connect to snapd: No such file or directory
+[    9.237502] sos wireplumber[1214]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[    9.239459] sos wireplumber[1214]: spa.bluez5: BlueZ system service is not available
+## probe: quickshell -p /usr/share/svoya/shell (8 s, WAYLAND_DISPLAY=)
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+ ERROR quickshell.paths: Could not create base runtime directory at "/run/user/1000/quickshell"
+ ERROR quickshell.paths: Cannot create instance runtime directory as main runtim directory could not be created.
+Segmentation fault
+## probe exit: 139
+## /home/svoya/.cache/hyprland/hyprlandCrashReport1268.txt
+--------------------------------------------
+   Hyprland Crash Report
+--------------------------------------------
+*thud*
+
+Hyprland received signal 6(ABRT)
+Version: dd220efe7b1e292415bd0ea7161f63df9c95bfd3
+Tag: v0.53.3
+Date: Sat Jan 24 20:02:06 2026
+Flags:
+
+System info:
+	System name: Linux
+	Node name: sos
+	Release: 7.0.0-31-generic
+	Version: #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026
+
+GPU:
+	00:02.0 VGA compatible controller [0300]: Red Hat, Inc. Virtio 1.0 GPU [1af4:1050] (rev 01) (prog-if 00 [VGA controller])
+
+
+os-release:
+	# /usr/lib/os-release (with /etc/os-release → ../usr/lib/os-release) — SOS, Svoya Operating System.
+	# Generated by branding/os/generate.py. Spec: os-release(5).
+	NAME="SOS"
+	PRETTY_NAME="SOS 26.10 «Первый сигнал»"
+	VERSION="26.10 «Первый сигнал» (First Signal)"
+	VERSION_ID="26.10"
+	VERSION_CODENAME=signal
+	ID=sos
+	ID_LIKE="ubuntu debian"
+	UBUNTU_CODENAME=resolute
+	HOME_URL="https://github.com/svoya-os/sos"
+	DOCUMENTATION_URL="https://github.com/svoya-os/sos/tree/main/docs"
+	SUPPORT_URL="https://github.com/svoya-os/sos/discussions"
+	BUG_REPORT_URL="https://github.com/svoya-os/sos/issues"
+	PRIVACY_POLICY_URL="https://github.com/svoya-os/sos/blob/main/docs/VISION.md#3-the-promise-published-binding"
+	LOGO=sos
+	ANSI_COLOR="1;37"
+
+Libraries:
+Hyprgraphics: built against 0.5.0, system has unknown
+Hyprutils: built against 0.11.0, system has unknown
+Hyprcursor: built against 0.1.13, system has unknown
+Hyprlang: built against 0.6.8, system has unknown
+Aquamarine: built against 0.10.0, system has unknown
+
+Backtrace:
+	# | Hyprland(_Z12getBacktracev+0x60) [0x629da6dc7a00]
+		getBacktrace()
+		??:?
+	#1 | Hyprland(_ZN13CrashReporter18createAndSaveCrashEi+0xc34) [0x629da6d30ad4]
+		CrashReporter::createAndSaveCrash(int)
+		??:?
+	#2 | Hyprland(+0x28323c) [0x629da6c8323c]
+		std::__format::_Formatting_scanner<std::__format::_Sink_iter<char>, char>::_M_format_arg(unsigned long)
+		??:?
+	#3 | /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x73466f3c7cb0]
+		??
+		??:0
+SOS-DIAG end t+480s
+[  488.743977] runuser[3282]: pam_unix(runuser:session): session opened for user svoya(uid=1000) by (uid=0)
+[  488.776324] kernel: quickshell[3283]: segfault at 0 ip 00007e7d975e6bc8 sp 00007ffcbf481cb0 error 4 in libQt6Core.so.6.10.2[137bc8,7e7d9756d000+371000] likely on CPU 1 (core 1, socket 0)
+[  488.776393] kernel: Code: 04 f0 83 00 01 48 8b 45 d8 64 48 2b 04 25 28 00 00 00 0f 85 70 02 00 00 48 83 c4 78 48 89 d8 5b 41 5c 41 5d 5d c3 0f 1f 40 00 <4d> 8b 6d 00 66 0f 76 c0 48 b8 fe fe fe fe fe fe fe fe 66 0f fc c0
+[  488.779191] runuser[3282]: pam_unix(runuser:session): session closed for user svoya
