@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+# Jackson's ears and voice (v0.2 «Голос»): local speech recognition and synthesis.
+# Installed with svoya-jackson, runnable once `sos install voice` has made its venv. jacksond starts
+# it when someone presses the microphone; it records only while asked to listen (jackson/voice).
+[Unit]
+Description=Jackson's ears and voice (SOS)
+Documentation=file:///usr/share/doc/svoya-jackson/README.md
+PartOf=graphical-session.target
+After=pipewire.service wireplumber.service
+ConditionPathExists=/opt/svoya/venvs/voice/bin/python
+ConditionPathExists=!%h/.config/svoya/ai.off
+ConditionPathExists=!/etc/svoya/ai.off
+
+[Service]
+Type=simple
+ExecStart=/opt/svoya/venvs/voice/bin/python /usr/lib/svoya/svoya-voice
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1 SVOYA_VOICE_MODELS=/srv/ai/voice
+EnvironmentFile=-%h/.config/svoya/voice.env
+UMask=0077
+LockPersonality=yes
+SystemCallArchitectures=native

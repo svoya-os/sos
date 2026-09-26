@@ -30,6 +30,8 @@ from . import PROTOCOL_VERSION, __version__
 from .app import Jackson
 from .engine import Session, Turn, new_id
 from .i18n import norm_lang, t
+from .voice import VOICE_SOCKET
+from .voice.client import VoiceDesk
 
 log = logging.getLogger("jackson.service")
 
@@ -37,6 +39,30 @@ LINE_LIMIT = 4 * 1024 * 1024
 DECISIONS = ("once", "always-project", "deny")
 # What this build supports (ARCHITECTURE §8: `voice` appears here once push-to-talk ships in v0.2).
 CAPABILITIES = ("fastpath", "approvals", "undo", "refines", "mcp", "notes", "avatar")
+# `sos install voice` makes this venv; jacksond then starts svoya-voice.service on the first press
+VOICE_VENV = Path(os.environ.get("SVOYA_VOICE_VENV", "/opt/svoya/venvs/voice")) / "bin" / "python"
+
+
+async def start_voice_service() -> None:
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "systemctl", "--user", "start", "--no-block", "svoya-voice.service",
+            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
+        _, err = await asyncio.wait_for(proc.communicate(), 10)
+        if proc.returncode:
+            log.warning("could not start svoya-voice.service: %s", err.decode(errors="replace").strip())
+    except (OSError, asyncio.TimeoutError) as exc:
+        log.warning("could not start svoya-voice.service: %s", exc)
+
+
+async def voice_unit_failed() -> bool:
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "systemctl", "--user", "is-failed", "--quiet", "svoya-voice.service",
+            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL)
+        return await asyncio.wait_for(proc.wait(), 5) == 0
+    except (OSError, asyncio.TimeoutError):
+        return False
 MAX_REMEMBERED_TURNS = 200
 
 
@@ -101,6 +127,14 @@ class JacksonService:
         self._sessions_by_turn: dict[str, Session] = {}   # for `ask.refines`
         self.started = time.monotonic()
         self.stopping = False
+        self.voice = VoiceDesk(
+            self.socket_path.parent / VOICE_SOCKET, config=lambda: self.app.config.voice, ask=self._ask,
+            send=lambda client, event: client.send(event), broadcast=self._broadcast,
+            state=lambda tid, state, mood: {"type": "state", "id": tid, "state": state, **self.app.state_extra(),
+                                            "mood": mood},
+            voice_for=lambda client: str(self.app.config.voice.get("voice") or self.app.config.persona),
+            cancel=lambda client: self._cancel("", client), on_ready_change=lambda: self.broadcast_look("voice"),
+            installed=lambda: VOICE_VENV.exists(), start_service=start_voice_service, unit_failed=voice_unit_failed)
 
     # ------------------------------------------------------------------ lifecycle
     async def start(self) -> None:
@@ -121,6 +155,7 @@ class JacksonService:
         self._background.append(loop.create_task(self._health_loop()))
         self._background.append(loop.create_task(self._look_loop()))
         self._background.append(loop.create_task(self._start_background()))
+        self._background.append(loop.create_task(self.voice.link.run(self._stop)))
         sd_notify("READY=1\nSTATUS=Jackson is listening")
         log.info("listening on %s", path)
 
@@ -173,9 +208,15 @@ class JacksonService:
 
     def broadcast_look(self, detail: str) -> None:
         event = {"type": "state", "state": self.aggregate_state(), **self.app.state_extra(), "mood": "calm",
-                 "detail": detail}
+                 "detail": detail, "capabilities": self.capabilities()}
+        self._broadcast(event)
+
+    def _broadcast(self, event: dict[str, Any]) -> None:
         for client in list(self.clients.values()):
             client.send(dict(event))
+
+    def capabilities(self) -> list[str]:
+        return list(CAPABILITIES) + (["voice"] if self.voice.available else [])
 
     async def serve_forever(self, handle_signals: bool = True) -> None:
         loop = asyncio.get_running_loop()
@@ -270,6 +311,7 @@ class JacksonService:
                     client.send({"type": "error", "id": msg.get("id"), "retryable": False,
                                  "message": t("err.internal", client.session.lang, why=str(exc))})
         finally:
+            self.voice.forget(client)
             if client.task is not None and not client.task.done():
                 if client.turn is not None:
                     client.turn.cancel.cancel()
@@ -320,6 +362,8 @@ class JacksonService:
                          "mood": "calm"})
         elif mtype == "undo":
             await self._undo(client, msg)
+        elif mtype == "listen":
+            await self.voice.listen(client, msg)
         elif mtype == "ping":
             client.send({"type": "pong", "id": msg.get("id")})
         else:  # ARCHITECTURE §8: unknown message types are ignored (newer shells may send more)
@@ -333,7 +377,7 @@ class JacksonService:
         return {"type": "welcome", "version": __version__, "protocol": PROTOCOL_VERSION, "models": models,
                 "route": route, "client": client.id, "lang": lang, "persona": app.persona(lang),
                 "avatar": app.avatar.to_event(), "name": app.name(lang), "ai": app.ai_state(),
-                "capabilities": list(CAPABILITIES)}
+                "capabilities": self.capabilities()}
 
     async def _status(self, client: Client, msg: dict[str, Any]) -> dict[str, Any]:
         info = self.app.engine.status()
@@ -344,7 +388,8 @@ class JacksonService:
                 "turns": turns, "uptimeSec": round(time.monotonic() - self.started, 1),
                 "models": await asyncio.to_thread(self.app.router.model_table),
                 "persona": self.app.persona(client.session.lang), "avatar": self.app.avatar.to_event(),
-                "name": self.app.name(client.session.lang), "ai": self.app.ai_state()}
+                "name": self.app.name(client.session.lang), "ai": self.app.ai_state(),
+                "capabilities": self.capabilities(), "voice": self.voice.link.status}
 
     def aggregate_state(self) -> str:
         order = ["speaking", "working", "thinking", "listening"]
@@ -375,6 +420,8 @@ class JacksonService:
         if client.turn is not None and not client.turn.finished:
             client.send({"type": "error", "id": turn_id, "message": t("err.busy", lang), "retryable": True})
             return
+        if not (isinstance(msg.get("context"), dict) and msg["context"].get("voice")):
+            await self.voice.hush(client)             # a typed question: Jackson stops talking
         context = msg.get("context") if isinstance(msg.get("context"), dict) else {}
         route = msg.get("route") if isinstance(msg.get("route"), str) else None
         refines = msg.get("refines") if isinstance(msg.get("refines"), str) else None
@@ -385,8 +432,8 @@ class JacksonService:
         self._sessions_by_turn[turn_id] = client.session
         while len(self._sessions_by_turn) > MAX_REMEMBERED_TURNS:
             self._sessions_by_turn.pop(next(iter(self._sessions_by_turn)))
-        turn = Turn(id=turn_id, session=client.session, text=text.strip(), emit=self._emitter(client),
-                    context=dict(context), route=route)
+        turn = Turn(id=turn_id, session=client.session, text=text.strip(),
+                    emit=self.voice.wrap(turn_id, self._emitter(client)), context=dict(context), route=route)
         client.turn = turn
         self.app.audit.append("ask", turn=turn_id, client=client.id, clientName=client.name,
                               chars=len(text), route=route, context=sorted(context))

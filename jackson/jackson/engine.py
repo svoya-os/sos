@@ -465,7 +465,8 @@ class Engine:
         # route and folder stays in the history (the next turns send the same text, so a local
         # model does not read it again), memory and skills only go with this request.
         user_msg = self._user_message(turn, images)
-        note = context_note(lang=lang, route=self._route_text(chosen, lang), cwd=cwd_text)
+        note = context_note(lang=lang, route=self._route_text(chosen, lang), cwd=cwd_text,
+                            voice=bool(turn.context.get("voice")))
         asked = user_msg["content"]
         user_msg["content"] = f"{note}\n{asked}"
         history = session.messages()

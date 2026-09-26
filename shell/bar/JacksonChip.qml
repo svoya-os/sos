@@ -30,6 +30,7 @@ Rectangle {
         width: 22
         height: 10
         mode: Jackson.mode === "off" || Jackson.mode === "offline" ? "idle" : Jackson.mode
+        level: Jackson.level
         live: Jackson.active
         color: Jackson.signalLive ? Theme.accent : Theme.textDim
         glow: Jackson.signalLive && Theme.glow

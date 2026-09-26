@@ -228,7 +228,13 @@ Jobs are `~/.local/state/svoya/jobs/<id>.json` (schema v1, see cli/README.md), u
 `ask` may carry `new: true` and `refines` (id of the turn being refined); `route` also accepts
 `provider/model`. `approval` carries `decisions` (T3/T4 and tainted turns offer only `once`/`deny`).
 `welcome` and `state` carry `persona`, `avatar`, `mood`. Voice (v0.2): when `welcome.capabilities`
-contains `voice`, clients may send `listen {action: start|stop}`.
+contains `voice` (a `state {detail: "voice"}` carries `capabilities` when that changes), clients may
+send `listen {id, action: start|stop|cancel|hush, mode: tap|hold}`; Jackson answers with
+`listen {id, state: loading|listening|hearing|heard|nothing|unavailable|error}`, `level {source:
+mic|voice, level}`, `transcript {id, text, lang}`, then the turn's usual events, and `spoken {id,
+hushed}` once the answer has been said. After a spoken answer he may listen again under a new id:
+`listen {id, state: listening, mode: follow, follow: <previous id>}`. Jackson's speech service is a
+separate process (`svoya-voice`, `jackson/voice`) with its own socket.
 
 **Snapshots and undo.** `sos snapshot create --reason TEXT --json` prints `{"id": …}`;
 `sos undo [<id>] --yes` reverts it non-interactively (callers without a TTY must pass `--yes`).

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 id = "voice"
-name = { en = "Voice (speech ↔ text)", ru = "Голос (речь ↔ текст)" }
-summary = { en = "Local speech recognition (Parakeet TDT v3: Russian, English, Estonian) and speech synthesis (Chatterbox, Qwen3-TTS) for Jackson's push-to-talk.", ru = "Локальное распознавание речи (Parakeet TDT v3: русский, английский, эстонский) и синтез (Chatterbox, Qwen3-TTS) для push-to-talk Джексона." }
+name = { en = "Voice (talk to Jackson)", ru = "Голос (разговор с Джексоном)" }
+summary = { en = "Talk to Jackson and hear him answer: the microphone button in his panel or Super+J held, Russian and English, all on this computer. Silero VAD, Parakeet TDT 0.6B v3 and a local voice.", ru = "Говори с Джексоном и слушай ответ: кнопка микрофона в его панели или зажатый Super+J, русский и английский, всё на этом компьютере. Silero VAD, Parakeet TDT 0.6B v3 и локальный голос." }
 category = "media"
 profiles = ["creator"]
 requires = ["base-ai"]
-apt = ["ffmpeg", "sox", "libsndfile1"]
+apt = ["pipewire-bin"]
 flatpak = []
 scripts = { install = "install.sh", remove = "remove.sh" }
-disk_gb = 3.5
+disk_gb = 1.2
 vram_gb_min = 0
-aliases = ["speech", "tts", "stt", "голос"]
-license_note = { en = "Parakeet TDT v3: CC-BY-4.0 (attribution); Chatterbox: MIT; Qwen3-TTS: Apache-2.0; sherpa-onnx: Apache-2.0. Recognition runs on the CPU too.", ru = "Parakeet TDT v3 — CC-BY-4.0 (атрибуция); Chatterbox — MIT; Qwen3-TTS — Apache-2.0; sherpa-onnx — Apache-2.0. Распознавание работает и на процессоре." }
+aliases = ["speech", "tts", "stt", "голос", "микрофон", "jarvis", "джарвис"]
+license_note = { en = "Parakeet TDT 0.6B v3: CC-BY-4.0 (NVIDIA, attribution); Silero VAD: MIT; onnx-asr: MIT; ONNX Runtime: MIT. Speech is recognized and spoken on this computer; the microphone is open only while you talk to Jackson.", ru = "Parakeet TDT 0.6B v3 — CC-BY-4.0 (NVIDIA, атрибуция); Silero VAD — MIT; onnx-asr — MIT; ONNX Runtime — MIT. Речь распознаётся и звучит на этом компьютере; микрофон открыт, только пока ты говоришь с Джексоном." }

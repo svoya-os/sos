@@ -38,6 +38,12 @@ Work towards v0.1 «Первый сигнал».
 - While a local model reads a request before it answers (minutes on a computer without a graphics
   card), the Jackson panel and `j` show how far it got: «читаю запрос… 45%». A long read no longer
   counts as a model that stopped answering.
+- **Privacy:** voice (`sos install voice`, v0.2 «Голос»): press the microphone in Jackson's panel
+  or hold Super+J, speak Russian or English, and Jackson answers out loud, starting with his first
+  sentence while the rest is still being written. After an answer he listens a few seconds more, so
+  you can go on talking; «спасибо, всё» or the button ends it. Speech is recognized and spoken on
+  your computer (Silero VAD, Parakeet TDT 0.6B v3, a local voice); nothing is recorded or sent.
+  Installing the module downloads these models from Hugging Face.
 
 ### Changed
 

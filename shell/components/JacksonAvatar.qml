@@ -134,6 +134,7 @@ Item {
         height: root.scopeHeight
         visible: !root.hasSprite
         mode: root.mode === "off" || root.mode === "offline" ? "idle" : root.mode
+        level: Jackson.level
         live: root.live
         opacity: root.mode === "offline" || root.mode === "off" ? 0.5 : 1
     }

@@ -114,6 +114,18 @@ Singleton {
     readonly property string jacksonDisabled: root.t("ИИ выключен", "AI is off")
     readonly property string jacksonConnecting: root.t("подключение…", "connecting…")
     readonly property string jacksonListening: root.t("слушаю…", "listening…")
+    readonly property string jacksonHearing: root.t("слышу…", "hearing you…")
+    readonly property string jacksonSpeaking: root.t("говорю…", "speaking…")
+    // voice (v0.2): the microphone button in Jackson's panel and Super+J held
+    readonly property string voiceTalk: root.t("Сказать голосом", "Talk")
+    readonly property string voiceLoading: root.t("загружаю голос…", "loading the voice…")
+    readonly property string voiceMissing: root.t("Голоса пока нет: sos install voice", "No voice yet: sos install voice")
+    readonly property string voiceNothing: root.t("не расслышал — нажми микрофон ещё раз", "didn't catch that — press the mic again")
+    readonly property string voiceListenPlaceholder: root.t("Говори — я слушаю", "Talk — I'm listening")
+    readonly property string voiceFollowPlaceholder: root.t("Говори дальше — или скажи «всё»", "Keep talking — or say “that's all”")
+    function voiceError(note) {
+        return root.t("микрофон: ", "microphone: ") + (note && note.length > 0 ? note : root.t("не вышло", "failed"));
+    }
     readonly property string jacksonThinking: root.t("думаю…", "thinking…")
     // a local model reads the request before it answers: minutes on a CPU
     function jacksonReading(done, total) {

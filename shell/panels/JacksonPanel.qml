@@ -138,6 +138,10 @@ PanelFrame {
                     && input.text.trim() === Jackson.question)
                 input.selectAll();
         }
+        function onListeningChanged() {
+            if (Jackson.listening)
+                input.text = "";
+        }
     }
 
     Timer {
@@ -222,6 +226,7 @@ PanelFrame {
                     width: 92
                     height: 22
                     mode: Jackson.mode === "off" || Jackson.mode === "offline" ? "idle" : Jackson.mode
+                    level: Jackson.level
                     live: root.shown
                     opacity: Jackson.mode === "offline" || Jackson.mode === "off" ? 0.5 : 1
                 }
@@ -252,7 +257,7 @@ PanelFrame {
 
                 x: 18
                 y: 16
-                width: parent.width - 36
+                width: parent.width - 36 - mic.width - 10
                 wrapMode: TextEdit.Wrap
                 color: Theme.text
                 selectionColor: Theme.accentSoft
@@ -302,13 +307,84 @@ PanelFrame {
             SText {
                 x: 18
                 y: 16
-                width: parent.width - 36
+                width: parent.width - 36 - mic.width - 10
                 visible: input.text.length === 0
-                text: Jackson.mode === "off" ? Strings.jacksonDisabled : (root.refining ? Strings.jacksonRefinePlaceholder : (Jackson.screenshot.length > 0 ? Strings.jacksonShotPlaceholder : Strings.jacksonPlaceholderTip(root.tip)))
+                text: {
+                    if (Jackson.mode === "off")
+                        return Strings.jacksonDisabled;
+                    if (Jackson.listening)
+                        return Jackson.conversation ? Strings.voiceFollowPlaceholder : Strings.voiceListenPlaceholder;
+                    if (root.refining)
+                        return Strings.jacksonRefinePlaceholder;
+                    return Jackson.screenshot.length > 0 ? Strings.jacksonShotPlaceholder : Strings.jacksonPlaceholderTip(root.tip);
+                }
                 size: Theme.fsTitle
                 scaled: true
                 color: Theme.textFaint
                 elide: Text.ElideRight
+            }
+
+            // the microphone (voice, v0.2): talk · again: that's it · while Jackson talks: quiet
+            Item {
+                id: mic
+
+                readonly property bool open: Jackson.listening
+                readonly property bool talking: Jackson.mode === "speaking"
+                readonly property bool lit: mic.open || mic.talking
+
+                anchors.right: parent.right
+                anchors.rightMargin: 14
+                y: 11
+                width: 36
+                height: 36
+                visible: Jackson.connected && Jackson.mode !== "off"
+
+                // the pulse follows the microphone while listening and the voice while talking
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 36
+                    height: 36
+                    radius: 18
+                    color: Theme.accentSoft
+                    visible: mic.lit
+                    scale: 0.78 + 0.5 * Math.min(1, Jackson.level)
+
+                    Behavior on scale {
+                        enabled: !Theme.reduceMotion
+                        NumberAnimation {
+                            duration: 90
+                        }
+                    }
+                }
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 30
+                    height: 30
+                    radius: 15
+                    color: micArea.containsMouse ? Theme.surface3 : "transparent"
+                    border.width: 1
+                    border.color: mic.lit ? Theme.accent : (micArea.containsMouse ? Theme.lineStrong : Theme.line)
+                }
+
+                Icon {
+                    anchors.centerIn: parent
+                    glyph: mic.talking ? "volume-2" : "mic"
+                    size: 16
+                    color: mic.lit ? Theme.accent : (Jackson.voice ? Theme.textDim : Theme.textFaint)
+                }
+
+                MouseArea {
+                    id: micArea
+
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Jackson.talk()
+                }
+
+                Accessible.role: Accessible.Button
+                Accessible.name: Strings.voiceTalk
             }
         }
 
@@ -491,10 +567,19 @@ PanelFrame {
                     color: Theme.textFaint
                     text: {
                         const r = Jackson.result;
+                        const v = Jackson.voiceState;
+                        if (v === "loading")
+                            return Strings.voiceLoading;
+                        if (v === "unavailable")
+                            return Strings.voiceMissing;
+                        if (v === "nothing")
+                            return Strings.voiceNothing;
+                        if (v === "error")
+                            return Strings.voiceError(Jackson.voiceNote);
+                        if (Jackson.listening)
+                            return v === "hearing" ? Strings.jacksonHearing : Strings.jacksonListening;
                         if (!r) {
                             if (Jackson.busy) {
-                                if (Jackson.mode === "listening")
-                                    return Strings.jacksonListening;
                                 const p = Jackson.progress;
                                 return p ? Strings.jacksonReading(p.done, p.total) : Strings.jacksonThinking;
                             }

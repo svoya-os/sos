@@ -22,4 +22,4 @@ override_dh_compress:
 
 override_dh_fixperms:
 	dh_fixperms
-	chmod 0755 $(PKG)/usr/bin/jackson $(PKG)/usr/lib/svoya/jacksond
+	chmod 0755 $(PKG)/usr/bin/jackson $(PKG)/usr/lib/svoya/jacksond $(PKG)/usr/lib/svoya/svoya-voice

@@ -177,13 +177,19 @@ def system_prompt(*, lang: str, persona: str, address: str = "ty", humor: int = 
     return "\n".join(line.rstrip() for line in text.strip().splitlines()) + "\n"
 
 
-def context_note(*, lang: str, route: str = "", cwd: str = "~", now: dt.datetime | None = None) -> str:
-    """The line in square brackets every request starts with: time, route, working folder."""
+def context_note(*, lang: str, route: str = "", cwd: str = "~", now: dt.datetime | None = None,
+                 voice: bool = False) -> str:
+    """The line in square brackets every request starts with: time, route, working folder, and
+    whether the request was spoken (then the answer is said out loud: short, nothing to look at)."""
     lang = norm_lang(lang)
     when = _now_text(lang, now or dt.datetime.now())
     if lang == "ru":
-        return f"[Сейчас {when} · маршрут: {route or '—'} · рабочая папка: {cwd}]"
-    return f"[It is {when} · route: {route or '—'} · working folder: {cwd}]"
+        spoken = (" · сказано голосом: ответ прозвучит вслух — коротко, одно-три предложения, без кода и "
+                  "таблиц, если о них не просили") if voice else ""
+        return f"[Сейчас {when} · маршрут: {route or '—'} · рабочая папка: {cwd}{spoken}]"
+    spoken = (" · spoken: the answer will be said out loud — keep it to one to three sentences, no code or "
+              "tables unless asked") if voice else ""
+    return f"[It is {when} · route: {route or '—'} · working folder: {cwd}{spoken}]"
 
 
 def context_blocks(*, lang: str, memory: str = "", skills: str = "", taint: str = "") -> str:

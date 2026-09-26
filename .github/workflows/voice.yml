@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: Apache-2.0
+# Voice (v0.2 «Голос») with the real models: the speech runtime as `sos install voice` makes it,
+# the models fetched by jackson/voice/setup.py, then svoya-voice listening to spoken phrases from
+# a file (tests/voice/check.py) — the transcript must have the expected words — and speaking.
+name: Voice
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "jackson/jackson/voice/**"
+      - "jackson/tests/test_voice_*.py"
+      - "modules/voice/**"
+      - "modules/voice.toml"
+      - "tests/voice/**"
+      - ".github/workflows/voice.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: voice-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  voice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Speech runtime and models (as `sos install voice` makes them)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq espeak-ng ffmpeg >/dev/null
+          python3 -m venv "$RUNNER_TEMP/voice"
+          . "$RUNNER_TEMP/voice/bin/activate"
+          pip install --quiet numpy "onnxruntime>=1.20" "onnx-asr[hub]>=0.10" huggingface_hub
+          PYTHONPATH=jackson python -m jackson.voice.setup --models "$RUNNER_TEMP/models" --engine none
+          PYTHONPATH=jackson python -m jackson.voice.setup --models "$RUNNER_TEMP/models" --engine none
+          PYTHONPATH=jackson python -m jackson.voice.setup --models "$RUNNER_TEMP/models" --engine none --check
+
+      - name: Unit tests with numpy
+        run: |
+          set -euo pipefail
+          . "$RUNNER_TEMP/voice/bin/activate"
+          cd jackson && python -m unittest -v tests.test_voice_service tests.test_voice_speech
+
+      - name: Listen to phrases, then speak
+        run: |
+          set -euo pipefail
+          . "$RUNNER_TEMP/voice/bin/activate"
+          espeak-ng -v ru -s 140 -w "$RUNNER_TEMP/ru.wav" "какая сегодня погода"
+          espeak-ng -v en-us -s 140 -w "$RUNNER_TEMP/en.wav" "what time is it now"
+          for f in ru en; do
+            ffmpeg -nostdin -loglevel error -y -i "$RUNNER_TEMP/$f.wav" -ar 16000 -ac 1 -f s16le "$RUNNER_TEMP/$f.raw"
+          done
+          python tests/voice/check.py --models "$RUNNER_TEMP/models" \
+            --phrase "ru:$RUNNER_TEMP/ru.raw:погод" --phrase "en:$RUNNER_TEMP/en.raw:time" | tee -a "$GITHUB_STEP_SUMMARY"

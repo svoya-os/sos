@@ -50,7 +50,12 @@ Singleton {
 
     // Scope state (drives Oscilloscope.qml): idle listening thinking working speaking error offline off
     property string daemonState: "idle"
-    property bool listening: false // local push-to-talk while the daemon supports voice
+    property bool listening: false // the microphone is open for this panel's turn
+    // Voice (v0.2): what the microphone and the voice are doing for the panel's turn.
+    property string voiceState: ""    // "" loading listening hearing heard nothing unavailable error
+    property string voiceNote: ""     // why listening failed
+    property real level: 0            // loudness of the mic or of Jackson's voice (0..1) for the scope
+    property bool conversation: false // Jackson listens again after he has answered
     readonly property string mode: {
         if (!root.enabled)
             return "off";
@@ -188,21 +193,59 @@ Singleton {
         root.send({ type: "status" });
     }
 
-    // Push-to-talk (extension, only when the daemon advertises "voice").
+    // Push-to-talk: Super+J held (only when the daemon advertises "voice").
     function listen(on) {
         if (!root.voice) {
             root.listening = false;
+            if (on)
+                root.voiceState = "unavailable";
             return;
         }
         if (on === root.listening)
             return;
-        root.listening = on;
-        if (on) {
-            root.resetTurn();
-            root.turnId = root.newId();
-            root.busy = true;
+        if (on)
+            root.startListening("hold");
+        else
+            root.send({ type: "listen", id: root.turnId, action: "stop" });
+    }
+
+    // The microphone button: talk; again while listening: that's it (or never mind, before a word
+    // was heard); while Jackson talks: quiet.
+    function talk() {
+        if (!root.voice) {
+            root.voiceState = "unavailable";
+            root.voiceNote = "";
+            return;
         }
-        root.send({ type: "listen", id: root.turnId, action: on ? "start" : "stop" });
+        if (root.mode === "speaking") {
+            root.conversation = false;
+            root.send({ type: "listen", action: "hush" });
+            return;
+        }
+        if (root.listening) {
+            const heard = root.voiceState === "hearing";
+            root.send({ type: "listen", id: root.turnId, action: heard ? "stop" : "cancel" });
+            if (!heard) {
+                root.listening = false;
+                root.busy = false;
+                root.conversation = false;
+                root.voiceState = "";
+            }
+            return;
+        }
+        root.startListening("tap");
+    }
+
+    // The previous answer stays on screen until the new question is heard.
+    function startListening(mode) {
+        root.turnId = root.newId();
+        root.busy = true;
+        root.listening = true;
+        root.conversation = false;
+        root.error = null;
+        root.voiceState = "listening";
+        root.voiceNote = "";
+        root.send({ type: "listen", id: root.turnId, action: "start", mode: mode });
     }
 
     function resetTurn() {
@@ -217,6 +260,8 @@ Singleton {
         root.progress = null;
         root.route = null;
         root.suggestions = [];
+        root.voiceState = "";
+        root.voiceNote = "";
     }
 
     // ---- events ----------------------------------------------------------------------
@@ -286,6 +331,8 @@ Singleton {
                 root.models = msg.models;
             if (typeof msg.state === "string")
                 root.daemonState = msg.state;
+            if (Array.isArray(msg.capabilities))
+                root.capabilities = msg.capabilities;
             root.applyCharacter(msg);
             break;
         case "state":
@@ -295,6 +342,8 @@ Singleton {
                 const s = msg.state || msg.value;
                 if (typeof s === "string")
                     root.daemonState = s;
+                if (Array.isArray(msg.capabilities))    // the voice came or went (sos install voice)
+                    root.capabilities = msg.capabilities;
                 if (s === "idle" && !foreign)
                     root.listening = false;
                 root.applyCharacter(msg);
@@ -303,6 +352,51 @@ Singleton {
         case "route":
             if (!foreign)
                 root.route = root.normalizeRoute(msg);
+            break;
+        case "listen":
+            if (msg.follow && msg.follow === root.turnId && msg.state === "listening") {
+                // Jackson has answered and listens for what comes next (conversation)
+                root.turnId = msg.id;
+                root.busy = true;
+                root.listening = true;
+                root.conversation = true;
+                root.voiceState = "listening";
+                break;
+            }
+            if (foreign)
+                break;
+            root.voiceNote = msg.message || "";
+            if (msg.state === "nothing" || msg.state === "unavailable" || msg.state === "error") {
+                root.listening = false;
+                root.busy = false;
+                root.conversation = false;
+                root.level = 0;
+            }
+            if (msg.state !== "listening" || !root.conversation)
+                root.voiceState = msg.state || "";
+            break;
+        case "transcript":
+            if (!foreign && typeof msg.text === "string") {
+                const tid = root.turnId;
+                const talking = root.conversation;
+                root.resetTurn();
+                root.turnId = tid;
+                root.busy = true;
+                root.conversation = talking;
+                root.listening = false;
+                root.question = msg.text;
+                root.lastText = msg.text;
+            }
+            break;
+        case "level":
+            root.level = Number(msg.level) || 0;
+            break;
+        case "spoken":
+            if (!foreign) {
+                root.level = 0;
+                if (msg.hushed)
+                    root.conversation = false;
+            }
             break;
         case "progress":
             if (!foreign && Number(msg.total) > 0)

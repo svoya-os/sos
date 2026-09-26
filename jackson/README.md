@@ -36,7 +36,8 @@ Stdlib-only Python (≥ 3.11; target 3.13 on Ubuntu 26.04). No LiteLLM, no pip d
 | `jackson/fastpath.py`, `osctl.py` | ~40 RU/EN commands without a model, each verified |
 | `jackson/avatar.py`, `aiswitch.py` | look and name (`avatar.json`, DESIGN §13); the AI switch (`sos ai off`) |
 | `jackson/persona.py`, `prompts/` | system prompts (RU/EN), personas, humor level |
-| `jackson/voice.py`, `acp.py` | documented interfaces only (v0.2 voice, v0.3 external agents) |
+| `jackson/voice/` | voice: the speech service (`service.py`, VAD, STT, TTS) and jacksond's side (`client.py`, `speech.py`) |
+| `jackson/acp.py` | documented interface only (v0.3 external agents) |
 | `tests/` | `python3 -m unittest discover -s jackson/tests -t jackson` (from the repo root) |
 
 Files on the installed system (ARCHITECTURE §3): settings `~/.config/svoya/jackson.toml`
@@ -77,7 +78,8 @@ are additive and clients must ignore what they do not know.
 
 Client → Jackson: `hello {client, version, lang?}` · `ask {id, text, context?{selection, clipboard,
 screenshot, cwd}, route?, new?, refines?}` · `approve {id, callId, decision}` · `cancel {id}` · `status` ·
-`undo {actionId?, id?}` · `ping`. Unknown message types are ignored.
+`undo {actionId?, id?}` · `listen {id, action: start|stop|cancel|hush, mode?: tap|hold}` (when
+`capabilities` has `voice`) · `ping`. Unknown message types are ignored.
 
 Jackson → client:
 
@@ -87,6 +89,10 @@ Jackson → client:
 | `route` | `model`, `provider`, `local`, `reason`, *`task`, `label`* |
 | `token` | `text` |
 | *`progress`* | *`stage` (`prompt`), `done`, `total`, `ms`: how many tokens of the request a local model has read so far and has to read (without those it reuses from its cache), before the first `token`* |
+| *`listen`* | *`state` (`loading`, `listening`, `hearing`, `heard`, `nothing`, `unavailable`, `error`), `mode`, `message`, `follow` (the answer after which Jackson listens again, under a new `id`)* |
+| *`transcript`* | *`text`, `lang`, `ms`: what was heard; the turn with the same `id` follows* |
+| *`level`* | *`source` (`mic`, `voice`), `level` 0…1: for the scope, to every client* |
+| *`spoken`* | *`hushed`: the answer has been said (or silenced)* |
 | `tool` | `callId`, `name`, `args`, `tier`, `state`, `summary`, *`verified`, `actions`* |
 | `approval` | `callId`, `name`, `preview`, `tier`, *`decisions` (allowed answers), `reasons`, `args`* |
 | `done` | `usage`, `costEur`, `latencyMs`, `leftMachine`, `actions`, *`leftTo`, `costEstimated`, `model`, `provider`, `meta` (ready-made footer), `cancelled`, `undone`* |
@@ -332,14 +338,29 @@ look). Alternatives: SYSOP (log-line terse), «Диспетчер» (checklists,
 (late-night 90s DJ, drops the act on errors). The safety rules are identical for every persona and
 come after it in the prompt. `welcome`/`state` carry `persona`, `avatar` and `mood` for the mascot.
 
-## Voice roadmap (v0.2 «Голос») and external agents (v0.3)
+## Voice (v0.2 «Голос») and external agents (v0.3)
 
-See `jackson/voice.py`: push-to-talk on Super+J; Wyoming services on the CPU — Silero VAD (MIT),
-STT Parakeet-TDT-0.6B-v3 (CC-BY-4.0, RU/EN/ET) or GigaAM-v3 (MIT) via onnx-asr, TTS Silero
-v5_cis_base (MIT) or Piper (GPL-3.0, dmitri/denis), Qwen3-TTS (Apache-2.0) on GPU; optional wake word
-«Джексон» with livekit-wakeword. Protocol additions: `listen`/`listen-stop`, `transcript`, `state`
-with `level`. External agents (Claude Code, Codex CLI, OpenCode, goose) will run over ACP inside the
-same sandbox/tier/audit/undo machinery — interface in `jackson/acp.py`.
+`sos install voice` makes a venv (`/opt/svoya/venvs/voice`) and fetches the models into
+`/srv/ai/voice`: Silero VAD (MIT) finds where a phrase starts and ends, Parakeet TDT 0.6B v3
+(CC-BY-4.0, Russian, English and 23 more languages) turns it into text through onnx-asr, and a local
+engine speaks (`jackson/voice/tts.py`). They run in `svoya-voice` (`jackson/voice/service.py`, user
+unit `svoya-voice.service`), which jacksond starts on the first press of the microphone; jacksond
+itself stays on the standard library. The microphone is recorded through PipeWire only while a
+client asked to listen; no audio is kept.
+
+- The panel's microphone button: talk, press again when done (or just pause), press while Jackson
+  speaks to silence him. Super+J held: push-to-talk.
+- The transcript becomes a turn with `context.voice`; the model is told the answer will be heard
+  (short, no tables). The answer is said sentence by sentence while it streams
+  (`jackson/voice/speech.py`: no code or tables read out, links as their text, numbers spelled out
+  for engines that read digits badly).
+- Conversation: after a spoken answer Jackson listens again for a few seconds (`follow`);
+  «спасибо, всё» ends it without the model. `[voice] follow = false` turns that off, `speak = false`
+  keeps the answers silent, `voice = "…"` picks another voice than the persona's.
+
+Protocol additions: see `jackson/voice/__init__.py` (the speech service) and ARCHITECTURE §8.
+External agents (Claude Code, Codex CLI, OpenCode, goose) will run over ACP inside the same
+sandbox/tier/audit/undo machinery — interface in `jackson/acp.py`.
 
 ## Contract notes
 

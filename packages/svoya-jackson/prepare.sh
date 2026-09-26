@@ -39,6 +39,9 @@ else
     wrapper jackson.daemon "$files/usr/lib/svoya/jacksond"
 fi
 
+# the voice service runs with the voice module's venv (sos install voice)
+install -m 0755 "$src/bin/svoya-voice" "$files/usr/lib/svoya/svoya-voice"
+
 # jacksond.service: Documentation=file:///usr/share/doc/svoya-jackson/README.md
 if [ -f "$src/README.md" ]; then
     install -D -m 0644 "$src/README.md" "$files/usr/share/doc/svoya-jackson/README.md"

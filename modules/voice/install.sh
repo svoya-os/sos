@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# SOS module voice — speech runtimes in an isolated venv (/opt/svoya/venvs/voice). Idempotent.
-# Speech models are downloaded only when you first use push-to-talk, after Jackson asks.
+# SOS module voice — Jackson's ears and voice, all on this computer (v0.2 «Голос»). Idempotent.
+# The runtime goes to a venv (/opt/svoya/venvs/voice), the models to the shared store
+# (/srv/ai/voice): Silero VAD (MIT) and Parakeet TDT 0.6B v3 (CC-BY-4.0) through onnx-asr (MIT).
+# jacksond starts svoya-voice.service (svoya-jackson) the first time the microphone is pressed.
 # shellcheck source=../lib/common.sh
 source "${SVOYA_LIB:?}/common.sh"
 sv_require_root
-# sherpa-onnx runs Parakeet TDT v3 (RU/EN/ET) on the CPU; chatterbox-tts brings PyTorch for the GPU
-sv_venv voice sherpa-onnx soundfile chatterbox-tts
-sv_say "Voice runtimes installed (≈3.5 GB with PyTorch). Models: Parakeet TDT v3 (CC-BY-4.0, attribution), Chatterbox (MIT), Qwen3-TTS (Apache-2.0)." \
-       "Голосовые рантаймы установлены (≈3,5 ГБ с PyTorch). Модели: Parakeet TDT v3 (CC-BY-4.0, атрибуция), Chatterbox (MIT), Qwen3-TTS (Apache-2.0)."
+engine=${SVOYA_VOICE_ENGINE:-none}
+sv_venv voice numpy "onnxruntime>=1.20" "onnx-asr[hub]>=0.10" huggingface_hub
+install -d -m 0755 /srv/ai/voice
+sv_run env PYTHONPATH=/usr/lib/svoya /opt/svoya/venvs/voice/bin/python -m jackson.voice.setup \
+  --models /srv/ai/voice --engine "$engine"
+sv_say "Voice installed: press the microphone in Jackson's panel, or hold Super+J. Models: Parakeet TDT 0.6B v3 (CC-BY-4.0, NVIDIA), Silero VAD (MIT)." \
+       "Голос установлен: нажми микрофон в панели Джексона или зажми Super+J. Модели: Parakeet TDT 0.6B v3 (CC-BY-4.0, NVIDIA), Silero VAD (MIT)."

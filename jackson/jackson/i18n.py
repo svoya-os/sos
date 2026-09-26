@@ -237,6 +237,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "The local model is not running. Start it: `sos models serve`.",
     },
     "err.internal": {"ru": "Внутренняя ошибка: {why}", "en": "Internal error: {why}"},
+    "voice.bye": {"ru": "Ок, я тут, если что.", "en": "Okay, I'm here if you need me."},
     "err.max_steps": {
         "ru": "Остановился: слишком много шагов с инструментами ({n}). Уточни задачу.",
         "en": "Stopped: too many tool steps ({n}). Please narrow the task.",

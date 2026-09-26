@@ -22,6 +22,10 @@
 - Ads, recommendations or upsells.
 - AI acting on its own. Jackson runs in the background, but he does nothing until you call him:
   he does not look at your screen, files or clipboard, and he does not start tasks by himself.
+- Listening when you did not ask. With the voice module, the microphone opens only while you press
+  the microphone in Jackson's panel or hold Super+J, and for a few seconds after a spoken answer
+  (so that you can go on talking; «спасибо, всё» or the button ends it). The scope in the bar
+  lights up while he listens. Speech becomes text on your computer; no audio is kept or sent.
 - Network geolocation. The automatic day/night theme uses the coordinates in your settings
   (`[location]` in `~/.config/svoya/svoya.toml`; the default is Tallinn).
 
@@ -30,7 +34,7 @@
 | Feature | When | Goes to | What is sent | How you see it |
 |---|---|---|---|---|
 | **Cloud AI** (Jackson) | Only after you add a provider key **and** change the route policy from `local-only` | The provider you set up, for example Anthropic, Google Gemini, DeepSeek or Mistral | Your message, the context you attach (selection, clipboard, screenshot), what Jackson's tools read in that turn, and a few snippets from his memory | Route chip names the provider; footer says the data left the machine and what it cost; counters in the control center; audit log |
-| **Models** | When you click install: the wizard's suggested model, `sos models pull`, a module | Hugging Face, or the source shown before the download | Which files you download, your IP address, your Hugging Face token for gated models | Size, fit and license are shown before the download starts; progress in the bar |
+| **Models** | When you click install: the wizard's suggested model, `sos models pull`, a module (`sos install voice` fetches the speech models) | Hugging Face, or the source shown before the download | Which files you download, your IP address, your Hugging Face token for gated models | Size, fit and license are shown before the download starts; progress in the bar |
 | **Modules and apps** | When you install one: `sos install <module>`, the wizard, Obsidian | Our APT repository, the engine's package mirrors, Flathub | Which packages you download, your IP address | You start it; progress in the bar |
 | **System updates** | When you run `sos update`, or after you turn on automatic update checks | Our APT repository and the engine's package mirrors | Package lists and versions | Update count in the bar |
 | **Web pages for a task** | When Jackson or an agent opens a page for a task you gave | That website | The request for the page | Contacting a new domain needs your approval first (tier T2); audit log |
@@ -110,7 +114,7 @@ All of it is plain files you can read, move and delete.
 | `~/.local/share/svoya/jackson/spend.json` | Cloud spend and "left the machine" counters for the last 90 days |
 | `~/.local/share/svoya/jackson/index.sqlite`, `logs/` | Search index of the memory; logs |
 | `~/.local/state/svoya/` | Generated state: current theme, bar status, jobs |
-| `/srv/ai/` | Models and datasets shared by all tools, with `registry.db` (hashes, sources, licenses) |
+| `/srv/ai/` | Models and datasets shared by all tools, with `registry.db` (hashes, sources, licenses); the voice models in `/srv/ai/voice/` |
 | `/var/lib/svoya/` | Installed modules and update history |
 | Secret Service keyring | API keys |
 | Btrfs snapshots | Earlier versions of the system and your files, for undo |
