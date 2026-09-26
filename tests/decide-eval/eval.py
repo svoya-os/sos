@@ -83,6 +83,8 @@ def load_laya(model: str):
     import laya  # noqa: F401  (pip install laya)
     if model == "router":                                   # Laya picks the checkpoint by language
         return laya.Router()
+    if pathlib.Path(model).exists():                        # a checkpoint of ours: that one or nothing
+        return laya.load(str(pathlib.Path(model).resolve()))
     attempts = []
     if "/" in model and model.count("/") == 2:            # repo/subfolder
         repo, sub = model.rsplit("/", 1)
