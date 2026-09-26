@@ -1,0 +1,111 @@
+# Short requests the fast-path patterns may miss, with the action Jackson should take.
+# lang <TAB> expected intent (jackson/fastpath.py DECIDABLE) or "none" <TAB> text
+ru	volume_up	слушай, сделай-ка погромче, ничего не слышно
+ru	volume_up	добавь звука
+ru	volume_up	громкость повыше пожалуйста
+ru	volume_up	звук тихий, прибавь
+ru	volume_up	можно чуть громче музыку
+ru	volume_up	не слышу ничего, сделай громче
+ru	volume_down	слушай, сделай-ка потише, соседи жалуются
+ru	volume_down	убавь звук
+ru	volume_down	слишком громко, приглуши
+ru	volume_down	звук поменьше сделай
+ru	volume_down	чуть потише можно
+ru	volume_down	тише давай, уши болят
+ru	mute	выруби звук совсем
+ru	mute	отключи звук полностью
+ru	mute	сделай тишину, совсем без звука
+ru	mute	звук в ноль и выключи
+ru	unmute	верни звук
+ru	unmute	включи звук обратно
+ru	unmute	звук снова включи пожалуйста
+ru	unmute	снова хочу слышать звук
+ru	brightness_up	экран тусклый, сделай поярче
+ru	brightness_up	прибавь яркости
+ru	brightness_up	ярче экран пожалуйста
+ru	brightness_up	на экране ничего не видно, яркость выше
+ru	brightness_up	можно экран посветлее
+ru	brightness_down	экран слепит, убавь яркость
+ru	brightness_down	потемнее экран сделай
+ru	brightness_down	яркость поменьше
+ru	brightness_down	глаза режет, притуши экран
+ru	brightness_down	сделай экран темнее на ночь
+ru	wifi_on	врубай вай-фай
+ru	wifi_on	подключи wi-fi
+ru	wifi_on	мне нужен вайфай, включи
+ru	wifi_on	включи беспроводной интернет
+ru	wifi_off	вырубай вай фай
+ru	wifi_off	отключи wi-fi
+ru	wifi_off	вайфай не нужен, отключай
+ru	wifi_off	отруби беспроводной интернет
+ru	bluetooth_on	включи блютуз
+ru	bluetooth_on	врубай блютус, наушники подключу
+ru	bluetooth_on	bluetooth включи пожалуйста
+ru	bluetooth_off	отключи блютуз
+ru	bluetooth_off	блютус больше не нужен, выруби
+ru	bluetooth_off	вырубай bluetooth
+ru	lock	заблокируй экран, я отойду
+ru	lock	блокни комп
+ru	lock	поставь блокировку экрана
+ru	lock	я ушёл, заблокируй
+ru	screenshot	сделай скрин
+ru	screenshot	щёлкни снимок экрана
+ru	screenshot	заскринь экран
+ru	screenshot	сохрани скриншот
+ru	battery	сколько там заряда?
+ru	battery	батарейка скоро сядет?
+ru	battery	проверь заряд
+ru	battery	какой уровень батареи
+ru	time	который час?
+ru	time	сколько сейчас времени
+ru	time	подскажи время
+ru	time	сколько времени уже?
+ru	none	почему не работает вай-фай?
+ru	none	включи музыку
+ru	none	найди в интернете рецепт борща
+ru	none	поставь экран на весь размер
+ru	none	сколько стоит новая батарея для ноутбука
+ru	none	сколько времени займёт установка
+ru	none	время обеда, закажи пиццу
+ru	none	открой настройки звука
+ru	none	запиши видео с экрана
+ru	none	блокнот открой
+ru	none	расскажи про яркость звёзд
+ru	none	экран моргает, что делать
+ru	none	интернет медленный, проверь скорость
+ru	none	скинь скриншот в телеграм
+en	volume_up	crank it up a bit, I can barely hear
+en	volume_up	louder please
+en	volume_up	bump the sound up
+en	volume_down	too loud, bring it down
+en	volume_down	quieter please
+en	volume_down	turn the sound down, the neighbors complain
+en	mute	kill the sound completely
+en	mute	silence the speakers
+en	unmute	bring the sound back
+en	unmute	turn the sound back on
+en	brightness_up	the screen is too dim, brighten it
+en	brightness_up	more brightness please
+en	brightness_down	the screen is blinding me, dim it
+en	brightness_down	darker screen please
+en	wifi_on	switch the wifi on
+en	wifi_on	enable wi-fi please
+en	wifi_off	kill the wifi
+en	wifi_off	disable wi-fi
+en	bluetooth_on	enable bluetooth, I want my headphones
+en	bluetooth_off	switch bluetooth off
+en	lock	lock the screen, I'm stepping away
+en	lock	lock it up
+en	screenshot	grab a screenshot
+en	screenshot	capture the screen
+en	battery	how much charge is left?
+en	battery	check the battery
+en	time	what time is it?
+en	time	time please
+en	none	why is my wifi so slow?
+en	none	play some music
+en	none	search the internet for pancake recipes
+en	none	open the sound settings
+en	none	record a video of the screen
+en	none	time to eat, order a pizza
+en	none	my screen flickers, what should I do

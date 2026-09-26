@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: Apache-2.0
+# Jackson's decision step («сделай-ка потише» → volume down) on tests/decide-eval/phrases.tsv:
+# the decider SOS uses today (one token from Qwen3.5 4B on llama.cpp, jackson/decide.py) against
+# Laya, an open decision model (Apache-2.0), on this runner's CPU. The report lands in the
+# ci-screens branch (evals/decide/<run>/results.md) and in the job summary.
+name: Decide eval
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tests/decide-eval/**"
+      - ".github/workflows/decide-eval.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: decide-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  eval:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write   # the report goes to the ci-screens branch (never to main)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Laya (multilingual checkpoint, CPU)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/laya"
+          . "$RUNNER_TEMP/laya/bin/activate"
+          pip install --quiet --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --quiet laya
+          python3 tests/decide-eval/eval.py --laya --out dist/eval
+
+      - name: llama.cpp and Qwen3.5 4B Q4_K_M (the decider SOS uses today)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/llama" && cd "$RUNNER_TEMP/llama"
+          gh release download -R ggml-org/llama.cpp --pattern '*bin-ubuntu-x64.zip' --clobber
+          unzip -q -o ./*bin-ubuntu-x64.zip
+          server=$(find . -name llama-server -type f | head -n 1)
+          curl -fsSL -o qwen.gguf \
+            https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf
+          LD_LIBRARY_PATH="$(dirname "$server")" "$server" -m qwen.gguf --host 127.0.0.1 --port 8080 \
+            --jinja -c 4096 >server.log 2>&1 &
+          for _ in $(seq 1 120); do curl -fs http://127.0.0.1:8080/health >/dev/null && break; sleep 2; done
+          cd "$GITHUB_WORKSPACE"
+          python3 tests/decide-eval/eval.py --llm http://127.0.0.1:8080/v1 --out dist/eval
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          [ -f dist/eval/results.md ] || exit 0
+          cat dist/eval/results.md >>"$GITHUB_STEP_SUMMARY"
+          work=$(mktemp -d)
+          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git clone -q --depth 1 --branch ci-screens "$url" "$work" || exit 0
+          mkdir -p "$work/evals/decide/$RUN"
+          cp dist/eval/results.md dist/eval/results.json "$work/evals/decide/$RUN/"
+          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" add -A
+          git -C "$work" -c user.name="sos-ci" -c user.email="sos-ci@users.noreply.github.com" \
+              commit -q -m "evals: decide run $RUN" || exit 0
+          for i in 1 2 3 4 5; do
+              git -C "$work" pull -q --rebase origin ci-screens 2>/dev/null || true
+              git -C "$work" push -q origin HEAD:ci-screens && break
+              sleep $((i * 4))
+          done
