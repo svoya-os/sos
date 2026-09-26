@@ -1,0 +1,200 @@
+DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+DEBUG from aquamarine ]: drm: onReady: connector 38
+DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+DEBUG from aquamarine ]: Swapchain: Clearing
+DEBUG ]: New aquamarine output with name Unknown-1
+DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayHyprland has crashed :( Consult the crash report at /home/svoya/.cache/hyprland/hyprlandCrashReport1328.txt for more information.
+WARN from start-hyprland ]: Arguments after -- are passed to Hyprland
+ERR from start-hyprland ]: Couldn't waitpid for hyprland: No child processes
+DEBUG from start-hyprland ]: hyprland exit, breaking poll, checking state
+DEBUG from start-hyprland ]: Hyprland exit cleanly.
+## /var/lib/svoya-greeter/.local/state/svoya/greeter.log (125 lines: renderer, errors, the end)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/greeter.conf'
+Welcome to Hyprland!
+DEBUG ]: Instance Signature: dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790417580_1177743520
+62:ERR ]: source= globbing error: found no match
+63:ERR ]: source= globbing error: found no match
+69:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+71:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/simple-framebuffer.0/drm/card0
+73:DEBUG from aquamarine ]: drm: Found 1 GPUs
+74:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card0, with driver simpledrm
+75:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card0
+76:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+77:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+78:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: true
+79:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: false
+80:DEBUG from aquamarine ]: drm: found 1 CRTCs
+81:DEBUG from aquamarine ]: drm: found 1 planes
+82:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+83:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+84:DEBUG from aquamarine ]: drm: Plane: checking for modifiers
+85:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card0
+86:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card0
+87:DEBUG from aquamarine ]: drm: Scanning connector id 38
+88:DEBUG from aquamarine ]: drm: Initializing connector id 38
+89:DEBUG from aquamarine ]: drm: Connector gets name Unknown-1
+90:DEBUG from aquamarine ]: drm: Connector 38 connection state: 1
+91:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+92:DEBUG from aquamarine ]: drm: Skipping connector Unknown-1, has crtc 36 and is connected
+93:DEBUG from aquamarine ]: drm: slot 0 crtc 36 taken by Unknown-1, skipping
+94:DEBUG from aquamarine ]: drm: Connector Unknown-1 connected
+95:DEBUG from aquamarine ]: drm: Connecting connector Unknown-1, CRTC ID 36
+96:DEBUG from aquamarine ]: drm: Dumping detected modes:
+97:DEBUG from aquamarine ]: drm: Mode 0: 1280x800@60.00Hz  (preferred)
+98:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 338, y: 211] (mm)
+99:ERR from aquamarine ]: drm: failed to parse edid
+100:DEBUG from aquamarine ]: drm: Description    (Unknown-1)
+101:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+102:DEBUG from aquamarine ]: drm: Explicit sync unsupported
+103:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support CTM
+104:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support HDR (0)
+105:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support Colorspace (0)
+106:DEBUG from aquamarine ]: drm: gpu /dev/dri/card0 becomes primary drm
+110:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+111:ERR from aquamarine ]: Requested backend (wayland) could not start, enabling fallbacks
+112:ERR from aquamarine ]: Implementation wayland failed, erasing.
+114:DEBUG from aquamarine ]: drm: Connectors size2 1
+116:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+117:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+118:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+119:ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+120:ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+121:DEBUG from aquamarine ]: drm: onReady: connector 38
+122:DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+125:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGHyprland has crashed :( Consult the crash report at /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1754.txt for more information.
+DEBUG from aquamarine ]: drm: Dumping detected modes:
+DEBUG from aquamarine ]: drm: Mode 0: 1280x800@60.00Hz  (preferred)
+DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 338, y: 211] (mm)
+ERR from aquamarine ]: drm: failed to parse edid
+DEBUG from aquamarine ]: drm: Description    (Unknown-1)
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+DEBUG from aquamarine ]: drm: Explicit sync unsupported
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support CTM
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support HDR (0)
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support Colorspace (0)
+DEBUG from aquamarine ]: drm: gpu /dev/dri/card0 becomes primary drm
+DEBUG from aquamarine ]: DRM Dumb: created a dumb allocator
+DEBUG from aquamarine ]: Starting the Aquamarine backend!
+DEBUG from aquamarine ]: Starting the Wayland backend!
+ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+ERR from aquamarine ]: Requested backend (wayland) could not start, enabling fallbacks
+ERR from aquamarine ]: Implementation wayland failed, erasing.
+DEBUG from aquamarine ]: Created a GBM allocator with drm fd 26
+DEBUG from aquamarine ]: drm: Connectors size2 1
+DEBUG from aquamarine ]: Created a GBM allocator with drm fd 33
+DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+DEBUG from aquamarine ]: drm: onReady: connector 38
+DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+DEBUG from aquamarine ]: Swapchain: Clearing
+DEBUG ]: New aquamarine output with name Unknown-1
+DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGHyprland has crashed :( Consult the crash report at /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1754.txt for more information.
+## /var/lib/svoya-greeter/.local/state/svoya/greeter.log.old (125 lines: renderer, errors, the end)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/greeter.conf'
+Welcome to Hyprland!
+DEBUG ]: Instance Signature: dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1790417579_345770897
+62:ERR ]: source= globbing error: found no match
+63:ERR ]: source= globbing error: found no match
+69:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+71:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/simple-framebuffer.0/drm/card0
+73:DEBUG from aquamarine ]: drm: Found 1 GPUs
+74:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card0, with driver simpledrm
+75:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card0
+76:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+77:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+78:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: true
+79:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: false
+80:DEBUG from aquamarine ]: drm: found 1 CRTCs
+81:DEBUG from aquamarine ]: drm: found 1 planes
+82:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+83:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+84:DEBUG from aquamarine ]: drm: Plane: checking for modifiers
+85:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card0
+86:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card0
+87:DEBUG from aquamarine ]: drm: Scanning connector id 38
+88:DEBUG from aquamarine ]: drm: Initializing connector id 38
+89:DEBUG from aquamarine ]: drm: Connector gets name Unknown-1
+90:DEBUG from aquamarine ]: drm: Connector 38 connection state: 1
+91:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+92:DEBUG from aquamarine ]: drm: Skipping connector Unknown-1, has crtc 36 and is connected
+93:DEBUG from aquamarine ]: drm: slot 0 crtc 36 taken by Unknown-1, skipping
+94:DEBUG from aquamarine ]: drm: Connector Unknown-1 connected
+95:DEBUG from aquamarine ]: drm: Connecting connector Unknown-1, CRTC ID 36
+96:DEBUG from aquamarine ]: drm: Dumping detected modes:
+97:DEBUG from aquamarine ]: drm: Mode 0: 1280x800@60.00Hz  (preferred)
+98:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 338, y: 211] (mm)
+99:ERR from aquamarine ]: drm: failed to parse edid
+100:DEBUG from aquamarine ]: drm: Description    (Unknown-1)
+101:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+102:DEBUG from aquamarine ]: drm: Explicit sync unsupported
+103:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support CTM
+104:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support HDR (0)
+105:DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support Colorspace (0)
+106:DEBUG from aquamarine ]: drm: gpu /dev/dri/card0 becomes primary drm
+110:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+111:ERR from aquamarine ]: Requested backend (wayland) could not start, enabling fallbacks
+112:ERR from aquamarine ]: Implementation wayland failed, erasing.
+114:DEBUG from aquamarine ]: drm: Connectors size2 1
+116:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+117:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+118:ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+119:ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+120:ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+121:DEBUG from aquamarine ]: drm: onReady: connector 38
+122:DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+125:DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_Hyprland has crashed :( Consult the crash report at /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1666.txt for more information.
+DEBUG from aquamarine ]: drm: Dumping detected modes:
+DEBUG from aquamarine ]: drm: Mode 0: 1280x800@60.00Hz  (preferred)
+DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 338, y: 211] (mm)
+ERR from aquamarine ]: drm: failed to parse edid
+DEBUG from aquamarine ]: drm: Description    (Unknown-1)
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+DEBUG from aquamarine ]: drm: Explicit sync unsupported
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support CTM
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support HDR (0)
+DEBUG from aquamarine ]: drm: connector Unknown-1 crtc doesn't support Colorspace (0)
+DEBUG from aquamarine ]: drm: gpu /dev/dri/card0 becomes primary drm
+DEBUG from aquamarine ]: DRM Dumb: created a dumb allocator
+DEBUG from aquamarine ]: Starting the Aquamarine backend!
+DEBUG from aquamarine ]: Starting the Wayland backend!
+ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+ERR from aquamarine ]: Requested backend (wayland) could not start, enabling fallbacks
+ERR from aquamarine ]: Implementation wayland failed, erasing.
+DEBUG from aquamarine ]: Created a GBM allocator with drm fd 26
+DEBUG from aquamarine ]: drm: Connectors size2 1
+DEBUG from aquamarine ]: Created a GBM allocator with drm fd 33
+DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_explicit_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_EXT_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
+ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+ERR from aquamarine ]: [EGL] Command eglQueryDeviceStringEXT errored out with EGL_BAD_PARAMETER (0x12300): eglQueryDeviceStringEXT
+ERR from aquamarine ]: CDRMRenderer(drm): Can't create renderer, no matching devices found
+ERR from aquamarine ]: drm: onReady: no renderer for gl formats
+DEBUG from aquamarine ]: drm: onReady: connector 38
+DEBUG from aquamarine ]: drm: onReady: connector 38 has output name Unknown-1
+DEBUG from aquamarine ]: Swapchain: Clearing
+DEBUG ]: New aquamarine output with name Unknown-1
+DEBUG from aquamarine ]: Supported EGL client extensions: (16) EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_Hyprland has crashed :( Consult the crash report at /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1666.txt for more information.
+## probe: quickshell -p /usr/share/svoya/shell (8 s, WAYLAND_DISPLAY=)
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+ ERROR quickshell.paths: Could not create base runtime directory at "/run/user/1000/quickshell"
+ ERROR quickshell.paths: Cannot create instance runtime directory as main runtim directory could not be created.
+Segmentation fault
+## probe exit: 139
+## /home/svoya/.cache/hyprland/hyprlandCrashReport1328.txt (above)
+## /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1393.txt (above)
+## /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1493.txt (above)
+## /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1579.txt (above)
+## /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1666.txt (above)
+## /var/lib/svoya-greeter/.cache/hyprland/hyprlandCrashReport1754.txt (above)
+SOS-DIAG end t+480s
+[  489.619947] runuser[3532]: pam_unix(runuser:session): session opened for user svoya(uid=1000) by (uid=0)
+[  489.655318] kernel: quickshell[3533]: segfault at 0 ip 00007967574babc8 sp 00007ffee1d77cd0 error 4 in libQt6Core.so.6.10.2[137bc8,796757441000+371000] likely on CPU 1 (core 1, socket 0)
+[  489.655413] kernel: Code: 04 f0 83 00 01 48 8b 45 d8 64 48 2b 04 25 28 00 00 00 0f 85 70 02 00 00 48 83 c4 78 48 89 d8 5b 41 5c 41 5d 5d c3 0f 1f 40 00 <4d> 8b 6d 00 66 0f 76 c0 48 b8 fe fe fe fe fe fe fe fe 66 0f fc c0
+[  489.658369] runuser[3532]: pam_unix(runuser:session): session closed for user svoya
