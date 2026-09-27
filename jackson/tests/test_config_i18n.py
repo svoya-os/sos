@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from jackson.config import ProviderConfig, load_config, set_toml_value
-from jackson.i18n import fmt_bytes, fmt_cost, fmt_latency, fmt_number, fmt_tokens, meta_line, plural_ru
+from jackson.i18n import answer_lang, fmt_bytes, fmt_cost, fmt_latency, fmt_number, fmt_tokens, meta_line, plural_ru
 from jackson.keys import KeyStore
 from jackson.paths import Paths
 from jackson.persona import persona_text, style_fast, system_prompt
@@ -28,6 +28,14 @@ class FormattingTest(unittest.TestCase):
         self.assertEqual(fmt_number(1000, "ru"), "1000")
         self.assertEqual(fmt_number(11.2, "ru", 1), "11,2")
         self.assertEqual(fmt_bytes(11.2 * 1024 ** 3, "ru"), "11,2 ГБ")
+
+    def test_the_answer_follows_the_language_of_the_question(self) -> None:
+        self.assertEqual(answer_lang("Который час?", "en"), "ru")
+        self.assertEqual(answer_lang("what time is it", "ru"), "en")
+        self.assertEqual(answer_lang("docker ps", "ru"), "ru")          # a command, not English
+        self.assertEqual(answer_lang("открой Firefox", "en"), "ru")
+        self.assertEqual(answer_lang("12:30", "en"), "en")
+        self.assertEqual(answer_lang("htop", "de"), "en")                # an unknown language: English
 
     def test_latency_and_cost(self) -> None:
         self.assertEqual(fmt_latency(30, "ru"), "30 мс")

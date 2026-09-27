@@ -94,6 +94,13 @@ class Turn:
     provider: str = ""
     finished: bool = False
 
+    @property
+    def lang(self) -> str:
+        """The language of this answer: the one the question was asked in (context `lang`, set by
+        jacksond from the text or the spoken language), else the session's."""
+        asked = self.context.get("lang")
+        return norm_lang(asked) if isinstance(asked, str) and asked else self.session.lang
+
     def leave(self, dest: str | None) -> None:
         if dest and dest not in self.left_to:
             self.left_to.append(dest)
@@ -183,7 +190,7 @@ class Engine:
 
     # ------------------------------------------------------------------
     async def run_turn(self, turn: Turn) -> None:
-        lang = turn.session.lang
+        lang = turn.lang
         try:
             await self._state(turn, "thinking")
             if turn.context.get("cwd"):
@@ -249,7 +256,7 @@ class Engine:
         turn.finished = True
         latency = (time.monotonic() - turn.started) * 1000
         left = bool(turn.left_to)
-        lang = turn.session.lang
+        lang = turn.session.lang      # the footer is the interface's, not the answer's
         if turn.cost > 0 or left:
             self.app.spend.add(turn.cost, left)
         event: dict[str, Any] = {
@@ -279,7 +286,7 @@ class Engine:
     # fast path
 
     def _fast_ctx(self, turn: Turn) -> fastpath.FastCtx:
-        lang = turn.session.lang
+        lang = turn.lang
 
         def undo_last() -> tuple[bool, str]:
             outcome = self.app.undo.undo(None, lang)
@@ -309,7 +316,7 @@ class Engine:
             if decided is None:
                 return False
             match = decided[0]
-        lang = turn.session.lang
+        lang = turn.session.lang      # the route chip is the interface's; the answer follows turn.lang
         turn.model, turn.provider = "fastpath", "jackson"
         reason = t("route.fastpath", lang)
         if decided is not None:
@@ -365,7 +372,7 @@ class Engine:
         if target is None:
             return None
         prov, model = target
-        options = fastpath.decision_options(turn.session.lang)
+        options = fastpath.decision_options(turn.lang)
         picked = await asyncio.to_thread(decide.choose, prov, model, turn.text, options)
         if picked is None:
             return None
@@ -406,7 +413,7 @@ class Engine:
         return [{"mime": mime, "data": base64.b64encode(data).decode("ascii")}] if mime else []
 
     def _user_message(self, turn: Turn, images: list[dict[str, str]]) -> dict[str, Any]:
-        ru = norm_lang(turn.session.lang) == "ru"
+        ru = norm_lang(turn.lang) == "ru"
         parts = [turn.text]
         sel = str(turn.context.get("selection") or "")
         clip = str(turn.context.get("clipboard") or "")
@@ -441,7 +448,7 @@ class Engine:
     async def _model_turn(self, turn: Turn) -> None:
         app = self.app
         session = turn.session
-        lang = session.lang
+        lang = session.lang      # the system prompt stays the same across turns (a local model reuses its cache)
         images = self._images(turn)
         if turn.context.get("selection"):
             session.taint.add("selection")
@@ -610,14 +617,14 @@ class Engine:
     def _tool_ctx(self, turn: Turn, cancel: CancelToken) -> ToolContext:
         app = self.app
         cwd = turn.session.cwd or app.paths.home
-        return ToolContext(paths=app.paths, config=self.config, lang=turn.session.lang, cwd=cwd,
+        return ToolContext(paths=app.paths, config=self.config, lang=turn.lang, cwd=cwd,
                            project=project_root(turn.session.cwd, app.paths.home), runner=app.runner,
                            svoya=app.svoya, undo=app.undo, memory=app.memory, sandbox=app.sandbox, cancel=cancel,
                            turn_id=turn.id, client=turn.session.client, tainted=bool(turn.session.taint))
 
     async def _tool_call(self, turn: Turn, call: ToolCall) -> dict[str, Any]:
         app = self.app
-        lang = turn.session.lang
+        lang = turn.lang
         call_id = call.id or new_id("call")
         tool = app.registry.by_wire(call.name)
 
@@ -756,7 +763,7 @@ class Engine:
         except Exception:
             log.warning("journal write failed", exc_info=True)
             return
-        summary = t("memory.journal", turn.session.lang)
+        summary = t("memory.journal", turn.lang)
         action = app.undo.register(UndoSpec("memory", summary, change.undo_data(), auto=True), turn.id,
                                    turn.session.client)
         app.audit.append("memory", turn=turn.id, op="journal", file=change.file, action=action.id)

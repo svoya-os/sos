@@ -143,6 +143,35 @@ class VoiceProtocolTest(unittest.TestCase):
             await conn.close()
         self.run_async(scenario)
 
+    def test_the_answer_is_in_the_language_of_the_question(self):
+        # ISO #18: «Который час?» said in an English session got "Here, bro: It's 07:32."
+        async def scenario(svc, fake):
+            for _ in range(100):
+                if svc.voice.available:
+                    break
+                await asyncio.sleep(0.02)
+            conn = await connect(self.app.paths.socket)
+            await conn.hello("shell", "en")
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "hold"})
+            events = await until(conn, ("done",), "t1")
+            answer = "".join(e["text"] for e in events if e["type"] == "token")
+            self.assertRegex(answer, "[А-Яа-я]")
+            self.assertNotRegex(answer, "It's")
+            done = next(e for e in events if e["type"] == "done")
+            self.assertIn("data stayed", done["meta"])        # the footer stays in the interface's language
+            await until(conn, ("state",), "t1", timeout=5)
+            self.assertTrue(all(m["lang"] == "ru" for m in fake.said() if m["text"]))
+            # typed: Russian gets Russian, a short Latin command keeps the session's language
+            await conn.send({"type": "ask", "id": "t2", "text": "который час"})
+            answer = "".join(e["text"] for e in await until(conn, ("done",), "t2") if e["type"] == "token")
+            self.assertRegex(answer, "[А-Яа-я]")
+            await conn.hello("shell", "ru")
+            await conn.send({"type": "ask", "id": "t3", "text": "what time is it now"})
+            answer = "".join(e["text"] for e in await until(conn, ("done",), "t3") if e["type"] == "token")
+            self.assertNotRegex(answer, "[А-Яа-я]")
+            await conn.close()
+        self.run_async(scenario, heard="Который час?")
+
     def test_saying_thanks_after_an_answer_ends_the_conversation(self):
         async def scenario(svc, fake):
             conn, _ = await self.ready_client(svc)

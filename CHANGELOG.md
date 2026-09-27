@@ -78,6 +78,9 @@ Work towards v0.1 «Первый сигнал».
   requests go to the model.
 - When the local model does not answer, Jackson says what to check (`sos models serve --status`)
   or how to start it, instead of an address and a socket error.
+- Jackson's quick answers come in the language of the question, as the model's do: «Который час?»
+  in an English session got "It's 07:32." The interface keeps its language; "what time is it now"
+  is a quick question too.
 - **Privacy:** the local model server (`sos models serve`, the llm-local module) serves the models
   in `/srv/ai` once each and never asks Hugging Face about them. It listed the store a second time
   under repository names, asked Hugging Face before loading those, and ran two copies of one

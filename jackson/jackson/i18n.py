@@ -7,6 +7,8 @@ thousand groups (``12 345``); four-digit numbers are not grouped.
 
 from __future__ import annotations
 
+import re
+
 from typing import Iterable
 
 NNBSP = " "  # narrow no-break space (thin space that never wraps)
@@ -17,6 +19,21 @@ LANGS = ("ru", "en")
 def norm_lang(lang: str | None) -> str:
     lang = (lang or "ru").lower()[:2]
     return lang if lang in LANGS else "en"
+
+
+_CYRILLIC_WORD = re.compile(r"[А-Яа-яЁё]{2,}")
+_LATIN_WORD = re.compile(r"[A-Za-z]{2,}")
+
+
+def answer_lang(text: str, default: str) -> str:
+    """The language to answer in: the one the question is in, when that is clear. A Russian word
+    makes it Russian whatever the interface language («открой Firefox»); English needs three words
+    and no Russian, so that «docker ps» or «htop» typed in a Russian session still gets Russian."""
+    if _CYRILLIC_WORD.search(text):
+        return "ru"
+    if len(_LATIN_WORD.findall(text)) >= 3:
+        return "en"
+    return norm_lang(default)
 
 
 # ---------------------------------------------------------------------------

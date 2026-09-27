@@ -30,6 +30,7 @@ POSITIVE = {
     "включи блютуз": "bluetooth_on", "bluetooth off": "bluetooth_off",
     "сколько оперативной памяти": "ram", "memory usage": "ram", "какой процессор": "cpu",
     "сколько работает компьютер": "uptime", "uptime": "uptime", "который час": "time", "what time is it": "time",
+    "который час сейчас": "time", "what time is it now": "time",
     "какое сегодня число": "date", "мой ip": "ip", "what's my ip address": "ip",
     "что ты умеешь?": "help", "what can you do": "help", "отмени": "undo", "верни как было": "undo", "undo": "undo",
     "какие модели доступны": "models", "только локально": "route_local", "можно облако": "route_any",

@@ -77,7 +77,7 @@ JSON Lines over `$XDG_RUNTIME_DIR/svoya/jackson.sock`. Implemented exactly as sp
 are additive and clients must ignore what they do not know.
 
 Client → Jackson: `hello {client, version, lang?}` · `ask {id, text, context?{selection, clipboard,
-screenshot, cwd}, route?, new?, refines?}` · `approve {id, callId, decision}` · `cancel {id}` · `status` ·
+screenshot, cwd, lang}, route?, new?, refines?}` · `approve {id, callId, decision}` · `cancel {id}` · `status` ·
 `undo {actionId?, id?}` · `listen {id, action: start|stop|cancel|hush, mode?: tap|hold}` (when
 `capabilities` has `voice`) · `ping`. Unknown message types are ignored.
 
@@ -355,7 +355,9 @@ client asked to listen; no audio is kept.
 - The panel's microphone button (or `jackson talk` over the shell's IPC): talk, press again when
   done (or just pause); pressed while Jackson speaks, he stops and listens. Super+J held:
   push-to-talk. A typed question silences him too.
-- The transcript becomes a turn with `context.voice`; the model is told the answer will be heard
+- The transcript becomes a turn with `context.voice` and the spoken language in `context.lang` (a
+  typed question gets the language it is written in, `i18n.answer_lang`; the interface keeps its
+  own); the model is told the answer will be heard
   (short, no tables). The answer is said sentence by sentence while it streams
   (`jackson/voice/speech.py`: no code or tables read out, links as their text, numbers spelled out
   for engines that read digits badly).

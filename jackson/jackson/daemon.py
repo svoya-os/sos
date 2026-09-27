@@ -29,7 +29,7 @@ from typing import Any
 from . import PROTOCOL_VERSION, __version__
 from .app import Jackson
 from .engine import Session, Turn, new_id
-from .i18n import norm_lang, t
+from .i18n import answer_lang, norm_lang, t
 from .voice import VOICE_SOCKET
 from .voice.client import VoiceDesk
 
@@ -432,7 +432,9 @@ class JacksonService:
             return
         if not (isinstance(msg.get("context"), dict) and msg["context"].get("voice")):
             await self.voice.hush(client)             # a typed question: Jackson stops talking
-        context = msg.get("context") if isinstance(msg.get("context"), dict) else {}
+        context = dict(msg["context"]) if isinstance(msg.get("context"), dict) else {}
+        if not (isinstance(context.get("lang"), str) and context["lang"]):
+            context["lang"] = answer_lang(text, lang)     # answer in the language of the question
         route = msg.get("route") if isinstance(msg.get("route"), str) else None
         refines = msg.get("refines") if isinstance(msg.get("refines"), str) else None
         if refines and refines in self._sessions_by_turn:

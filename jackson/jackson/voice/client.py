@@ -343,7 +343,7 @@ class VoiceDesk:
             self.talks[li.id] = Talk(li.id, client, lang, self.voice_for(client),
                                      SpeechStream(lang, numbers=not self.link.reads_numbers),
                                      follow=cfg.get("follow", True) is not False and li.mode != "hold")
-        await self.ask(client, {"type": "ask", "id": li.id, "text": text, "context": {"voice": True}})
+        await self.ask(client, {"type": "ask", "id": li.id, "text": text, "context": {"voice": True, "lang": lang}})
 
     # ---- the answer, as it streams ------------------------------------------------------------
     def wrap(self, turn_id: str, emit: Callable[[Event], Awaitable[None]]) -> Callable[[Event], Awaitable[None]]:
