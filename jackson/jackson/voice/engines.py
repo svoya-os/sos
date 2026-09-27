@@ -75,6 +75,7 @@ class SupertonicTTS:
 
     name = "supertonic-3"
     reads_numbers = False       # «семьдесят процентов» comes from jacksond (speech.py), not «70%»
+    speeds = True               # synth(…, speed=0.94): calmer in the evening
     rate = 44100
     REPO = "supertone-oss-archive/supertonic-3"     # the archived release, as Supertone left it
     REVISION = "aafc6e32416a594460b32413efc49d7fe4ce6d46"
@@ -116,7 +117,7 @@ class SupertonicTTS:
                 text = "".join(" " if c in drop else c for c in text)
         return " ".join(text.split())
 
-    def synth(self, text: str, lang: str, voice: str) -> Any:
+    def synth(self, text: str, lang: str, voice: str, speed: float = 1.0) -> Any:
         import numpy as np
         text = self.speakable(text)
         if not any(c.isalnum() for c in text):
@@ -127,7 +128,8 @@ class SupertonicTTS:
         # one chunk (jacksond sends a sentence at a time): the sound is cut where the speech ends,
         # which for several chunks joined with pauses would cut the last one short
         wav, duration = self.tts.synthesize(text, voice_style=self.styles[name], total_steps=self.steps,
-                                            speed=self.speed, lang=lang if lang in self.languages else "na",
+                                            speed=min(2.0, max(0.7, self.speed * speed)),
+                                            lang=lang if lang in self.languages else "na",
                                             max_chunk_length=max(1000, len(text) + 1))
         samples = np.asarray(wav, dtype=np.float32).reshape(-1)
         return samples[: int(self.rate * float(np.asarray(duration).reshape(-1)[0]))]

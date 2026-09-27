@@ -31,7 +31,7 @@ from .app import Jackson
 from .engine import Session, Turn, new_id
 from .i18n import answer_lang, norm_lang, t
 from .voice import VOICE_SOCKET
-from .voice.client import VoiceDesk
+from .voice.client import VoiceDesk, voice_now, voice_settings
 
 log = logging.getLogger("jackson.service")
 
@@ -133,7 +133,8 @@ class JacksonService:
             send=lambda client, event: client.send(event), broadcast=self._broadcast,
             state=lambda tid, state, mood: {"type": "state", "id": tid, "state": state, **self.app.state_extra(),
                                             "mood": mood},
-            voice_for=lambda client: str(self.app.config.voice.get("voice") or self.app.config.persona),
+            voice_for=lambda client: voice_now(self.app.config.voice, self.app.config.persona,
+                                               str(self.voice.link.status.get("tts") or "")),
             cancel=lambda client: self._cancel("", client), on_ready_change=lambda: self.broadcast_look("voice"),
             installed=lambda: VOICE_VENV.exists(), start_service=start_voice_service, unit_failed=voice_unit_failed)
 
@@ -368,6 +369,12 @@ class JacksonService:
                          "mood": "calm"})
         elif mtype == "undo":
             await self._undo(client, msg)
+        elif mtype == "voice" and msg.get("action") == "preview":
+            try:
+                speed = float(msg.get("speed") or 1.0)
+            except (TypeError, ValueError):
+                speed = 1.0
+            await self.voice.preview(client, str(msg.get("voice") or ""), speed)
         elif mtype == "listen":
             # not awaited: the first press may wait for the voice to load, and the client must be able
             # to take it back meanwhile
@@ -387,7 +394,7 @@ class JacksonService:
         return {"type": "welcome", "version": __version__, "protocol": PROTOCOL_VERSION, "models": models,
                 "route": route, "client": client.id, "lang": lang, "persona": app.persona(lang),
                 "avatar": app.avatar.to_event(), "name": app.name(lang), "ai": app.ai_state(),
-                "capabilities": self.capabilities()}
+                "capabilities": self.capabilities(), "voiceSettings": self.voice_settings()}
 
     async def _status(self, client: Client, msg: dict[str, Any]) -> dict[str, Any]:
         info = self.app.engine.status()
@@ -399,7 +406,11 @@ class JacksonService:
                 "models": await asyncio.to_thread(self.app.router.model_table),
                 "persona": self.app.persona(client.session.lang), "avatar": self.app.avatar.to_event(),
                 "name": self.app.name(client.session.lang), "ai": self.app.ai_state(),
-                "capabilities": self.capabilities(), "voice": self.voice.link.status}
+                "capabilities": self.capabilities(), "voice": self.voice.link.status,
+                "voiceSettings": self.voice_settings()}
+
+    def voice_settings(self) -> dict[str, Any]:
+        return voice_settings(self.app.config.voice, self.app.config.persona, str(self.voice.link.status.get("tts") or ""))
 
     def aggregate_state(self) -> str:
         order = ["speaking", "working", "thinking", "listening"]

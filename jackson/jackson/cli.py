@@ -29,7 +29,7 @@ from . import __version__
 from .i18n import fmt_cost, fmt_number, meta_line, norm_lang
 from .paths import Paths
 
-SUBCOMMANDS = ("ask", "status", "models", "memory", "notes", "audit", "undo", "approve", "route", "persona",
+SUBCOMMANDS = ("ask", "status", "models", "memory", "notes", "audit", "undo", "approve", "route", "persona", "voice",
                "avatar", "doctor", "mcp", "skills", "version", "help")
 
 # Graphite defaults (themes/graphite.toml); theme.json overrides them when present.
@@ -834,6 +834,61 @@ def cmd_route(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_voice(args: argparse.Namespace) -> int:
+    """How Jackson sounds: `voice` (show) · `voice set M1` · `voice evening 20:00-07:00|off` ·
+    `voice evening-voice M5` · `voice evening-speed 0.94` (all in [voice] of jackson.toml)."""
+    lang = _lang(args.lang)
+    from .config import load_config, set_toml_value
+    from .voice.client import EVENING, EVENING_SPEED, OFF, evening_hours
+    from .voice.engines import SupertonicTTS
+    paths = Paths.from_env()
+    cfg = load_config(paths)
+    v = cfg.voice
+    if args.action in (None, "show"):
+        day = str(v.get("voice") or cfg.persona)
+        if day in SupertonicTTS.PERSONA:
+            day += say(lang, f" ({SupertonicTTS.PERSONA[day]} у Supertonic)", f" ({SupertonicTTS.PERSONA[day]} with Supertonic)")
+        window = str(v.get("evening", EVENING))
+        evening = v.get("evening_voice") or say(lang, "спокойнее (M5 у Supertonic)", "calmer (M5 with Supertonic)")
+        print(say(lang, f"днём: {day}", f"by day: {day}"))
+        if evening_hours(window) is None:
+            print(say(lang, "вечером: как днём (вечерний голос выключен)", "in the evening: the same (off)"))
+        else:
+            speed = v.get("evening_speed", EVENING_SPEED)
+            print(say(lang, f"вечером ({window}): {evening}, темп {speed}", f"in the evening ({window}): {evening}, pace {speed}"))
+        print(say(lang, "Голоса Supertonic: M1…M5, F1…F5 · персонажи: kent, sysop, dispatcher, pirate",
+                  "Supertonic voices: M1…M5, F1…F5 · characters: kent, sysop, dispatcher, pirate"))
+        return 0
+    value = " ".join(args.value or []).strip()
+    if args.action == "set" and value:
+        set_toml_value(paths.config_file, "voice", "voice", value)
+        print(f"✓ voice = {value}")
+        return 0
+    if args.action == "evening" and value and (value.lower() in OFF or evening_hours(value) is not None):
+        stored = "off" if value.lower() in OFF else value.replace(" ", "")
+        set_toml_value(paths.config_file, "voice", "evening", stored)
+        print(f"✓ evening = {stored}")
+        return 0
+    if args.action == "evening-voice" and value:
+        set_toml_value(paths.config_file, "voice", "evening_voice", value)
+        print(f"✓ evening_voice = {value}")
+        return 0
+    if args.action == "evening-speed":
+        try:
+            speed = float(value.replace(",", "."))
+        except ValueError:
+            speed = 0.0
+        if 0.7 <= speed <= 1.3:
+            set_toml_value(paths.config_file, "voice", "evening_speed", speed)
+            print(f"✓ evening_speed = {speed}")
+            return 0
+    print(say(lang, "Можно: voice · voice set M1 · voice evening 20:00-07:00|off · voice evening-voice M5 · "
+                    "voice evening-speed 0.7–1.3",
+              "Use: voice · voice set M1 · voice evening 20:00-07:00|off · voice evening-voice M5 · "
+              "voice evening-speed 0.7–1.3"), file=sys.stderr)
+    return 2
+
+
 def cmd_persona(args: argparse.Namespace) -> int:
     lang = _lang(args.lang)
     from .config import PERSONAS, load_config, set_toml_value
@@ -1015,6 +1070,10 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("key", nargs="?")
     r.add_argument("value", nargs="?")
     r.add_argument("--json", action="store_true")
+    vo = sub.add_parser("voice", help="голос: show | set <голос> | evening 20:00-07:00|off | evening-voice <голос> | "
+                                      "evening-speed 0.7-1.3")
+    vo.add_argument("action", nargs="?", choices=["show", "set", "evening", "evening-voice", "evening-speed"])
+    vo.add_argument("value", nargs="*")
     pe = sub.add_parser("persona", help="образ: show | set <id> | humor 0-2")
     pe.add_argument("action", nargs="?", choices=["show", "set", "humor"])
     av = sub.add_parser("avatar", help="внешний вид и имя: show | set <ключ> <значение> | reset")
@@ -1069,7 +1128,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         handler = {"status": cmd_status, "models": cmd_models, "memory": cmd_memory, "notes": cmd_notes,
                    "audit": cmd_audit, "undo": cmd_undo, "approve": cmd_approve, "route": cmd_route,
-                   "persona": cmd_persona, "avatar": cmd_avatar, "doctor": cmd_doctor, "mcp": cmd_mcp,
+                   "persona": cmd_persona, "voice": cmd_voice, "avatar": cmd_avatar, "doctor": cmd_doctor, "mcp": cmd_mcp,
                    "skills": cmd_skills}[args.cmd]
         return handler(args)
     # Anything else is a question: `jackson найди мои датасеты`, `j -`, `j` (chat).

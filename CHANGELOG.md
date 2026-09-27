@@ -45,6 +45,9 @@ Work towards v0.1 «Первый сигнал».
   your computer (Silero VAD, Parakeet TDT 0.6B v3 and GigaAM v3 for Russian; a Supertonic 3 voice,
   fast on any processor, one per character); nothing is recorded or sent, and the system log never
   gets your words. Installing the module downloads these models from Hugging Face.
+  In the evening (20:00–07:00) Jackson speaks calmer: a softer voice, a little slower. The
+  customizer's «Голос» row plays a voice when you pick it and turns the calm evenings off;
+  `j voice` sets the hours and the voices.
 
 ### Changed
 

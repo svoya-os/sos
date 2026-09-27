@@ -199,6 +199,36 @@ class VoiceProtocolTest(unittest.TestCase):
             await conn.close()
         self.run_async(scenario, quiet=True)
 
+    def test_in_the_evening_the_answer_is_said_slower(self):
+        self.app.config.voice = {"evening": "00:00-23:59", "evening_voice": "calm", "evening_speed": 0.9}
+
+        async def scenario(svc, fake):
+            conn, _ = await self.ready_client(svc)
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "hold"})
+            await until(conn, ("done",), "t1")
+            await until(conn, ("state",), "t1", timeout=5)
+            said = [m for m in fake.said() if m["text"]]
+            self.assertTrue(said)
+            self.assertTrue(all(m["voice"] == "calm" and m["speed"] == 0.9 for m in said), said)
+            await conn.close()
+        self.run_async(scenario)
+
+    def test_a_voice_can_be_heard_before_it_is_picked(self):
+        async def scenario(svc, fake):
+            conn, welcome = await self.ready_client(svc)
+            self.assertEqual(welcome["voiceSettings"]["voice"], "kent")        # a fake engine: the character
+            self.assertEqual(welcome["voiceSettings"]["evening"], "20:00-07:00")
+            await conn.send({"type": "voice", "action": "preview", "voice": "M2"})
+            for _ in range(200):
+                if any(m["type"] == "say" and m.get("final") for m in fake.got):
+                    break
+                await asyncio.sleep(0.02)
+            said = fake.said()
+            self.assertEqual((said[0]["voice"], said[0]["text"]), ("M2", "Здарова! Вот так я звучу."))
+            self.assertTrue(said[-1]["final"])
+            await conn.close()
+        self.run_async(scenario)
+
     def test_saying_thanks_after_an_answer_ends_the_conversation(self):
         async def scenario(svc, fake):
             conn, _ = await self.ready_client(svc)

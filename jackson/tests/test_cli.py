@@ -142,6 +142,24 @@ class CliTest(unittest.TestCase):
         data = tomllib.loads(self.paths.config_file.read_text(encoding="utf-8"))
         self.assertEqual(data["route"]["policy"], "local-only")
 
+    def test_voice_by_day_and_in_the_evening(self):
+        shown = self.run_cli("voice").stdout
+        self.assertIn("днём: kent (M1 у Supertonic)", shown)
+        self.assertIn("вечером (20:00-07:00)", shown)
+        self.assertEqual(self.run_cli("voice", "set", "M1").returncode, 0)
+        self.assertEqual(self.run_cli("voice", "evening", "21:00-06:30").returncode, 0)
+        self.assertEqual(self.run_cli("voice", "evening-voice", "M2").returncode, 0)
+        self.assertEqual(self.run_cli("voice", "evening-speed", "0,9").returncode, 0)
+        self.assertEqual(self.run_cli("voice", "evening", "вечерком").returncode, 2)
+        self.assertEqual(self.run_cli("voice", "evening-speed", "3").returncode, 2)
+        import tomllib
+        cfg = tomllib.loads(self.paths.config_file.read_text(encoding="utf-8"))["voice"]
+        self.assertEqual(cfg, {"voice": "M1", "evening": "21:00-06:30", "evening_voice": "M2", "evening_speed": 0.9})
+        self.assertIn("вечером (21:00-06:30): M2, темп 0.9", self.run_cli("voice").stdout)
+        self.assertEqual(self.run_cli("voice", "evening", "off").returncode, 0)
+        self.assertIn("вечерний голос выключен", self.run_cli("voice").stdout)
+        self.assertIn("# test settings", self.paths.config_file.read_text(encoding="utf-8"))   # comments kept
+
     def test_memory_audit_status_persona(self):
         from tests.fakes import make_app  # write a memory entry through the library
         from jackson.app import Jackson

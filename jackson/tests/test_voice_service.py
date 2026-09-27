@@ -121,11 +121,11 @@ class Conn:
 
 @unittest.skipUnless(np is not None, "numpy is in the voice module's venv")
 class ServiceTest(unittest.TestCase):
-    def make(self, script, stt=None):
+    def make(self, script, stt=None, tts=None, warm_up=False):
         from jackson.voice.service import VoiceService
         from jackson.voice.tts import ToneTTS
         self.stt = stt or FakeSTT()
-        self.tts = ToneTTS()
+        self.tts = tts or ToneTTS()
         self.players = []
 
         def player(rate, on_level):
@@ -135,7 +135,7 @@ class ServiceTest(unittest.TestCase):
 
         return VoiceService(load_stt=lambda: self.stt, load_tts=lambda: self.tts, load_vad=FakeVAD,
                             recorder=lambda: FakeRecorder(script), player=player,
-                            endpoint=EndpointConfig(end_ms=320, wait_ms=960, follow_ms=320))
+                            endpoint=EndpointConfig(end_ms=320, wait_ms=960, follow_ms=320), warm_up=warm_up)
 
     async def drive(self, svc, *steps, settle=0.3):
         await svc.start()
@@ -194,6 +194,31 @@ class ServiceTest(unittest.TestCase):
         self.assertEqual(len(self.players), 1)          # one stream for the whole answer
         self.assertTrue(self.players[0].finished)
         self.assertTrue(any(m["type"] == "level" and m["source"] == "voice" for m in conn.got))
+
+    def test_a_sentence_is_said_slower_by_an_engine_that_can(self):
+        from jackson.voice.tts import ToneTTS
+
+        class Slower(ToneTTS):
+            speeds = True
+
+            def synth(self, text, lang, voice, speed=1.0):
+                self.speeds_asked.append(speed)
+                return super().synth(text, lang, voice)
+
+        tts = Slower()
+        tts.speeds_asked = []
+        svc = self.make([], tts=tts)
+        asyncio.run(self.drive(svc, {"type": "say", "id": "t1", "text": "Спокойной ночи.", "speed": 0.9},
+                               {"type": "say", "id": "t1", "text": "Пока.", "speed": "fast"},
+                               {"type": "say", "id": "t1", "text": "", "final": True}))
+        self.assertEqual(tts.speeds_asked, [0.9, 1.0])     # a bad speed is the usual one
+        self.assertEqual([t for t, _, _ in tts.said], ["Спокойной ночи.", "Пока."])
+
+    def test_the_engine_is_warmed_up_before_the_first_answer(self):
+        svc = self.make([], warm_up=True)
+        asyncio.run(self.drive(svc, {"type": "say", "id": "t1", "text": "Готово.", "lang": "ru"},
+                               {"type": "say", "id": "t1", "text": "", "final": True}))
+        self.assertEqual([t for t, _, _ in self.tts.said], ["Проверка связи.", "Готово."])
 
     def test_hush_stops_the_answer_and_what_is_left_of_it(self):
         svc = self.make([])

@@ -17,7 +17,7 @@ Voice service socket ``$XDG_RUNTIME_DIR/svoya/voice.sock``, JSON Lines, one obje
     → {"type": "listen", "id": "t1", "mode": "tap"|"hold"|"follow", "lang": "ru"}
     → {"type": "stop", "id": "t1"}            the key is released: transcribe what was heard
     → {"type": "cancel", "id": "t1"}          drop the recording
-    → {"type": "say", "id": "t1", "text": "…", "lang": "ru", "voice": "kent", "final": false}
+    → {"type": "say", "id": "t1", "text": "…", "lang": "ru", "voice": "kent", "speed": 0.94, "final": false}
     → {"type": "hush"}                        stop speaking now
     → {"type": "status"}
     ← {"type": "level", "id": "t1", "source": "mic"|"voice", "level": 0.42}

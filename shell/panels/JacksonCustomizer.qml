@@ -794,7 +794,6 @@ PanelFrame {
 
                 Field {
                     label: Strings.cuPersona
-                    last: true
 
                     Grid {
                         columns: 2
@@ -872,6 +871,62 @@ PanelFrame {
 
                                 FocusRing {
                                     radiusBase: 10
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ---- voice: the day voice (hear it when picked), calmer in the evening -------------------
+                Field {
+                    label: Strings.cuVoice
+                    last: true
+
+                    Column {
+                        width: parent.width
+                        spacing: 10
+
+                        MText {
+                            visible: !Jackson.voice
+                            text: Strings.cuVoiceMissing
+                            size: 11.5
+                            color: Theme.textFaint
+                        }
+
+                        Segmented {
+                            visible: Jackson.voice
+                            width: Math.min(parent.width, naturalWidth)
+                            fontSize: 11.5
+                            current: Jackson.dayVoice
+                            options: ["M1", "M2", "M3", "M4", "M5", "F1", "F2", "F3", "F4", "F5"].map(v => ({ id: v, label: v }))
+                            Accessible.name: Strings.cuVoice
+                            onPicked: choice => Jackson.setVoice(choice)
+                        }
+
+                        Row {
+                            visible: Jackson.voice
+                            spacing: 10
+
+                            Toggle {
+                                anchors.verticalCenter: parent.verticalCenter
+                                checked: Jackson.calmEvenings
+                                Accessible.name: Strings.cuVoiceEvening
+                                onToggled: value => Jackson.setCalmEvenings(value)
+                            }
+
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 1
+
+                                SText {
+                                    text: Strings.cuVoiceEvening
+                                    size: 13
+                                    color: Theme.text
+                                }
+                                MText {
+                                    text: Strings.cuVoiceEveningNote(Jackson.eveningHours, Jackson.eveningVoice)
+                                    size: 10.5
+                                    color: Theme.textFaint
                                 }
                             }
                         }

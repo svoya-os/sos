@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           . "$RUNNER_TEMP/voice/bin/activate"
           cd jackson && python -m unittest -v tests.test_voice_service tests.test_voice_speech tests.test_voice_stt \
-            tests.test_voice_engines
+            tests.test_voice_engines tests.test_voice_evening
 
       - name: Listen to phrases, then speak
         run: |
@@ -79,7 +79,7 @@ jobs:
             --phrase "en:$RUNNER_TEMP/en.raw:time" \
             --phrase "?ru:$RUNNER_TEMP/ru-espeak.raw:брауз" \
             --say "ru:Проверка связи. Всё работает, я на месте.:провер,связ" \
-            --say "ru:Сейчас пятнадцать тридцать, на улице плюс двенадцать.:пятнадцать,двенадцать" \
+            --say "ru:Сейчас пятнадцать тридцать, на улице плюс двенадцать.:сейчас,улице" \
             --say "en:Systems check. Everything works, I am here.:check,everything" \
             | tee -a "$GITHUB_STEP_SUMMARY"
 

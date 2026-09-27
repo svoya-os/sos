@@ -10,6 +10,7 @@ answer has been said. Standard library only.
 from __future__ import annotations
 
 import asyncio
+import datetime as dt
 import json
 import logging
 import re
@@ -24,6 +25,67 @@ from .speech import SpeechStream
 log = logging.getLogger("jackson.voice")
 
 Event = dict[str, Any]
+
+# In the evening Jackson speaks calmer: another voice ([voice] evening_voice, by default a calmer one
+# of the engine), a little slower ([voice] evening_speed); [voice] evening sets the hours or "off".
+EVENING = "20:00-07:00"
+EVENING_VOICE = {"supertonic-3": "M5", "qwen3-tts": "sysop"}
+EVENING_SPEED = 0.94
+OFF = {"", "off", "no", "none", "false", "0", "нет", "выкл", "никогда"}
+_HOURS = re.compile(r"^\s*(\d{1,2})(?::(\d{2}))?\s*[-–—]\s*(\d{1,2})(?::(\d{2}))?\s*$")
+
+
+def evening_hours(window: str) -> tuple[dt.time, dt.time] | None:
+    """ "20:00-07:00" → (20:00, 07:00); None when it is off or not a range of hours."""
+    if str(window).strip().lower() in OFF:
+        return None
+    m = _HOURS.match(str(window))
+    if not m:
+        return None
+    h1, m1, h2, m2 = (int(x or 0) for x in m.groups())
+    if not (h1 < 24 and h2 < 24 and m1 < 60 and m2 < 60):
+        return None
+    return dt.time(h1, m1), dt.time(h2, m2)
+
+
+def is_evening(now: dt.datetime, window: str) -> bool:
+    hours = evening_hours(window)
+    if hours is None:
+        return False
+    start, end = hours
+    t = now.time()
+    return start <= t < end if start < end else (t >= start or t < end)     # 20:00-07:00 wraps midnight
+
+
+def voice_settings(cfg: dict[str, Any], persona: str, engine: str) -> dict[str, Any]:
+    """What the shell shows and changes: the day voice (the character's, when none is set, as the
+    engine names it), the evening hours ("off"), the evening voice and pace."""
+    from .engines import SupertonicTTS
+    day = str(cfg.get("voice") or "")
+    if not day:
+        day = SupertonicTTS.PERSONA.get(persona, persona) if engine == SupertonicTTS.name else persona
+    window = str(cfg.get("evening", EVENING))
+    evening = str(cfg.get("evening_voice") or EVENING_VOICE.get(engine, day))
+    try:
+        speed = float(cfg.get("evening_speed", EVENING_SPEED))
+    except (TypeError, ValueError):
+        speed = EVENING_SPEED
+    return {"voice": day, "evening": window if evening_hours(window) else "off", "eveningVoice": evening,
+            "eveningSpeed": speed, "engine": engine}
+
+
+def voice_now(cfg: dict[str, Any], persona: str, engine: str, now: dt.datetime | None = None) -> tuple[str, float]:
+    """The voice for an answer said now, and how fast: the day voice ([voice] voice, else the
+    character's), and in the evening a calmer one a little slower."""
+    day = str(cfg.get("voice") or persona)
+    if not is_evening(now or dt.datetime.now(), str(cfg.get("evening", EVENING))):
+        return day, 1.0
+    voice = str(cfg.get("evening_voice") or EVENING_VOICE.get(engine, day))
+    try:
+        speed = float(cfg.get("evening_speed", EVENING_SPEED))
+    except (TypeError, ValueError):
+        speed = EVENING_SPEED
+    return voice, min(1.3, max(0.7, speed))
 
 
 class VoiceLink:
@@ -142,6 +204,7 @@ class Talk:
     stream: SpeechStream
     follow: bool
     finished: bool = False       # the turn is over (done/error)
+    speed: float = 1.0           # slower in the evening (voice_now)
     spoken: bool = False         # the voice has said everything
     hushed: bool = False         # silenced: nothing more of it is said
     ok: bool = True
@@ -162,7 +225,7 @@ class VoiceDesk:
     def __init__(self, link_path: Path, *, config: Callable[[], dict[str, Any]],
                  ask: Callable[[Any, Event], Awaitable[None]], send: Callable[[Any, Event], None],
                  broadcast: Callable[[Event], None], state: Callable[[str, str, str], Event],
-                 voice_for: Callable[[Any], str], cancel: Callable[[Any], None] | None = None,
+                 voice_for: Callable[[Any], Any], cancel: Callable[[Any], None] | None = None,
                  on_ready_change: Callable[[], None] | None = None, installed: Callable[[], bool] | None = None,
                  start_service: Callable[[], Awaitable[None]] | None = None,
                  unit_failed: Callable[[], Awaitable[bool]] | None = None, start_timeout: float = 120.0) -> None:
@@ -172,7 +235,7 @@ class VoiceDesk:
         self.send = send
         self.broadcast = broadcast
         self.state = state                  # (turn id, state, mood) → a `state` event
-        self.voice_for = voice_for          # client → voice id (the persona's)
+        self.voice_for = voice_for          # client → voice id, or (voice id, speed): voice_now
         self.cancel = cancel or (lambda client: None)   # ends the client's running turn
         self.installed = installed or (lambda: False)   # the voice module is there (its venv)
         self.start_service = start_service
@@ -182,6 +245,26 @@ class VoiceDesk:
         self.talks: dict[str, Talk] = {}
         self.starting: dict[int, str] = {}          # client → the press waiting for the voice to load
         self._ids = 0
+
+    async def preview(self, client: Any, voice: str = "", speed: float = 1.0) -> bool:
+        """A short line in *voice* (the customizer plays a voice when it is picked)."""
+        if not self.link.ready:
+            return False
+        await self.hush(client)
+        lang = getattr(getattr(client, "session", None), "lang", "ru")
+        tid = self.new_id()
+        talk = Talk(tid, client, lang, voice or self._voice(client)[0], SpeechStream(lang), follow=False,
+                    finished=True, speed=min(1.3, max(0.7, speed)))
+        self.talks[tid] = talk
+        await self._say(talk, t("voice.preview", lang))
+        await self._say(talk, "", final=True)
+        return True
+
+    def _voice(self, client: Any) -> tuple[str, float]:
+        chosen = self.voice_for(client)
+        if isinstance(chosen, tuple):
+            return str(chosen[0]), float(chosen[1])
+        return str(chosen), 1.0
 
     @property
     def available(self) -> bool:
@@ -341,16 +424,18 @@ class VoiceDesk:
             if not speak:
                 self.broadcast(self.state(li.id, "idle", "calm"))
                 return
-            talk = Talk(li.id, client, lang, self.voice_for(client), SpeechStream(lang), follow=False, finished=True)
+            voice, speed = self._voice(client)
+            talk = Talk(li.id, client, lang, voice, SpeechStream(lang), follow=False, finished=True, speed=speed)
             self.talks[li.id] = talk
             self.broadcast(self.state(li.id, "speaking", "talking"))
             await self._say(talk, bye)
             await self._say(talk, "", final=True)
             return
         if speak:
-            self.talks[li.id] = Talk(li.id, client, lang, self.voice_for(client),
+            voice, speed = self._voice(client)
+            self.talks[li.id] = Talk(li.id, client, lang, voice,
                                      SpeechStream(lang, numbers=not self.link.reads_numbers),
-                                     follow=cfg.get("follow", True) is not False and li.mode != "hold")
+                                     follow=cfg.get("follow", True) is not False and li.mode != "hold", speed=speed)
         await self.ask(client, {"type": "ask", "id": li.id, "text": text, "context": {"voice": True, "lang": lang}})
 
     # ---- the answer, as it streams ------------------------------------------------------------
@@ -384,8 +469,10 @@ class VoiceDesk:
         if text:
             talk.said += 1
         lang = guess_lang(text, talk.lang) if text else talk.lang
-        await self.link.send({"type": "say", "id": talk.id, "text": text, "lang": lang, "voice": talk.voice,
-                              "final": final})
+        msg: Event = {"type": "say", "id": talk.id, "text": text, "lang": lang, "voice": talk.voice, "final": final}
+        if talk.speed != 1.0:
+            msg["speed"] = talk.speed
+        await self.link.send(msg)
 
     async def _spoken(self, talk: Talk, hushed: bool) -> None:
         if talk.spoken:

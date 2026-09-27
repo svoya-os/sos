@@ -718,6 +718,15 @@ Singleton {
     readonly property string cuPersona: root.t("Характер", "Persona")
     readonly property var cuPersonas: ({ kent: root.t("Кентафурик", "Buddy"), sysop: "SYSOP", dispatcher: root.t("Диспетчер", "Dispatcher"), pirate: root.t("Пиратское радио", "Pirate radio") })
     readonly property string cuHumor: root.t("Юмор", "Humor")
+    readonly property string cuVoice: root.t("Голос", "Voice")
+    readonly property string cuVoiceEvening: root.t("Вечером спокойнее", "Calmer in the evening")
+    function cuVoiceEveningNote(hours, voice) {
+        const parts = String(hours).split("-");
+        const start = parts[0] || "20:00";
+        const end = parts[1] || "07:00";
+        return root.t(`с ${start} до ${end} · голос ${voice}, чуть медленнее`, `${start}–${end} · voice ${voice}, a little slower`);
+    }
+    readonly property string cuVoiceMissing: root.t("Голоса пока нет: sos install voice", "No voice yet: sos install voice")
     readonly property var cuHumorLevels: [root.t("без шуток", "no jokes"), root.t("изредка", "now and then"), root.t("почаще", "more often")]
     readonly property string cuReset: root.t("По умолчанию", "Defaults")
     readonly property string cuHint: root.t("Правый клик по Джексону — эта панель. Или просто скажи ему: «стань котом».", "Right-click Jackson for this panel. Or just tell him: “be a cat”.")

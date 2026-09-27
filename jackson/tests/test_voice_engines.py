@@ -83,6 +83,11 @@ class SupertonicTest(unittest.TestCase):
         self.assertEqual(self.fake.calls[0][1:4], ("M1", 8, 1.05))
 
 
+    def test_a_sentence_can_be_said_slower(self):
+        self.assertTrue(self.tts.speeds)
+        self.tts.synth("Спокойной ночи.", "ru", "kent", speed=0.9)
+        self.assertAlmostEqual(self.fake.calls[-1][3], 1.05 * 0.9)
+
     def test_a_character_it_does_not_know_does_not_silence_the_sentence(self):
         self.tts.synth("Дом №5 ☺ готов.", "ru", "kent")
         self.assertEqual(self.fake.calls[-1][0], "Дом 5 готов.")

@@ -78,8 +78,10 @@ are additive and clients must ignore what they do not know.
 
 Client → Jackson: `hello {client, version, lang?}` · `ask {id, text, context?{selection, clipboard,
 screenshot, cwd, lang}, route?, new?, refines?}` · `approve {id, callId, decision}` · `cancel {id}` · `status` ·
-`undo {actionId?, id?}` · `listen {id, action: start|stop|cancel|hush, mode?: tap|hold}` (when
-`capabilities` has `voice`) · `ping`. Unknown message types are ignored.
+`undo {actionId?, id?}` · `listen {id, action: start|stop|cancel|hush, mode?: tap|hold}` and
+`voice {action: preview, voice, speed?}` (when `capabilities` has `voice`) · `ping`. Unknown message
+types are ignored. `welcome` and `status` carry `voiceSettings` {voice, evening, eveningVoice,
+eveningSpeed, engine}.
 
 Jackson → client:
 
@@ -366,6 +368,11 @@ client asked to listen; no audio is kept.
   keeps the answers silent, `voice = "…"` picks another voice than the persona's (for Supertonic:
   `M1`…`M5`, `F1`…`F5`), `engine = "…"` another installed engine, `sounds = false`
   drops the two short sounds (the microphone opens; the phrase was heard).
+- In the evening he speaks calmer: from `evening = "20:00-07:00"` (or `"off"`) another voice
+  (`evening_voice`, by default Supertonic's soft `M5`, the calm character on a graphics card) a
+  little slower (`evening_speed = 0.94`). `j voice` shows and sets all of it (`j voice set M1`,
+  `j voice evening 21:00-07:00|off`, `j voice evening-voice M2`, `j voice evening-speed 0.9`); so
+  does the «Голос» row of the customizer, which lets you hear a voice when you pick it.
 
 Protocol additions: see `jackson/voice/__init__.py` (the speech service) and ARCHITECTURE §8.
 External agents (Claude Code, Codex CLI, OpenCode, goose) will run over ACP inside the same

@@ -88,6 +88,33 @@ Singleton {
         Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" persona humor "$1"', [String(level)], root.syncLoginVoice);
     }
 
+    // How he sounds (voice module): the day voice, and a calmer one in the evening. Through
+    // `j voice …` like the persona; jacksond reports the settings in welcome/status (voiceSettings).
+    property var voiceSettings: ({})
+    readonly property string dayVoice: root.voiceSettings && root.voiceSettings.voice ? root.voiceSettings.voice : "M1"
+    readonly property bool calmEvenings: !root.voiceSettings || root.voiceSettings.evening !== "off"
+    readonly property string eveningHours: root.voiceSettings && root.voiceSettings.evening && root.voiceSettings.evening !== "off" ? root.voiceSettings.evening : "20:00-07:00"
+    readonly property string eveningVoice: root.voiceSettings && root.voiceSettings.eveningVoice ? root.voiceSettings.eveningVoice : "M5"
+
+    function setVoice(id) {
+        root.voiceSettings = Object.assign({}, root.voiceSettings || {}, { voice: id });
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" voice set "$1"', [id]);
+        root.previewVoice(id, 1.0);
+    }
+
+    function setCalmEvenings(on) {
+        const hours = root.eveningHours;
+        root.voiceSettings = Object.assign({}, root.voiceSettings || {}, { evening: on ? hours : "off" });
+        Sys.sh('c=$(command -v jackson || command -v j) || exit 127; exec "$c" voice evening "$1"', [on ? hours : "off"]);
+        if (on)
+            root.previewVoice(root.eveningVoice, root.voiceSettings.eveningSpeed || 0.94);
+    }
+
+    function previewVoice(id, speed) {
+        if (root.voice)
+            root.send({ type: "voice", action: "preview", voice: id, speed: speed });
+    }
+
     function syncLoginVoice(code) {
         if (code === 0)
             Theme.queueSystemSync();
@@ -317,9 +344,13 @@ Singleton {
             root.models = Array.isArray(msg.models) ? msg.models : [];
             root.capabilities = Array.isArray(msg.capabilities) ? msg.capabilities : [];
             root.defaultRoute = root.normalizeRoute(msg.route) || root.firstLocalModel();
+            if (msg.voiceSettings)
+                root.voiceSettings = msg.voiceSettings;
             root.applyCharacter(msg);
             break;
         case "status":
+            if (msg.voiceSettings)
+                root.voiceSettings = msg.voiceSettings;
             if (msg.route)
                 root.defaultRoute = root.normalizeRoute(msg.route);
             if (Array.isArray(msg.models))

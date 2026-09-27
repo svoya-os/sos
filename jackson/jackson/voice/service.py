@@ -48,6 +48,7 @@ class Line:
     final: bool
     conn: "Conn"
     audio: Any = None
+    speed: float = 1.0
 
 
 class Conn:
@@ -78,7 +79,7 @@ class VoiceService:
     def __init__(self, *, load_stt: Callable[[], Any], load_tts: Callable[[], Any], load_vad: Callable[[], Any],
                  recorder: Callable[[], Recorder] = Recorder,
                  player: Callable[[int, Callable[[float], Any]], Player] | None = None,
-                 endpoint: EndpointConfig | None = None, sounds: bool = False) -> None:
+                 endpoint: EndpointConfig | None = None, sounds: bool = False, warm_up: bool = False) -> None:
         self._load = {"stt": load_stt, "tts": load_tts, "vad": load_vad}
         self.stt: Any = None
         self.tts: Any = None
@@ -87,6 +88,7 @@ class VoiceService:
         self.player_factory = player or (lambda rate, on_level: Player(rate, on_level=on_level))
         self.endpoint = endpoint or EndpointConfig()
         self.sounds = sounds                # the earcons: the microphone opens, the phrase was heard
+        self.warm_up = warm_up              # say one sentence to nobody once loaded (svoya-voice does)
         self.ready = asyncio.Event()
         self.error = ""
         self.capture: Capture | None = None
@@ -186,8 +188,12 @@ class VoiceService:
         elif kind == "say":
             if tid in self.hushed:
                 return
+            try:
+                speed = min(1.5, max(0.7, float(msg.get("speed") or 1.0)))
+            except (TypeError, ValueError):
+                speed = 1.0
             self.lines.put_nowait(Line(tid, str(msg.get("text") or ""), str(msg.get("lang") or "ru"),
-                                       str(msg.get("voice") or ""), bool(msg.get("final")), conn))
+                                       str(msg.get("voice") or ""), bool(msg.get("final")), conn, speed=speed))
         elif kind == "hush":
             await self.hush(tid, conn)
         elif kind == "ping":
@@ -313,9 +319,29 @@ class VoiceService:
             pass
 
     # ---- speaking -------------------------------------------------------------------------
+    def _synth(self, line: Line) -> Any:
+        if line.speed != 1.0 and getattr(self.tts, "speeds", False):
+            return self.tts.synth(line.text, line.lang, line.voice, speed=line.speed)
+        return self.tts.synth(line.text, line.lang, line.voice)
+
+    def _warm_up(self) -> None:
+        """The first sentence an engine says takes it much longer (ONNX Runtime sets itself up):
+        one short sentence nobody hears, before anyone asks (Voice workflow: the first sound came
+        3 s after the answer on a CI runner)."""
+        t0 = time.monotonic()
+        try:
+            voices = list(self.tts.voices())
+            self.tts.synth("Проверка связи.", "ru", voices[0] if voices else "")
+        except Exception as exc:  # noqa: BLE001 - only a warm-up
+            log.info("voice warm-up failed: %s", exc)
+            return
+        log.info("voice warmed up in %.1f s", time.monotonic() - t0)
+
     async def _synthesizer(self) -> None:
         """Sentences → audio, one ahead of what is playing."""
         await self.ready.wait()
+        if self.warm_up and self.tts is not None and not self.error:
+            await asyncio.to_thread(self._warm_up)
         while True:
             line = await self.lines.get()
             if line.id in self.hushed:
@@ -323,7 +349,7 @@ class VoiceService:
             if line.text.strip() and self.tts is not None:
                 self.synthesizing = line
                 try:
-                    line.audio = await asyncio.to_thread(self.tts.synth, line.text, line.lang, line.voice)
+                    line.audio = await asyncio.to_thread(self._synth, line)
                 except Exception as exc:  # noqa: BLE001 - one bad sentence is skipped
                     log.warning("could not say %r: %s", line.text[:60], exc)
                     line.audio = None
@@ -441,7 +467,8 @@ def main(argv: list[str] | None = None) -> int:
         from .tts import pick_engine
         engine = pick_engine(models)
     options = dict(cfg.get("engine_options") or {})
-    service = VoiceService(**default_loaders(models, engine, options), sounds=cfg.get("sounds", True) is not False)
+    service = VoiceService(**default_loaders(models, engine, options), sounds=cfg.get("sounds", True) is not False,
+                           warm_up=True)
     path = Path(args.socket) if args.socket else socket_path()
 
     async def run() -> None:
