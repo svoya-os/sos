@@ -67,8 +67,9 @@ This is the design. What works today is listed under [Status](#status).
   Paper by day, Phosphor for CRT fans. Matte surfaces instead of glass, IBM Plex type, one signal
   color, the Morse mark. Floating windows and the mouse by default; tiling is a preset. The
   keys people bring from Windows work, and the things usually set up by hand are there: every
-  window at a glance, clipboard history, emoji, text from the screen, a color picker, media
-  buttons, game mode and a warm screen in the evening.
+  window at a glance, clipboard history, emoji, text from the screen, a color picker, a
+  calculator in the launcher, media buttons, the power mode, game mode and a warm screen in the
+  evening.
 - **Undo for everything.** Btrfs snapshots before every update, module change and action
   Jackson takes. `Super+Z` or `sos undo` reverts the last change; yesterday's system is one
   entry in the boot menu.
@@ -265,7 +266,8 @@ Svoya Shell, Джексон и команда `sos`.
   шрифты IBM Plex, один сигнальный цвет, знак азбукой Морзе. По умолчанию — плавающие окна и
   мышь, тайлинг включается отдельным пресетом. Клавиши, привычные по Windows, работают, а то,
   что обычно настраивают руками, уже есть: все окна сразу, история буфера, эмодзи, текст с
-  экрана, пипетка, кнопки музыки, игровой режим и тёплый экран вечером.
+  экрана, пипетка, калькулятор в лаунчере, кнопки музыки, режим питания, игровой режим и
+  тёплый экран вечером.
 - **Всё можно отменить.** Снимки Btrfs перед каждым обновлением, сменой модулей и действием
   Джексона. `Super+Z` или `sos undo` откатывает последнее изменение, а вчерашняя система — один
   пункт в загрузочном меню.

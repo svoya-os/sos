@@ -263,11 +263,12 @@ Singleton {
                 const before = (out || "").trim();
                 if (code === 0 && before.length > 0 && before !== "performance" && !Settings.gamePowerBefore)
                     Settings.gamePowerBefore = before;
+                Power.refresh();
             });
         } else {
             Sys.run(["hyprctl", "reload"]);     // the configured look back (configreloaded re-applies rules and the night light)
             if (Settings.gamePowerBefore) {
-                Sys.sh('command -v powerprofilesctl >/dev/null && powerprofilesctl set "$1"', [Settings.gamePowerBefore]);
+                Sys.sh('command -v powerprofilesctl >/dev/null && powerprofilesctl set "$1"', [Settings.gamePowerBefore], () => Power.refresh());
                 Settings.gamePowerBefore = "";
             }
         }

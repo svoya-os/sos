@@ -4,6 +4,7 @@ import Quickshell.Io
 import qs.core
 import qs.components
 import "Fuzzy.js" as Fuzzy
+import "Calc.js" as Calc
 
 // Launcher / command palette (Super+Space; DESIGN.md §5): the Jackson shell at
 // 640px. Groups: Приложения · Файлы · Настройки · Модули · Действия, rows 40px
@@ -11,7 +12,8 @@ import "Fuzzy.js" as Fuzzy
 // hit). `?text` or Tab hands the query to Jackson. Modes (СОС menu):
 // settings / modules / actions show one group only; install lists what `sos install`
 // knows and is not installed yet (catalog apps by category, then modules). Typing an
-// app that is not installed offers «Установить …»; a few secret words do tricks.
+// app that is not installed offers «Установить …»; a few secret words do tricks; a calculation
+// («2+2*3», «200*15%», «sqrt(2)») answers first, Enter copies the answer (Calc.js).
 PanelFrame {
     id: root
 
@@ -40,6 +42,7 @@ PanelFrame {
         { key: "phosphor", title: Strings.theme + ": " + Strings.phosphor, secondary: "sos theme apply phosphor", glyph: "terminal", run: () => Theme.setBase("phosphor") },
         { key: "jackson-look", title: Strings.customizeJackson, secondary: "j avatar", glyph: "user", run: () => Actions.customizeJackson() },
         { key: "focus", title: Strings.focusMode, secondary: Strings.focusWork + " · " + Strings.focusStudy + " · " + Strings.focusPresentation + " · " + Strings.focusGame, glyph: "eye", run: () => Ui.show("cc") },
+        { key: "power mode питание энергосбережение производительность battery", title: Strings.powerMode, secondary: Strings.powerSaver + " · " + Strings.powerBalanced + " · " + Strings.powerPerformance, glyph: "zap", run: () => Ui.show("cc") },
         { key: "night light ночной свет тёплый экран warm", title: Strings.nightLight, secondary: Settings.nightLight === "auto" ? Strings.nightAuto : (Settings.nightLight === "on" ? Strings.nightOn : Strings.nightOff), glyph: "sunset", run: () => Ui.show("cc") },
         { key: "privacy", title: Strings.aiPrivacy, secondary: "", glyph: "shield-check", run: () => Ui.show("cc") },
         { key: "a11y", title: Strings.accessibility, secondary: "Super Alt A", glyph: "user", run: () => Actions.openSetup("accessibility") },
@@ -129,6 +132,17 @@ PanelFrame {
     // The word for installing opens the install list («приложения», «магазин», «apps»…).
     readonly property var installWords: ["apps", "app store", "store", "install app", "install apps", "приложения",
         "установить приложение", "установить программу", "магазин", "магазин приложений", "каталог", "программы"]
+
+    function calcRows(q) {
+        const v = Calc.evaluate(q);
+        if (v === null)
+            return [];
+        const answer = Calc.format(v, /\d,\d/.test(q));
+        return [{ group: "calc", title: "= " + answer, secondary: q.replace(/=\s*$/, "").trim() + " · " + Strings.calcCopy, glyph: "calculator", score: 2000, run: () => {
+                    Sys.sh('printf %s "$1" | wl-copy', [answer]);
+                    Notifs.shellToast(Strings.calcCopied(answer), "", "calculator");
+                } }];
+    }
 
     function commandRows(q) {
         const w = q.toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
@@ -265,6 +279,8 @@ PanelFrame {
         const m = root.mode;
         if (m === "install")
             return root.installRows(q, 80).concat(root.moduleRows(q, 30));
+        if (m === "all")
+            out = out.concat(root.calcRows(q));
         if (m === "all" || m === "apps")
             out = out.concat(root.appRows(q));
         if (m === "all") {
@@ -301,7 +317,8 @@ PanelFrame {
             actions: Strings.groupActions,
             jackson: Strings.groupJackson,
             install: Strings.groupInstall,
-            secret: Strings.groupSecret
+            secret: Strings.groupSecret,
+            calc: Strings.groupCalc
         })[g] || root.categoryTitle(g);
     }
 

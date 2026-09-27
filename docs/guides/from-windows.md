@@ -21,12 +21,12 @@ touchpad does what a Windows laptop does, and the few real differences are at th
 | `Alt+F4` | Close the window (`Super+Q` does the same) |
 | `Win+E` | Files |
 | `Win+I` | Settings |
-| `Win+R` | Run: the launcher |
+| `Win+R` | Run: the launcher. It also counts: type `2+2*3`, `200*15%` or `sqrt(2)` and `Enter` copies the answer |
 | `Win+L` | Lock the screen |
 | `Win+V` | Clipboard history |
 | `Win+Shift+S`, `Print Screen` | Screenshot of a region: copy it, save it, read its text or ask Jackson about it |
 | `Win+.` or `Win+;` | Emoji. Type a word in English or Russian; `Enter` puts it where you were typing |
-| `Win+A`, `Win+N` | The control center: Wi-Fi, Bluetooth, sound, what is playing, brightness, theme, focus, night light, notifications |
+| `Win+A`, `Win+N` | The control center: Wi-Fi, Bluetooth, sound, what is playing, brightness, power mode, theme, focus, night light, notifications |
 | `Win+G` | Game mode (see below) |
 | `Ctrl+Shift+Esc` | What is running and what it takes (`btop`) |
 | `Ctrl+Alt+Del` | Log out, restart, shut down |
@@ -93,8 +93,8 @@ moves both. Game mode switches it off while you play.
 ## The small things people usually set up by hand
 
 Already there, nothing to install: clipboard history, emoji, text from the screen, the color
-picker, play/pause and track buttons for the browser or Spotify in the control center (and the
-media keys), `Win+arrows` snapping, desktop gestures, a warm screen in the evening, game mode,
-and undo for system changes (`Super+Z`).
+picker, a calculator in the launcher, play/pause and track buttons for the browser or Spotify in
+the control center (and the media keys), the power mode, `Win+arrows` snapping, desktop gestures,
+a warm screen in the evening, game mode, and undo for system changes (`Super+Z`).
 
 More: [first steps](first-steps.md) · [FAQ](faq.md).

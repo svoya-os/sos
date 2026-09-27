@@ -60,6 +60,13 @@ python3 -c 'import json,sys; [json.load(open(p)) for p in sys.argv[1:]]; print(l
 echo "== QML (shell/tools/qmlcheck.py: syntax, imports, API, names QML refuses)"
 python3 shell/tools/qmlcheck.py || rc=1
 
+if command -v node >/dev/null; then
+    echo "== JS (shell/tools/test_js.js: the launcher's calculator)"
+    node shell/tools/test_js.js || rc=1
+else
+    echo "== JS: node not installed; shell/tools/test_js.js not run"
+fi
+
 mapfile -t aa_profiles < <(find modules packages -name '*.apparmor' | sort)
 if command -v apparmor_parser >/dev/null && [ -d /etc/apparmor.d/tunables ]; then
     echo "== AppArmor (${#aa_profiles[@]} profiles, parsed without loading)"

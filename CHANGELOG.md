@@ -63,7 +63,9 @@ Work towards v0.1 «Первый сигнал».
   picker (`Win+Shift+C`), what is playing with its buttons in the control center, game mode
   (`Win+G` or Focus → Game: no effects, the performance power profile, notifications wait, a
   stray `Win` does not cover the game), and a night light: the screen gets warmer in the
-  evening, in the hours Jackson speaks calmer. The cheat sheet (`Super+K`) lists them all.
+  evening, in the hours Jackson speaks calmer. The launcher counts too (`2+2*3`, `200*15%`,
+  `sqrt(2)`: Enter copies the answer), and the control center switches the power mode (power
+  saver, balanced, performance). The cheat sheet (`Super+K`) lists them all.
 
 ### Changed
 

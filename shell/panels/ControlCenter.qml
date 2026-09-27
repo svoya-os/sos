@@ -5,7 +5,7 @@ import qs.components
 
 // Control center (click on the status icons, Super+A or Super+N): a 380px dropdown from
 // the right under the bar. Blocks: Wi-Fi · Bluetooth · what is playing · Sound · Brightness ·
-// Theme (Графит / Бумага / Авто + the accent → «Оформление») · Focus (Работа ·
+// Power mode · Theme (Графит / Бумага / Авто + the accent → «Оформление») · Focus (Работа ·
 // Обучение · Презентация · Игра) · Night light · AI & privacy (the one AI switch, route,
 // today's spend, requests that left the machine) · notifications with do-not-disturb.
 // «Оформление» (design/mockups/control-center-look.html, WORKFLOWS §2) is a second page:
@@ -36,6 +36,7 @@ PanelFrame {
             Net.refresh(true);
             Bt.refresh();
             Brightness.refresh(false);
+            Power.refresh();
             flick.contentY = 0;
             Qt.callLater(() => focusSink.forceActiveFocus());
         } else {
@@ -563,6 +564,28 @@ PanelFrame {
                         horizontalAlignment: Text.AlignRight
                         text: Fmt.pct(Brightness.value)
                         size: 11
+                    }
+                }
+
+                // power mode (power-profiles-daemon), as on Windows
+                Row {
+                    width: parent.width
+                    spacing: 12
+                    visible: Power.available
+
+                    Icon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        glyph: "zap"
+                        size: 16
+                    }
+
+                    Segmented {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 16 - 12
+                        current: Power.current
+                        options: Power.profiles.map(p => ({ id: p, label: p === "power-saver" ? Strings.powerSaver : (p === "performance" ? Strings.powerPerformance : Strings.powerBalanced) }))
+                        Accessible.name: Strings.powerMode
+                        onPicked: choice => Power.set(choice)
                     }
                 }
             }

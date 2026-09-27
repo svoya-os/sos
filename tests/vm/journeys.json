@@ -1,6 +1,6 @@
 {
   "name": "user-journeys",
-  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, morse, the teapot, apps, Jackson's skills, upsil zen and an UpsiL project), the Jackson panel (a model question, coin, d20, a joke, Morse, the skills folder, «install telegram» in a terminal), the launcher (install suggestions, the install mode, iddqd, 42, undo), the Windows keys (a tap of Win, Win+Tab, Alt+Tab held and quick, Win+arrows, Win+., Win+D, Win+G), the night light, the control center, System Doctor and the lock screen. A screenshot after every step; nothing stops the journey.",
+  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, morse, the teapot, apps, Jackson's skills, upsil zen and an UpsiL project), the Jackson panel (a model question, coin, d20, a joke, Morse, the skills folder, «install telegram» in a terminal), the launcher (install suggestions, the install mode, iddqd, 42, undo), the Windows keys (a tap of Win with the calculator, Win+Tab, Alt+Tab held and quick, Win+arrows, Win+., Win+D, Win+G), the night light, the control center, System Doctor and the lock screen. A screenshot after every step; nothing stops the journey.",
   "vm": {
     "memory_mib": 8192,
     "smp": 4,
@@ -150,7 +150,9 @@
 
     {"id": "win-tap", "action": "key", "keys": ["meta_l"], "hold_ms": 80, "continue_on_failure": true},
     {"id": "win-tap", "action": "sleep", "seconds": 2},
-    {"id": "win-tap", "action": "screenshot", "name": "10n-win-tap-launcher", "continue_on_failure": true},
+    {"id": "win-tap", "action": "type", "text": "200*15%", "continue_on_failure": true},
+    {"id": "win-tap", "action": "sleep", "seconds": 1},
+    {"id": "win-tap", "action": "screenshot", "name": "10n-win-tap-calculator", "continue_on_failure": true},
     {"id": "win-tap", "action": "key", "keys": ["esc"], "continue_on_failure": true},
     {"id": "win-tap", "action": "sleep", "seconds": 1},
 

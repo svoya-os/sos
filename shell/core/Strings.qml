@@ -279,6 +279,10 @@ Singleton {
     function nightNote(from, to) {
         return root.t(`Тёплый экран с ${from} до ${to} — в эти часы и Джексон говорит спокойнее`, `A warm screen from ${from} to ${to}, when Jackson also speaks calmer`);
     }
+    readonly property string powerMode: root.t("Режим питания", "Power mode")
+    readonly property string powerSaver: root.t("Экономия", "Power saver")
+    readonly property string powerBalanced: root.t("Баланс", "Balanced")
+    readonly property string powerPerformance: root.t("Производительность", "Performance")
     readonly property string mediaPrevious: root.t("Предыдущий трек", "Previous track")
     readonly property string mediaPlay: root.t("Играть", "Play")
     readonly property string mediaPause: root.t("Пауза", "Pause")
@@ -312,6 +316,11 @@ Singleton {
     readonly property string colorPickerMissing: root.t("Нужен hyprpicker: sudo apt install hyprpicker", "Needs hyprpicker: sudo apt install hyprpicker")
     function colorCopied(color) {
         return root.t(`Цвет ${color} скопирован`, `Copied ${color}`);
+    }
+    readonly property string groupCalc: root.t("Калькулятор", "Calculator")
+    readonly property string calcCopy: root.t("Enter — скопировать", "Enter copies it")
+    function calcCopied(v) {
+        return root.t(`${v} скопировано`, `Copied ${v}`);
     }
     readonly property string overviewPlaceholder: root.t("Окно или приложение…", "A window or an app…")
     readonly property string overviewEmpty: root.t("Открытых окон нет", "No open windows")
