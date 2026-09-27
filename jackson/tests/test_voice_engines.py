@@ -23,6 +23,7 @@ class FakeSupertonic:
 
     def __init__(self, model, model_dir, auto_download):
         assert (model, auto_download) == ("supertonic-3", False)
+        self.model = types.SimpleNamespace(text_processor=self)
         self.model_dir = Path(model_dir)
         self.sample_rate = 44100
         self.voice_style_names = ["F1", "M1", "M2", "M3", "M5"]
@@ -30,11 +31,16 @@ class FakeSupertonic:
         self.calls = []
         FakeSupertonic.made.append(self)
 
+    def validate_text(self, text):
+        unknown = sorted({c for c in text if c in "№☺"})
+        return not unknown, unknown
+
     def get_voice_style(self, voice_name):
         self.styles.append(voice_name)
         return ("style", voice_name)
 
-    def synthesize(self, text, voice_style, total_steps, speed, lang):
+    def synthesize(self, text, voice_style, total_steps, speed, lang, max_chunk_length):
+        assert max_chunk_length > len(text)                         # one chunk: cut where speech ends
         self.calls.append((text, voice_style[1], total_steps, speed, lang))
         wav = np.ones((1, 44100 + 4410), dtype=np.float32)     # a bit of padding past the duration
         return wav, np.array([1.0], dtype=np.float32)
@@ -75,6 +81,13 @@ class SupertonicTest(unittest.TestCase):
         self.assertEqual(self.fake.styles, ["M1", "M3"])
         self.assertEqual([c[4] for c in self.fake.calls], ["ru", "ru", "en", "na"])
         self.assertEqual(self.fake.calls[0][1:4], ("M1", 8, 1.05))
+
+
+    def test_a_character_it_does_not_know_does_not_silence_the_sentence(self):
+        self.tts.synth("Дом №5 ☺ готов.", "ru", "kent")
+        self.assertEqual(self.fake.calls[-1][0], "Дом 5 готов.")
+        self.assertEqual(len(self.tts.synth("☺", "ru", "kent")), 0)      # nothing left to say
+        self.assertEqual(len(self.fake.calls), 1)
 
 
 class PickTest(unittest.TestCase):

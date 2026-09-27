@@ -105,13 +105,30 @@ class SupertonicTTS:
                 return candidate
         return known[0]
 
+    def speakable(self, text: str) -> str:
+        """Supertonic refuses a whole sentence for one character it does not know (a «№», an emoji
+        left over): such characters become spaces instead."""
+        processor = getattr(getattr(self.tts, "model", None), "text_processor", None)
+        if processor is not None:
+            ok, unknown = processor.validate_text(text)
+            if not ok:
+                drop = set(unknown)
+                text = "".join(" " if c in drop else c for c in text)
+        return " ".join(text.split())
+
     def synth(self, text: str, lang: str, voice: str) -> Any:
         import numpy as np
+        text = self.speakable(text)
+        if not any(c.isalnum() for c in text):
+            return np.zeros(0, dtype=np.float32)
         name = self.voice(voice)
         if name not in self.styles:
             self.styles[name] = self.tts.get_voice_style(voice_name=name)
+        # one chunk (jacksond sends a sentence at a time): the sound is cut where the speech ends,
+        # which for several chunks joined with pauses would cut the last one short
         wav, duration = self.tts.synthesize(text, voice_style=self.styles[name], total_steps=self.steps,
-                                            speed=self.speed, lang=lang if lang in self.languages else "na")
+                                            speed=self.speed, lang=lang if lang in self.languages else "na",
+                                            max_chunk_length=max(1000, len(text) + 1))
         samples = np.asarray(wav, dtype=np.float32).reshape(-1)
         return samples[: int(self.rate * float(np.asarray(duration).reshape(-1)[0]))]
 
