@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell.Services.Mpris
 import qs.core
 import qs.components
 
@@ -119,12 +118,6 @@ PanelFrame {
         { id: "auto", label: Strings.auto, swatch: { fill: "#141518", edge: "#8e8a81", half: "#f8f7f3" } },
         { id: "phosphor", label: Strings.phosphor, swatch: { fill: "#050806", edge: "#2b3d31", inner: "#5cf08f" } }
     ]
-
-    // the player the media card shows: the one playing, else the last one with a track
-    readonly property var player: {
-        const all = Mpris.players.values.filter(p => p && p.canControl);
-        return all.find(p => p.isPlaying) || all.find(p => (p.trackTitle || "").length > 0) || null;
-    }
 
     component MediaButton: Rectangle {
         id: mb
@@ -414,7 +407,7 @@ PanelFrame {
                 Rectangle {
                     id: media
 
-                    readonly property var player: root.player
+                    readonly property var player: Media.player
 
                     width: parent.width
                     height: 54

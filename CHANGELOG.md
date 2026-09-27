@@ -48,7 +48,7 @@ Work towards v0.1 «Первый сигнал».
   In the evening (20:00–07:00) Jackson speaks calmer: a softer voice, a little slower. The
   customizer's «Голос» row plays a voice when you pick it and turns the calm evenings off;
   `j voice` sets the hours and the voices. "Thanks, that's all" ends a conversation in English
-  too.
+  too. Music (a browser tab, Spotify, a player) pauses while you talk to him and goes on after.
 - The keys people bring from Windows: `Alt+Tab` goes to the window used before (Tab again with Alt
   held goes further back, and holding Alt shows the windows' pictures), a tap of `Win` opens the
   launcher, `Win+Tab` shows every

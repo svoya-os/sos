@@ -43,6 +43,7 @@ Singleton {
     property alias nightTo: adapter.nightTo               // "07:00"
     property alias recentEmoji: adapter.recentEmoji       // the emoji picker's recent ones, newest first
     property alias gamePowerBefore: adapter.gamePowerBefore // the power profile game mode replaced ("" = none)
+    property alias voicePausesMedia: adapter.voicePausesMedia // music pauses while you talk to Jackson
 
     FileView {
         id: file
@@ -82,6 +83,7 @@ Singleton {
             property string nightTo: "07:00"
             property var recentEmoji: []
             property string gamePowerBefore: ""
+            property bool voicePausesMedia: true
         }
     }
 }

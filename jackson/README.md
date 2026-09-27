@@ -373,6 +373,9 @@ client asked to listen; no audio is kept.
   little slower (`evening_speed = 0.94`). `j voice` shows and sets all of it (`j voice set M1`,
   `j voice evening 21:00-07:00|off`, `j voice evening-voice M2`, `j voice evening-speed 0.9`); so
   does the «Голос» row of the customizer, which lets you hear a voice when you pick it.
+- The shell pauses what plays (MPRIS) while the microphone is open or Jackson speaks and goes on
+  after the conversation (`shell/core/Media.qml`; shell.json `"voicePausesMedia": false` turns it
+  off).
 
 Protocol additions: see `jackson/voice/__init__.py` (the speech service) and ARCHITECTURE §8.
 External agents (Claude Code, Codex CLI, OpenCode, goose) will run over ACP inside the same

@@ -82,6 +82,7 @@ answers aloud, in Russian and English, all on this computer.
 - **Calmer in the evening:** from 20:00 to 07:00 he speaks with a softer voice, a little slower.
   `j voice evening 21:30-07:00` moves the hours, `j voice evening off` turns it off, `j voice`
   shows everything.
+- Music pauses while you talk to him and goes on when you are done.
 - The microphone is open only while you talk to him. Nothing is recorded or sent anywhere.
 
 ## Night light
