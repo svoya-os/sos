@@ -404,6 +404,7 @@ class JacksonService:
     def aggregate_state(self) -> str:
         order = ["speaking", "working", "thinking", "listening"]
         states = {c.turn.state for c in self.clients.values() if c.turn is not None and not c.turn.finished}
+        states |= self.voice.states()   # ISO #18: «idle» while the microphone was open stopped the listening
         for s in order:
             if s in states:
                 return s

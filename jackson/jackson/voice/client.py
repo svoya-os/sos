@@ -264,6 +264,14 @@ class VoiceDesk:
         self.broadcast(self.state(tid, "listening", "listening"))
         await self.link.send({"type": "listen", "id": tid, "mode": mode})
 
+    def states(self) -> set[str]:
+        """What the voice adds to Jackson's state for every client: the microphone is open, an
+        answer is still being said after its turn ended."""
+        found = {"listening"} if self.listening else set()
+        if any(t.finished and not t.spoken and not t.hushed for t in self.talks.values()):
+            found.add("speaking")
+        return found
+
     async def hush(self, client: Any) -> None:
         for talk in [t for t in self.talks.values() if t.client is client]:
             talk.follow = False

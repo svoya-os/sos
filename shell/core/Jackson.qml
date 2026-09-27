@@ -339,7 +339,9 @@ Singleton {
                     root.daemonState = s;
                 if (Array.isArray(msg.capabilities))    // the voice came or went (sos install voice)
                     root.capabilities = msg.capabilities;
-                if (s === "idle" && !foreign)
+                // only this turn's own end stops listening: the aggregate state that answers a status
+                // request has no id (opening the panel asks for one — ISO #18 lost the microphone so)
+                if (s === "idle" && msg.id !== undefined && msg.id !== null && msg.id === root.turnId)
                     root.listening = false;
                 root.applyCharacter(msg);
             }

@@ -14,9 +14,10 @@ from tests.test_daemon import until
 class FakeVoice:
     """Speaks the voice service protocol: hears `heard` for a tap, nothing when following."""
 
-    def __init__(self, path, heard="расскажи о себе", ready=True):
+    def __init__(self, path, heard="расскажи о себе", ready=True, quiet=False):
         self.path = path
         self.heard = heard
+        self.quiet = quiet          # listens and never hears anything (the microphone stays open)
         self.follow_heard = ""
         self.hold_spoken = False
         self.ready = ready
@@ -53,6 +54,8 @@ class FakeVoice:
             if kind == "status":
                 await send({"type": "status", "ready": self.ready, "stt": "fake", "tts": "fake", "voices": ["kent"],
                             "readsNumbers": False})
+            elif kind == "listen" and self.quiet:
+                pass
             elif kind == "listen" and msg["mode"] == "follow" and self.follow_heard:
                 await send({"type": "transcript", "id": tid, "text": self.follow_heard, "ms": 90})
             elif kind == "listen" and msg["mode"] == "follow":
@@ -171,6 +174,30 @@ class VoiceProtocolTest(unittest.TestCase):
             self.assertNotRegex(answer, "[А-Яа-я]")
             await conn.close()
         self.run_async(scenario, heard="Который час?")
+
+    def test_while_the_microphone_is_open_jackson_is_listening_for_everyone(self):
+        # ISO #18: `jackson talk` opened the panel, whose status request came back as «idle» (no turn
+        # was running) and the shell took the microphone for closed: «thinking…» while it listened
+        async def scenario(svc, fake):
+            conn, _ = await self.ready_client(svc)
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "tap"})
+            await until(conn, ("listen",), "t1")
+            await conn.send({"type": "status"})
+            while True:
+                ev = await conn.recv(timeout=5)
+                if ev and ev.get("type") == "state" and "id" not in ev:
+                    break
+            self.assertEqual(ev["state"], "listening")
+            await conn.send({"type": "listen", "id": "t1", "action": "cancel"})
+            await until(conn, ("state",), "t1", timeout=5)
+            await conn.send({"type": "status"})
+            while True:
+                ev = await conn.recv(timeout=5)
+                if ev and ev.get("type") == "state" and "id" not in ev:
+                    break
+            self.assertEqual(ev["state"], "idle")
+            await conn.close()
+        self.run_async(scenario, quiet=True)
 
     def test_saying_thanks_after_an_answer_ends_the_conversation(self):
         async def scenario(svc, fake):
