@@ -22,6 +22,7 @@ lands in the `ci-screens` branch (`evals/decide-ft/<run>/`).
 | zero-shot (no fine-tune) | — | 61% | 40/88 | 3 | 422 |
 | [36241333457](https://github.com/svoya-os/sos/tree/ci-screens/evals/decide-ft/36241333457) | 0.9 on the right option | 94% | 17/88 | 0 | 234 |
 | [36249658179](https://github.com/svoya-os/sos/tree/ci-screens/evals/decide-ft/36249658179) | 0.98, temperature fitted on the answers | 94% | 79/88 | 3 | 418 |
+| [36259718711](https://github.com/svoya-os/sos/tree/ci-screens/evals/decide-ft/36259718711) | 0.98 + English phrasings and non-commands naming the screen, sound, time or battery | 98% | 81/88 | **0** | 483 |
 
 The first fine-tune picks as well as the local chat model (95%, 13 s per decision) in a quarter
 of a second, but it learnt to say «0.9» about everything: on new phrases every answer, right or
@@ -33,3 +34,8 @@ model has none. At 0.94 to change something and 0.9 to read, Laya would act on 5
 wrong (thresholds chosen on these same phrases). The third run adds English phrasings (the thinnest
 lists) and requests that name the screen, sound, time or battery without asking for a command.
 The chat model (jackson/decide.py): 95% picked, 84/88 acted, 0 wrong, 13 s per decision on a CPU.
+It did: 98% picked (Russian 97%, English 100%), 81 of 88 commands acted and none wrong, all 21
+non-commands left alone, in half a second — as safe as the chat model and about 27 times faster
+(2076 phrases, 3 epochs, 2.5 hours on the runner; ECE 0.010). The misses are the careful kind: the
+right command at p 0.69–0.89, just under the thresholds. Jackson can use it once the weights have
+a home to download from (not published yet).
