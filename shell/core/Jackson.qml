@@ -135,6 +135,7 @@ Singleton {
     property var error: null        // {message, retryable, code}: code "no_local_model" on a fresh system
     property var progress: null     // {done, total}: how far a local model has read the request (minutes on a CPU)
     property bool busy: false
+    property real doneAt: 0           // when the panel's last turn finished (Date.now())
     property var suggestions: []    // optional done.suggestions: [{id, label, primary, prompt}]
     property string screenshot: ""  // path attached to the next ask
     property string lastText: ""
@@ -473,6 +474,7 @@ Singleton {
                     root.daemonState = "idle";
                 ShellState.recordTurn(msg.costEur, msg.leftMachine === true);
                 root.happyUntil = Date.now() + 1600;
+                root.doneAt = Date.now();
                 root.turnFinished(msg);
             }
             break;

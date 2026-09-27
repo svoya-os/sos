@@ -39,8 +39,14 @@ PanelWindow {
         target: ToplevelManager.toplevels
 
         function onObjectInsertedPost(object, index) {
-            if (Ui.open)
-                overlay.openedMeanwhile = object;
+            if (!Ui.open)
+                return;
+            overlay.openedMeanwhile = object;
+            // Jackson just opened it («открой браузер», an install that asks in a terminal): his
+            // panel steps aside so it can be used at once (not in the middle of a spoken conversation)
+            const fromJackson = Jackson.busy || Date.now() - Jackson.doneAt < 10000;
+            if (Ui.modal === "jackson" && fromJackson && !Jackson.listening && !Jackson.conversation)
+                Ui.hide();
         }
     }
 
