@@ -1,0 +1,195 @@
+### VM test: user-journeys (uefi, kvm) — passed
+
+| # | step | action | status | time | detail |
+|---|---|---|---|---|---|
+| 1 | boot | wait_serial | ok | 3.0s | matched "before booting or `c' for a command-line.                           \x1b[5;80H \x1b[7m\x1b[5;3H*SOS 26.10  ?  ???                                       |
+| 2 | boot | wait_screen | ok | 4.1s | screen has content (76.7% non-background) |
+| 3 | boot | key | ok | 0.1s | ret |
+| 4 | desktop | wait_serial | ok | 20.0s | matched 'SOS-MARK 18.22 desktop-ready' |
+| 5 | desktop | sleep | ok | 10.0s | slept 10s |
+| 6 | desktop | screenshot | ok | 1.1s | 1440x900 (pillow) |
+| 7 | cheatsheet | key | ok | 0.1s | meta_l+k |
+| 8 | cheatsheet | sleep | ok | 2.0s | slept 2s |
+| 9 | cheatsheet | screenshot | ok | 0.9s | 1440x900 (pillow), 49.4% changed vs 01-desktop |
+| 10 | cheatsheet | key | ok | 0.1s | esc |
+| 11 | cheatsheet | sleep | ok | 1.0s | slept 1s |
+| 12 | launcher | key | ok | 0.1s | meta_l+spc |
+| 13 | launcher | sleep | ok | 2.0s | slept 2s |
+| 14 | launcher | type | ok | 0.3s | typed 4 characters |
+| 15 | launcher | sleep | ok | 2.0s | slept 2s |
+| 16 | launcher | screenshot | ok | 1.0s | 1440x900 (pillow), 34.2% changed vs 01-desktop |
+| 17 | launcher | key | ok | 0.1s | ret |
+| 18 | terminal | sleep | ok | 5.0s | slept 5s |
+| 19 | terminal | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 20 | doctor-cli | type | ok | 0.7s | typed 11 characters |
+| 21 | doctor-cli | sleep | ok | 10.0s | slept 10s |
+| 22 | doctor-cli | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 23 | models | type | ok | 1.6s | typed 26 characters |
+| 24 | models | sleep | ok | 8.0s | slept 8s |
+| 25 | models | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 26 | accent | type | ok | 1.9s | typed 30 characters |
+| 27 | accent | sleep | ok | 6.0s | slept 6s |
+| 28 | accent | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 29 | accent | type | ok | 1.5s | typed 24 characters |
+| 30 | accent | sleep | ok | 6.0s | slept 6s |
+| 31 | accent | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 32 | jackson-cli | type | ok | 1.8s | typed 29 characters |
+| 33 | jackson-cli | sleep | ok | 15.0s | slept 15s |
+| 34 | jackson-cli | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 35 | fun-cli | type | ok | 3.1s | typed 49 characters |
+| 36 | fun-cli | sleep | ok | 5.0s | slept 5s |
+| 37 | fun-cli | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 38 | apps-cli | type | ok | 1.7s | typed 27 characters |
+| 39 | apps-cli | sleep | ok | 6.0s | slept 6s |
+| 40 | apps-cli | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 41 | skills-cli | type | ok | 3.5s | typed 56 characters |
+| 42 | skills-cli | sleep | ok | 6.0s | slept 6s |
+| 43 | skills-cli | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 44 | upsil-cli | type | ok | 5.8s | typed 92 characters |
+| 45 | upsil-cli | sleep | ok | 15.0s | slept 15s |
+| 46 | upsil-cli | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 47 | upsil-cli | type | ok | 0.3s | typed 5 characters |
+| 48 | jackson | key | ok | 0.2s | meta_l+j |
+| 49 | jackson | sleep | ok | 3.0s | slept 3s |
+| 50 | jackson | type | ok | 2.0s | typed 31 characters |
+| 51 | jackson | sleep | ok | 15.0s | slept 15s |
+| 52 | jackson | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 53 | jackson-fun | type | ok | 0.8s | typed 12 characters |
+| 54 | jackson-fun | sleep | ok | 4.0s | slept 4s |
+| 55 | jackson-fun | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 56 | jackson-fun | type | ok | 0.7s | typed 11 characters |
+| 57 | jackson-fun | sleep | ok | 4.0s | slept 4s |
+| 58 | jackson-fun | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 59 | jackson-fun | type | ok | 1.0s | typed 15 characters |
+| 60 | jackson-fun | sleep | ok | 4.0s | slept 4s |
+| 61 | jackson-fun | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 62 | jackson-fun | type | ok | 0.6s | typed 10 characters |
+| 63 | jackson-fun | sleep | ok | 5.0s | slept 5s |
+| 64 | jackson-fun | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 65 | jackson-fun | type | ok | 0.8s | typed 12 characters |
+| 66 | jackson-fun | sleep | ok | 5.0s | slept 5s |
+| 67 | jackson-fun | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 68 | jackson-fun | key | ok | 0.1s | esc |
+| 69 | jackson-fun | sleep | ok | 1.0s | slept 1s |
+| 70 | jackson-fun | key | ok | 0.1s | meta_l+q |
+| 71 | jackson-fun | sleep | ok | 2.0s | slept 2s |
+| 72 | jackson-install | key | ok | 0.2s | meta_l+j |
+| 73 | jackson-install | sleep | ok | 3.0s | slept 3s |
+| 74 | jackson-install | type | ok | 1.1s | typed 17 characters |
+| 75 | jackson-install | sleep | ok | 8.0s | slept 8s |
+| 76 | jackson-install | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 77 | jackson-install | type | ok | 0.1s | typed 2 characters |
+| 78 | jackson-install | sleep | ok | 2.0s | slept 2s |
+| 79 | jackson-install | type | ok | 0.1s | typed 1 characters |
+| 80 | jackson-install | sleep | ok | 2.0s | slept 2s |
+| 81 | jackson | key | ok | 0.1s | esc |
+| 82 | jackson | sleep | ok | 1.0s | slept 1s |
+| 83 | launcher-install | key | ok | 0.1s | meta_l+spc |
+| 84 | launcher-install | sleep | ok | 2.0s | slept 2s |
+| 85 | launcher-install | type | ok | 0.6s | typed 9 characters |
+| 86 | launcher-install | sleep | ok | 3.0s | slept 3s |
+| 87 | launcher-install | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 88 | launcher-install | key | ok | 0.1s | esc |
+| 89 | launcher-install | sleep | ok | 1.0s | slept 1s |
+| 90 | launcher-install | key | ok | 0.1s | meta_l+spc |
+| 91 | launcher-install | sleep | ok | 2.0s | slept 2s |
+| 92 | launcher-install | type | ok | 0.3s | typed 4 characters |
+| 93 | launcher-install | sleep | ok | 2.0s | slept 2s |
+| 94 | launcher-install | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 95 | launcher-install | key | ok | 0.1s | ret |
+| 96 | launcher-install | sleep | ok | 3.0s | slept 3s |
+| 97 | launcher-install | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 98 | launcher-install | key | ok | 0.1s | esc |
+| 99 | launcher-install | sleep | ok | 1.0s | slept 1s |
+| 100 | launcher-eggs | key | ok | 0.1s | meta_l+spc |
+| 101 | launcher-eggs | sleep | ok | 2.0s | slept 2s |
+| 102 | launcher-eggs | type | ok | 0.3s | typed 5 characters |
+| 103 | launcher-eggs | sleep | ok | 2.0s | slept 2s |
+| 104 | launcher-eggs | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 105 | launcher-eggs | key | ok | 0.1s | ret |
+| 106 | launcher-eggs | sleep | ok | 5.0s | slept 5s |
+| 107 | launcher-eggs | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 108 | launcher-eggs | key | ok | 0.1s | meta_l+spc |
+| 109 | launcher-eggs | sleep | ok | 2.0s | slept 2s |
+| 110 | launcher-eggs | type | ok | 0.1s | typed 2 characters |
+| 111 | launcher-eggs | sleep | ok | 2.0s | slept 2s |
+| 112 | launcher-eggs | key | ok | 0.1s | ret |
+| 113 | launcher-eggs | sleep | ok | 5.0s | slept 5s |
+| 114 | launcher-eggs | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 115 | launcher-eggs | key | ok | 0.1s | esc |
+| 116 | launcher-eggs | sleep | ok | 1.0s | slept 1s |
+| 117 | launcher-eggs | key | ok | 0.1s | meta_l+z |
+| 118 | launcher-eggs | sleep | ok | 5.0s | slept 5s |
+| 119 | launcher-eggs | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 120 | launcher-eggs | key | ok | 0.1s | esc |
+| 121 | launcher-eggs | sleep | ok | 1.0s | slept 1s |
+| 122 | win-tap | key | ok | 0.1s | meta_l |
+| 123 | win-tap | sleep | ok | 2.0s | slept 2s |
+| 124 | win-tap | type | ok | 0.5s | typed 7 characters |
+| 125 | win-tap | sleep | ok | 1.0s | slept 1s |
+| 126 | win-tap | screenshot | ok | 0.9s | 1440x900 (pillow) |
+| 127 | win-tap | key | ok | 0.1s | esc |
+| 128 | win-tap | sleep | ok | 1.0s | slept 1s |
+| 129 | overview | key | ok | 0.1s | meta_l+tab |
+| 130 | overview | sleep | ok | 3.0s | slept 3s |
+| 131 | overview | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 132 | overview | key | ok | 0.1s | esc |
+| 133 | overview | sleep | ok | 1.0s | slept 1s |
+| 134 | alt-tab | key_down | ok | 0.0s | down alt |
+| 135 | alt-tab | key | ok | 0.1s | tab |
+| 136 | alt-tab | sleep | ok | 2.0s | slept 2s |
+| 137 | alt-tab | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 138 | alt-tab | key_up | ok | 0.0s | up alt |
+| 139 | alt-tab | sleep | ok | 2.0s | slept 2s |
+| 140 | alt-tab | screenshot | ok | 0.8s | 1440x900 (pillow) |
+| 141 | alt-tab | key | ok | 0.1s | alt+tab |
+| 142 | alt-tab | sleep | ok | 2.0s | slept 2s |
+| 143 | snap | key | ok | 0.1s | meta_l+left |
+| 144 | snap | sleep | ok | 2.0s | slept 2s |
+| 145 | snap | screenshot | ok | 0.6s | 1440x900 (pillow) |
+| 146 | snap | key | ok | 0.1s | meta_l+up |
+| 147 | snap | sleep | ok | 2.0s | slept 2s |
+| 148 | snap | screenshot | ok | 0.1s | 1440x900 (pillow) |
+| 149 | snap | key | ok | 0.1s | meta_l+down |
+| 150 | snap | sleep | ok | 2.0s | slept 2s |
+| 151 | snap | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 152 | emoji | key | ok | 0.1s | meta_l+dot |
+| 153 | emoji | sleep | ok | 2.0s | slept 2s |
+| 154 | emoji | type | ok | 0.3s | typed 4 characters |
+| 155 | emoji | sleep | ok | 2.0s | slept 2s |
+| 156 | emoji | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 157 | emoji | key | ok | 0.1s | esc |
+| 158 | emoji | sleep | ok | 1.0s | slept 1s |
+| 159 | show-desktop | key | ok | 0.1s | meta_l+d |
+| 160 | show-desktop | sleep | ok | 2.0s | slept 2s |
+| 161 | show-desktop | screenshot | ok | 1.0s | 1440x900 (pillow) |
+| 162 | show-desktop | key | ok | 0.1s | meta_l+d |
+| 163 | show-desktop | sleep | ok | 2.0s | slept 2s |
+| 164 | show-desktop | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 165 | game-mode | key | ok | 0.1s | meta_l+g |
+| 166 | game-mode | sleep | ok | 3.0s | slept 3s |
+| 167 | game-mode | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 168 | game-mode | key | ok | 0.1s | meta_l+g |
+| 169 | game-mode | sleep | ok | 3.0s | slept 3s |
+| 170 | night-light | type | ok | 4.6s | typed 74 characters |
+| 171 | night-light | sleep | ok | 3.0s | slept 3s |
+| 172 | night-light | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 173 | night-light | type | ok | 4.3s | typed 68 characters |
+| 174 | night-light | sleep | ok | 2.0s | slept 2s |
+| 175 | control | key | ok | 0.1s | meta_l+a |
+| 176 | control | sleep | ok | 2.0s | slept 2s |
+| 177 | control | screenshot | ok | 0.6s | 1440x900 (pillow) |
+| 178 | control | key | ok | 0.1s | esc |
+| 179 | control | sleep | ok | 1.0s | slept 1s |
+| 180 | doctor | key | ok | 0.1s | meta_l+esc |
+| 181 | doctor | sleep | ok | 6.0s | slept 6s |
+| 182 | doctor | screenshot | ok | 0.7s | 1440x900 (pillow) |
+| 183 | doctor | key | ok | 0.1s | esc |
+| 184 | doctor | sleep | ok | 1.0s | slept 1s |
+| 185 | lock | key | ok | 0.1s | meta_l+l |
+| 186 | lock | sleep | ok | 3.0s | slept 3s |
+| 187 | lock | type | ok | 1.0s | typed 15 characters |
+| 188 | lock | sleep | ok | 2.0s | slept 2s |
+| 189 | lock | screenshot | ok | 1.1s | 1440x900 (pillow) |
+| 190 | lock | sleep | ok | 5.0s | slept 5s |
+| 191 | lock | screenshot | ok | 1.2s | 1440x900 (pillow) |
