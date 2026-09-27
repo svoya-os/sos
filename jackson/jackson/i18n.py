@@ -23,12 +23,18 @@ def norm_lang(lang: str | None) -> str:
 
 _CYRILLIC_WORD = re.compile(r"[А-Яа-яЁё]{2,}")
 _LATIN_WORD = re.compile(r"[A-Za-z]{2,}")
+_ASKED = {"ru": re.compile(r"\b(?:in|into) russian\b|по-русски|на русском", re.IGNORECASE),
+          "en": re.compile(r"\b(?:in|into) english\b|по-английски|на английском", re.IGNORECASE)}
 
 
 def answer_lang(text: str, default: str) -> str:
     """The language to answer in: the one the question is in, when that is clear. A Russian word
     makes it Russian whatever the interface language («открой Firefox»); English needs three words
-    and no Russian, so that «docker ps» or «htop» typed in a Russian session still gets Russian."""
+    and no Russian, so that «docker ps» or «htop» typed in a Russian session still gets Russian.
+    A language asked for by name («ответь по-английски», "answer in Russian") wins."""
+    for lang, asked in _ASKED.items():
+        if asked.search(text):
+            return lang
     if _CYRILLIC_WORD.search(text):
         return "ru"
     if len(_LATIN_WORD.findall(text)) >= 3:

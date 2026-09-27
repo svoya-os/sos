@@ -80,7 +80,8 @@ Work towards v0.1 «Первый сигнал».
   or how to start it, instead of an address and a socket error.
 - Jackson's quick answers come in the language of the question, as the model's do: «Который час?»
   in an English session got "It's 07:32." The interface keeps its language; "what time is it now"
-  is a quick question too.
+  is a quick question too. A language asked for by name ("answer in Russian") wins, and the model
+  is told so (the model bot's Qwen3.5 4B answered "answer in Russian: what is 17*23?" in English).
 - **Privacy:** the local model server (`sos models serve`, the llm-local module) serves the models
   in `/srv/ai` once each and never asks Hugging Face about them. It listed the store a second time
   under repository names, asked Hugging Face before loading those, and ran two copies of one

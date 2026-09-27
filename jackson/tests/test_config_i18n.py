@@ -36,6 +36,8 @@ class FormattingTest(unittest.TestCase):
         self.assertEqual(answer_lang("открой Firefox", "en"), "ru")
         self.assertEqual(answer_lang("12:30", "en"), "en")
         self.assertEqual(answer_lang("htop", "de"), "en")                # an unknown language: English
+        self.assertEqual(answer_lang("answer in Russian: what is 17*23?", "en"), "ru")
+        self.assertEqual(answer_lang("который час, по-английски", "ru"), "en")
 
     def test_latency_and_cost(self) -> None:
         self.assertEqual(fmt_latency(30, "ru"), "30 мс")
