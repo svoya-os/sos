@@ -258,6 +258,51 @@ class ListsAndBootTests(unittest.TestCase):
         self.assertEqual(self.gpu_env("vmwgfx", True, SVOYA_GPU="hardware"), hw)
         self.assertEqual(self.gpu_env("simple-framebuffer", False, SVOYA_GPU="hardware"), hw)
 
+    def snap(self, where: str, window: dict | None, monitors: list | None = None) -> list[str]:
+        """Run packages/svoya-session/.../snap-window with a fake hyprctl; the hyprctl calls it made."""
+        with tempfile.TemporaryDirectory() as tmp:
+            bin_dir = pathlib.Path(tmp)
+            (bin_dir / "window.json").write_text(json.dumps(window or {}))
+            (bin_dir / "monitors.json").write_text(json.dumps(monitors or []))
+            fake = bin_dir / "hyprctl"
+            fake.write_text(f"""#!/bin/sh
+printf '%s\\n' "$*" >> {tmp}/calls
+case "$*" in
+    "-j activewindow") cat {tmp}/window.json ;;
+    "-j monitors") cat {tmp}/monitors.json ;;
+esac
+""")
+            fake.chmod(0o755)
+            env = {"PATH": f"{tmp}:/usr/bin:/bin", "SVOYA_HYPR_DIR": str(ROOT / "shell/hypr")}
+            subprocess.run([sys.executable, str(ROOT / "packages/svoya-session/files/usr/lib/svoya/snap-window"), where],
+                           check=True, env=env, capture_output=True, text=True)
+            calls = (bin_dir / "calls").read_text().splitlines()
+        return [c for c in calls if not c.startswith("-j ")]
+
+    def test_snap_window_like_windows(self):
+        mon = [{"id": 0, "x": 0, "y": 0, "width": 1920, "height": 1080, "scale": 1.0, "focused": True,
+                "reserved": [0, 36, 0, 0]}]
+        floating = {"address": "0xabc", "floating": True, "monitor": 0, "fullscreen": 0}
+        # tiled (or nothing focused): the arrows move the focus, as before
+        self.assertEqual(self.snap("left", {"address": "0x1", "floating": False}), ["dispatch movefocus l"])
+        self.assertEqual(self.snap("up", None), ["dispatch movefocus u"])
+        # up: maximize (fullscreen 1 keeps the bar); left/right: a half under the bar, gaps kept
+        self.assertEqual(self.snap("up", floating, mon), ["dispatch fullscreen 1"])
+        left, = self.snap("left", floating, mon)
+        self.assertEqual(left, "--batch dispatch resizewindowpixel exact 942 984,address:0xabc ; "
+                               "dispatch movewindowpixel exact 12 84,address:0xabc")
+        right, = self.snap("right", floating, mon)
+        self.assertIn("movewindowpixel exact 966 84,address:0xabc", right)
+        # the browser draws its own title bar (no hyprbars bar): it starts right under the gap
+        browser, = self.snap("left", dict(floating, **{"class": "firefox"}), mon)
+        self.assertEqual(browser, "--batch dispatch resizewindowpixel exact 942 1020,address:0xabc ; "
+                                  "dispatch movewindowpixel exact 12 48,address:0xabc")
+        # a maximized window leaves that state first; down puts it back in the middle
+        calls = self.snap("down", dict(floating, fullscreen=1), mon)
+        self.assertEqual(calls[0], "dispatch fullscreenstate 0 0")
+        self.assertEqual(calls[1], "--batch dispatch resizewindowpixel exact 1176 678,address:0xabc ; "
+                                   "dispatch movewindowpixel exact 372 237,address:0xabc")
+
     def test_live_only_files_stay_off_the_installed_system(self):
         hook = (ROOT / "image/hooks/50-live.sh").read_text()
         excluded = set(hook.split("live-exclude.rsync\" 0644 <<'EOF'\n", 1)[1].split("\nEOF", 1)[0].splitlines())

@@ -47,7 +47,23 @@ Work towards v0.1 «Первый сигнал».
   gets your words. Installing the module downloads these models from Hugging Face.
   In the evening (20:00–07:00) Jackson speaks calmer: a softer voice, a little slower. The
   customizer's «Голос» row plays a voice when you pick it and turns the calm evenings off;
-  `j voice` sets the hours and the voices.
+  `j voice` sets the hours and the voices. "Thanks, that's all" ends a conversation in English
+  too.
+- The keys people bring from Windows: `Alt+Tab` goes to the window used before (Tab again with Alt
+  held goes further back, and holding Alt shows the windows' pictures), a tap of `Win` opens the
+  launcher, `Win+Tab` shows every
+  window with live pictures (type to filter), `Win+D` shows the desktop and brings the windows
+  back, `Win+arrows` snap a window to a half, maximize and restore it, and `Alt+F4`,
+  `Ctrl+Shift+Esc`, `Win+I`, `Win+R`, `Win+N` and the Copilot key (Jackson) work as expected.
+  Three fingers up and down on the touchpad do what `Win+Tab` and `Win+D` do; four fingers switch
+  desktops like three. A guide: [docs/guides/from-windows.md](docs/guides/from-windows.md), in
+  Russian [docs/ru/from-windows.md](docs/ru/from-windows.md).
+- The things people usually set up by hand: an emoji picker (`Win+.`, words in Russian and
+  English, the recent ones first), text from any part of the screen (`Win+Shift+T`), a color
+  picker (`Win+Shift+C`), what is playing with its buttons in the control center, game mode
+  (`Win+G` or Focus → Game: no effects, the performance power profile, notifications wait, a
+  stray `Win` does not cover the game), and a night light: the screen gets warmer in the
+  evening, in the hours Jackson speaks calmer. The cheat sheet (`Super+K`) lists them all.
 
 ### Changed
 

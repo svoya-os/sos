@@ -15,7 +15,7 @@ import Quickshell.Services.Notifications
 Singleton {
     id: root
 
-    readonly property bool dnd: Settings.dnd || Settings.focusMode === "presentation"
+    readonly property bool dnd: Settings.dnd || Settings.focusMode === "presentation" || Settings.focusMode === "game"
     readonly property bool quiet: Settings.focusMode === "work" || Settings.focusMode === "study"
     readonly property var history: {
         const list = server.trackedNotifications.values.slice();

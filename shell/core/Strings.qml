@@ -268,6 +268,21 @@ Singleton {
     readonly property string focusWork: root.t("Работа", "Work")
     readonly property string focusStudy: root.t("Обучение", "Study")
     readonly property string focusPresentation: root.t("Презентация", "Presentation")
+    readonly property string focusGame: root.t("Игра", "Game")
+    readonly property string gameModeOn: root.t("Игровой режим", "Game mode")
+    readonly property string gameModeOff: root.t("Игровой режим выключен", "Game mode off")
+    readonly property string gameModeNote: root.t("Без эффектов и уведомлений, питание на производительность. Win+G — выключить.", "No effects or notifications, power on performance. Win+G turns it off.")
+    readonly property string nightLight: root.t("Ночной свет", "Night light")
+    readonly property string nightOff: root.t("Выкл", "Off")
+    readonly property string nightAuto: root.t("Вечером", "Evenings")
+    readonly property string nightOn: root.t("Вкл", "On")
+    function nightNote(from, to) {
+        return root.t(`Тёплый экран с ${from} до ${to} — в эти часы и Джексон говорит спокойнее`, `A warm screen from ${from} to ${to}, when Jackson also speaks calmer`);
+    }
+    readonly property string mediaPrevious: root.t("Предыдущий трек", "Previous track")
+    readonly property string mediaPlay: root.t("Играть", "Play")
+    readonly property string mediaPause: root.t("Пауза", "Pause")
+    readonly property string mediaNext: root.t("Следующий трек", "Next track")
     readonly property string route: root.t("Маршрут", "Route")
     readonly property string spentToday: root.t("Сегодня потрачено", "Spent today")
     readonly property string leftToday: root.t("Покинули компьютер сегодня", "Left this computer today")
@@ -292,6 +307,24 @@ Singleton {
     readonly property string save: root.t("Сохранить", "Save")
     readonly property string textCopied: root.t("Текст скопирован", "Text copied")
     readonly property string ocrMissing: root.t("Распознавание текста появится с модулем OCR", "Text recognition arrives with the OCR module")
+    readonly property string ocrNothing: root.t("На этом кусочке нет текста", "No text there")
+    readonly property string colorPicker: root.t("Пипетка", "Color picker")
+    readonly property string colorPickerMissing: root.t("Нужен hyprpicker: sudo apt install hyprpicker", "Needs hyprpicker: sudo apt install hyprpicker")
+    function colorCopied(color) {
+        return root.t(`Цвет ${color} скопирован`, `Copied ${color}`);
+    }
+    readonly property string overviewPlaceholder: root.t("Окно или приложение…", "A window or an app…")
+    readonly property string overviewEmpty: root.t("Открытых окон нет", "No open windows")
+    readonly property string overviewNothing: root.t("Ничего не нашлось", "Nothing found")
+    readonly property string overviewHint: root.t("Tab — дальше · Enter — перейти · средняя кнопка — закрыть окно · Esc", "Tab — next · Enter — go there · middle click — close the window · Esc")
+    readonly property string switchHint: root.t("Отпусти Alt — перейти · Tab — дальше · Esc — остаться", "Let go of Alt to switch · Tab — next · Esc — stay")
+    readonly property string emojiPlaceholder: root.t("Эмодзи: сердце, огонь, кот…", "Emoji: heart, fire, cat…")
+    readonly property string emojiNothing: root.t("Такого эмодзи нет", "No such emoji")
+    readonly property string emojiHint: root.t("Enter — вставить · Tab — дальше · Esc", "Enter — insert · Tab — next · Esc")
+    readonly property string emojiPaste: root.t("Вставь: Ctrl+V", "Paste it: Ctrl+V")
+    function emojiCopied(emoji) {
+        return root.t(`${emoji} скопирован`, `Copied ${emoji}`);
+    }
     readonly property string screenshotTools: root.t("Для снимков нужны grim и slurp", "Screenshots need grim and slurp")
     function savedTo(p) {
         return root.t("Сохранено: ", "Saved: ") + p;
@@ -317,7 +350,17 @@ Singleton {
     readonly property string csSession: root.t("Сеанс: выйти, сон, выключить", "Session: log out, suspend, shut down")
     readonly property string csAccessibility: root.t("Специальные возможности", "Accessibility")
     readonly property string csLayout: root.t("Сменить раскладку", "Switch keyboard layout")
-    readonly property string csFocus: root.t("Фокус между окнами", "Move focus")
+    readonly property string csFocus: root.t("Окно к краю, ↑ — развернуть", "Snap the window, ↑ maximizes")
+    readonly property string csOverview: root.t("Все окна", "All windows")
+    readonly property string csSwitch: root.t("Предыдущее окно", "The window before")
+    readonly property string csDesktop: root.t("Показать рабочий стол", "Show the desktop")
+    readonly property string csEmoji: root.t("Эмодзи", "Emoji")
+    readonly property string csText: root.t("Текст с экрана", "Text from the screen")
+    readonly property string csColor: root.t("Пипетка: цвет с экрана", "Pick a color from the screen")
+    readonly property string csGame: root.t("Игровой режим", "Game mode")
+    readonly property string csMonitor: root.t("Что работает и что грузит", "What runs and what it takes")
+    readonly property string csFingers: root.t("3\u00a0пальца", "3\u00a0fingers")
+    readonly property string csGestures: root.t("Окна · стол · другой стол", "Overview · desktop · switch")
 
     // ---- about -------------------------------------------------------------------------------------------
     readonly property string version: root.t("Версия", "Version")

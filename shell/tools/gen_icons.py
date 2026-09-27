@@ -35,7 +35,8 @@ keyboard undo-2 stethoscope cloud cloud-off shield-check eye mic app-window
 layout-grid panel-bottom hard-drive download arrow-right corner-down-left
 refresh-cw triangle-alert circle-alert info user image trash sparkles clock
 globe list box circle-check circle-x chevron-left plus gamepad-2 radio book-open
-dices coffee store party-popper
+dices coffee store party-popper pipette face-slightly-smiling play pause skip-back skip-forward music
+sunset
 """.split()
 
 # Custom glyphs, drawn exactly as in design/mockups/desktop.html (bar icons,

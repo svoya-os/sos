@@ -31,7 +31,8 @@ import image  # noqa: E402
 import keys  # noqa: E402
 from qmp import QMPClient, QMPError, QMPTimeout  # noqa: E402
 
-ACTIONS = {"sleep", "screenshot", "wait_screen", "wait_serial", "key", "type", "click", "eject", "reset"}
+ACTIONS = {"sleep", "screenshot", "wait_screen", "wait_serial", "key", "key_down", "key_up", "type", "click", "eject",
+           "reset"}
 # The guest's display adapter (vm.display): virtio-gpu (Mesa renders on the CPU by itself), the VMware
 # SVGA II adapter that VirtualBox and VMware give a guest (vmwgfx without 3D), QEMU's standard VGA
 # (bochs-drm, no render node) — the last two draw in software (packages/svoya-session gpu-env).
@@ -81,7 +82,7 @@ def validate_plan(plan: dict) -> None:
             if name in names:
                 raise ValueError(f"step {n}: duplicate screenshot name {name}")
             names.add(name)
-        if action == "key":
+        if action in ("key", "key_down", "key_up"):
             keys.parse_combo(step.get("keys", []))
         if action == "type":
             keys.text_to_combos(step.get("text", ""))
@@ -175,6 +176,7 @@ class Runner:
         self.shots: dict[str, image.Image] = {}
         self.serve_url = ""          # what the guest downloads the plan's files from ({serve})
         self.results: list[dict] = []
+        self.held: list[str] = []    # keys down across steps (key_down … key_up)
         (out / "screens").mkdir(parents=True, exist_ok=True)
 
     def serial(self) -> str:
@@ -267,6 +269,19 @@ class Runner:
         self.qmp.press(combo, step.get("hold_ms", 100) / 1000)
         return "+".join(combo)
 
+    def do_key_down(self, step: dict) -> str:
+        """Hold keys across the next steps (Alt for Alt+Tab, then a screenshot of the switcher)."""
+        combo = keys.parse_combo(step["keys"])
+        self.qmp.hold(combo, True)
+        self.held += [k for k in combo if k not in self.held]
+        return "down " + "+".join(combo)
+
+    def do_key_up(self, step: dict) -> str:
+        combo = keys.parse_combo(step["keys"])
+        self.qmp.hold(combo, False)
+        self.held = [k for k in self.held if k not in combo]
+        return "up " + "+".join(combo)
+
     def do_click(self, step: dict) -> str:
         """Click at [x, y] of the screenshots (the last one's size; the plan's resolution before any)."""
         x, y = step["at"]
@@ -312,6 +327,12 @@ class Runner:
             # stop at a failed step unless it says to go on (earlier failures do not stop later steps)
             if entry["status"] == "failed" and not step.get("continue_on_failure"):
                 break
+        if self.held:                # a plan that ended (or stopped) with keys down lets go of them
+            try:
+                self.qmp.hold(self.held, False)
+            except (QMPError, QMPTimeout, ConnectionError, OSError):
+                pass
+            self.held = []
         return ok
 
     def evidence(self, name: str) -> None:

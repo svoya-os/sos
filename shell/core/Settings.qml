@@ -29,7 +29,7 @@ Singleton {
     property alias idleScreenOffMinutes: adapter.idleScreenOffMinutes
     property alias lockOnSuspend: adapter.lockOnSuspend
     property alias dnd: adapter.dnd
-    property alias focusMode: adapter.focusMode           // "", "work", "study", "presentation"
+    property alias focusMode: adapter.focusMode           // "", "work", "study", "presentation", "game"
     property alias layout: adapter.layout                 // "clean", "classic", "hacker"
     property alias wallpaper: adapter.wallpaper           // image path; "" = generated wallpaper
     property alias terminal: adapter.terminal             // "" = xdg-terminal-exec / fallbacks
@@ -38,6 +38,11 @@ Singleton {
     property alias kbCustom: adapter.kbCustom             // true once the wizard/user picked layouts
     property alias tiledWorkspaces: adapter.tiledWorkspaces // workspace ids that differ from the preset default
     property alias themeOnLogin: adapter.themeOnLogin     // theme/accent changes also go to the login screen (--system)
+    property alias nightLight: adapter.nightLight         // "off", "auto" (nightFrom–nightTo), "on"
+    property alias nightFrom: adapter.nightFrom           // "20:00"
+    property alias nightTo: adapter.nightTo               // "07:00"
+    property alias recentEmoji: adapter.recentEmoji       // the emoji picker's recent ones, newest first
+    property alias gamePowerBefore: adapter.gamePowerBefore // the power profile game mode replaced ("" = none)
 
     FileView {
         id: file
@@ -72,6 +77,11 @@ Singleton {
             property bool kbCustom: false
             property var tiledWorkspaces: []
             property bool themeOnLogin: false
+            property string nightLight: "off"
+            property string nightFrom: "20:00"
+            property string nightTo: "07:00"
+            property var recentEmoji: []
+            property string gamePowerBefore: ""
         }
     }
 }

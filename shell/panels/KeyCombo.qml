@@ -2,7 +2,7 @@ import QtQuick
 import qs.core
 import qs.components
 
-// "Super Shift S" -> [Super] [Shift] [S]
+// "Super Shift S" -> [Super] [Shift] [S]; "Super Q | Alt F4" -> [Super] [Q] / [Alt] [F4]
 Row {
     id: combo
 
@@ -11,12 +11,33 @@ Row {
     spacing: 4
 
     Repeater {
-        model: combo.keys.split(" ").filter(k => k.length > 0)
+        model: combo.keys.split("|").map(k => k.trim()).filter(k => k.length > 0)
 
-        Keycap {
+        Row {
+            id: group
+
             required property var modelData
+            required property int index
 
-            text: modelData
+            spacing: 4
+
+            MText {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: group.index > 0
+                text: "/"
+                size: 11
+                color: Theme.textFaint
+            }
+
+            Repeater {
+                model: group.modelData.split(" ").filter(k => k.length > 0)
+
+                Keycap {
+                    required property var modelData
+
+                    text: modelData
+                }
+            }
         }
     }
 }

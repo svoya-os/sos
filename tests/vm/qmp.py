@@ -150,6 +150,12 @@ class QMPClient:
         self.execute("input-send-event",
                      {"events": [{"type": "key", "data": {"down": False, "key": k}} for k in reversed(codes)]})
 
+    def hold(self, keys: Iterable[str], down: bool) -> None:
+        """Only the down (or only the up) events of a combo: keys held across steps (Alt+Tab)."""
+        codes = key_events(keys)
+        self.execute("input-send-event",
+                     {"events": [{"type": "key", "data": {"down": down, "key": k}} for k in (codes if down else reversed(codes))]})
+
     def pointer(self, x: float, y: float, width: int, height: int, button: str | None = "left") -> None:
         """Move the absolute pointer (the usb-tablet) to pixel (x, y) of a width×height screen, then
         press and release *button* (None: only move)."""

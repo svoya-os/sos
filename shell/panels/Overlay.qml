@@ -6,7 +6,7 @@ import qs.components
 
 // One layer-shell window hosts every modal surface (Jackson, launcher, control
 // center, СОС menu, session, clipboard, shortcuts, about, screenshot actions,
-// Jackson's customizer),
+// Jackson's customizer, the overview of windows, emoji),
 // so only one can be open and keyboard focus is exclusive while it is.
 // Transparent and matte: no dimming, no blur. A click outside closes; each
 // panel handles its own keys (Esc closes). The window lives on Ui.screen and
@@ -104,6 +104,19 @@ PanelWindow {
         x: Math.round((overlay.width - width) / 2)
         y: Math.max(48, Math.round((overlay.height - height) / 2))
         shown: Ui.modal === "customizer"
+    }
+
+    Overview {
+        maxWidth: overlay.width - 96
+        x: Math.round((overlay.width - width) / 2)
+        y: Math.max(48, Math.round((overlay.height - height) / 2) - 20)
+        shown: Ui.modal === "overview"
+    }
+
+    EmojiPanel {
+        x: Math.round((overlay.width - width) / 2)
+        y: 118
+        shown: Ui.modal === "emoji"
     }
 
     ControlCenter {

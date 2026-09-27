@@ -180,10 +180,11 @@ class VoiceLink:
                 log.exception("voice event %r failed", msg.get("type"))
 
 
-# «всё», «спасибо», "that's all" said after an answer: the conversation is over
-BYE = re.compile(r"^\W*(?:джексон\W*)?(?:всё|все|хватит|стоп|спасибо|пока|отбой|достаточно|на этом всё|"
-                 r"всё,? спасибо|спасибо,? всё|that'?s all|that'?s it|thanks|thank you|stop|bye|goodbye|"
-                 r"never mind)\W*(?:джексон)?\W*$", re.IGNORECASE)
+# «всё», «спасибо», "that's all" said after an answer (one or two of them: «спасибо, всё», "thanks,
+# that's all"): the conversation is over
+_BYE_WORD = (r"(?:всё|все|хватит|стоп|спасибо|пока|отбой|достаточно|на этом всё|that'?s all|that'?s it|"
+             r"thanks|thank you|stop|bye|goodbye|never mind)")
+BYE = re.compile(rf"^\W*(?:джексон\W*)?{_BYE_WORD}(?:\W+{_BYE_WORD})?\W*(?:джексон)?\W*$", re.IGNORECASE)
 
 
 def guess_lang(text: str, default: str = "ru") -> str:

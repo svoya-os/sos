@@ -12,7 +12,7 @@ Singleton {
 
     // Optional tools detected at startup: { name: true } for every tool found.
     property var has: ({})
-    readonly property var tools: ["sos", "svoya", "j", "jackson", "hyprctl", "cliphist", "wl-copy", "wl-paste", "grim", "slurp", "tesseract", "brightnessctl", "nmcli", "bluetoothctl", "rfkill", "pw-play", "gdbus", "systemd-inhibit", "secret-tool", "xdg-terminal-exec", "kitty", "foot", "alacritty", "ghostty", "gnome-terminal", "ptyxis", "konsole", "x-terminal-emulator", "hyprshutdown", "loginctl", "systemctl", "xdg-open", "notify-send", "python3"]
+    readonly property var tools: ["sos", "svoya", "j", "jackson", "hyprctl", "cliphist", "wl-copy", "wl-paste", "grim", "slurp", "tesseract", "brightnessctl", "nmcli", "bluetoothctl", "rfkill", "pw-play", "gdbus", "systemd-inhibit", "secret-tool", "xdg-terminal-exec", "kitty", "foot", "alacritty", "ghostty", "gnome-terminal", "ptyxis", "konsole", "x-terminal-emulator", "hyprshutdown", "loginctl", "systemctl", "xdg-open", "notify-send", "python3", "wtype", "hyprpicker", "btop", "powerprofilesctl"]
 
     readonly property string runtimeDir: {
         const r = Quickshell.env("XDG_RUNTIME_DIR");

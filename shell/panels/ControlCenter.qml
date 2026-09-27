@@ -1,12 +1,13 @@
 import QtQuick
+import Quickshell.Services.Mpris
 import qs.core
 import qs.components
 
-// Control center (click on the status icons, Super+A): a 380px dropdown from
-// the right under the bar. Blocks: Wi-Fi · Bluetooth · Sound · Brightness ·
+// Control center (click on the status icons, Super+A or Super+N): a 380px dropdown from
+// the right under the bar. Blocks: Wi-Fi · Bluetooth · what is playing · Sound · Brightness ·
 // Theme (Графит / Бумага / Авто + the accent → «Оформление») · Focus (Работа ·
-// Обучение · Презентация) · AI & privacy (the one AI switch, route, today's spend,
-// requests that left the machine) · notifications with do-not-disturb.
+// Обучение · Презентация · Игра) · Night light · AI & privacy (the one AI switch, route,
+// today's spend, requests that left the machine) · notifications with do-not-disturb.
 // «Оформление» (design/mockups/control-center-look.html, WORKFLOWS §2) is a second page:
 // base theme · accent swatches with hover preview and «Свой…» · the login screen switch ·
 // Jackson (mascot, «Настроить», Чёрт/Кот). Tab walks every control; Esc goes back, then closes.
@@ -117,6 +118,52 @@ PanelFrame {
         { id: "auto", label: Strings.auto, swatch: { fill: "#141518", edge: "#8e8a81", half: "#f8f7f3" } },
         { id: "phosphor", label: Strings.phosphor, swatch: { fill: "#050806", edge: "#2b3d31", inner: "#5cf08f" } }
     ]
+
+    // the player the media card shows: the one playing, else the last one with a track
+    readonly property var player: {
+        const all = Mpris.players.values.filter(p => p && p.canControl);
+        return all.find(p => p.isPlaying) || all.find(p => (p.trackTitle || "").length > 0) || null;
+    }
+
+    component MediaButton: Rectangle {
+        id: mb
+
+        property string glyph: ""
+        property string label: ""
+        signal clicked
+
+        width: 30
+        height: 30
+        radius: 8
+        color: mbMouse.containsMouse ? Theme.surface3 : "transparent"
+        opacity: mb.enabled ? 1 : 0.35
+        activeFocusOnTab: mb.enabled
+        Accessible.role: Accessible.Button
+        Accessible.name: mb.label
+        Keys.onReturnPressed: mb.clicked()
+        Keys.onSpacePressed: mb.clicked()
+
+        Icon {
+            anchors.centerIn: parent
+            glyph: mb.glyph
+            size: 15
+            color: Theme.text
+        }
+
+        MouseArea {
+            id: mbMouse
+
+            anchors.fill: parent
+            hoverEnabled: true
+            enabled: mb.enabled
+            cursorShape: Qt.PointingHandCursor
+            onClicked: mb.clicked()
+        }
+
+        FocusRing {
+            radiusBase: 8
+        }
+    }
 
     component BlockTitle: Item {
         id: bt
@@ -362,6 +409,102 @@ PanelFrame {
                 bottomPadding: 10
                 spacing: 10
 
+                // what is playing (MPRIS: a browser tab, Spotify, a player): the track and its buttons
+                Rectangle {
+                    id: media
+
+                    readonly property var player: root.player
+
+                    width: parent.width
+                    height: 54
+                    radius: 10
+                    color: Theme.surface
+                    border.width: 1
+                    border.color: Theme.line
+                    visible: media.player !== null
+
+                    Rectangle {
+                        id: art
+
+                        x: 9
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 36
+                        height: 36
+                        radius: 6
+                        color: Theme.surface2
+                        clip: true
+
+                        Icon {
+                            anchors.centerIn: parent
+                            visible: artImage.status !== Image.Ready
+                            glyph: "music"
+                            size: 16
+                            color: Theme.textDim
+                        }
+
+                        Image {
+                            id: artImage
+
+                            anchors.fill: parent
+                            visible: artImage.status === Image.Ready
+                            source: media.player && media.player.trackArtUrl ? media.player.trackArtUrl : ""
+                            sourceSize: Qt.size(72, 72)
+                            fillMode: Image.PreserveAspectCrop
+                            asynchronous: true
+                        }
+                    }
+
+                    Column {
+                        x: 54
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 54 - controls.width - 12
+                        spacing: 1
+
+                        SText {
+                            width: parent.width
+                            text: media.player ? (media.player.trackTitle || media.player.identity || "") : ""
+                            size: 12.5
+                            color: Theme.text
+                            elide: Text.ElideRight
+                        }
+                        MText {
+                            width: parent.width
+                            text: media.player ? [media.player.trackArtist, media.player.identity].filter(s => s && s.length > 0).join(" · ") : ""
+                            size: 11
+                            color: Theme.textDim
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    Row {
+                        id: controls
+
+                        anchors.right: parent.right
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        MediaButton {
+                            glyph: "skip-back"
+                            label: Strings.mediaPrevious
+                            enabled: media.player !== null && media.player.canGoPrevious
+                            onClicked: media.player.previous()
+                        }
+                        MediaButton {
+                            glyph: media.player && media.player.isPlaying ? "pause" : "play"
+                            label: media.player && media.player.isPlaying ? Strings.mediaPause : Strings.mediaPlay
+                            enabled: media.player !== null && media.player.canTogglePlaying
+                            onClicked: media.player.togglePlaying()
+                        }
+                        MediaButton {
+                            glyph: "skip-forward"
+                            label: Strings.mediaNext
+                            enabled: media.player !== null && media.player.canGoNext
+                            onClicked: media.player.next()
+                        }
+                    }
+                }
+
                 Row {
                     width: parent.width
                     spacing: 12
@@ -521,9 +664,44 @@ PanelFrame {
                     options: [
                         { id: "work", label: Strings.focusWork },
                         { id: "study", label: Strings.focusStudy },
-                        { id: "presentation", label: Strings.focusPresentation }
+                        { id: "presentation", label: Strings.focusPresentation },
+                        { id: "game", label: Strings.focusGame }
                     ]
                     onPicked: choice => Settings.focusMode = Settings.focusMode === choice ? "" : choice
+                }
+
+                MText {
+                    width: parent.width
+                    visible: Settings.focusMode === "game"
+                    text: Strings.gameModeNote
+                    size: 11
+                    color: Theme.textFaint
+                    wrapMode: Text.WordWrap
+                }
+
+                // a warm screen in the evening (the hours Jackson also speaks calmer)
+                BlockTitle {
+                    text: Strings.nightLight
+                }
+
+                Segmented {
+                    width: parent.width
+                    current: Settings.nightLight
+                    options: [
+                        { id: "off", label: Strings.nightOff },
+                        { id: "auto", label: Strings.nightAuto },
+                        { id: "on", label: Strings.nightOn }
+                    ]
+                    onPicked: choice => Settings.nightLight = choice
+                }
+
+                MText {
+                    width: parent.width
+                    visible: Settings.nightLight === "auto"
+                    text: Strings.nightNote(Hypr.nightHours[0], Hypr.nightHours[1])
+                    size: 11
+                    color: Theme.textFaint
+                    wrapMode: Text.WordWrap
                 }
             }
 

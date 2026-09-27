@@ -62,7 +62,7 @@ fastfetch
 ?qt6ct
 ?nm-connection-editor
 
-# --- screenshots, clipboard, OCR (Super+Shift+S, Super+V) ---------------------------------------
+# --- screenshots, clipboard, OCR, color, emoji (Super+Shift+S/T/C, Super+V, Super+.) -------------
 grim
 slurp
 wl-clipboard
@@ -71,6 +71,8 @@ cliphist
 tesseract-ocr
 tesseract-ocr-eng
 tesseract-ocr-rus
+# types the emoji picked with Super+. into the window you were in
+?wtype
 
 # --- desktop plumbing ---------------------------------------------------------------------------
 gvfs

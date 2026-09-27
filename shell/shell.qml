@@ -114,6 +114,21 @@ ShellRoot {
         onReleased: ptt.release()
     }
 
+    // Alt+Tab as on Windows (core/WindowSwitch.qml): Tab with Alt held picks, letting go of Alt goes
+    GlobalShortcut {
+        appid: "svoya"
+        name: "alttab"
+        description: "Alt+Tab: the window used before"
+        onPressed: WindowSwitch.tab()
+    }
+
+    GlobalShortcut {
+        appid: "svoya"
+        name: "alt"
+        description: "Alt let go: ends Alt+Tab"
+        onReleased: WindowSwitch.commit()
+    }
+
     // ---- IPC (quickshell -p /usr/share/svoya/shell ipc call <target> <function> [args]) ------------
     IpcHandler {
         target: "launcher"
@@ -185,6 +200,29 @@ ShellRoot {
 
         function region(): void {
             Actions.screenshot();
+        }
+        // Super+Shift+T (PowerToys' Text Extractor): a region's text straight to the clipboard
+        function text(): void {
+            Actions.screenshotText();
+        }
+    }
+
+    IpcHandler {
+        target: "overview"
+
+        function toggle(): void {
+            Ui.toggle("overview");
+        }
+        function open(): void {
+            Ui.show("overview");
+        }
+    }
+
+    IpcHandler {
+        target: "emoji"
+
+        function toggle(): void {
+            Ui.toggle("emoji");
         }
     }
 
@@ -263,6 +301,24 @@ ShellRoot {
         }
         function setup(): void {
             Actions.openSetup("");
+        }
+        function desktop(): void {
+            Ui.hide();
+            Hypr.toggleDesktop();
+        }
+        // Ctrl+Shift+Esc: what runs and what it takes (btop in a terminal)
+        function monitor(): void {
+            Sys.terminal(["btop"]);
+        }
+        function colorPicker(): void {
+            Actions.pickColor();
+        }
+        function gameMode(): void {
+            Hypr.toggleGameMode();
+        }
+        // off | auto | on (the Control Center's «Ночной свет»); anything else flips on ↔ off
+        function nightLight(mode: string): void {
+            Settings.nightLight = ["off", "auto", "on"].indexOf(mode) >= 0 ? mode : (Hypr.nightApplied ? "off" : "on");
         }
     }
 

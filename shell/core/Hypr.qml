@@ -210,9 +210,155 @@ Singleton {
         }
     }
 
+    // ---- show the desktop (Super+D, three fingers down) ------------------------------------------
+    // Hyprland has no minimizing: the windows of this workspace go to a hidden special workspace
+    // and come back the same way (again, or when a window opens here in between: the rest follows).
+    property var desktopHidden: []      // [{address, workspace}]
+
+    function toggleDesktop() {
+        if (!root.present)
+            return;
+        if (root.desktopHidden.length > 0) {
+            const batch = root.desktopHidden.map(w => "dispatch movetoworkspacesilent " + w.workspace + ",address:" + w.address);
+            root.desktopHidden = [];
+            Sys.run(["hyprctl", "--batch", batch.join(" ; ")]);
+            return;
+        }
+        const id = root.activeWorkspaceId;
+        Sys.run(["hyprctl", "-j", "clients"], function (code, out) {
+            if (code !== 0)
+                return;
+            let clients = [];
+            try {
+                clients = JSON.parse(out);
+            } catch (e) {
+                return;
+            }
+            const hidden = clients.filter(c => c.workspace && c.workspace.id === id && !c.pinned && c.mapped !== false).map(c => ({ address: c.address, workspace: id }));
+            if (hidden.length === 0)
+                return;
+            root.desktopHidden = hidden;
+            Sys.run(["hyprctl", "--batch", hidden.map(w => "dispatch movetoworkspacesilent special:svoya-desktop,address:" + w.address).join(" ; ")]);
+        });
+    }
+
+    // ---- game mode (Win+G, Settings.focusMode "game") ---------------------------------------------
+    // No blur, shadows, rounding, gaps or animations while a game runs, and a stray tap of the
+    // Windows key does not open the launcher over it; the power profile goes to performance and
+    // back; notifications are held (Notifs.dnd). Leaving it reloads the config.
+    readonly property bool gaming: Settings.focusMode === "game"
+
+    function toggleGameMode() {
+        Settings.focusMode = root.gaming ? "" : "game";
+        Notifs.shellToast(root.gaming ? Strings.gameModeOn : Strings.gameModeOff, root.gaming ? Strings.gameModeNote : "", "gamepad-2");
+    }
+
+    function applyGameMode(on) {
+        if (!root.present)
+            return;
+        if (on) {
+            Sys.run(["hyprctl", "--batch", ["keyword animations:enabled 0", "keyword decoration:blur:enabled 0", "keyword decoration:shadow:enabled 0", "keyword decoration:rounding 0", "keyword general:gaps_in 0", "keyword general:gaps_out 0", "keyword decoration:screen_shader [[EMPTY]]", "keyword unbind SUPER,SUPER_L", "keyword unbind SUPER,SUPER_R"].join(" ; ")]);
+            // the profile it had goes into shell.json, so it comes back even after a restart
+            Sys.sh('command -v powerprofilesctl >/dev/null || exit 0; p=$(powerprofilesctl get) && echo "$p" && powerprofilesctl set performance', [], function (code, out) {
+                const before = (out || "").trim();
+                if (code === 0 && before.length > 0 && before !== "performance" && !Settings.gamePowerBefore)
+                    Settings.gamePowerBefore = before;
+            });
+        } else {
+            Sys.run(["hyprctl", "reload"]);     // the configured look back (configreloaded re-applies rules and the night light)
+            if (Settings.gamePowerBefore) {
+                Sys.sh('command -v powerprofilesctl >/dev/null && powerprofilesctl set "$1"', [Settings.gamePowerBefore]);
+                Settings.gamePowerBefore = "";
+            }
+        }
+    }
+
+    // game mode is kept like the other focus modes: a new session (or a restarted shell) puts it
+    // back on when shell.json is read (before that, focusMode is its default "")
+    function syncGameMode() {
+        if (root.gaming !== root.gameApplied) {
+            root.gameApplied = root.gaming;
+            root.applyGameMode(root.gaming);
+        }
+    }
+
+    Connections {
+        target: Settings
+
+        function onFocusModeChanged() {
+            root.syncGameMode();
+        }
+    }
+    property bool gameApplied: false
+
+    // ---- night light (Control Center): a warm screen in the evening -------------------------------
+    // A Hyprland screen shader (hypr/shaders/night-light.frag). "auto" follows the evening: the
+    // hours Jackson speaks calmer (`j voice evening 21:00-07:00`, reported in voiceSettings), else
+    // shell.json's nightFrom–nightTo; a game turns it off while it runs.
+    readonly property string nightShader: (Quickshell.env("SVOYA_HYPR_DIR") || "/usr/share/svoya/hypr") + "/shaders/night-light.frag"
+    property bool nightApplied: false
+    readonly property var nightHours: {
+        const vs = Jackson.voiceSettings;
+        const m = /^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/.exec(vs && vs.evening ? String(vs.evening) : "");
+        return m ? [m[1], m[2]] : [Settings.nightFrom, Settings.nightTo];
+    }
+    readonly property bool nightWanted: {
+        const mode = Settings.nightLight;
+        if (root.gaming || mode === "off")
+            return false;
+        return mode === "on" || root.inHours(clock.minutes, root.nightHours[0], root.nightHours[1]);
+    }
+
+    function minutesOf(hhmm, fallback) {
+        const m = /^\s*(\d{1,2}):(\d{2})\s*$/.exec(String(hhmm));
+        return m ? Math.min(23, Number(m[1])) * 60 + Math.min(59, Number(m[2])) : fallback;
+    }
+
+    function inHours(now, from, to) {
+        const a = root.minutesOf(from, 20 * 60);
+        const b = root.minutesOf(to, 7 * 60);
+        return a < b ? (now >= a && now < b) : (now >= a || now < b);
+    }
+
+    function updateNightLight(force) {
+        if (!root.present || (!force && root.nightWanted === root.nightApplied))
+            return;
+        root.nightApplied = root.nightWanted;
+        Sys.run(["hyprctl", "keyword", "decoration:screen_shader", root.nightWanted ? root.nightShader : "[[EMPTY]]"]);
+    }
+
+    onNightWantedChanged: root.updateNightLight()
+
+    QtObject {
+        id: clock
+
+        property int minutes: 0
+    }
+
+    Timer {
+        interval: 30000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            const d = new Date();
+            clock.minutes = d.getHours() * 60 + d.getMinutes();
+        }
+    }
+
+    Connections {
+        target: root.present ? Hyprland : null
+
+        function onRawEvent(event) {
+            if (event.name === "configreloaded" && root.nightApplied)
+                root.updateNightLight(true);
+        }
+    }
+
     Component.onCompleted: {
         refreshTimer.start();
         startupRules.start();
+        root.syncGameMode();
     }
 
     Timer {

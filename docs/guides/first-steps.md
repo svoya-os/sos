@@ -17,20 +17,29 @@
 
 | Keys | Action |
 |---|---|
-| `Super+Space` | Launcher: apps, files, settings; start with `?` to ask Jackson |
-| `Super+J` | Jackson |
+| `Super+Space`, or a tap of `Super` | Launcher: apps, files, settings; start with `?` to ask Jackson |
+| `Super+J` | Jackson; hold it to talk (voice module) |
+| `Super+Tab` | Every window at a glance |
+| `Super+D` | Show the desktop |
+| `Super+←` `→` `↑` `↓` | Snap the window to a half, maximize, restore |
 | `Super+V` | Clipboard history |
+| `Super+.` | Emoji |
 | `Super+Shift+S` | Select a screen region: ask Jackson, recognize text, or copy |
+| `Super+Shift+T` | Copy the text of a screen region |
 | `Super+Enter` | Terminal |
 | `Super+E` | Files |
-| `Super+Q` | Close the window |
+| `Super+Q`, `Alt+F4` | Close the window |
 | `Super+F` | Fullscreen |
 | `Super+T` | Tiling on or off for this workspace |
 | `Super+1` … `Super+9` | Workspaces |
+| `Super+G` | Game mode |
 | `Super+K` | Shortcut cheat sheet |
 | `Super+Z` | Undo the last system change |
 | `Super+Escape` | System Doctor |
 | `Super+L` | Lock the screen |
+
+Three fingers on the touchpad: sideways for the next desktop, up for every window, down for the
+desktop. Coming from Windows? [Everything you know](from-windows.md), key by key.
 
 ## Meet Jackson
 
@@ -140,6 +149,9 @@ sos theme apply paper     # graphite | paper | phosphor | auto
 
 Or use *Theme* in the control center. *Auto* switches to Graphite at sunset and to Paper at
 sunrise, computed from the coordinates in your settings.
+
+*Night light* in the control center makes the screen warmer: *Evenings* from 20:00 to 07:00 (the
+hours Jackson speaks calmer; `j voice evening 21:30-07:00` moves them), or *On* all the time.
 
 ## Updates and undo
 

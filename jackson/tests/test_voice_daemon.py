@@ -248,6 +248,20 @@ class VoiceProtocolTest(unittest.TestCase):
             await conn.close()
         self.run_async(scenario)
 
+    def test_thanks_that_is_all_in_english_ends_it_too(self):
+        async def scenario(svc, fake):
+            conn, _ = await self.ready_client(svc)
+            fake.follow_heard = "Thanks, that's all."
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "tap"})
+            await until(conn, ("done",), "t1")
+            rest = await until(conn, ("listen",), timeout=5)
+            follow_id = rest[-1]["id"]
+            events = await until(conn, ("spoken",), follow_id, timeout=5)
+            self.assertEqual(next(e for e in events if e["type"] == "token")["text"], "Okay, I'm here if you need me.")
+            self.assertEqual(len(self.srv.requests), 1)
+            await conn.close()
+        self.run_async(scenario)
+
     def test_a_held_key_is_one_question_without_a_follow_up(self):
         async def scenario(svc, fake):
             conn, _ = await self.ready_client(svc)

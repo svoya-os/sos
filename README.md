@@ -52,8 +52,10 @@ This is the design. What works today is listed under [Status](#status).
   2000s internet who calls you «кентафурик» (buddy): cheeky, but he gets things done. He routes requests to local or cloud models and runs tools
   and other agents (Claude Code, Codex, OpenCode, goose…) in sandboxes. Before anything risky he
   shows the exact action, he keeps a tamper-evident log, and he can undo what he did. Call him
-  with `Super+J`, or type `j` in a terminal: `j find my datasets`. His memory is plain Markdown,
-  and it can live in your Obsidian vault.
+  with `Super+J`, or type `j` in a terminal: `j find my datasets`. With the voice module, hold
+  `Super+J` and just talk: he answers aloud in Russian or English, all on your computer, and
+  speaks calmer in the evening. His memory is plain Markdown, and it can live in your Obsidian
+  vault.
 - **The AI toolbox as modules.** Nothing is forced. The first-run wizard asks for a profile
   (Newcomer, Creator, ML Engineer, Agent Builder, Hacker, or offline only), suggests one local
   model that fits your GPU and memory, and installs it with one click if you want it. Add or
@@ -63,7 +65,10 @@ This is the design. What works today is listed under [Status](#status).
   model fits and whether its license allows your use.
 - **Svoya Shell.** A desktop built from scratch on Quickshell and Hyprland. Graphite by night,
   Paper by day, Phosphor for CRT fans. Matte surfaces instead of glass, IBM Plex type, one signal
-  color, the Morse mark. Floating windows and the mouse by default; tiling is a preset.
+  color, the Morse mark. Floating windows and the mouse by default; tiling is a preset. The
+  keys people bring from Windows work, and the things usually set up by hand are there: every
+  window at a glance, clipboard history, emoji, text from the screen, a color picker, media
+  buttons, game mode and a warm screen in the evening.
 - **Undo for everything.** Btrfs snapshots before every update, module change and action
   Jackson takes. `Super+Z` or `sos undo` reverts the last change; yesterday's system is one
   entry in the boot menu.
@@ -160,6 +165,8 @@ packages and the ISO (Linux, or Windows with WSL2 and Docker), the tests, and ru
 Jackson and the `sos` command from a checkout.
 
 After installing: [first steps](docs/guides/first-steps.md) · [FAQ](docs/guides/faq.md).
+Coming from Windows? [The keys and gestures you know](docs/guides/from-windows.md) work here:
+a tap of `Win`, `Win+Tab`, `Win+D`, `Win+arrows`, `Alt+F4`, `Win+.`, three-finger swipes.
 
 ### Repository map
 
@@ -243,8 +250,9 @@ Svoya Shell, Джексон и команда `sos`.
   запускает инструменты и других агентов (Claude Code, Codex, OpenCode, goose…) в песочницах.
   Перед рискованным шагом показывает, что именно сделает, ведёт журнал, который нельзя незаметно
   подправить, и умеет отменять свои действия. Зови его по `Super+J` или прямо из терминала:
-  `j найди мои датасеты`. Память он хранит в обычных Markdown-файлах, можно — в твоём
-  хранилище Obsidian.
+  `j найди мои датасеты`. С модулем голоса зажми `Super+J` и просто говори: он ответит вслух,
+  по-русски или по-английски, всё на твоём компьютере, а вечером — спокойнее. Память он
+  хранит в обычных Markdown-файлах, можно — в твоём хранилище Obsidian.
 - **Инструменты ИИ — модулями.** Ничего не навязываем. Мастер первого запуска спросит профиль
   (Новичок, Автор, ML-инженер, Разработчик агентов, Хакер или «только офлайн»), подберёт одну
   локальную модель под твою видеокарту и память и поставит её в один клик, если захочешь.
@@ -255,7 +263,9 @@ Svoya Shell, Джексон и команда `sos`.
 - **Svoya Shell — свой рабочий стол.** Написан с нуля на Quickshell и Hyprland. Графит ночью,
   Бумага днём, Фосфор для тех, кто скучает по ЭЛТ-мониторам. Матовые поверхности вместо стекла,
   шрифты IBM Plex, один сигнальный цвет, знак азбукой Морзе. По умолчанию — плавающие окна и
-  мышь, тайлинг включается отдельным пресетом.
+  мышь, тайлинг включается отдельным пресетом. Клавиши, привычные по Windows, работают, а то,
+  что обычно настраивают руками, уже есть: все окна сразу, история буфера, эмодзи, текст с
+  экрана, пипетка, кнопки музыки, игровой режим и тёплый экран вечером.
 - **Всё можно отменить.** Снимки Btrfs перед каждым обновлением, сменой модулей и действием
   Джексона. `Super+Z` или `sos undo` откатывает последнее изменение, а вчерашняя система — один
   пункт в загрузочном меню.
@@ -355,6 +365,8 @@ cd sos
 Джексона и команды `sos` прямо из репозитория.
 
 После установки: [первые шаги](docs/ru/first-steps.md) · [вопросы и ответы](docs/ru/faq.md).
+Пришёл с Windows? [Знакомые клавиши и жесты](docs/ru/from-windows.md) работают и здесь:
+нажатие `Win`, `Win+Tab`, `Win+D`, `Win+стрелки`, `Alt+F4`, `Win+.`, свайпы тремя пальцами.
 
 ### Что где лежит
 

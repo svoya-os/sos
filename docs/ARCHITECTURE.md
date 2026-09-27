@@ -195,6 +195,19 @@ greetd → svoya greeter (Hyprland + quickshell -p /usr/share/svoya/shell/greete
 | Super + Z | undo last system change |
 | Super + Escape | System Doctor |
 | Super + L | lock |
+| Super (tap alone) | launcher, like Start (a release bind, shadowed by any other input while held; unbound in game mode) |
+| Super + Tab · three fingers up | overview of every window (live thumbnails, type to filter) |
+| Alt + Tab | the most recently used window; Tab again with Alt held goes further back, the overview shows the choice after ~170 ms, letting go of Alt switches (global shortcuts `svoya:alttab` and `svoya:alt`, `core/WindowSwitch.qml`) |
+| Super + D · three fingers down | show the desktop (the workspace's windows go to `special:svoya-desktop` and back) |
+| Super + ←/→/↑/↓ | floating window: snap to a half / maximize / restore (`/usr/lib/svoya/snap-window`); tiled: focus |
+| Super + . / ; | emoji picker (typed with `wtype`, else copied) |
+| Super + Shift + T · Super + Shift + C | text of a region to the clipboard (tesseract rus+eng) · color picker (hyprpicker) |
+| Super + G | game mode (`focusMode` "game": no effects, performance power profile, notifications held) |
+| Super + A · Super + N | control center (media card, focus, night light) |
+| Alt + F4 · Ctrl + Shift + Esc · Super + I · Super + R | close window · btop · settings · launcher |
+| Super + Shift + F23 | the Copilot key: Jackson |
+
+The Windows-style keys and the gestures are explained for users in `docs/guides/from-windows.md`.
 
 ## 7. Conventions
 

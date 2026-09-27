@@ -223,6 +223,28 @@ class TypeTests(unittest.TestCase):
             qmp.close()
 
 
+    def test_keys_held_across_steps(self):
+        # Alt+Tab: Alt down, Tab, a screenshot of the switcher, Alt up; a plan that ends with a key
+        # still down lets go of it
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp)
+            (out / "serial.log").write_text("")
+            a, b = socket.socketpair()
+            fake = ScreenQEMU(b, [frame((0, 0, 0))])
+            fake.start()
+            qmp = QMPClient(a, timeout=2)
+            qmp.negotiate()
+            runner = run.Runner(qmp, out, scale=0.01, proc=None)
+            self.assertTrue(runner.run([{"id": "s", "action": "key_down", "keys": ["alt"]},
+                                        {"id": "s", "action": "key", "keys": ["tab"]},
+                                        {"id": "s", "action": "key_up", "keys": ["alt"]},
+                                        {"id": "s", "action": "key_down", "keys": ["meta_l"]}]), runner.results)
+            self.assertEqual(fake.typed, [("down", "alt"), ("down", "tab"), ("up", "tab"), ("up", "alt"),
+                                          ("down", "meta_l"), ("up", "meta_l")])
+            self.assertEqual(runner.held, [])
+            qmp.close()
+
+
 class ServeTests(unittest.TestCase):
     def test_a_plan_serves_its_files_to_the_guest(self):
         import tempfile

@@ -58,6 +58,40 @@ Singleton {
         });
     }
 
+    // Super+Shift+T: select a region, its text (Russian and English) goes to the clipboard
+    function screenshotText() {
+        if (!Sys.has["grim"] || !Sys.has["slurp"]) {
+            Notifs.shellToast(Strings.screenshotTools, "", "scan-text");
+            return;
+        }
+        if (!Sys.has["tesseract"]) {
+            Notifs.shellToast(Strings.extractText, Strings.ocrMissing, "scan-text");
+            return;
+        }
+        Ui.hide();
+        const script = 'g=$(slurp -d -w 1 -b "$1" -c "$2" -s "$3") || exit 3; ' + 't=$(grim -g "$g" - | tesseract stdin - -l rus+eng 2>/dev/null) || exit 1; ' + 't=$(printf %s "$t" | sed -e "s/[[:space:]]*$//"); [ -n "$t" ] || exit 2; ' + 'printf %s "$t" | wl-copy && printf %s "$t" | head -c 160';
+        Sys.sh(script, [root.hexRgba(Theme.wall, 0.35), root.hexRgba(Theme.text, 0.9), root.hexRgba(Theme.text, 0.06)], function (code, out) {
+            if (code === 3)
+                return;             // Esc: nothing selected
+            if (code === 0)
+                Notifs.shellToast(Strings.textCopied, (out || "").replace(/\s+/g, " ").slice(0, 120), "scan-text");
+            else
+                Notifs.shellToast(Strings.extractText, code === 2 ? Strings.ocrNothing : Strings.ocrMissing, "scan-text");
+        });
+    }
+
+    // Super+Shift+C: a color from anywhere on the screen, copied as #rrggbb
+    function pickColor() {
+        Ui.hide();
+        Sys.sh('command -v hyprpicker >/dev/null || exit 127; c=$(hyprpicker -a -f hex 2>/dev/null) || exit 1; printf %s "$c"', [], function (code, out) {
+            const color = (out || "").trim();
+            if (code === 127)
+                Notifs.shellToast(Strings.colorPicker, Strings.colorPickerMissing, "pipette");
+            else if (code === 0 && color.length > 0)
+                Notifs.shellToast(Strings.colorCopied(color), "", "pipette");
+        });
+    }
+
     // ---- session ------------------------------------------------------------------------
     function logout() {
         Sys.detachSh('command -v hyprshutdown >/dev/null 2>&1 && exec hyprshutdown; exec hyprctl dispatch exit');
