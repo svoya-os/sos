@@ -132,6 +132,7 @@ class VoiceService:
                 "stt": getattr(self.stt, "name", ""), "tts": getattr(self.tts, "name", ""),
                 "voices": list(self.tts.voices()) if ok else [],
                 "readsNumbers": bool(getattr(self.tts, "reads_numbers", False)),
+                "rate": int(getattr(self.tts, "rate", 0) or 0) if ok else 0,
                 "listening": self.capture is not None, "speaking": bool(self.speaking_id)}
 
     # ---- the socket -----------------------------------------------------------------------

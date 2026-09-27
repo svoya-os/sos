@@ -67,6 +67,7 @@ ENGINES: dict[str, str] = {
     "tone": "jackson.voice.tts:ToneTTS",
     "none": "jackson.voice.tts:SilentTTS",
     "qwen3": "jackson.voice.engines:QwenTTS",
+    "supertonic": "jackson.voice.engines:SupertonicTTS",
 }
 
 
@@ -94,6 +95,7 @@ def pick_engine(models: Any) -> str:
     return "none"
 
 
-# engine → the folder under /srv/ai/voice that says it is installed; best first
-ENGINE_DIRS: dict[str, str] = {"qwen3": "qwen3-tts"}
-PREFERENCE: list[str] = ["qwen3"]
+# engine → the folder under /srv/ai/voice that says it is installed; best first: Jackson's own
+# voices on a graphics card (Qwen3-TTS), then a fast ready-made voice on any processor (Supertonic 3)
+ENGINE_DIRS: dict[str, str] = {"qwen3": "qwen3-tts", "supertonic": "supertonic-3"}
+PREFERENCE: list[str] = ["qwen3", "supertonic"]

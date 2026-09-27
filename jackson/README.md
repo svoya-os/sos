@@ -342,8 +342,12 @@ come after it in the prompt. `welcome`/`state` carry `persona`, `avatar` and `mo
 
 `sos install voice` makes a venv (`/opt/svoya/venvs/voice`) and fetches the models into
 `/srv/ai/voice`: Silero VAD (MIT) finds where a phrase starts and ends, Parakeet TDT 0.6B v3
-(CC-BY-4.0, Russian, English and 23 more languages) turns it into text through onnx-asr, and a local
-engine speaks (`jackson/voice/tts.py`). They run in `svoya-voice` (`jackson/voice/service.py`, user
+(CC-BY-4.0, Russian, English and 23 more languages) and GigaAM v3 (MIT, Russian) turn it into text
+through onnx-asr (`jackson/voice/stt.py`: Parakeet's English when it is sure of it, otherwise the
+surer of the two), and a local engine speaks (`jackson/voice/tts.py`): Supertonic 3 (code MIT, model
+OpenRAIL-M) on any processor, each character with one of its ready-made voices; Qwen3-TTS
+(Apache-2.0) with Jackson's own designed voices is the engine for a graphics card
+(`SVOYA_VOICE_ENGINE=qwen3`). They run in `svoya-voice` (`jackson/voice/service.py`, user
 unit `svoya-voice.service`), which jacksond starts on the first press of the microphone; jacksond
 itself stays on the standard library. The microphone is recorded through PipeWire only while a
 client asked to listen; no audio is kept.
@@ -357,7 +361,8 @@ client asked to listen; no audio is kept.
   for engines that read digits badly).
 - Conversation: after a spoken answer Jackson listens again for a few seconds (`follow`);
   «спасибо, всё» ends it without the model. `[voice] follow = false` turns that off, `speak = false`
-  keeps the answers silent, `voice = "…"` picks another voice than the persona's, `sounds = false`
+  keeps the answers silent, `voice = "…"` picks another voice than the persona's (for Supertonic:
+  `M1`…`M5`, `F1`…`F5`), `engine = "…"` another installed engine, `sounds = false`
   drops the two short sounds (the microphone opens; the phrase was heard).
 
 Protocol additions: see `jackson/voice/__init__.py` (the speech service) and ARCHITECTURE §8.

@@ -26,7 +26,7 @@ Voice service socket ``$XDG_RUNTIME_DIR/svoya/voice.sock``, JSON Lines, one obje
                                               which recognizer gave the text, how sure it was
     ← {"type": "nothing", "id": "t1"}         no speech before the timeout (or only noise)
     ← {"type": "spoken", "id": "t1", "hushed": false}   everything said for t1 has been played
-    ← {"type": "status", "ready": true, "stt": "…", "tts": "…", "voices": […], "error": "…"}
+    ← {"type": "status", "ready": true, "stt": "…", "tts": "…", "voices": […], "rate": 44100, "error": "…"}
     ← {"type": "error", "id": "t1", "message": "…"}
 
 ``tap`` ends the phrase after a pause, ``hold`` when the key is released (``stop``), ``follow`` is the

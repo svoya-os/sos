@@ -65,3 +65,60 @@ class QwenTTS:
         repo = f"Qwen/Qwen3-TTS-12Hz-{size}-Base"
         fetch_dir(Path(models) / "qwen3-tts" / f"Qwen3-TTS-12Hz-{size}-Base",
                   lambda d: snapshot_download(repo, local_dir=str(d)), f"Qwen3-TTS {size} Base")
+
+
+class SupertonicTTS:
+    """Supertonic 3 (Supertone: code MIT, model OpenRAIL-M): 31 languages in one ONNX model (Russian,
+    English, Estonian, Ukrainian…), many times faster than speech on any processor. Ten ready-made
+    voices; each of Jackson's characters speaks with one of them (:data:`PERSONA`), or any of them
+    by name (``[voice] voice = "M3"``)."""
+
+    name = "supertonic-3"
+    reads_numbers = False       # «семьдесят процентов» comes from jacksond (speech.py), not «70%»
+    rate = 44100
+    REPO = "supertone-oss-archive/supertonic-3"     # the archived release, as Supertone left it
+    REVISION = "aafc6e32416a594460b32413efc49d7fe4ce6d46"
+    # a character → the voice closest to how he was described (tests/voice-samples/lines.json)
+    PERSONA = {"kent": "M1", "sysop": "M2", "dispatcher": "M3", "pirate": "M5"}
+    DEFAULT = "M1"
+
+    def __init__(self, models: Any, steps: int = 8, speed: float = 1.05) -> None:
+        from supertonic import TTS
+        self.tts = TTS(model="supertonic-3", model_dir=str(Path(models) / "supertonic-3"), auto_download=False)
+        self.rate = int(self.tts.sample_rate)
+        self.steps = steps
+        self.speed = speed
+        self.styles: dict[str, Any] = {}
+        try:
+            from supertonic.config import SUPPORTED_LANGUAGES
+            self.languages = set(SUPPORTED_LANGUAGES)
+        except ImportError:
+            self.languages = {"ru", "en"}
+
+    def voices(self) -> list[str]:
+        return sorted(self.tts.voice_style_names)
+
+    def voice(self, name: str) -> str:
+        known = self.voices()
+        for candidate in (name, self.PERSONA.get(name, ""), self.DEFAULT):
+            if candidate in known:
+                return candidate
+        return known[0]
+
+    def synth(self, text: str, lang: str, voice: str) -> Any:
+        import numpy as np
+        name = self.voice(voice)
+        if name not in self.styles:
+            self.styles[name] = self.tts.get_voice_style(voice_name=name)
+        wav, duration = self.tts.synthesize(text, voice_style=self.styles[name], total_steps=self.steps,
+                                            speed=self.speed, lang=lang if lang in self.languages else "na")
+        samples = np.asarray(wav, dtype=np.float32).reshape(-1)
+        return samples[: int(self.rate * float(np.asarray(duration).reshape(-1)[0]))]
+
+    @classmethod
+    def fetch(cls, models: Path, fetch_dir: Callable[..., None]) -> None:
+        from huggingface_hub import snapshot_download
+        fetch_dir(Path(models) / "supertonic-3",
+                  lambda d: snapshot_download(cls.REPO, revision=cls.REVISION, local_dir=str(d),
+                                              allow_patterns=["onnx/*", "voice_styles/*", "LICENSE*", "README.md"]),
+                  "Supertonic 3")
