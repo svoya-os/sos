@@ -127,6 +127,7 @@ class JacksonService:
         self._sessions_by_turn: dict[str, Session] = {}   # for `ask.refines`
         self.started = time.monotonic()
         self.stopping = False
+        self._voice_tasks: set[asyncio.Task[Any]] = set()
         self.voice = VoiceDesk(
             self.socket_path.parent / VOICE_SOCKET, config=lambda: self.app.config.voice, ask=self._ask,
             send=lambda client, event: client.send(event), broadcast=self._broadcast,
@@ -215,6 +216,11 @@ class JacksonService:
         for client in list(self.clients.values()):
             client.send(dict(event))
 
+    def _voice_done(self, task: asyncio.Task[Any]) -> None:
+        self._voice_tasks.discard(task)
+        if not task.cancelled() and task.exception() is not None:
+            log.error("listen failed: %s", task.exception())
+
     def capabilities(self) -> list[str]:
         return list(CAPABILITIES) + (["voice"] if self.voice.available else [])
 
@@ -262,7 +268,7 @@ class JacksonService:
                 client.writer.close()
             except Exception:
                 pass
-        for task in self._background:
+        for task in list(self._background) + list(self._voice_tasks):
             task.cancel()
         await asyncio.gather(*self._background, return_exceptions=True)
         if self.server is not None:
@@ -363,7 +369,11 @@ class JacksonService:
         elif mtype == "undo":
             await self._undo(client, msg)
         elif mtype == "listen":
-            await self.voice.listen(client, msg)
+            # not awaited: the first press may wait for the voice to load, and the client must be able
+            # to take it back meanwhile
+            task = asyncio.get_running_loop().create_task(self.voice.listen(client, msg))
+            self._voice_tasks.add(task)
+            task.add_done_callback(self._voice_done)
         elif mtype == "ping":
             client.send({"type": "pong", "id": msg.get("id")})
         else:  # ARCHITECTURE §8: unknown message types are ignored (newer shells may send more)

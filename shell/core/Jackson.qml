@@ -367,7 +367,9 @@ Singleton {
                 root.conversation = false;
                 root.level = 0;
             }
-            if (msg.state !== "listening" || !root.conversation)
+            if (msg.state === "nothing" && msg.mode === "follow")
+                root.voiceState = "";           // nobody spoke after the answer: the conversation just ends
+            else if (msg.state !== "listening" || !root.conversation)
                 root.voiceState = msg.state || "";
             break;
         case "transcript":

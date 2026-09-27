@@ -180,6 +180,7 @@ class VoiceDesk:
         self.start_timeout = start_timeout
         self.listening: dict[str, Listening] = {}
         self.talks: dict[str, Talk] = {}
+        self.starting: dict[int, str] = {}          # client → the press waiting for the voice to load
         self._ids = 0
 
     @property
@@ -223,6 +224,8 @@ class VoiceDesk:
             await self.hush(client)
             return
         if action in ("stop", "cancel"):
+            if self.starting.get(id(client)) in (tid, None) or not msg.get("id"):
+                self.starting.pop(id(client), None)    # pressed again while the voice was still loading
             mine = [li for li in self.listening.values() if li.client is client and (li.id == tid or not msg.get("id"))]
             for li in mine:
                 await self.link.send({"type": action, "id": li.id})
@@ -232,7 +235,12 @@ class VoiceDesk:
             if action == "stop" and not mine:
                 await self.hush(client)
             return
-        if not await self._ensure_running(client, tid):
+        self.starting[id(client)] = tid
+        running = await self._ensure_running(client, tid)
+        if self.starting.pop(id(client), None) != tid:
+            self.send(client, {"type": "listen", "id": tid, "state": "nothing"})   # cancelled meanwhile
+            return
+        if not running:
             self.send(client, {"type": "listen", "id": tid, "state": "unavailable",
                                "message": self.link.status.get("error") or ""})
             return

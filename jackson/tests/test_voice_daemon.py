@@ -238,6 +238,31 @@ class VoiceProtocolTest(unittest.TestCase):
             await conn.close()
         self.run_async(scenario)
 
+    def test_pressing_again_while_the_voice_loads_cancels(self):
+        async def scenario(svc, fake):
+            await fake.close()
+            gate = asyncio.Event()
+
+            async def start():
+                await gate.wait()
+                await fake.start()
+
+            svc.voice.installed = lambda: True
+            svc.voice.start_service = start
+            conn = await connect(self.app.paths.socket)
+            await conn.hello("shell", "ru")
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "tap"})
+            await until(conn, ("listen",), "t1", timeout=5)          # loading
+            await conn.send({"type": "listen", "id": "t1", "action": "cancel"})
+            await asyncio.sleep(0.1)
+            gate.set()
+            events = await until(conn, ("listen",), "t1", timeout=5)
+            self.assertEqual(events[-1]["state"], "nothing")
+            await asyncio.sleep(0.3)
+            self.assertNotIn("listen", [m["type"] for m in fake.got])   # the microphone never opened
+            await conn.close()
+        self.run_async(scenario)
+
     def test_clients_learn_when_the_voice_comes(self):
         async def scenario(svc, fake):
             await fake.close()
