@@ -31,7 +31,8 @@ Work towards v0.1 «Первый сигнал».
   policy for AI-assisted contributions, Code of Conduct (Contributor Covenant 2.1), security
   policy, governance, trademark policy draft, roadmap.
 - Guides: install, build from source, first steps, privacy, FAQ; install, first steps and FAQ
-  in Russian.
+  in Russian. A short introduction (what SOS is, how to try it) in German, Spanish, French,
+  Portuguese, Ukrainian and Estonian ([docs/i18n](docs/i18n/)).
 - Licensing recorded per file with [REUSE.toml](REUSE.toml): Apache-2.0 for code, CC BY-SA 4.0
   for artwork and documentation, fonts under OFL-1.1 and MIT.
 - Issue forms for bugs, feature requests and hardware reports; pull request template.

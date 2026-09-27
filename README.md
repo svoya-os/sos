@@ -30,6 +30,10 @@ Also: <a href="design/out/desktop-paper.png">Paper</a> (day) · <a href="design/
 
 **[English](#english)** · **[По-русски](#по-русски)**
 
+<sub>In short: <a href="docs/i18n/de.md">Deutsch</a> · <a href="docs/i18n/es.md">Español</a> ·
+<a href="docs/i18n/fr.md">Français</a> · <a href="docs/i18n/pt.md">Português</a> ·
+<a href="docs/i18n/uk.md">Українська</a> · <a href="docs/i18n/et.md">Eesti</a></sub>
+
 </div>
 
 <br>
