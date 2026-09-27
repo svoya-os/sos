@@ -212,7 +212,7 @@ Singleton {
 
     // ---- show the desktop (Super+D, three fingers down) ------------------------------------------
     // Hyprland has no minimizing: the windows of this workspace go to a hidden special workspace
-    // and come back the same way (again, or when a window opens here in between: the rest follows).
+    // and come back to their desktops with the next Super+D.
     property var desktopHidden: []      // [{address, workspace}]
 
     function toggleDesktop() {
@@ -232,6 +232,12 @@ Singleton {
             try {
                 clients = JSON.parse(out);
             } catch (e) {
+                return;
+            }
+            // windows left hidden by a shell that restarted in between come back here
+            const stranded = clients.filter(c => c.workspace && c.workspace.name === "special:svoya-desktop");
+            if (stranded.length > 0) {
+                Sys.run(["hyprctl", "--batch", stranded.map(c => "dispatch movetoworkspacesilent " + id + ",address:" + c.address).join(" ; ")]);
                 return;
             }
             const hidden = clients.filter(c => c.workspace && c.workspace.id === id && !c.pinned && c.mapped !== false).map(c => ({ address: c.address, workspace: id }));

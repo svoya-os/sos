@@ -4,8 +4,8 @@ import qs.components
 import "Emoji.js" as Emoji
 
 // Emoji (Super+. or Super+; — as on Windows): type a word in Russian or English, Enter (or a click)
-// puts the emoji into the window you were in (wtype) and on the clipboard. The ones you used come
-// first. Tab / ↑ ↓ move, Esc closes.
+// puts the emoji into the window you were in (wtype; without it, on the clipboard). The ones you
+// used come first. Tab / ↑ ↓ move, Esc closes.
 PanelFrame {
     id: root
 
@@ -28,8 +28,9 @@ PanelFrame {
         const recent = [e[0]].concat((Settings.recentEmoji || []).filter(x => x !== e[0])).slice(0, 24);
         Settings.recentEmoji = recent;
         Ui.hide();
-        // after the overlay lets go of the keyboard, type it where the cursor was
-        Sys.sh('printf %s "$1" | wl-copy; command -v wtype >/dev/null || exit 3; sleep 0.25; exec wtype -- "$1"', [e[0]], function (code) {
+        // after the overlay lets go of the keyboard, type it where the cursor was (the clipboard
+        // stays as it was); without wtype, or if typing fails, it goes to the clipboard instead
+        Sys.sh('if command -v wtype >/dev/null; then sleep 0.25; wtype -- "$1" && exit 0; fi; printf %s "$1" | wl-copy; exit 3', [e[0]], function (code) {
             if (code === 3)
                 Notifs.shellToast(Strings.emojiCopied(e[0]), Strings.emojiPaste, "face-slightly-smiling");
         });

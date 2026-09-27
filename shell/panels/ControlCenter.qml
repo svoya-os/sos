@@ -441,7 +441,9 @@ PanelFrame {
 
                             anchors.fill: parent
                             visible: artImage.status === Image.Ready
-                            source: media.player && media.player.trackArtUrl ? media.player.trackArtUrl : ""
+                            // only a picture the player keeps on this computer: fetching one from the
+                            // internet would be a request nobody asked for (the promise, README)
+                            source: media.player && String(media.player.trackArtUrl || "").indexOf("file:") === 0 ? media.player.trackArtUrl : ""
                             sourceSize: Qt.size(72, 72)
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
