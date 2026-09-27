@@ -434,9 +434,23 @@ def socket_path() -> Path:
     return Path(runtime) / "svoya" / VOICE_SOCKET
 
 
+def load_tts(models: Path, engine: str, engine_options: dict[str, Any], fallbacks: list[str]) -> Any:
+    """The chosen engine, else the next installed one that loads (Jackson's own voice needs PyTorch
+    with a graphics card: without them he still speaks, with Supertonic)."""
+    from .tts import load_engine
+    tried: list[str] = []
+    for name in [engine] + [f for f in fallbacks if f != engine]:
+        try:
+            return load_engine(name, models=models, **(engine_options if name == engine else {}))
+        except Exception as exc:  # noqa: BLE001 - a missing runtime or model: try the next engine
+            log.warning("speech engine %s did not load (%s: %s)", name, type(exc).__name__, exc)
+            tried.append(name)
+    raise RuntimeError(f"no speech engine loaded (tried {', '.join(tried)})")
+
+
 def default_loaders(models: Path, engine: str, engine_options: dict[str, Any]) -> dict[str, Callable[[], Any]]:
     from .stt import BilingualSTT, GigaAMSTT, ParakeetSTT
-    from .tts import load_engine
+    from .tts import installed_engines
     from .vad import SileroVAD
 
     def stt() -> Any:
@@ -447,7 +461,7 @@ def default_loaders(models: Path, engine: str, engine_options: dict[str, Any]) -
     return {
         "load_vad": lambda: SileroVAD(str(models / "silero-vad" / "silero_vad.onnx")),
         "load_stt": stt,
-        "load_tts": lambda: load_engine(engine, models=models, **engine_options),
+        "load_tts": lambda: load_tts(models, engine, engine_options, installed_engines(models)),
     }
 
 

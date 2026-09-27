@@ -95,6 +95,10 @@ Singleton {
     readonly property bool calmEvenings: !root.voiceSettings || root.voiceSettings.evening !== "off"
     readonly property string eveningHours: root.voiceSettings && root.voiceSettings.evening && root.voiceSettings.evening !== "off" ? root.voiceSettings.evening : "20:00-07:00"
     readonly property string eveningVoice: root.voiceSettings && root.voiceSettings.eveningVoice ? root.voiceSettings.eveningVoice : "M5"
+    // the voices to pick from: Supertonic's ready-made ones, or with a graphics card (voice-gpu)
+    // the characters' own
+    readonly property bool ownVoices: !!(root.voiceSettings && root.voiceSettings.engine === "qwen3-tts")
+    readonly property var voiceChoices: root.ownVoices ? root.personas : ["M1", "M2", "M3", "M4", "M5", "F1", "F2", "F3", "F4", "F5"]
 
     function setVoice(id) {
         root.voiceSettings = Object.assign({}, root.voiceSettings || {}, { voice: id });

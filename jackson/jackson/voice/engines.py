@@ -11,19 +11,25 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-# Jackson's own voices: a short reference clip per voice (reference.wav + reference.txt), designed
-# from a description with Qwen3-TTS VoiceDesign (tests/voice-samples) and cloned at run time.
+# Jackson's own voices, one folder per character (kent, sysop, dispatcher, pirate): a short clip in
+# each language (reference-ru.wav + reference-ru.txt, reference-en.*), designed from a description
+# with Qwen3-TTS 1.7B VoiceDesign (tests/voice-samples, run 36266187438) and cloned at run time, so a
+# Russian sentence is cloned from the Russian clip and an English one from the English clip.
 VOICES_DIR = Path(__file__).resolve().parent / "voices"
 
 
 class QwenTTS:
     """Qwen3-TTS (Apache-2.0): the Base model speaks in Jackson's designed voices, Russian and English
-    in the same voice. 0.6B runs on a graphics card, or slowly on a fast processor."""
+    in the same voice. 0.6B wants a graphics card (the voice-gpu module); on a processor it is about
+    four to six times slower than speech (Voice on a processor, run 36307024894)."""
 
     name = "qwen3-tts"
     reads_numbers = True        # a language model reads «70%» and «15:30» by itself
     rate = 24000
     LANG = {"ru": "Russian", "en": "English"}
+    DEFAULT = "kent"
+    # a Supertonic voice named in the settings → the character it stands for
+    FROM_SUPERTONIC = {"M1": "kent", "M2": "sysop", "M3": "dispatcher", "M5": "pirate"}
 
     def __init__(self, models: Any, size: str = "0.6B", device: str = "", voices: Any = None) -> None:
         import torch
@@ -34,28 +40,44 @@ class QwenTTS:
         self.model = Qwen3TTSModel.from_pretrained(str(Path(models) / "qwen3-tts" / f"Qwen3-TTS-12Hz-{size}-Base"),
                                                    device_map=device, dtype=dtype)
         self.size = size
+        self.device = device
         self.voices_dir = Path(voices) if voices else VOICES_DIR
-        self.prompts: dict[str, Any] = {}
+        self.prompts: dict[tuple[str, str], Any] = {}
 
     def voices(self) -> list[str]:
         if not self.voices_dir.is_dir():
             return []
-        return sorted(d.name for d in self.voices_dir.iterdir() if (d / "reference.wav").is_file())
+        return sorted(d.name for d in self.voices_dir.iterdir() if d.is_dir() and any(d.glob("reference*.wav")))
 
-    def _prompt(self, voice: str) -> Any:
-        if voice not in self.prompts:
-            ref = self.voices_dir / voice
-            self.prompts[voice] = self.model.create_voice_clone_prompt(
-                ref_audio=str(ref / "reference.wav"), ref_text=(ref / "reference.txt").read_text(encoding="utf-8").strip())
-        return self.prompts[voice]
-
-    def synth(self, text: str, lang: str, voice: str) -> Any:
+    def voice(self, name: str) -> str:
         known = self.voices()
         if not known:
             raise RuntimeError(f"no voices in {self.voices_dir}")
-        voice = voice if voice in known else known[0]
+        for candidate in (name, self.FROM_SUPERTONIC.get(name, ""), self.DEFAULT):
+            if candidate in known:
+                return candidate
+        return known[0]
+
+    def reference(self, voice: str, lang: str) -> tuple[Path, str]:
+        """The clip to clone for a sentence in *lang*: the voice's clip in that language if it has one."""
+        folder = self.voices_dir / voice
+        for stem in (f"reference-{lang}", "reference", "reference-en", "reference-ru"):
+            wav = folder / f"{stem}.wav"
+            if wav.is_file():
+                return wav, (folder / f"{stem}.txt").read_text(encoding="utf-8").strip()
+        raise RuntimeError(f"no reference clip for {voice}")
+
+    def _prompt(self, voice: str, lang: str) -> Any:
+        wav, text = self.reference(voice, lang)
+        key = (voice, wav.name)
+        if key not in self.prompts:
+            self.prompts[key] = self.model.create_voice_clone_prompt(ref_audio=str(wav), ref_text=text)
+        return self.prompts[key]
+
+    def synth(self, text: str, lang: str, voice: str) -> Any:
+        name = self.voice(voice)
         wavs, sr = self.model.generate_voice_clone(text=text, language=self.LANG.get(lang, "English"),
-                                                   voice_clone_prompt=self._prompt(voice))
+                                                   voice_clone_prompt=self._prompt(name, lang))
         self.rate = int(sr)
         return wavs[0]
 

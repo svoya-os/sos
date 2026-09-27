@@ -3,6 +3,7 @@
 
 import asyncio
 import unittest
+from pathlib import Path
 
 try:
     import numpy as np
@@ -268,6 +269,39 @@ class ServiceTest(unittest.TestCase):
         self.assertEqual(conn.kinds(), ["error", "status"])
         self.assertIn("parakeet", conn.got[0]["message"])
         self.assertFalse(conn.got[-1]["ready"])
+
+
+class LoadTTSTest(unittest.TestCase):
+    """Jackson's own voice needs PyTorch and a graphics card: when it does not load, the next
+    installed engine speaks (Supertonic), so he is never silent because of it."""
+
+    def test_the_next_engine_speaks_when_the_first_does_not_load(self):
+        from jackson.voice import service, tts
+        made = []
+
+        class Broken:
+            def __init__(self, models, **options):
+                raise ImportError("No module named 'torch'")
+
+        class Works:
+            def __init__(self, models, **options):
+                made.append(options)
+
+        saved = dict(tts.ENGINES)
+        try:
+            tts.ENGINES["qwen3"] = "tests.test_voice_service:_Broken"
+            tts.ENGINES["supertonic"] = "tests.test_voice_service:_Works"
+            globals()["_Broken"], globals()["_Works"] = Broken, Works
+            with self.assertLogs("jackson.voice", "WARNING") as logs:
+                engine = service.load_tts(Path("/srv/ai/voice"), "qwen3", {"size": "0.6B"}, ["qwen3", "supertonic"])
+            self.assertIsInstance(engine, Works)
+            self.assertEqual(made, [{}])                  # the options were the first engine's
+            self.assertIn("qwen3 did not load", logs.output[0])
+            with self.assertRaises(RuntimeError):
+                service.load_tts(Path("/srv/ai/voice"), "qwen3", {}, [])
+        finally:
+            tts.ENGINES.clear()
+            tts.ENGINES.update(saved)
 
 
 if __name__ == "__main__":

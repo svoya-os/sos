@@ -13,7 +13,7 @@ try:
 except ImportError:  # the voice service runs in the voice module's venv, which has numpy
     np = None
 
-from jackson.voice.tts import ENGINE_DIRS, PREFERENCE, engine_class, pick_engine
+from jackson.voice.tts import ENGINE_DIRS, PREFERENCE, engine_class, installed_engines, pick_engine
 
 
 class FakeSupertonic:
@@ -98,12 +98,82 @@ class SupertonicTest(unittest.TestCase):
 class PickTest(unittest.TestCase):
     def test_the_best_installed_engine_is_picked(self):
         with tempfile.TemporaryDirectory() as models:
-            self.assertEqual(pick_engine(models), "none")
+            self.assertEqual(pick_engine(models, gpu=True), "none")
             (Path(models) / ENGINE_DIRS["supertonic"]).mkdir()
-            self.assertEqual(pick_engine(models), "supertonic")
+            self.assertEqual(pick_engine(models, gpu=True), "supertonic")
             (Path(models) / ENGINE_DIRS["qwen3"]).mkdir()
-            self.assertEqual(pick_engine(models), "qwen3")
+            self.assertEqual(pick_engine(models, gpu=True), "qwen3")
+            # Jackson's own voice is slower than speech on a processor: without the NVIDIA driver
+            # (the card taken out, a driver that failed) he speaks with Supertonic
+            self.assertEqual(pick_engine(models, gpu=False), "supertonic")
+            self.assertEqual(installed_engines(models, gpu=True), ["qwen3", "supertonic"])
         self.assertEqual(PREFERENCE[0], "qwen3")
+
+
+class FakeQwen:
+    """What the engine uses of `qwen_tts.Qwen3TTSModel`."""
+
+    made: list = []
+
+    def __init__(self, path, device_map, dtype):
+        self.path, self.device_map, self.dtype = path, device_map, dtype
+        self.prompts = []
+        self.said = []
+
+    @classmethod
+    def from_pretrained(cls, path, device_map, dtype):
+        m = cls(path, device_map, dtype)
+        cls.made.append(m)
+        return m
+
+    def create_voice_clone_prompt(self, ref_audio, ref_text):
+        self.prompts.append((Path(ref_audio).parent.name, Path(ref_audio).name, ref_text))
+        return ("prompt", Path(ref_audio).parent.name, Path(ref_audio).name)
+
+    def generate_voice_clone(self, text, language, voice_clone_prompt):
+        self.said.append((text, language, voice_clone_prompt))
+        return [np.zeros(2400, dtype=np.float32)], 24000
+
+
+@unittest.skipIf(np is None, "numpy")
+class QwenTest(unittest.TestCase):
+    def setUp(self):
+        self.saved = {k: sys.modules.get(k) for k in ("torch", "qwen_tts")}
+        cuda = types.SimpleNamespace(is_available=lambda: True)
+        sys.modules["torch"] = types.SimpleNamespace(cuda=cuda, bfloat16="bf16", float32="f32")
+        sys.modules["qwen_tts"] = types.SimpleNamespace(Qwen3TTSModel=FakeQwen)
+        self.tts = engine_class("qwen3")(models="/srv/ai/voice")
+        self.fake = FakeQwen.made[-1]
+
+    def tearDown(self):
+        for k, v in self.saved.items():
+            if v is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = v
+
+    def test_the_characters_voices_ship_with_jackson(self):
+        self.assertEqual(self.tts.voices(), ["dispatcher", "kent", "pirate", "sysop"])
+        self.assertEqual((self.fake.device_map, self.fake.dtype), ("cuda:0", "bf16"))
+        self.assertTrue(self.fake.path.endswith("qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base"))
+        for voice in self.tts.voices():
+            for lang in ("ru", "en"):
+                wav, text = self.tts.reference(voice, lang)
+                self.assertEqual(wav.name, f"reference-{lang}.wav")
+                self.assertIn("Джексон" if lang == "ru" else "Jackson", text)
+
+    def test_each_language_is_cloned_from_its_own_clip_once(self):
+        self.tts.synth("Привет.", "ru", "kent")
+        self.tts.synth("Ещё раз.", "ru", "kent")
+        self.tts.synth("Hello.", "en", "kent")
+        self.assertEqual([p[:2] for p in self.fake.prompts], [("kent", "reference-ru.wav"), ("kent", "reference-en.wav")])
+        self.assertEqual([s[1] for s in self.fake.said], ["Russian", "Russian", "English"])
+
+    def test_a_supertonic_voice_from_the_settings_means_its_character(self):
+        self.assertEqual(self.tts.voice("M2"), "sysop")
+        self.assertEqual(self.tts.voice("M1"), "kent")
+        self.assertEqual(self.tts.voice("F3"), "kent")           # no such character: Кентафурик
+        self.assertEqual(self.tts.voice("pirate"), "pirate")
 
 
 if __name__ == "__main__":

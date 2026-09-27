@@ -348,8 +348,14 @@ come after it in the prompt. `welcome`/`state` carry `persona`, `avatar` and `mo
 through onnx-asr (`jackson/voice/stt.py`: Parakeet's English when it is sure of it, otherwise the
 surer of the two), and a local engine speaks (`jackson/voice/tts.py`): Supertonic 3 (code MIT, model
 OpenRAIL-M) on any processor, each character with one of its ready-made voices; Qwen3-TTS
-(Apache-2.0) with Jackson's own designed voices is the engine for a graphics card
-(`SVOYA_VOICE_ENGINE=qwen3`). They run in `svoya-voice` (`jackson/voice/service.py`, user
+(Apache-2.0) with Jackson's own designed voices is the engine for an NVIDIA graphics card
+(`sos install voice-gpu`: PyTorch and qwen-tts in the same venv, Qwen3-TTS 0.6B Base in
+`/srv/ai/voice/qwen3-tts`; the Creator profile adds it on NVIDIA machines). Each character's voice is
+cloned from its clips in `jackson/voice/voices/<character>/` (`reference-ru.wav` for Russian
+sentences, `reference-en.wav` for English ones, designed with Qwen3-TTS VoiceDesign in the Voice
+samples run 36266187438): Кентафурик by day, the calm `sysop` in the evening. It is picked only while
+the NVIDIA driver is loaded (on a processor it is four to six times slower than speech), and if it
+does not load the next installed engine speaks. They run in `svoya-voice` (`jackson/voice/service.py`, user
 unit `svoya-voice.service`), which jacksond starts on the first press of the microphone; jacksond
 itself stays on the standard library. The microphone is recorded through PipeWire only while a
 client asked to listen; no audio is kept.

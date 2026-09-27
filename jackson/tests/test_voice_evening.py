@@ -4,7 +4,7 @@
 import datetime as dt
 import unittest
 
-from jackson.voice.client import evening_hours, is_evening, voice_now, voice_settings
+from jackson.voice.client import evening_hours, for_engine, is_evening, voice_now, voice_settings
 
 DAY = dt.datetime(2026, 9, 27, 14, 0)
 NIGHT = dt.datetime(2026, 9, 27, 23, 30)
@@ -35,6 +35,18 @@ class EveningTest(unittest.TestCase):
                           "engine": "supertonic-3"})
         self.assertEqual(voice_settings({"voice": "F2", "evening": "off"}, "kent", "supertonic-3")["evening"], "off")
         self.assertEqual(voice_settings({}, "pirate", "qwen3-tts")["voice"], "pirate")
+
+    def test_with_his_own_voice_the_characters_speak(self):
+        # a graphics card (voice-gpu): Кентафурик by day, the calm one (sysop) in the evening; a
+        # Supertonic voice kept in the settings stands for its character
+        self.assertEqual(voice_now({}, "kent", "qwen3-tts", DAY), ("kent", 1.0))
+        self.assertEqual(voice_now({}, "kent", "qwen3-tts", NIGHT), ("sysop", 0.94))
+        self.assertEqual(voice_now({"voice": "M1"}, "kent", "qwen3-tts", DAY), ("kent", 1.0))
+        self.assertEqual(voice_now({"voice": "M3"}, "kent", "qwen3-tts", DAY), ("dispatcher", 1.0))
+        self.assertEqual(voice_now({"voice": "F2"}, "kent", "qwen3-tts", DAY), ("kent", 1.0))
+        shown = voice_settings({"voice": "M1", "evening_voice": "M2"}, "kent", "qwen3-tts")
+        self.assertEqual((shown["voice"], shown["eveningVoice"]), ("kent", "sysop"))
+        self.assertEqual(for_engine("M1", "supertonic-3"), "M1")
 
     def test_hours(self):
         self.assertEqual(evening_hours("20:00-07:00"), (dt.time(20), dt.time(7)))

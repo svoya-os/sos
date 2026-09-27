@@ -898,7 +898,7 @@ PanelFrame {
                             width: Math.min(parent.width, naturalWidth)
                             fontSize: 11.5
                             current: Jackson.dayVoice
-                            options: ["M1", "M2", "M3", "M4", "M5", "F1", "F2", "F3", "F4", "F5"].map(v => ({ id: v, label: v }))
+                            options: Jackson.voiceChoices.map(v => ({ id: v, label: Jackson.ownVoices ? (Strings.cuPersonas[v] || v) : v }))
                             Accessible.name: Strings.cuVoice
                             onPicked: choice => Jackson.setVoice(choice)
                         }
@@ -924,7 +924,7 @@ PanelFrame {
                                     color: Theme.text
                                 }
                                 MText {
-                                    text: Strings.cuVoiceEveningNote(Jackson.eveningHours, Jackson.eveningVoice)
+                                    text: Strings.cuVoiceEveningNote(Jackson.eveningHours, Jackson.ownVoices ? (Strings.cuPersonas[Jackson.eveningVoice] || Jackson.eveningVoice) : Jackson.eveningVoice)
                                     size: 10.5
                                     color: Theme.textFaint
                                 }

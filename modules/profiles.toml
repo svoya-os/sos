@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # First-run profiles → module sets, layout preset and Jackson's default route.
 # "@gpu" resolves to the driver module for this machine: nvidia (NVIDIA) · rocm (AMD) · nothing.
+# "?id" is a module for some hardware only (its `hardware`), left out on other machines.
 # layout: clean (floating, mouse-first) | classic (taskbar) | hacker (tiling)
 # jackson_route: local | auto (local first, cloud when you allow it) | cloud
 
@@ -14,7 +15,7 @@ jackson_route = "auto"
 [profiles.creator]
 name = { en = "Creator", ru = "Автор" }
 summary = { en = "Images, video and voice on your own GPU.", ru = "Картинки, видео и голос на своей видеокарте." }
-modules = ["base-ai", "@gpu", "llm-local", "studio", "voice", "codecs"]
+modules = ["base-ai", "@gpu", "llm-local", "studio", "voice", "?voice-gpu", "codecs"]
 layout = "clean"
 jackson_route = "local"
 

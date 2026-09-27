@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "voice-gpu"
+name = { en = "Jackson's own voice (graphics card)", ru = "Свой голос Джексона (видеокарта)" }
+summary = { en = "On an NVIDIA graphics card Jackson speaks in the voices made for his characters: Кентафурик by day, the calm one in the evening, Russian and English in the same voice (Qwen3-TTS 0.6B). Without it he speaks with Supertonic.", ru = "На видеокарте NVIDIA Джексон говорит голосами, сделанными для его характеров: днём Кентафурик, вечером спокойный, по-русски и по-английски одним голосом (Qwen3-TTS 0.6B). Без модуля он говорит голосом Supertonic." }
+category = "media"
+profiles = ["creator"]
+requires = ["voice"]
+hardware = ["nvidia"]
+apt = []
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+user_scripts = { install = "restart-voice.sh", remove = "restart-voice.sh" }
+disk_gb = 6.0
+vram_gb_min = 3
+aliases = ["qwen3-tts", "qwen-tts", "own-voice", "свой голос", "голос джексона", "голос на видеокарте"]
+license_note = { en = "Qwen3-TTS 0.6B and qwen-tts: Apache-2.0 (Alibaba Qwen); PyTorch: BSD-3-Clause; NVIDIA CUDA libraries from PyPI under NVIDIA's license. Jackson's voices were designed for SOS with Qwen3-TTS VoiceDesign; speech is made on this computer.", ru = "Qwen3-TTS 0.6B и qwen-tts — Apache-2.0 (Alibaba Qwen); PyTorch — BSD-3-Clause; библиотеки NVIDIA CUDA из PyPI — по лицензии NVIDIA. Голоса Джексона сделаны для СОС в Qwen3-TTS VoiceDesign; речь создаётся на этом компьютере." }

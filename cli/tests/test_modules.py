@@ -10,8 +10,8 @@ from svoya_cli.runner import Result
 from .helpers import FakeRunner, SandboxTest, capture, fixture
 
 MODDIR = REPO_ROOT / "modules"
-EXPECTED = {"base-ai", "nvidia", "cuda-devel", "rocm", "llm-local", "studio", "voice", "ml-lab", "agents", "dev",
-            "cloud-burst", "codecs", "gaming", "notes", "upsil"}
+EXPECTED = {"base-ai", "nvidia", "cuda-devel", "rocm", "llm-local", "studio", "voice", "voice-gpu", "ml-lab", "agents",
+            "dev", "cloud-burst", "codecs", "gaming", "notes", "upsil"}
 NV_FACTS = {"vendors": ["nvidia"], "vendor": "nvidia", "kernel.flavor": "generic", "torch": "cu130",
             "nvidia.arch": "ada", "nvidia.branch": "595", "nvidia.open": "-open"}
 
@@ -130,8 +130,15 @@ class CatalogTest(SandboxTest):
         for p in prof["profiles"].values():
             self.assertIn(p["layout"], ("clean", "classic", "hacker"))
             self.assertIn(p["jackson_route"], ("local", "auto", "cloud"))
-        creator = M.resolve_profile_modules(prof["profiles"]["creator"], NV_FACTS, prof)
+        cat = M.load_catalog(MODDIR)
+        creator = M.resolve_profile_modules(prof["profiles"]["creator"], NV_FACTS, prof, cat=cat)
         self.assertEqual(creator[:2], ["base-ai", "nvidia"])
+        # Jackson's own voice comes with the Creator profile on NVIDIA only
+        self.assertIn("voice-gpu", creator)
+        amd_creator = M.resolve_profile_modules(prof["profiles"]["creator"], {"vendors": ["amd"], "vendor": "amd"}, prof, cat=cat)
+        self.assertNotIn("voice-gpu", amd_creator)
+        self.assertIn("voice", amd_creator)
+        self.assertNotIn("voice-gpu", M.resolve_profile_modules(prof["profiles"]["creator"], NV_FACTS, prof))
         amd = M.resolve_profile_modules(prof["profiles"]["newcomer"], {"vendor": "amd"}, prof)
         self.assertIn("rocm", amd)
         ml_off = M.resolve_profile_modules(prof["profiles"]["ml"], {"vendor": "none"}, prof, offline=True)

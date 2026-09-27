@@ -493,7 +493,7 @@ def cmd_profiles(args, ctx: Ctx, cat: dict) -> int:
     facts = gpu_facts(ctx)
     out = []
     for pid, p in (prof.get("profiles") or {}).items():
-        mods = resolve_profile_modules(p, facts, prof, offline=args.offline)
+        mods = resolve_profile_modules(p, facts, prof, offline=args.offline, cat=cat)
         out.append({"id": pid, "name": p.get("name"), "summary": p.get("summary"), "modules": mods,
                     "layout": p.get("layout"), "jacksonRoute": ("local" if args.offline else p.get("jackson_route")),
                     "diskGb": round(sum(float(cat.get(m, {}).get("disk_gb", 0)) for m in mods), 1)})
@@ -508,13 +508,20 @@ def cmd_profiles(args, ctx: Ctx, cat: dict) -> int:
     return 0
 
 
-def resolve_profile_modules(p: dict, facts: dict, prof: dict, offline: bool = False) -> list[str]:
+def resolve_profile_modules(p: dict, facts: dict, prof: dict, offline: bool = False,
+                            cat: dict | None = None) -> list[str]:
+    """A profile's modules for this machine: "@gpu" is the driver module for its card, "?id" a
+    module for some hardware only (Jackson's own voice on NVIDIA), left out where it does not apply."""
     mods: list[str] = []
     for m in p.get("modules", []):
         if m == "@gpu":
             vendor = facts.get("vendor")
             m = {"nvidia": "nvidia", "amd": "rocm"}.get(vendor or "", "")
             if not m:
+                continue
+        elif m.startswith("?"):
+            m = m[1:]
+            if cat is None or m not in cat or not applicable(cat[m], facts)[0]:
                 continue
         if m not in mods:
             mods.append(m)
@@ -538,7 +545,7 @@ def cmd_change(args, ctx: Ctx, cat: dict, action: str) -> int:
         if p is None:
             ui.err(tr(f"sos: no profile '{args.profile}'", f"sos: нет профиля «{args.profile}»"))
             return 2
-        names += resolve_profile_modules(p, facts, prof, offline=getattr(args, "offline", False))
+        names += resolve_profile_modules(p, facts, prof, offline=getattr(args, "offline", False), cat=cat)
     if not names:
         ui.err(tr("sos: name at least one module (sos modules list)", "sos: укажите модуль (sos modules list)"))
         return 2

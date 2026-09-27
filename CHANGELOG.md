@@ -49,6 +49,11 @@ Work towards v0.1 «Первый сигнал».
   customizer's «Голос» row plays a voice when you pick it and turns the calm evenings off;
   `j voice` sets the hours and the voices. "Thanks, that's all" ends a conversation in English
   too. Music (a browser tab, Spotify, a player) pauses while you talk to him and goes on after.
+- **Privacy:** Jackson's own voice on an NVIDIA graphics card (`sos install voice-gpu`, part of the
+  Creator profile there): Кентафурик by day and the calm one in the evening, Russian and English in
+  the same voice (Qwen3-TTS 0.6B, made on your computer). Installing it downloads PyTorch with the
+  CUDA libraries and the model (about 6 GB) from PyPI and Hugging Face. Without a card, or if it
+  fails to load, he speaks with Supertonic as before.
 - The keys people bring from Windows: `Alt+Tab` goes to the window used before (Tab again with Alt
   held goes further back, and holding Alt shows the windows' pictures), a tap of `Win` opens the
   launcher, `Win+Tab` shows every

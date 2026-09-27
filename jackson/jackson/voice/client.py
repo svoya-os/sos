@@ -57,15 +57,24 @@ def is_evening(now: dt.datetime, window: str) -> bool:
     return start <= t < end if start < end else (t >= start or t < end)     # 20:00-07:00 wraps midnight
 
 
+def for_engine(voice: str, engine: str) -> str:
+    """A voice as *engine* names it: with Jackson's own voices (Qwen3-TTS) a Supertonic voice kept in
+    the settings («M1») stands for the character it was picked for («kent»)."""
+    from .engines import QwenTTS
+    if engine == QwenTTS.name and re.fullmatch(r"[MF]\d+", voice or ""):
+        return QwenTTS.FROM_SUPERTONIC.get(voice, QwenTTS.DEFAULT)
+    return voice
+
+
 def voice_settings(cfg: dict[str, Any], persona: str, engine: str) -> dict[str, Any]:
     """What the shell shows and changes: the day voice (the character's, when none is set, as the
     engine names it), the evening hours ("off"), the evening voice and pace."""
     from .engines import SupertonicTTS
-    day = str(cfg.get("voice") or "")
+    day = for_engine(str(cfg.get("voice") or ""), engine)
     if not day:
         day = SupertonicTTS.PERSONA.get(persona, persona) if engine == SupertonicTTS.name else persona
     window = str(cfg.get("evening", EVENING))
-    evening = str(cfg.get("evening_voice") or EVENING_VOICE.get(engine, day))
+    evening = for_engine(str(cfg.get("evening_voice") or EVENING_VOICE.get(engine, day)), engine)
     try:
         speed = float(cfg.get("evening_speed", EVENING_SPEED))
     except (TypeError, ValueError):
@@ -77,10 +86,10 @@ def voice_settings(cfg: dict[str, Any], persona: str, engine: str) -> dict[str, 
 def voice_now(cfg: dict[str, Any], persona: str, engine: str, now: dt.datetime | None = None) -> tuple[str, float]:
     """The voice for an answer said now, and how fast: the day voice ([voice] voice, else the
     character's), and in the evening a calmer one a little slower."""
-    day = str(cfg.get("voice") or persona)
+    day = for_engine(str(cfg.get("voice") or persona), engine)
     if not is_evening(now or dt.datetime.now(), str(cfg.get("evening", EVENING))):
         return day, 1.0
-    voice = str(cfg.get("evening_voice") or EVENING_VOICE.get(engine, day))
+    voice = for_engine(str(cfg.get("evening_voice") or EVENING_VOICE.get(engine, day)), engine)
     try:
         speed = float(cfg.get("evening_speed", EVENING_SPEED))
     except (TypeError, ValueError):

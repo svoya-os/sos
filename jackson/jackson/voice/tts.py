@@ -84,18 +84,35 @@ def load_engine(name: str, **options: Any) -> TextToSpeech:
     return engine_class(name)(**options)
 
 
-def pick_engine(models: Any) -> str:
-    """The best engine installed under *models* for this machine (``sos install voice`` puts one there)."""
+def installed_engines(models: Any, gpu: bool | None = None) -> list[str]:
+    """The engines installed under *models* that suit this machine, best first: Qwen3-TTS only with
+    an NVIDIA driver loaded (on a processor it is slower than speech)."""
     from pathlib import Path
     root = Path(models)
+    if gpu is None:
+        gpu = nvidia_ready()
+    out = []
     for name in PREFERENCE:
         marker = ENGINE_DIRS.get(name)
-        if marker and (root / marker).exists():
-            return name
-    return "none"
+        if marker and (root / marker).exists() and (gpu or name not in NEEDS_GPU):
+            out.append(name)
+    return out
+
+
+def pick_engine(models: Any, gpu: bool | None = None) -> str:
+    """The best engine installed under *models* for this machine (``sos install voice`` puts one there)."""
+    found = installed_engines(models, gpu)
+    return found[0] if found else "none"
+
+
+def nvidia_ready() -> bool:
+    from pathlib import Path
+    return Path("/proc/driver/nvidia/version").exists()
 
 
 # engine → the folder under /srv/ai/voice that says it is installed; best first: Jackson's own
-# voices on a graphics card (Qwen3-TTS), then a fast ready-made voice on any processor (Supertonic 3)
+# voices on a graphics card (Qwen3-TTS, the voice-gpu module), then a fast ready-made voice on any
+# processor (Supertonic 3, the voice module)
 ENGINE_DIRS: dict[str, str] = {"qwen3": "qwen3-tts", "supertonic": "supertonic-3"}
 PREFERENCE: list[str] = ["qwen3", "supertonic"]
+NEEDS_GPU: set[str] = {"qwen3"}
