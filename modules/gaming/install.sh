@@ -27,6 +27,8 @@ sv_apt_track_install steam-installer "${extra[@]}"
 # Debian names its launcher entry «Install Steam» (the package is steam-installer), and the launcher
 # and the top bar kept saying so after Steam was installed (the games bot). The same entry as
 # «Steam» in /usr/local/share, which comes first in XDG_DATA_DIRS; the packaged file stays as it is.
+# The image makes /usr/local/share/applications (image/hooks/30-desktop.sh): the shell only notices
+# a new entry in a folder that existed when it started.
 steam_entry=${SVOYA_STEAM_DESKTOP:-/usr/share/applications/steam.desktop}
 if [[ -f "$steam_entry" ]]; then
   # the entry's own name only: the actions (Store, Library…) keep theirs

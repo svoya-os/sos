@@ -9,6 +9,12 @@ root=$1
 chroot_dns "$root"
 install_list "$root" "$SVOYA_IMAGE/packages/desktop.list"
 
+# The shell (Quickshell 0.3) watches the applications folders that exist when it starts. A folder
+# made later is never watched: `sos install steam` wrote «Steam» over Debian's «Install Steam» into a
+# new /usr/local/share/applications, and the launcher and the top bar kept «Install Steam» until the
+# next login (the games bot, ISO #18). The folder is there from the start now.
+install -d -m 0755 "$root/usr/local/share/applications"
+
 # The build runs without Recommends; the shell's QML modules are Recommends of svoya-shell
 # (computed from the imports in shell/), so install the ones that exist explicitly.
 recs=$(in_chroot "$root" dpkg-query -W -f='${Recommends}' svoya-shell | tr ',' '\n' |
