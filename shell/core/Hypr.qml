@@ -214,13 +214,17 @@ Singleton {
     // Hyprland has no minimizing: the windows of this workspace go to a hidden special workspace
     // and come back to their desktops with the next Super+D.
     property var desktopHidden: []      // [{address, workspace}]
+    property string desktopFocus: ""    // the window that had the keyboard: it gets it back
 
     function toggleDesktop() {
         if (!root.present)
             return;
         if (root.desktopHidden.length > 0) {
             const batch = root.desktopHidden.map(w => "dispatch movetoworkspacesilent " + w.workspace + ",address:" + w.address);
+            if (root.desktopFocus.length > 0)
+                batch.push("dispatch focuswindow address:" + root.desktopFocus);
             root.desktopHidden = [];
+            root.desktopFocus = "";
             Sys.run(["hyprctl", "--batch", batch.join(" ; ")]);
             return;
         }
@@ -240,9 +244,12 @@ Singleton {
                 Sys.run(["hyprctl", "--batch", stranded.map(c => "dispatch movetoworkspacesilent " + id + ",address:" + c.address).join(" ; ")]);
                 return;
             }
-            const hidden = clients.filter(c => c.workspace && c.workspace.id === id && !c.pinned && c.mapped !== false).map(c => ({ address: c.address, workspace: id }));
+            const here = clients.filter(c => c.workspace && c.workspace.id === id && !c.pinned && c.mapped !== false);
+            const hidden = here.map(c => ({ address: c.address, workspace: id }));
             if (hidden.length === 0)
                 return;
+            const focused = here.find(c => c.focusHistoryID === 0);
+            root.desktopFocus = focused ? String(focused.address) : "";
             root.desktopHidden = hidden;
             Sys.run(["hyprctl", "--batch", hidden.map(w => "dispatch movetoworkspacesilent special:svoya-desktop,address:" + w.address).join(" ; ")]);
         });

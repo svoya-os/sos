@@ -30,12 +30,32 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: Ui.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
+    // A window that opened while a panel held the keyboard (Jackson opening a folder or an app)
+    // gets the keyboard when the panel closes, as a new window does on Windows; Hyprland alone
+    // would hand it back to the window that had it before the panel.
+    property var openedMeanwhile: null
+
+    Connections {
+        target: ToplevelManager.toplevels
+
+        function onObjectInsertedPost(object, index) {
+            if (Ui.open)
+                overlay.openedMeanwhile = object;
+        }
+    }
+
     Connections {
         target: Ui
 
         function onModalChanged() {
-            if (!Ui.open)
+            if (!Ui.open) {
                 closing.restart();
+                const t = overlay.openedMeanwhile;
+                overlay.openedMeanwhile = null;
+                // at once: a window chosen in the overview (Alt+Tab) is activated right after and wins
+                if (t && ToplevelManager.toplevels.values.indexOf(t) >= 0)
+                    t.activate();
+            }
         }
     }
 

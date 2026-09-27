@@ -1006,6 +1006,10 @@ class Checker:
                 cands = [n for n in names if n in ids or (self.resolve(n, scope) is not None)]
                 if cands:
                     target = cands[-1]
+                    # `Target.member` (a model, an object property): its type is not followed here
+                    at = max(i for i, t in enumerate(toks) if t.k == "id" and t.v == target)
+                    if at + 1 < len(toks) and toks[at + 1].v == ".":
+                        return
         if not target:
             return
         if target in ids:

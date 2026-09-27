@@ -568,7 +568,8 @@ PanelFrame {
                     }
                     MText {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Strings.open
+                        // the calculator's answer is copied, not opened
+                        text: root.rows[root.selected] && root.rows[root.selected].group === "calc" ? Strings.copy.toLowerCase() : Strings.open
                         size: 11
                         color: Theme.textFaint
                     }

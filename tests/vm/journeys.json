@@ -203,6 +203,8 @@
     {"id": "game-mode", "action": "key", "keys": ["meta_l", "g"], "hold_ms": 120, "continue_on_failure": true},
     {"id": "game-mode", "action": "sleep", "seconds": 3},
 
+    {"id": "night-light", "action": "key", "keys": ["meta_l", "ret"], "hold_ms": 120, "continue_on_failure": true},
+    {"id": "night-light", "action": "sleep", "seconds": 4},
     {"id": "night-light", "action": "type", "text": "clear; quickshell -p /usr/share/svoya/shell ipc call system nightLight on\n", "continue_on_failure": true},
     {"id": "night-light", "action": "sleep", "seconds": 3},
     {"id": "night-light", "action": "screenshot", "name": "10w-night-light", "continue_on_failure": true},
