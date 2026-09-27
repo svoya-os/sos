@@ -1,0 +1,116 @@
+# SPDX-License-Identifier: Apache-2.0
+# Can Jackson's own character voices run on a processor? Qwen3-TTS with PyTorch needs about 6 s of
+# work per second of speech on a CI runner (Voice samples), too slow without a graphics card.
+# qwen3-tts.cpp (MIT, C++ and ggml) runs Qwen3-TTS 12Hz 0.6B Base, 4× faster for voice cloning by
+# its author's measure. Here it says Jackson's lines in each character's reference voice (from the
+# Voice samples run), as q8_0 for every character and f16 for one; Jackson's recognizers say what
+# they hear. The samples and the table go to the ci-screens branch (evals/voice-cpp/<run>/), to be
+# listened to; nothing here ships.
+name: Voice on a processor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tests/voice-cpp/**"
+      - ".github/workflows/voice-cpp.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: voice-cpp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    permissions:
+      contents: write   # the samples go to the ci-screens branch (never to main)
+    env:
+      QT_REPO: https://github.com/predict-woo/qwen3-tts.cpp
+      QT_COMMIT: b3ba14077cf1b3e11b86e5f84aa9184605c89b28   # 2026-07-18, MIT
+      SAMPLES_RUN: "36266187438"                            # the Voice samples run with the characters
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build qwen3-tts.cpp for this processor
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake build-essential ffmpeg >/dev/null
+          nproc; lscpu | grep -E '^Model name'; free -g | head -n 2
+          git clone --quiet "$QT_REPO" "$RUNNER_TEMP/qt"
+          cd "$RUNNER_TEMP/qt"
+          git checkout --quiet "$QT_COMMIT"
+          git submodule update --init --recursive --quiet
+          cmake -S ggml -B ggml/build -DCMAKE_BUILD_TYPE=Release >/dev/null
+          cmake --build ggml/build -j"$(nproc)" >/dev/null
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release >/dev/null
+          cmake --build build -j"$(nproc)" >/dev/null
+          ls build
+
+      - name: Qwen3-TTS 12Hz 0.6B Base as GGUF (f16 and q8_0)
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/conv"
+          . "$RUNNER_TEMP/conv/bin/activate"
+          pip install --quiet --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --quiet huggingface_hub gguf safetensors numpy tqdm
+          cd "$RUNNER_TEMP/qt"
+          python scripts/setup_pipeline_models.py --coreml off
+          mkdir -p models-q8
+          python scripts/convert_tts_to_gguf.py --input models/Qwen3-TTS-12Hz-0.6B-Base \
+            --output models-q8/qwen3-tts-0.6b-q8_0.gguf --type q8_0
+          ln -s ../models/qwen3-tts-tokenizer-f16.gguf models-q8/
+          ls -la models models-q8
+
+      - name: The characters' reference voices (Voice samples run)
+        run: |
+          set -euo pipefail
+          for d in kent calm dispatcher pirate; do
+            mkdir -p "$RUNNER_TEMP/refs/$d"
+            for l in ru en; do
+              curl -fsSL -o "$RUNNER_TEMP/refs/$d/reference-$l.ogg" \
+                "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/ci-screens/evals/voice/$SAMPLES_RUN/qwen/$d-design/reference-$l.ogg"
+              ffmpeg -nostdin -loglevel error -y -i "$RUNNER_TEMP/refs/$d/reference-$l.ogg" -ar 24000 -ac 1 \
+                -c:a pcm_s16le "$RUNNER_TEMP/refs/$d/reference-$l.wav"
+            done
+          done
+
+      - name: Jackson's ears (as `sos install voice` makes them)
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/voice"
+          . "$RUNNER_TEMP/voice/bin/activate"
+          pip install --quiet numpy "onnxruntime>=1.20" "onnx-asr[hub]>=0.10" huggingface_hub
+          PYTHONPATH=jackson python -m jackson.voice.setup --models "$RUNNER_TEMP/asr" --engine none
+
+      - name: Say the lines in each character's voice
+        run: |
+          set -euo pipefail
+          . "$RUNNER_TEMP/voice/bin/activate"
+          PYTHONPATH=jackson python tests/voice-cpp/render.py --cli "$RUNNER_TEMP/qt/build/qwen3-tts-cli" \
+            --refs "$RUNNER_TEMP/refs" --asr "$RUNNER_TEMP/asr" --out dist/voice-cpp --threads "$(nproc)" \
+            --variant "q8_0=$RUNNER_TEMP/qt/models-q8" --variant "f16=$RUNNER_TEMP/qt/models:kent" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          [ -d dist/voice-cpp ] || exit 0
+          out=$(mktemp -d)
+          (cd dist/voice-cpp && find . -name '*.wav' -print0) | while IFS= read -r -d '' f; do
+            mkdir -p "$out/$(dirname "$f")"
+            ffmpeg -nostdin -loglevel error -y -i "dist/voice-cpp/$f" -c:a libopus -b:a 48k "$out/${f%.wav}.ogg"
+          done
+          cp dist/voice-cpp/results.md dist/voice-cpp/samples.jsonl "$out/" 2>/dev/null || true
+          scripts/ci-publish.sh "$out" "evals/voice-cpp/$RUN" "evals: characters on a processor, run $RUN"
