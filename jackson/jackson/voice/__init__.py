@@ -22,7 +22,8 @@ Voice service socket ``$XDG_RUNTIME_DIR/svoya/voice.sock``, JSON Lines, one obje
     → {"type": "status"}
     ← {"type": "level", "id": "t1", "source": "mic"|"voice", "level": 0.42}
     ← {"type": "speech", "id": "t1", "state": "start"|"end"}
-    ← {"type": "transcript", "id": "t1", "text": "…", "ms": 310}
+    ← {"type": "transcript", "id": "t1", "text": "…", "ms": 310, "model": "…", "sure": 0.93}
+                                              which recognizer gave the text, how sure it was
     ← {"type": "nothing", "id": "t1"}         no speech before the timeout (or only noise)
     ← {"type": "spoken", "id": "t1", "hushed": false}   everything said for t1 has been played
     ← {"type": "status", "ready": true, "stt": "…", "tts": "…", "voices": […], "error": "…"}

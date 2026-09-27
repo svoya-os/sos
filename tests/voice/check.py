@@ -82,7 +82,9 @@ async def run_phrase(args: argparse.Namespace, lang: str, raw: str, expected: li
                                      {"type": "say", "id": "s1", "text": "", "final": True}], {"spoken", "error"}, 60)
             spoken = bool(said) and said[-1].get("type") == "spoken"
             ok = ok and spoken
-            return ok, (f"| {lang} | {text} | {'yes' if ok else 'NO'} | recognized in {last.get('ms', '—')} ms, "
+            by = f" by {last['model']}" if last.get("model") else ""
+            by += f" (sure {last['sure']:.2f})" if isinstance(last.get("sure"), (int, float)) else ""
+            return ok, (f"| {lang} | {text} | {'yes' if ok else 'NO'} | recognized in {last.get('ms', '—')} ms{by}, "
                         f"phrase ended {took:.1f} s after the start; models loaded in {load_s:.1f} s; "
                         f"spoken: {spoken} |")
         finally:

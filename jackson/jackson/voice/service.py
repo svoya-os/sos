@@ -278,12 +278,20 @@ class VoiceService:
             await cap.conn.send({"type": "error", "id": cap.id, "message": f"recognition failed: {exc}"})
             return
         ms = int((time.monotonic() - t0) * 1000)
+        describe = getattr(self.stt, "describe", None)
+        detail = describe() if describe else getattr(self.stt, "last", "")
         log.info("heard %.1f s of speech, recognized in %d ms%s", len(audio) / 16000, ms,
-                 f" ({self.stt.last})" if getattr(self.stt, "last", "") else "")
+                 f" ({detail})" if detail else "")
         if not text.strip():
             await cap.conn.send({"type": "nothing", "id": cap.id})
-        else:
-            await cap.conn.send({"type": "transcript", "id": cap.id, "text": text.strip(), "ms": ms})
+            return
+        msg: dict[str, Any] = {"type": "transcript", "id": cap.id, "text": text.strip(), "ms": ms}
+        if getattr(self.stt, "last", ""):
+            msg["model"] = self.stt.last
+        sure = self.stt.sureness() if hasattr(self.stt, "sureness") else None
+        if sure is not None:
+            msg["sure"] = round(sure, 3)
+        await cap.conn.send(msg)
 
     async def earcon(self, name: str) -> None:
         """A short sound from the SOS sound theme (branding/sounds), played to its end."""

@@ -42,7 +42,8 @@ Work towards v0.1 «Первый сигнал».
   or hold Super+J, speak Russian or English, and Jackson answers out loud, starting with his first
   sentence while the rest is still being written. After an answer he listens a few seconds more, so
   you can go on talking; «спасибо, всё» or the button ends it. Speech is recognized and spoken on
-  your computer (Silero VAD, Parakeet TDT 0.6B v3, a local voice); nothing is recorded or sent.
+  your computer (Silero VAD, Parakeet TDT 0.6B v3 and GigaAM v3 for Russian, a local voice);
+  nothing is recorded or sent, and the system log never gets your words.
   Installing the module downloads these models from Hugging Face.
 
 ### Changed
