@@ -261,8 +261,10 @@ class Runner:
         raise StepFailed(f"timed out waiting for serial pattern {pat.pattern!r}" + (f" (#{want})" if want > 1 else ""))
 
     def do_key(self, step: dict) -> str:
+        # the same channel as typing: send-key's delayed queue let typed text overtake the keys still
+        # queued there (ISO #18: three tabs, then the password landed in the login name)
         combo = keys.parse_combo(step["keys"])
-        self.qmp.send_key(combo, step.get("hold_ms", 100))
+        self.qmp.press(combo, step.get("hold_ms", 100) / 1000)
         return "+".join(combo)
 
     def do_click(self, step: dict) -> str:

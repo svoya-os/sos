@@ -81,7 +81,7 @@ class RunnerTests(unittest.TestCase):
                 {"id": "launch", "action": "screenshot", "name": "02-launch", "expect_change_from": "01-menu"},
             ]
             self.assertTrue(runner.run(steps), runner.results)
-            self.assertEqual(fake.keys, [["meta_l", "spc"]])
+            self.assertEqual(fake.typed, [("down", "meta_l"), ("down", "spc"), ("up", "spc"), ("up", "meta_l")])
             self.assertTrue((out / "screens" / "01-menu.png").exists())
             self.assertIn("changed vs 01-menu", runner.results[-1]["detail"])
             run.write_reports(out, {"plan": "t", "firmware": "uefi", "accel": "tcg", "iso": "x"},
@@ -199,6 +199,27 @@ class TypeTests(unittest.TestCase):
             # shift+a, the URL (its two colons with shift), return
             self.assertEqual(sum(1 for d, _ in fake.typed if d == "down"), 2 + len("http://10.0.2.2:8000") + 2 + 1)
             self.assertIn("typed 22 characters", runner.results[-1]["detail"])
+            qmp.close()
+
+
+    def test_keys_and_typing_arrive_in_order(self):
+        # ISO #18: keys went through send-key's delayed queue and typing did not, so the typed
+        # password overtook the tabs before it and landed in the wrong field
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp)
+            (out / "serial.log").write_text("")
+            a, b = socket.socketpair()
+            fake = ScreenQEMU(b, [frame((0, 0, 0))])
+            fake.start()
+            qmp = QMPClient(a, timeout=2)
+            qmp.negotiate()
+            runner = run.Runner(qmp, out, scale=0.01, proc=None)
+            self.assertTrue(runner.run([{"id": "u", "action": "key", "keys": ["tab"]},
+                                        {"id": "u", "action": "key", "keys": ["tab"]},
+                                        {"id": "u", "action": "type", "text": "ab"}]), runner.results)
+            self.assertEqual(fake.typed, [("down", "tab"), ("up", "tab"), ("down", "tab"), ("up", "tab"),
+                                          ("down", "a"), ("up", "a"), ("down", "b"), ("up", "b")])
+            self.assertEqual(fake.keys, [])
             qmp.close()
 
 
