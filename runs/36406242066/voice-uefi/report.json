@@ -1,0 +1,360 @@
+{
+ "plan": "voice",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": true,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 14.34 desktop-ready'",
+   "status": "ok",
+   "seconds": 16.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 7,
+   "id": "network",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 7.32 network-online'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 9,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 10,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+f",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 11,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 12,
+   "id": "install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 117 characters",
+   "status": "ok",
+   "seconds": 7.3
+  },
+  {
+   "n": 13,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 45s",
+   "status": "ok",
+   "seconds": 45.0
+  },
+  {
+   "n": 14,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 15,
+   "id": "install",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[   61.395285] sos-vm-test[2115]: SOS-STEP voice-ready'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 16,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 17,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 18,
+   "id": "mic",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 108 characters",
+   "status": "ok",
+   "seconds": 6.7
+  },
+  {
+   "n": 19,
+   "id": "mic",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[   93.788360] sos-vm-test[2142]: SOS-STEP mic-ready'",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 20,
+   "id": "mic",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[   97.280674] python[2135]: INFO jackson.voice: voice ready in 3.4 s: parakeet-tdt-0.6b-v3 + gigaam-v3-e2e-rnnt + supertonic-3'",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 21,
+   "id": "mic",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 22,
+   "id": "mic",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 23,
+   "id": "mic",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 51 characters",
+   "status": "ok",
+   "seconds": 3.2
+  },
+  {
+   "n": 24,
+   "id": "talk",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  104.172457] python[2135]: INFO jackson.voice: listening (tap)'",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 25,
+   "id": "talk",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 26,
+   "id": "talk",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 27,
+   "id": "talk",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  108.632819] jacksond[1398]: INFO jackson.engine: turn done in 6 ms: jackson/fastpath, 0+0 tokens'",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 28,
+   "id": "talk",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 29,
+   "id": "talk",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 30,
+   "id": "talk",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  115.766321] python[2135]: INFO jackson.voice: listening (follow)'",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 31,
+   "id": "talk",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 32,
+   "id": "talk",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 33,
+   "id": "talk",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  120.673502] python[2135]: INFO jackson.voice: heard 2.1 s of speech, recognized in 1455 ms (gigaam-v3-e2e-rnnt; sure: parakeet-tdt-0.6b-v3 1.00, gigaam-v3-e2e-rnnt 0.79)' (#2)",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 34,
+   "id": "talk",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 35,
+   "id": "talk",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 36,
+   "id": "talk",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 37,
+   "id": "status",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 64 characters",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 38,
+   "id": "status",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 39,
+   "id": "status",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  }
+ ]
+}
