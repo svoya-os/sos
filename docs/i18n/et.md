@@ -33,14 +33,11 @@ kõik kohapeal.
 
 ## Proovi virtuaalmasinas (umbes 15 minutit)
 
-1. Laadi testversioon: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
-   → ülemine roheline linnukesega käivitus → *Artifacts* → **sos-iso** (vaja on GitHubi kontot).
-2. Paki lahti ja liida osad kokku. Windows (PowerShell):
-   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
-   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Kontrolli failiga `SHA256SUMS`.
-3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB mälu, 4 protsessorit, *Luba EFI*, graafika
+1. Laadi alla **[sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)** (umbes 1,7 GB, üks fail, kontot pole
+   vaja): see on `main`-i [testversioon](https://github.com/svoya-os/sos/releases/tag/test).
+2. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB mälu, 4 protsessorit, *Luba EFI*, graafika
    *VMSVGA* ilma 3D-ta, käivita ISO-ga.
-4. Oled live-seansi töölaual. `Super+K` näitab kõiki kiirklahve; **„Install SOS“** Jacksoni
+3. Oled live-seansi töölaual. `Super+K` näitab kõiki kiirklahve; **„Install SOS“** Jacksoni
    tervituses paigaldab süsteemi kettale.
 
 ## Riistvara

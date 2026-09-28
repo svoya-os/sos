@@ -109,8 +109,8 @@ Presentation {
     SosSlide {
         titleEn: "A GPU that just works"
         titleRu: "Видеокарта, которая просто работает"
-        bodyEn: "Signed NVIDIA drivers are installed from this medium: no internet, no key enrollment, Secure Boot stays on."
-        bodyRu: "Подписанные драйверы NVIDIA ставятся прямо с носителя: без интернета и без регистрации ключей, Secure Boot остаётся включённым."
+        bodyEn: "Signed NVIDIA drivers come from this medium or are downloaded during the install: no key enrollment, Secure Boot stays on."
+        bodyRu: "Подписанные драйверы NVIDIA ставятся с носителя или скачиваются во время установки: без регистрации ключей, Secure Boot остаётся включённым."
         meta: "SOS DOCTOR"
     }
     SosSlide {

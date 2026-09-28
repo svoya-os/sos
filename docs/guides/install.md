@@ -9,8 +9,8 @@
 
 **In short:**
 
-1. [Download the image](#1-download-the-image): a release or a fresh test build.
-2. [Join the parts and verify](#2-join-the-parts-and-verify-the-image): two commands.
+1. [Download the image](#1-download-the-image): one file, `sos-26.10-amd64.iso`, no account needed.
+2. [Check it](#2-check-the-image): one command.
 3. [Run it in a virtual machine](#3-try-it-in-a-virtual-machine) or
    [write it to a USB stick](#4-write-the-image-to-a-usb-stick).
 4. In the live session, press [«Install SOS»](#6-install-sos).
@@ -28,56 +28,66 @@
 
 ## 1. Download the image
 
-The image is about 3 GB. GitHub does not take files over 2 GB, so it comes in **parts**:
-`sos-26.10-amd64.iso.part00`, `.part01` and a checksum file, `SHA256SUMS`. Put them all in one
-folder.
+There are two images, as with Pop!_OS:
 
-### Option A: a release
+| Image | Size | For |
+|---|---|---|
+| **`sos-26.10-amd64.iso`** | about 1.7 GB, one file | almost everyone. With an NVIDIA card and internet during the install, the installer downloads the driver |
+| `sos-26.10-amd64-nvidia.iso` | about 2.4 GB, in parts | an NVIDIA card and no internet during the install: the drivers are on the image |
 
-Open [GitHub Releases](https://github.com/svoya-os/sos/releases) and download every `.iso.part*`,
-`SHA256SUMS` and `SHA256SUMS.asc` (the signature) from the latest release. The first release comes
-with v0.1 «Первый сигнал» (First Signal); until then the page may be empty, so use option B.
+AMD and Intel graphics need nothing extra: take the first one.
 
-### Option B: a fresh test build
+### A fresh test build
 
-1. Sign in to GitHub: build artifacts can only be downloaded with an account (a free one is fine).
-2. Open [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml).
-3. Pick the top run with a green check ✓ (branch `main`).
-4. At the bottom of the page, under **Artifacts**, click **sos-iso**: a zip file downloads.
-5. Unzip it: inside are the image parts, `SHA256SUMS` and a short README.
+Open the **[test build](https://github.com/svoya-os/sos/releases/tag/test)** on GitHub Releases
+and download `sos-26.10-amd64.iso` and `SHA256SUMS` under **Assets**. No account is needed. The
+test build is replaced by every build of `main` that boots in the virtual machines, installs and
+passes the bots.
 
-Test builds are kept for 7 days. If a run has no artifact, take a newer one.
+### A release
 
-## 2. Join the parts and verify the image
+The first release comes with v0.1 «Первый сигнал» (First Signal) on
+[GitHub Releases](https://github.com/svoya-os/sos/releases): the same files plus
+`SHA256SUMS.asc`, the signature.
 
-If the image came as a single `.iso` file, there is nothing to join: just check the sum.
+The image of one particular commit is in [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml):
+the run → **Artifacts** → **sos-iso** (needs a GitHub account; kept for 7 days).
 
-**Windows.** Open the folder, Shift + right-click an empty spot → *Open PowerShell window here*
-(or *Open in Terminal*) and run:
+## 2. Check the image
+
+`SHA256SUMS` holds the checksums. If yours differs, the download broke off: download it again.
+
+**Windows.** Open the download folder, Shift + right-click an empty spot → *Open PowerShell window
+here* (or *Open in Terminal*) and run:
 
 ```powershell
-cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso
-Get-FileHash sos-26.10-amd64.iso -Algorithm SHA256
+Get-FileHash sos-26.10-amd64.iso
 ```
 
-With more than two parts, list them all with `+`, in order. Compare the hash with the
-`sos-26.10-amd64.iso` line in `SHA256SUMS` (open it in Notepad; letter case does not matter). If
-they match, the image is intact.
+Compare the hash with the `sos-26.10-amd64.iso` line in `SHA256SUMS` (open it in Notepad; letter
+case does not matter).
 
-**Linux:**
+**Linux:** `sha256sum --check --ignore-missing SHA256SUMS`
 
-```sh
-cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso
-sha256sum --check --ignore-missing SHA256SUMS
-```
-
-**macOS:** `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`, then
-`shasum -a 256 sos-26.10-amd64.iso` and compare with `SHA256SUMS`.
-
-A mismatch means a file did not download completely. Download it again.
+**macOS:** `shasum -a 256 sos-26.10-amd64.iso` and compare with `SHA256SUMS`.
 
 Releases are signed: `gpg --verify SHA256SUMS.asc SHA256SUMS` confirms the files come from us.
 The key fingerprint will be published in this repository with the first release.
+
+### The NVIDIA image comes in parts
+
+GitHub does not take files over 2 GB, so `sos-26.10-amd64-nvidia.iso` is split in two:
+`sos-26.10-amd64-nvidia.iso.part00` and `.part01`. Download both into one folder, with
+`SHA256SUMS` and the helper for your system, then run the helper: it joins the image and checks it.
+
+- **Windows:** `sos-join.bat` and `sos-join.ps1`; double-click `sos-join.bat`. If Windows warns that
+  the file came from the internet, let it run (*Run*, or *More info* → *Run anyway*).
+- **Linux, macOS:** `sos-join.sh`; run `sh sos-join.sh` in that folder.
+
+When it says the image is intact, the parts can go. By hand it is the same thing:
+`cmd /c copy /b sos-26.10-amd64-nvidia.iso.part00 + sos-26.10-amd64-nvidia.iso.part01 sos-26.10-amd64-nvidia.iso`
+in PowerShell, or `cat sos-26.10-amd64-nvidia.iso.part* > sos-26.10-amd64-nvidia.iso` on Linux and
+macOS, then check it as above.
 
 ## 3. Try it in a virtual machine
 
@@ -181,7 +191,9 @@ Press **«Install SOS»** in Jackson's greeting, or find the installer with `Sup
      every start; keep it somewhere safe, because without it the data cannot be recovered.
 3. **Your account:** name and password. There is no online account, now or later.
 
-Installing takes 10–20 minutes and needs no internet: drivers come from the pool on the image.
+Installing takes 10–20 minutes and needs no internet. The NVIDIA image carries the driver for an
+NVIDIA card; the standard one downloads it when the computer is online. With neither, SOS starts
+on the open-source driver, and `sos install nvidia` adds the NVIDIA one later.
 When it is done, restart and remove the stick.
 
 **Dual boot with Windows:** turn off *Fast Startup* in Windows first, and make space by shrinking

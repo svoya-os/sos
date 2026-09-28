@@ -33,14 +33,11 @@ local par défaut.
 
 ## L'essayer dans une machine virtuelle (environ 15 minutes)
 
-1. Téléchargez une version de test : [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
-   → la première exécution avec une coche verte → *Artifacts* → **sos-iso** (compte GitHub requis).
-2. Décompressez et assemblez les parties. Windows (PowerShell) :
-   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso` ;
-   Linux/macOS : `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Vérifiez avec `SHA256SUMS`.
-3. VirtualBox : *Linux / Ubuntu (64-bit)*, 8 Go de mémoire, 4 processeurs, *Activer EFI*,
+1. Téléchargez **[sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)** (environ 1,7 Go, un seul fichier,
+   sans compte) : c'est la [version de test](https://github.com/svoya-os/sos/releases/tag/test) de `main`.
+2. VirtualBox : *Linux / Ubuntu (64-bit)*, 8 Go de mémoire, 4 processeurs, *Activer EFI*,
    affichage *VMSVGA* sans 3D, démarrez sur l'ISO.
-4. Vous êtes sur le bureau de la session live. `Super+K` montre tous les raccourcis ;
+3. Vous êtes sur le bureau de la session live. `Super+K` montre tous les raccourcis ;
    **« Install SOS »** dans l'accueil de Jackson installe le système sur un disque.
 
 ## Matériel

@@ -32,14 +32,11 @@ Linux для роботи зі штучним інтелектом. Під ни�
 
 ## Спробувати у віртуальній машині (хвилин 15)
 
-1. Завантаж тестову збірку: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
-   → верхній запуск із зеленою позначкою → *Artifacts* → **sos-iso** (потрібен акаунт GitHub).
-2. Розпакуй і склей частини. Windows (PowerShell):
-   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
-   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Звір із `SHA256SUMS`.
-3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 ГБ пам'яті, 4 ядра, «Увімкнути EFI», графіка
+1. Завантаж **[sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)** (близько 1,7 ГБ, один файл, без
+   реєстрації): це [тестова збірка](https://github.com/svoya-os/sos/releases/tag/test) з `main`.
+2. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 ГБ пам'яті, 4 ядра, «Увімкнути EFI», графіка
    *VMSVGA* без 3D, запусти з цим ISO.
-4. Ти на робочому столі живої сесії. `Super+K` покаже всі сполучення клавіш; **«Install SOS»**
+3. Ти на робочому столі живої сесії. `Super+K` покаже всі сполучення клавіш; **«Install SOS»**
    у привітанні Джексона встановить систему на диск.
 
 ## Залізо

@@ -31,8 +31,9 @@ turn something on.
 
 - [ ] Hybrid ISO built from `image/`: mmdebstrap → squashfs → ISO
 - [ ] Boots and installs with Secure Boot on, through the engine's signed boot chain
-- [ ] Driver pool on the ISO: NVIDIA current branch (open kernel modules) and the 580 legacy
-      branch for GTX 900/1000; installs offline
+- [ ] Driver pool on the NVIDIA ISO: NVIDIA current branch (open kernel modules) and the 580
+      legacy branch for GTX 900/1000; installs offline. The standard ISO stays one file under
+      2 GiB and downloads the driver during the install
 - [ ] Calamares installer with SOS branding: Btrfs with a subvolume layout ready for snapshots,
       optional disk encryption
 - [ ] No Ubuntu branding visible anywhere
@@ -116,7 +117,7 @@ turn something on.
 - [ ] Contact addresses working: security, conduct, trademarks
 - [ ] Trademark policy reviewed by a lawyer
 
-**Done when:** the ISO installs offline with Secure Boot on; `sos gpu` is clean on the NVIDIA
+**Done when:** the ISOs install offline with Secure Boot on; `sos gpu` is clean on the NVIDIA
 and AMD test machines; Jackson answers with a local model, asks before any T2 action and undoes
 a file change; and the network silence test passes.
 

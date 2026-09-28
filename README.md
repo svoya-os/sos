@@ -48,7 +48,7 @@ ours: the Svoya Shell desktop, the assistant Jackson, and the `sos` command.
 
 This is the design. What works today is listed under [Status](#status).
 
-- **GPU, set up and checked.** Signed drivers from the engine archive, a driver pool on the ISO
+- **GPU, set up and checked.** Signed drivers from the engine archive, an ISO that carries them
   for offline installs, and GPU Doctor (`sos gpu`), which checks driver ↔ CUDA ↔ PyTorch,
   Secure Boot, suspend/resume and GPU access from containers; `sos fix` applies the safe fixes.
   The OS owns the driver; each project brings its own CUDA, so versions stop fighting.
@@ -144,15 +144,11 @@ Tried SOS on your machine? A
 
 **Try it in a virtual machine** (about 15 minutes, nothing on your computer changes):
 
-1. Download a test build: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
-   → the top run with a green check → *Artifacts* → **sos-iso** (needs a GitHub account; releases
-   will be on [GitHub Releases](https://github.com/svoya-os/sos/releases)).
-2. Unzip it and join the parts. Windows (PowerShell):
-   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
-   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Check it against `SHA256SUMS`.
-3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB of memory, 4 CPUs, *Enable EFI*, graphics *VMSVGA*
+1. Download **[sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)** (about 1.7 GB, one file, no account needed): the
+   [test build](https://github.com/svoya-os/sos/releases/tag/test) of `main`. Releases will be on [GitHub Releases](https://github.com/svoya-os/sos/releases).
+2. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB of memory, 4 CPUs, *Enable EFI*, graphics *VMSVGA*
    with 3D off, start it with the ISO.
-4. You are on the desktop of the live session. Look around (`Super+K` shows every shortcut), then
+3. You are on the desktop of the live session. Look around (`Super+K` shows every shortcut), then
    press **«Install SOS»** in Jackson's greeting to put it on a disk.
 
 The [install guide](docs/guides/install.md) has every step, USB sticks, Hyper-V, QEMU and
@@ -245,8 +241,8 @@ Svoya Shell, Джексон и команда `sos`.
 
 Ниже — какой система задумана. Что работает уже сейчас, смотри в разделе [«Статус»](#статус).
 
-- **Видеокарта настроена и проверена.** Подписанные драйверы из архива движка, запас драйверов
-  прямо на ISO для установки без интернета и «Доктор GPU» (`sos gpu`): он проверяет связку
+- **Видеокарта настроена и проверена.** Подписанные драйверы из архива движка, образ ISO, на
+  котором они уже есть, для установки без интернета и «Доктор GPU» (`sos gpu`): он проверяет связку
   «драйвер ↔ CUDA ↔ PyTorch», Secure Boot, сон и пробуждение, доступ к GPU из контейнеров, а
   `sos fix` применяет безопасные исправления. Драйвер — забота системы, а CUDA у каждого проекта
   своя, поэтому версии больше не воюют между собой.
@@ -345,15 +341,11 @@ Svoya Shell, Джексон и команда `sos`.
 
 **Попробовать в виртуальной машине** (минут 15, на компьютере ничего не поменяется):
 
-1. Скачай тестовую сборку: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
-   → верхний запуск с зелёной галочкой → *Artifacts* → **sos-iso** (нужен аккаунт GitHub; релизы
-   будут на [GitHub Releases](https://github.com/svoya-os/sos/releases)).
-2. Распакуй и склей части. Windows (PowerShell):
-   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
-   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Сверь с `SHA256SUMS`.
-3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 ГБ памяти, 4 ядра, «Включить EFI», графика *VMSVGA*
+1. Скачай **[sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)** (около 1,7 ГБ, один файл, без регистрации): это
+   [тестовая сборка](https://github.com/svoya-os/sos/releases/tag/test) из `main`. Релизы будут на [GitHub Releases](https://github.com/svoya-os/sos/releases).
+2. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 ГБ памяти, 4 ядра, «Включить EFI», графика *VMSVGA*
    без 3D, запусти с этим ISO.
-4. Ты на рабочем столе живой сессии. Осмотрись (`Super+K` покажет все сочетания клавиш), а потом
+3. Ты на рабочем столе живой сессии. Осмотрись (`Super+K` покажет все сочетания клавиш), а потом
    нажми **«Установить СОС»** в приветствии Джексона, чтобы поставить систему на диск.
 
 Все шаги, флешки, Hyper-V, QEMU и решения проблем — в [руководстве по установке](docs/ru/install.md).

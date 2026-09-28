@@ -333,3 +333,110 @@ esac
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TwoImagesTests(unittest.TestCase):
+    """build-iso.sh writes the NVIDIA image and, from the same tree, the standard one: the pool
+    without the NVIDIA drivers, the full tree left untouched (the standard one is hard links)."""
+
+    STUBS = {
+        # the index the installer reads (target-prepare.sh: Components)
+        "apt-ftparchive": 'for a; do case $a in *Components=*) c=${a#*Components=} ;; esac; done\n'
+                          'printf "Origin: SOS\\nComponents: %s\\n" "$c"\n',
+        "xorriso": 'o=""; p=""; for a; do [ "$p" = -o ] && o=$a; p=$a; done\n'
+                   '[ -n "$o" ] && find "${@: -1}" -type f | sort >"$o"; exit 0\n',
+    }
+
+    def test_standard_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            iso = tmp / "work" / "iso"
+            files = {
+                "casper/filesystem.squashfs": "squashfs",
+                "casper/filesystem.manifest": "pkg\t1\n",
+                "pool/main/g/grub.deb": "grub",
+                "pool/nvidia-595-open/n/nvidia.deb": "nvidia",
+                "pool/svoya-gpu.json": '{"branches": [{"id": "595-open"}]}',
+                "dists/resolute/main/binary-amd64/Packages": "Package: grub\n",
+                "dists/resolute/nvidia-595-open/binary-amd64/Packages": "Package: nvidia\n",
+                "dists/resolute/Release": "Components: main nvidia-595-open\n",
+            }
+            for rel, text in files.items():
+                (iso / rel).parent.mkdir(parents=True, exist_ok=True)
+                (iso / rel).write_text(text)
+            stubs = tmp / "bin"
+            stubs.mkdir()
+            for name, body in self.STUBS.items():
+                (stubs / name).write_text("#!/bin/bash\n" + body)
+                (stubs / name).chmod(0o755)
+            script = f"""
+                set -euo pipefail
+                source {ROOT}/image/build-iso.sh
+                WORK={tmp}/work ISO={iso} ISO_STD={tmp}/work/iso-standard OUT={tmp}/out
+                SUITE=resolute ARCH=amd64 SOURCE_DATE_EPOCH=0
+                export SOURCE_DATE_EPOCH
+                has_nvidia_pool
+                make_iso "$ISO" full.iso
+                standard_tree
+                make_iso "$ISO_STD" standard.iso
+            """
+            env = {"PATH": f"{stubs}:/usr/bin:/bin", "HOME": str(tmp)}
+            res = subprocess.run(["bash", "-c", script], capture_output=True, text=True, env=env)
+            self.assertEqual(res.returncode, 0, res.stderr)
+            std = tmp / "work" / "iso-standard"
+            # the full tree keeps everything
+            self.assertTrue((iso / "pool/nvidia-595-open/n/nvidia.deb").exists())
+            self.assertIn("595-open", (iso / "pool/svoya-gpu.json").read_text())
+            self.assertIn("nvidia-595-open", (iso / "dists/resolute/Release").read_text())
+            self.assertIn("nvidia.deb", (iso / "md5sum.txt").read_text())
+            # the standard tree: main only, an empty driver list, its own checksums
+            self.assertFalse((std / "pool/nvidia-595-open").exists())
+            self.assertFalse((std / "dists/resolute/nvidia-595-open").exists())
+            self.assertEqual(json.loads((std / "pool/svoya-gpu.json").read_text()), {"branches": []})
+            self.assertIn("Components: main\n", (std / "dists/resolute/Release").read_text())
+            self.assertTrue((std / "dists/resolute/main/binary-amd64/Packages").exists())
+            self.assertNotIn("nvidia", (std / "md5sum.txt").read_text())
+            self.assertIn("grub.deb", (std / "md5sum.txt").read_text())
+            # the squashfs is shared, not copied
+            self.assertEqual((std / "casper/filesystem.squashfs").stat().st_ino,
+                             (iso / "casper/filesystem.squashfs").stat().st_ino)
+            info = {n: json.loads((tmp / "out" / f"{n}.json").read_text()) for n in ("full.iso", "standard.iso")}
+            self.assertEqual((info["full.iso"]["variant"], info["full.iso"]["nvidiaBranches"]), ("nvidia", ["595-open"]))
+            self.assertEqual((info["standard.iso"]["variant"], info["standard.iso"]["nvidiaBranches"]), ("standard", []))
+            self.assertLess(info["standard.iso"]["poolBytes"], info["full.iso"]["poolBytes"])
+
+
+class ReleaseNotesTests(unittest.TestCase):
+    """The download page: the standard image first, the NVIDIA one with how to join its parts."""
+
+    def test_notes_and_join(self):
+        sys.path.insert(0, str(ROOT / "scripts" / "release"))
+        import notes
+        with tempfile.TemporaryDirectory() as tmp:
+            d = pathlib.Path(tmp)
+            for name, variant, size in (("sos-26.10-amd64.iso", "standard", 1_800_000_000),
+                                        ("sos-26.10-amd64-nvidia.iso", "nvidia", 2_600_000_000)):
+                (d / f"{name}.json").write_text(json.dumps({"iso": name, "variant": variant, "isoBytes": size}))
+            (d / "sos-26.10-amd64.iso").write_bytes(b"x")
+            for n in ("00", "01"):
+                (d / f"sos-26.10-amd64-nvidia.iso.part{n}").write_bytes(b"y")
+            text = notes.notes(d, "784544be5f10", "test")
+        self.assertIn("коммит `784544b`", text)
+        self.assertLess(text.index("`sos-26.10-amd64.iso`** (1,7 ГБ, один файл)"),
+                        text.index("`sos-26.10-amd64-nvidia.iso`** (2,4 ГБ, частями)"))
+        self.assertIn("`sos-26.10-amd64-nvidia.iso.part00`, `sos-26.10-amd64-nvidia.iso.part01`", text)
+        self.assertIn("`sos-join.bat` с `sos-join.ps1` (Windows)", text)
+        self.assertIn("(1.7 GB, one file)", text)
+        self.assertEqual(text.count("sos-join.sh"), 2)              # the NVIDIA image only, RU and EN
+        self.assertLess(text.index("Тестовая сборка"), text.index("SOS test build"))
+
+    def test_windows_helpers(self):
+        bat = (ROOT / "scripts/release/sos-join.bat").read_bytes()
+        self.assertIn(b"\r\n", bat)                                  # cmd.exe wants CRLF
+        self.assertTrue(bat.isascii())
+        ps1 = (ROOT / "scripts/release/sos-join.ps1").read_bytes()
+        self.assertTrue(ps1.startswith(b"\xef\xbb\xbf"))            # UTF-8 with BOM for Windows PowerShell
+        self.assertIn("sos-join.ps1", bat.decode())
+        attrs = (ROOT / ".gitattributes").read_text()
+        self.assertIn("*.bat   text eol=crlf", attrs)
+

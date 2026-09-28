@@ -2,7 +2,8 @@
 
 `image/` turns Ubuntu 26.04 LTS packages (the engine) and our own `svoya-*` packages into
 `sos-26.10-amd64.iso`: a hybrid BIOS/UEFI live medium with Secure Boot, the SOS live session and
-the Calamares installer. The whole build runs as root inside a disposable, privileged `ubuntu:26.04`
+the Calamares installer. The same build also writes `sos-26.10-amd64-nvidia.iso`, which adds the
+offline NVIDIA driver pool (see [Two images](#two-images)). The whole build runs as root inside a disposable, privileged `ubuntu:26.04`
 container, so the tools (mmdebstrap, GRUB, squashfs-tools, xorriso) match the target release.
 
 ## Pipeline
@@ -27,7 +28,8 @@ image/build-iso.sh             ▼
   → UEFI: shim (BOOTX64.EFI) + Canonical-signed gcdx64 (grubx64.efi) + mmx64.efi, on an ESP image
           made with mkfs.vfat -C + mtools (no loop devices), appended as GPT partition 2
   → BIOS: GRUB i386-pc El Torito core (grub-mkimage) + boot_hybrid.img MBR
-  → xorriso -as mkisofs  →  dist/iso/sos-26.10-amd64.iso (+ .sha256, .manifest, .json)
+  → xorriso -as mkisofs  →  dist/iso/sos-26.10-amd64-nvidia.iso (+ .sha256, .manifest, .json)
+  → the same tree without the NVIDIA pool (hard links)  →  dist/iso/sos-26.10-amd64.iso
 ```
 
 Boot menu (`boot/grub.cfg`, English + Russian once the Unicode font is loaded):
@@ -102,16 +104,40 @@ Hyprland renders with Mesa's software renderer in VMs without 3D; give the VM 4 
 **USB stick:** `sudo dd if=sos-26.10-amd64.iso of=/dev/sdX bs=4M conv=fsync status=progress`
 (or Ventoy, balenaEtcher, Rufus in *DD image* mode). The ISO boots from USB on BIOS and UEFI.
 
-Release assets over 2 GiB are split: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso &&
-sha256sum -c --ignore-missing SHA256SUMS`.
+Release assets have to be under 2 GiB, so the NVIDIA image is published in parts:
+`sh sos-join.sh` (or `sos-join.bat` on Windows, from `scripts/release/`) joins and checks them; by
+hand, `cat sos-26.10-amd64-nvidia.iso.part* > sos-26.10-amd64-nvidia.iso && sha256sum -c
+--ignore-missing SHA256SUMS`.
+
+## Two images
+
+As Pop!_OS does it, one build writes two images from the same tree:
+
+| Image | For | Published |
+|---|---|---|
+| `sos-26.10-amd64.iso` | almost everyone: the pool keeps only `main` (bootloaders, dracut); an NVIDIA card gets its driver from `ubuntu-drivers install` when the installer is online, else nouveau until `sos install nvidia` | one file |
+| `sos-26.10-amd64-nvidia.iso` | installing an NVIDIA machine without internet: the whole pool | in parts |
+
+The standard tree is a hard-linked copy (`cp -al`) of the full one: the squashfs is shared, the
+NVIDIA components and `dists/` go, `pool/svoya-gpu.json` lists no branches, and `dists/resolute/Release`
+is regenerated with `Components: main` (the installer reads the components from it). Files that
+differ are written as new files, never in place, so the full tree stays intact. Without an NVIDIA
+pool (`NVIDIA_BRANCHES=`) the build writes only `sos-26.10-amd64.iso`.
+
+CI (`.github/workflows/iso.yml`) uploads them as the artifacts `sos-iso` and `sos-iso-nvidia`,
+boots both, and publishes every build of `main` that also installs and passes the journeys bot as
+the pre-release [`test`](https://github.com/svoya-os/sos/releases/tag/test), with
+`scripts/release/notes.py` and the `sos-join` helpers. Tags `v*` publish a release the same way.
 
 ## Size
 
-Expected: squashfs ≈ 1.9–2.4 GB, NVIDIA pool ≈ 0.7–0.9 GB (two branches), ISO ≈ 2.7–3.3 GB.
-The base stays lean: no CUDA/cuDNN (licenses; `cuda-toolkit-13` is installed later from multiverse),
-no llama.cpp/ROCm/models (modules), no documentation except copyright files. `NVIDIA_BRANCHES=595-open`
-saves ≈ 0.4 GB; `NVIDIA_BRANCHES=` drops the pool (the installer then needs internet for NVIDIA).
-Every build writes the real numbers to `dist/iso/*.iso.json` and the CI summary.
+Expected: squashfs ≈ 1.5–2 GiB, NVIDIA pool ≈ 0.7–0.9 GiB (two branches), so the standard ISO is
+≈ 1.7 GiB and the NVIDIA one ≈ 2.4 GiB. The standard ISO has to stay one file under 2 GiB (CI
+warns when it does not). The base stays lean: no CUDA/cuDNN (licenses; `cuda-toolkit-13` is
+installed later from multiverse), no llama.cpp/ROCm/models (modules), no documentation except
+copyright files. `NVIDIA_BRANCHES=595-open` saves ≈ 0.4 GiB of the NVIDIA image;
+`NVIDIA_BRANCHES=` drops the pool and the second image. Every build writes the real numbers to
+`dist/iso/*.iso.json` and the CI summary.
 
 ## Offline driver pool
 

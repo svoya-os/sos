@@ -102,7 +102,8 @@ limits. `sos gpu` tells you what works.
 
 ### Does SOS work without internet?
 
-Yes. The image carries the drivers, and there is an "offline only" profile. Models have to be
+Yes. It installs without internet; for an NVIDIA card take `sos-26.10-amd64-nvidia.iso`, which
+carries the drivers. The first-run wizard has an "offline only" profile. Models have to be
 downloaded once, or copied into `/srv/ai` from another machine.
 
 ### Can I use models I already have?

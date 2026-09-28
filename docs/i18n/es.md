@@ -31,14 +31,11 @@ La promesa: sin anuncios, sin cuenta, sin telemetría; la IA nunca arranca sola;
 
 ## Probarlo en una máquina virtual (unos 15 minutos)
 
-1. Descarga una compilación de prueba: [Actions → ISO](https://github.com/svoya-os/sos/actions/workflows/iso.yml)
-   → la primera ejecución con marca verde → *Artifacts* → **sos-iso** (necesitas cuenta de GitHub).
-2. Descomprime y une las partes. Windows (PowerShell):
-   `cmd /c copy /b sos-26.10-amd64.iso.part00 + sos-26.10-amd64.iso.part01 sos-26.10-amd64.iso`;
-   Linux/macOS: `cat sos-26.10-amd64.iso.part* > sos-26.10-amd64.iso`. Compruébalo con `SHA256SUMS`.
-3. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB de memoria, 4 CPU, *Habilitar EFI*, gráficos
+1. Descarga **[sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)** (unos 1,7 GB, un solo archivo, sin
+   cuenta): es la [compilación de prueba](https://github.com/svoya-os/sos/releases/tag/test) de `main`.
+2. VirtualBox: *Linux / Ubuntu (64-bit)*, 8 GB de memoria, 4 CPU, *Habilitar EFI*, gráficos
    *VMSVGA* sin 3D, e iníciala con la ISO.
-4. Estás en el escritorio de la sesión en vivo. `Super+K` muestra todos los atajos; **«Install
+3. Estás en el escritorio de la sesión en vivo. `Super+K` muestra todos los atajos; **«Install
    SOS»** en el saludo de Jackson instala el sistema en un disco.
 
 ## Hardware

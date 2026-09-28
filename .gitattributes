@@ -7,6 +7,9 @@
 *.html  text diff=html
 *.css   text diff=css
 *.sh    text eol=lf
+# Windows helpers on the download page (scripts/release): cmd.exe and PowerShell want CRLF
+*.bat   text eol=crlf
+*.ps1   text eol=crlf
 *.svg   text
 
 # Binary files: never normalized, never diffed as text

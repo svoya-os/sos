@@ -86,6 +86,14 @@ Work towards v0.1 «Первый сигнал».
   request only (`sos install qwen-image-2.1 --accept-license`, then «нарисуй … через квен»).
   `sos models kits` lists these model kits; `sos-studio up` and `down` run the Studio in the
   background.
+- SOS downloads like any other Linux: the newest test build is one file,
+  [sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)
+  (about 1.7 GB), on the [test build](https://github.com/svoya-os/sos/releases/tag/test) page of
+  GitHub Releases, with no GitHub account. Every build of `main` that boots, installs and passes
+  the bots replaces it. As with Pop!_OS there is a second image, `sos-26.10-amd64-nvidia.iso`
+  (about 2.4 GB), with the NVIDIA drivers for installing without internet; it comes in two parts,
+  and `sos-join.bat` (Windows) or `sos-join.sh` (Linux, macOS) joins and checks them. The standard
+  image downloads the NVIDIA driver during the install when the computer is online.
 
 ### Changed
 

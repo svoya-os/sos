@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-# Tag vX.Y.Z -> build packages + ISO, boot-test it, publish a GitHub Release with the ISO parts
-# (< 2 GiB each), SHA256SUMS (signed when SOS_RELEASE_SIGNING_KEY is configured) and the .debs.
+# Tag vX.Y.Z -> build packages + both ISOs, boot-test them, publish a GitHub Release: the standard
+# ISO (one file under 2 GiB), the NVIDIA ISO in parts with sos-join (Windows, Linux, macOS),
+# SHA256SUMS (signed when SOS_RELEASE_SIGNING_KEY is configured) and the .debs.
 name: Release
 
 on:
@@ -17,7 +18,7 @@ jobs:
   build:
     uses: ./.github/workflows/iso.yml
     permissions:
-      contents: read
+      contents: write   # iso.yml's boot tests publish screenshots to the ci-screens branch
       actions: read
     secrets: inherit
     with:
@@ -31,10 +32,15 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download ISO
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the images
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: sos-iso
+          pattern: sos-iso*
+          merge-multiple: true
           path: release
 
       - name: Download packages
@@ -44,8 +50,14 @@ jobs:
           path: repo
 
       - name: Collect assets
+        env:
+          SHA: ${{ github.sha }}
+          TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
+          rm -f release/*.README.txt          # sos-join and the notes say how to join the parts
+          cp scripts/release/sos-join.bat scripts/release/sos-join.ps1 scripts/release/sos-join.sh release/
+          python3 scripts/release/notes.py release "$SHA" release "$TAG" >"$RUNNER_TEMP/NOTES.md"
           cp repo/pool/*.deb release/
           # SHA256SUMS (and SHA256SUMS.asc, signed by iso.yml) cover the ISO; appending to it would
           # break the signature, so the packages get their own list.
@@ -62,5 +74,5 @@ jobs:
           set -euo pipefail
           prerelease=()
           case "$TAG" in *-*|v0.*) prerelease=(--prerelease) ;; esac
-          gh release create "$TAG" --repo "$REPO" --title "SOS $TAG" --generate-notes \
-            --verify-tag "${prerelease[@]}" release/*
+          gh release create "$TAG" --repo "$REPO" --title "SOS $TAG" --notes-file "$RUNNER_TEMP/NOTES.md" \
+            --generate-notes --verify-tag "${prerelease[@]}" release/*

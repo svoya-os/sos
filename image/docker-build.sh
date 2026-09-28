@@ -23,7 +23,7 @@ tty=()
 [ -t 1 ] && tty=(-t)
 env_args=()
 for v in SNAPSHOT SOURCE_DATE_EPOCH NVIDIA_BRANCHES POOL_STRICT SQUASHFS_COMP SQUASHFS_LEVEL \
-         SOS_VERSION ISO_LABEL ISO_NAME SOS_APT_URL; do
+         SOS_VERSION ISO_LABEL ISO_NAME ISO_NAME_NVIDIA SOS_APT_URL; do
     if [ -n "${!v:-}" ]; then env_args+=(-e "$v=${!v}"); fi
 done
 # Set but empty is meaningful here: no offline NVIDIA pool (iso.yml: nvidia_pool=none).

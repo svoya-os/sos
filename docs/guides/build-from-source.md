@@ -28,7 +28,8 @@ cd sos
 
 ```sh
 packages/build-all.sh      # every .deb (svoya-*, quickshell, uv, grub-btrfs, upsil) → dist/repo
-image/docker-build.sh      # the ISO → dist/iso/sos-26.10-amd64.iso
+image/docker-build.sh      # the ISOs → dist/iso/sos-26.10-amd64.iso and sos-26.10-amd64-nvidia.iso
+                           # (NVIDIA_BRANCHES= builds only the first, faster)
 # or: just all
 ```
 
@@ -38,7 +39,7 @@ pinned in `packages/versions.env`; it is optional, so if that commit cannot be f
 and the ISO goes without it. `UPSIL_SRC_DIR=../upsil packages/build-all.sh --only upsil` packages a
 local checkout instead.
 `image/README.md` explains the pipeline, the build switches (archive snapshot, NVIDIA driver pool,
-compression) and the offline driver pool; `packages/` has one directory per package.
+compression), the offline driver pool and the two images; `packages/` has one directory per package.
 
 Checks that need neither root nor network:
 

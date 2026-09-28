@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # Build the SOS live/install ISO: mmdebstrap (Ubuntu 26.04, frozen snapshot) -> hooks -> squashfs
 # -> casper layout -> offline pool -> BIOS (GRUB eltorito) + UEFI (Canonical-signed shim/GRUB)
-# -> hybrid ISO (xorriso). Runs as root inside a privileged ubuntu:26.04 container:
+# -> hybrid ISO (xorriso). With NVIDIA drivers in the pool it writes two images from the same tree:
+# $ISO_NAME_NVIDIA (everything) and $ISO_NAME (the pool without the NVIDIA drivers: one file under
+# 2 GiB; the installer then downloads a driver when it is online). Runs as root inside a privileged
+# ubuntu:26.04 container:
 #
 #   docker run --rm --privileged -v "$PWD":/src -v /var/tmp/sos-work:/work ubuntu:26.04 \
 #       bash /src/image/build-iso.sh --work /work --out /src/dist/iso
@@ -47,6 +50,7 @@ done
 
 ROOTFS=$WORK/rootfs
 ISO=$WORK/iso
+ISO_STD=$WORK/iso-standard
 POOL=$WORK/pool
 HOOKS=("$IMAGE_DIR"/hooks/[0-9][0-9]-*.sh)
 [ "$NO_POOL" = 1 ] && HOOKS=("${HOOKS[@]/*75-pool.sh/}")
@@ -99,7 +103,7 @@ render() { # TEMPLATE DEST
         -e "s|@LIVE_HOSTNAME@|$LIVE_HOSTNAME|g" -e "s|@VERSION@|$SOS_VERSION|g" "$1" >"$2"
 }
 
-xorriso_args() {
+xorriso_args() { # TREE NAME
     XORRISO_ARGS=(-as mkisofs
         -iso-level 3 -full-iso9660-filenames -joliet -joliet-long -rational-rock
         -volid "$ISO_LABEL" -appid "SOS $SOS_VERSION" -publisher "SOS (github.com/svoya-os/sos)"
@@ -115,7 +119,7 @@ xorriso_args() {
         -eltorito-alt-boot
         -e '--interval:appended_partition_2:all::' -no-emul-boot
         --modification-date="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)"
-        -o "$OUT/$ISO_NAME" "$ISO")
+        -o "$OUT/$2" "$1")
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -142,12 +146,17 @@ dry_run() {
     SOURCE_DATE_EPOCH=$(source_date_epoch)
     write_sources
     mmdebstrap_args
-    xorriso_args
+    local two=0
+    if [ -n "$NVIDIA_BRANCHES" ] && [ "$NO_POOL" = 0 ]; then two=1; fi
+    if [ "$two" = 1 ]; then xorriso_args "$ISO" "$ISO_NAME_NVIDIA"; else xorriso_args "$ISO" "$ISO_NAME"; fi
     log "Plan"
     info "archive:  $(archive_url)"
     info "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"
     printf '    mmdebstrap'; printf ' %q' "${MMDEBSTRAP_ARGS[@]}" "$SUITE" "$ROOTFS" "$WORK/sources.list"; echo
     printf '    xorriso'; printf ' %q' "${XORRISO_ARGS[@]}"; echo
+    if [ "$two" = 1 ]; then
+        info "then $ISO_NAME from $ISO_STD: the same tree without the NVIDIA pool ($NVIDIA_BRANCHES), hard links"
+    fi
     info "grub.cfg rendered to $WORK/dry/grub.cfg"
 }
 
@@ -282,29 +291,36 @@ assemble_boot() {
     fi
 }
 
-make_iso() {
-    log "Writing $ISO_NAME"
+make_iso() { # TREE NAME
+    local tree=$1 name=$2
+    log "Writing $name"
     mkdir -p "$OUT"
-    (cd "$ISO" && find . -type f ! -name md5sum.txt ! -path './boot/grub/i386-pc/eltorito.img' -print0 |
-        sort -z | xargs -0 md5sum >md5sum.txt)
-    find "$ISO" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
-    rm -f "$OUT/$ISO_NAME"
-    xorriso_args
+    # a new file, not a rewrite: the standard tree shares its files with the full one (hard links)
+    rm -f "$tree/md5sum.txt"
+    (cd "$tree" && find . -type f ! -name md5sum.txt ! -path './boot/grub/i386-pc/eltorito.img' -print0 |
+        sort -z | xargs -0 md5sum >"$WORK/md5sum.txt.new")
+    mv "$WORK/md5sum.txt.new" "$tree/md5sum.txt"
+    find "$tree" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
+    rm -f "$OUT/$name"
+    xorriso_args "$tree" "$name"
     xorriso "${XORRISO_ARGS[@]}"
-    (cd "$OUT" && sha256sum "$ISO_NAME" >"$ISO_NAME.sha256")
-    cp "$ISO/casper/filesystem.manifest" "$OUT/$ISO_NAME.manifest"
-    xorriso -indev "$OUT/$ISO_NAME" -report_el_torito plain -report_system_area plain 2>/dev/null |
+    (cd "$OUT" && sha256sum "$name" >"$name.sha256")
+    cp "$tree/casper/filesystem.manifest" "$OUT/$name.manifest"
+    xorriso -indev "$OUT/$name" -report_el_torito plain -report_system_area plain 2>/dev/null |
         sed 's/^/    /' >&2 || true
-    python3 - "$OUT" "$ISO_NAME" "$ISO" "$POOL" <<'PY'
+    python3 - "$OUT" "$name" "$tree" <<'PY'
 import json, os, sys, pathlib
-out, name, iso, pool = sys.argv[1:5]
+out, name, iso = sys.argv[1:4]
 def size(p):
     p = pathlib.Path(p)
     if p.is_file():
         return p.stat().st_size
     return sum(f.stat().st_size for f in p.rglob("*") if f.is_file()) if p.exists() else 0
+nvidia = sorted(d.name[len("nvidia-"):] for d in pathlib.Path(iso, "pool").glob("nvidia-*") if d.is_dir())
 info = {
     "iso": name,
+    "variant": "nvidia" if nvidia else "standard",
+    "nvidiaBranches": nvidia,
     "isoBytes": size(os.path.join(out, name)),
     "squashfsBytes": size(os.path.join(iso, "casper", "filesystem.squashfs")),
     "poolBytes": size(os.path.join(iso, "pool")),
@@ -317,6 +333,39 @@ for k, v in info.items():
     if k.endswith("Bytes"):
         print(f"    {k[:-5]}: {v / 2**30:.2f} GiB", file=sys.stderr)
 PY
+}
+
+# The standard image: the same tree without the NVIDIA drivers in the pool. Hard links, so the
+# squashfs is not copied; everything that differs is written as a new file, never in place.
+standard_tree() {
+    log "The standard image: the pool without the NVIDIA drivers"
+    rm -rf "$ISO_STD"
+    cp -al "$ISO" "$ISO_STD"
+    rm -rf "$ISO_STD"/pool/nvidia-* "$ISO_STD/dists" "$ISO_STD/pool/svoya-gpu.json"
+    printf '{\n "branches": []\n}\n' >"$ISO_STD/pool/svoya-gpu.json"
+    local d
+    for d in "$ISO"/dists/*/main; do
+        mkdir -p "$ISO_STD/dists/$(basename "$(dirname "$d")")"
+        cp -r "$d" "$ISO_STD/dists/$(basename "$(dirname "$d")")/"
+    done
+    (
+        cd "$ISO_STD"
+        apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin=SOS \
+            -o APT::FTPArchive::Release::Label="SOS medium" \
+            -o APT::FTPArchive::Release::Suite="$SUITE" \
+            -o APT::FTPArchive::Release::Codename="$SUITE" \
+            -o APT::FTPArchive::Release::Architectures="$ARCH" \
+            -o APT::FTPArchive::Release::Components=main \
+            release "dists/$SUITE" >"$WORK/standard-Release"
+        mv "$WORK/standard-Release" "dists/$SUITE/Release"
+    )
+    grep -q '^Components: main$' "$ISO_STD/dists/$SUITE/Release" || die "standard pool: bad Release"
+    [ -f "$ISO_STD/dists/$SUITE/main/binary-$ARCH/Packages" ] || die "standard pool: no Packages for main"
+}
+
+has_nvidia_pool() {
+    compgen -G "$ISO/pool/nvidia-*" >/dev/null
 }
 
 main() {
@@ -335,10 +384,19 @@ main() {
     build_rootfs
     assemble_live
     assemble_boot
-    make_iso
+    if has_nvidia_pool; then
+        make_iso "$ISO" "$ISO_NAME_NVIDIA"
+        standard_tree
+        make_iso "$ISO_STD" "$ISO_NAME"
+    else
+        make_iso "$ISO" "$ISO_NAME"
+    fi
     if [ -n "${HOST_UID:-}" ]; then chown -R "$HOST_UID:${HOST_GID:-$HOST_UID}" "$OUT"; fi
-    [ "$KEEP" = 1 ] || rm -rf "$ROOTFS" "$ISO" "$POOL" "$WORK/bootfiles" "$WORK/efi-stage"
-    log "Done in $(( (SECONDS - started) / 60 )) min: $OUT/$ISO_NAME"
+    [ "$KEEP" = 1 ] || rm -rf "$ROOTFS" "$ISO" "$ISO_STD" "$POOL" "$WORK/bootfiles" "$WORK/efi-stage"
+    log "Done in $(( (SECONDS - started) / 60 )) min: $(cd "$OUT" && ls -1 ./*.iso | tr '\n' ' ')"
 }
 
-main "$@"
+# sourced by image/tests (the functions only); run, it builds
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main "$@"
+fi
