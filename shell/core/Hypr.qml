@@ -7,6 +7,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 
 Singleton {
     id: root
@@ -215,6 +216,24 @@ Singleton {
     // and come back to their desktops with the next Super+D.
     property var desktopHidden: []      // [{address, workspace}]
     property string desktopFocus: ""    // the window that had the keyboard: it gets it back
+    // The desktop (wallpaper/Background.qml) holds the keyboard only while it is shown: from Super+D
+    // until the next one, a window opening or another workspace.
+    property bool desktopShown: false
+
+    onActiveWorkspaceIdChanged: root.desktopShown = false
+
+    // A window that opens while the desktop is shown gets the keyboard: Hyprland gives a new window
+    // no focus while a layer that takes the keyboard holds it. The hidden ones wait for Super+D.
+    Connections {
+        target: root.present ? ToplevelManager.toplevels : null
+
+        function onObjectInsertedPost(object, index) {
+            if (!root.desktopShown)
+                return;
+            root.desktopShown = false;
+            object.activate();
+        }
+    }
 
     function toggleDesktop() {
         if (!root.present)
@@ -225,29 +244,37 @@ Singleton {
                 batch.push("dispatch focuswindow address:" + root.desktopFocus);
             root.desktopHidden = [];
             root.desktopFocus = "";
+            root.desktopShown = false;
             Sys.run(["hyprctl", "--batch", batch.join(" ; ")]);
             return;
         }
         const id = root.activeWorkspaceId;
+        // first, so the desktop takes the keyboard by the time the windows go (this query is the head start)
+        root.desktopShown = true;
         Sys.run(["hyprctl", "-j", "clients"], function (code, out) {
-            if (code !== 0)
-                return;
-            let clients = [];
+            let clients = null;
             try {
-                clients = JSON.parse(out);
+                clients = code === 0 ? JSON.parse(out) : null;
             } catch (e) {
+                clients = null;
+            }
+            if (!clients) {
+                root.desktopShown = false;
                 return;
             }
             // windows left hidden by a shell that restarted in between come back here
             const stranded = clients.filter(c => c.workspace && c.workspace.name === "special:svoya-desktop");
             if (stranded.length > 0) {
+                root.desktopShown = false;
                 Sys.run(["hyprctl", "--batch", stranded.map(c => "dispatch movetoworkspacesilent " + id + ",address:" + c.address).join(" ; ")]);
                 return;
             }
             const here = clients.filter(c => c.workspace && c.workspace.id === id && !c.pinned && c.mapped !== false);
             const hidden = here.map(c => ({ address: c.address, workspace: id }));
-            if (hidden.length === 0)
+            if (hidden.length === 0) {
+                root.desktopShown = false;
                 return;
+            }
             const focused = here.find(c => c.focusHistoryID === 0);
             root.desktopFocus = focused ? String(focused.address) : "";
             root.desktopHidden = hidden;

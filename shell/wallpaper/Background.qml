@@ -24,10 +24,12 @@ PanelWindow {
 
     WlrLayershell.namespace: "svoya-wallpaper"
     WlrLayershell.layer: WlrLayer.Background
-    // The desktop itself can hold the keyboard, as on Windows: a click on it, or Super+D hiding
-    // every window, leaves no window typing blind (Hyprland refocuses what is under the pointer,
-    // and a background layer that takes no keyboard would keep the hidden window focused).
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    // The desktop holds the keyboard only while Super+D shows it: Hyprland then refocuses what is
+    // under the pointer, and a background layer that takes no keyboard would leave the hidden window
+    // typing blind. Never otherwise: while a layer that takes the keyboard holds it, Hyprland gives a
+    // new window no focus, and moving the pointer over such a layer hands it the keyboard even with
+    // click to focus (a terminal opened with Super+Enter would not get what you type).
+    WlrLayershell.keyboardFocus: Hypr.desktopShown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     Wallpaper {
         anchors.fill: parent

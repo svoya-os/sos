@@ -32,7 +32,8 @@
     {"id": "terminal", "action": "sleep", "seconds": 5},
     {"id": "terminal", "action": "screenshot", "name": "04-terminal", "continue_on_failure": true},
 
-    {"id": "doctor-cli", "action": "type", "text": "sos doctor\n", "continue_on_failure": true},
+    {"id": "doctor-cli", "action": "type", "text": "sos doctor; logger -t sos-vm-test SOS-STEP doctor-typed\n", "continue_on_failure": true},
+    {"id": "doctor-cli", "action": "wait_serial", "pattern": "SOS-STEP doctor-typed", "timeout_s": 90},
     {"id": "doctor-cli", "action": "sleep", "seconds": 10},
     {"id": "doctor-cli", "action": "screenshot", "name": "05-sos-doctor", "continue_on_failure": true},
 
