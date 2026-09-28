@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 id = "studio"
 name = { en = "Studio (image & video)", ru = "Студия (картинки и видео)" }
-summary = { en = "ComfyUI in a sandbox: container, localhost only, models read-only from /srv/ai, a snapshot before every custom-node install.", ru = "ComfyUI в песочнице: контейнер, только localhost, модели из /srv/ai только для чтения, снимок перед каждой установкой узлов." }
+summary = { en = "ComfyUI in a sandbox: container, localhost only, models read-only from /srv/ai, a snapshot before every custom-node install. Jackson draws in it after `sos install draw`.", ru = "ComfyUI в песочнице: контейнер, только localhost, модели из /srv/ai только для чтения, снимок перед каждой установкой узлов. После `sos install draw` в ней рисует Джексон." }
 category = "media"
 profiles = ["creator"]
 requires = ["base-ai"]

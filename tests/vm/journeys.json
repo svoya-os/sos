@@ -1,6 +1,6 @@
 {
   "name": "user-journeys",
-  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, morse, the teapot, apps, Jackson's skills, upsil zen and an UpsiL project), the Jackson panel (a model question, coin, d20, a joke, Morse, the skills folder, «install telegram» in a terminal), the launcher (install suggestions, the install mode, iddqd, 42, undo), the Windows keys (a tap of Win with the calculator, Win+Tab, Alt+Tab held and quick, Win+arrows, Win+., Win+D, Win+G), the night light, the control center, System Doctor and the lock screen. A screenshot after every step; nothing stops the journey.",
+  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, morse, the teapot, apps, Jackson's skills, the model kits, upsil zen and an UpsiL project), the Jackson panel (a model question, coin, d20, a joke, Morse, a drawing without the Studio, the skills folder, «install telegram» in a terminal), the launcher (install suggestions, the install mode, iddqd, 42, undo), the Windows keys (a tap of Win with the calculator, Win+Tab, Alt+Tab held and quick, Win+arrows, Win+., Win+D, Win+G), the night light, the control center, System Doctor and the lock screen. A screenshot after every step; nothing stops the journey.",
   "vm": {
     "memory_mib": 8192,
     "smp": 4,
@@ -39,6 +39,9 @@
     {"id": "models", "action": "type", "text": "clear; sos models suggest\n", "continue_on_failure": true},
     {"id": "models", "action": "sleep", "seconds": 8},
     {"id": "models", "action": "screenshot", "name": "06-models-suggest", "continue_on_failure": true},
+    {"id": "model-kits", "action": "type", "text": "clear; sos models kits\n", "continue_on_failure": true},
+    {"id": "model-kits", "action": "sleep", "seconds": 5},
+    {"id": "model-kits", "action": "screenshot", "name": "06a-model-kits", "continue_on_failure": true},
 
     {"id": "accent", "action": "type", "text": "clear; sos theme accent lilac\n", "continue_on_failure": true},
     {"id": "accent", "action": "sleep", "seconds": 6},
@@ -86,6 +89,9 @@
     {"id": "jackson-fun", "action": "type", "text": "morse sos\n", "continue_on_failure": true},
     {"id": "jackson-fun", "action": "sleep", "seconds": 5},
     {"id": "jackson-fun", "action": "screenshot", "name": "10d-jackson-morse", "continue_on_failure": true},
+    {"id": "jackson-draw", "action": "type", "text": "draw a cat in a hat\n", "continue_on_failure": true},
+    {"id": "jackson-draw", "action": "sleep", "seconds": 5},
+    {"id": "jackson-draw", "action": "screenshot", "name": "10d2-jackson-draw", "continue_on_failure": true},
     {"id": "jackson-fun", "action": "type", "text": "open skills\n", "continue_on_failure": true},
     {"id": "jackson-fun", "action": "sleep", "seconds": 5},
     {"id": "jackson-fun", "action": "screenshot", "name": "10e-jackson-skills-folder", "continue_on_failure": true},

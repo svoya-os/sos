@@ -13,6 +13,7 @@ from typing import Any, Mapping
 
 from . import aiswitch
 from . import avatar as avatar_mod
+from . import draw as draw_mod
 from .audit import AuditLog
 from .config import Config, load_config
 from .engine import Engine
@@ -70,6 +71,9 @@ class Jackson:
         self.skills = Skills(self.paths.skills_dir, self.config.skills_max_active,
                              system_dirs=[self.paths.system_skills_dir])
         self.osc = OsControl(self.runner, self.paths, self.svoya)
+        self.draw = draw_mod.Drawer(self.runner, self.osc.pictures_dir, self.config.draw,
+                                    views=draw_mod.ai_root(dict(env) if env is not None else None) / "views" / "comfyui",
+                                    marker=self.paths.runtime_dir / "studio-by-jackson")
         self.mcp = McpManager(self.config, self.paths, self.sandbox, self.registry, self.audit,
                               key_lookup_from(self.keys))
         self.avatar = avatar_mod.load(self.paths.avatar_file)
@@ -199,10 +203,11 @@ class Jackson:
         changed = []
         for attr in ("language", "address", "persona", "humor", "max_steps", "route", "pricing",
                      "tools", "snapshots", "skills_enabled", "skills_max_active", "fastpath_decide",
-                     "mcp_on_change"):
+                     "mcp_on_change", "draw"):
             if getattr(self.config, attr) != getattr(new, attr):
                 setattr(self.config, attr, getattr(new, attr))
                 changed.append(attr)
+        self.draw.settings = dict(self.config.draw)
         self.config.warnings = new.warnings
         self.skills.max_active = self.config.skills_max_active
         if new.memory != self.config.memory or new.mcp_servers != self.config.mcp_servers \
@@ -211,4 +216,5 @@ class Jackson:
         return changed
 
     def close(self) -> None:
+        self.draw.close()
         self.mcp.stop_all()

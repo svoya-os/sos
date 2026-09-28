@@ -454,6 +454,98 @@ PanelFrame {
                         }
                     }
 
+                    // the picture Jackson drew («нарисуй …»): a click opens it; below, what to do with it
+                    Column {
+                        id: drawn
+
+                        readonly property string path: Jackson.image
+                        readonly property string folder: path.substring(0, path.lastIndexOf("/"))
+                        readonly property string url: path.length > 0 ? "file://" + encodeURI(path).replace(/#/g, "%23").replace(/\?/g, "%3F") : ""
+
+                        width: parent.width
+                        spacing: 10
+                        visible: path.length > 0
+
+                        Rectangle {
+                            readonly property real ratio: pic.implicitWidth > 0 ? pic.implicitHeight / pic.implicitWidth : 1
+
+                            width: Math.min(parent.width, Math.round(320 / Math.max(0.2, ratio)))
+                            height: Math.round(width * ratio)
+                            radius: Theme.radiusBlock
+                            color: Theme.surface
+                            border.width: 1
+                            border.color: Theme.line
+                            clip: true
+
+                            Image {
+                                id: pic
+
+                                anchors.fill: parent
+                                anchors.margins: 1
+                                source: drawn.url
+                                sourceSize.width: 1024
+                                fillMode: Image.PreserveAspectFit
+                                asynchronous: true
+                                cache: false
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Sys.detach(["xdg-open", drawn.path])
+                            }
+                        }
+
+                        // what the picture was drawn from (the model's own description of a short request)
+                        SText {
+                            width: parent.width
+                            visible: Jackson.imageDescription.length > 0
+                            text: Jackson.imageDescription
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
+                            size: 12
+                            color: Theme.textFaint
+                        }
+
+                        Flow {
+                            width: parent.width
+                            spacing: 8
+
+                            Button {
+                                small: true
+                                glyph: "image"
+                                text: Strings.drawOpen
+                                onClicked: Sys.detach(["xdg-open", drawn.path])
+                            }
+                            Button {
+                                small: true
+                                glyph: "folder"
+                                text: Strings.drawFolder
+                                onClicked: Sys.detach(["xdg-open", drawn.folder])
+                            }
+                            Button {
+                                small: true
+                                glyph: "copy"
+                                text: Strings.copy
+                                onClicked: Sys.sh('wl-copy --type image/png < "$1"', [drawn.path], function (code) {
+                                    if (code === 0)
+                                        Notifs.shellToast(Strings.drawCopied, "", "copy");
+                                })
+                            }
+                            Button {
+                                small: true
+                                primary: Jackson.imageWallpaper
+                                glyph: "monitor"
+                                text: Strings.drawWallpaper
+                                onClicked: {
+                                    Settings.wallpaper = drawn.path;
+                                    Notifs.shellToast(Strings.drawWallpaperSet, "", "monitor");
+                                }
+                            }
+                        }
+                    }
+
                     Repeater {
                         model: blockModel
 
@@ -581,6 +673,8 @@ PanelFrame {
                         if (!r) {
                             if (Jackson.busy) {
                                 const p = Jackson.progress;
+                                if (p && p.stage === "draw")
+                                    return Strings.drawPhase(p.phase, p.done, p.total);
                                 return p ? Strings.jacksonReading(p.done, p.total) : Strings.jacksonThinking;
                             }
                             return "";

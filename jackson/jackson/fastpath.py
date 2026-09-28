@@ -594,6 +594,7 @@ HELP_RU = """Без модели, мгновенно:
 - программы: «установи телеграм», «поставь стим», «установи майнкрафт» (установка откроется в терминале)
 - навыки: «открой навыки», «создай навык пицца»
 - своя модель: «какая модель подойдёт», «установи модель»
+- рисую: «нарисуй кота в шляпе», «нарисуй обои с горами», «сделай раскраску с драконом» (один раз: «установи рисование»)
 - тема: «тёмная тема», «светлая тема», «тема авто», «включи бумагу/графит/фосфор»
 - цвет: «сделай акцент фиолетовым», «акцент сирень», «верни оранжевый», «без цвета»
 - мой вид: «стань котом/чёртом», «надень очки», «сними наушники», «капюшон долой»; имя: «тебя зовут Макс»
@@ -616,6 +617,7 @@ HELP_EN = """Instant, no model needed:
 - apps: "install telegram", "install steam", "install minecraft" (the install opens in a terminal)
 - skills: "open skills", "create skill pizza"
 - a model of my own: "which model fits", "install the model"
+- I draw: "draw a cat in a hat", "draw a wallpaper with mountains", "make a coloring page with a dragon" (once: "install drawing")
 - theme: "dark theme", "light theme", "auto theme", "switch to paper/graphite/phosphor"
 - color: "make the accent green", "lilac accent", "no color"
 - my look: "become a cat/imp", "put on glasses", "take off headphones", "hood off"; name: "your name is Max"
@@ -941,6 +943,9 @@ def h_morse(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
 def h_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
     item = a["_item"]
     name, key = (item.get("names") or {}).get(ctx.lang) or item["name"], item["key"]
+    if item.get("installed") and item["kind"] == "kit":
+        return FastResult(True, ctx.say(f"{name} уже на месте. Скажи «нарисуй кота в шляпе».",
+                                        f"{name} is already here. Say \"draw a cat in a hat\"."), name, True)
     if item.get("installed"):
         return FastResult(True, ctx.say(f"{name} уже стоит. Запустить: «открой {name}».",
                                         f"{name} is already installed. To start it: \"open {name}\"."), name, True)
@@ -948,7 +953,12 @@ def h_install(ctx: FastCtx, a: dict[str, Any]) -> FastResult:
         return FastResult(False, ctx.say(f"Не нашёл терминал. Поставь сам: sos install {key}",
                                          f"No terminal found. Install it yourself: sos install {key}"), verified=False)
     lead = ctx.say("Пока не установлено. ", "Not installed yet. ") if a.get("_open") else ""
-    if item["kind"] == "module":
+    if item["kind"] == "kit":
+        what = ctx.say(f"Открыл установку {name} в терминале: подтверди там (если Студии ещё нет, спросит пароль). "
+                       f"Скачать нужно от 12 ГБ, зато потом я рисую без интернета.",
+                       f"Opened the {name} install in a terminal: confirm there (it asks for the password if the "
+                       f"Studio is not here yet). It downloads 12 GB or more; after that I draw offline.")
+    elif item["kind"] == "module":
         what = ctx.say(f"Открыл установку модуля «{name}» в терминале: подтверди там, спросит пароль.",
                        f"Opened the “{name}” module install in a terminal: confirm there, it asks for the password.")
     else:

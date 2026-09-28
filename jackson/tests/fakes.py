@@ -425,6 +425,11 @@ class FakeRunner(Runner):
                 return RunResult(0, json.dumps({"modules": [
                     {"id": "gaming", "name": {"en": "Gaming", "ru": "Игры"}, "aliases": ["steam", "стим"],
                      "installed": False}]}))
+            if a[:3] == ["models", "kits", "--json"]:
+                return RunResult(0, json.dumps({"kits": [
+                    {"id": "flux2-klein-4b", "name": "FLUX.2 [klein] 4B", "complete": True,
+                     "ready": getattr(self, "kit_ready", False),
+                     "aliases": ["draw", "drawing", "рисование", "рисовалка", "рисовалку"]}]}))
             if a[:2] == ["status", "--json"]:
                 return RunResult(0, json.dumps({"gpu": [{"index": 0, "vendor": "nvidia", "name": "RTX 4090",
                                                          "vramUsedMiB": 11468, "vramTotalMiB": 24564, "tempC": 64,

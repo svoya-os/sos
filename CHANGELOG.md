@@ -72,6 +72,20 @@ Work towards v0.1 «Первый сигнал».
   evening, in the hours Jackson speaks calmer. The launcher counts too (`2+2*3`, `200*15%`,
   `sqrt(2)`: Enter copies the answer), and the control center switches the power mode (power
   saver, balanced, performance). The cheat sheet (`Super+K`) lists them all.
+- **Privacy:** Jackson draws. «Нарисуй кота в шляпе», "draw a coloring page with a dragon", «сделай
+  обои с горами»: FLUX.2 [klein] 4B (Apache-2.0, so what you make is yours to sell) in the Studio, a
+  picture in seconds on a graphics card with 8 GB, minutes on a processor. It lands in
+  `~/Pictures/Jackson` and in his panel, with buttons to open it, copy it or make it the wallpaper;
+  Enter draws another one. Words for the shape pick the size («для телефона», «обои»,
+  «вертикальную»), and a short request in any language first becomes a detailed description,
+  written by the model's own text encoder. Set up once with «установи рисование» or
+  `sos install draw`: it downloads about 12 GB of models from Hugging Face and builds the Studio's
+  container once (Python, PyTorch and ComfyUI, about 9 GB); drawing itself stays on the computer.
+  The Studio starts when he draws and stops after ten idle minutes. Qwen-Image 2.1 draws text and
+  2K pictures better but needs about 16 GB of video memory and has a non-commercial license: on
+  request only (`sos install qwen-image-2.1 --accept-license`, then «нарисуй … через квен»).
+  `sos models kits` lists these model kits; `sos-studio up` and `down` run the Studio in the
+  background.
 
 ### Changed
 
@@ -91,6 +105,9 @@ Work towards v0.1 «Первый сигнал».
 
 ### Fixed
 
+- The Studio (`sos install studio`) starts: in the rootless container your Studio folder belonged
+  to root, so ComfyUI's user could not write its settings there. `sos-studio build` now fetches the
+  newest ComfyUI (PyTorch stays cached), and stopping the Studio no longer waits ten seconds.
 - Wired Ethernet works out of the box: NetworkManager manages every network device, as on Ubuntu
   Desktop (a computer on a cable, or a virtual machine, stayed offline).
 - The console welcome, `/etc/issue` and `lsb_release` name SOS again: the build lost these files.

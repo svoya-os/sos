@@ -115,6 +115,14 @@ ComfyUI, and `sos models dedup` finds duplicate files.
 Some model licenses exclude the EU or forbid commercial use. SOS reads the license information
 and compares it with your settings before anything is downloaded, so you do not find out later.
 
+### Can Jackson draw? Why FLUX.2 [klein] and not Qwen-Image 2.1?
+
+Yes: `sos install draw` once, then "draw a cat in a hat". He draws with FLUX.2 [klein] 4B: a
+picture in seconds on a card with 8 GB, and an Apache-2.0 license, so you may sell what you make
+(books, covers, stickers). Qwen-Image 2.1 draws text and 2K pictures better, but it needs about
+16 GB of video memory and its license is non-commercial, so it is there on request only:
+`sos install qwen-image-2.1 --accept-license`, then "draw … with qwen".
+
 ## Using SOS
 
 ### Hyprland sounds hard. Is SOS only for tiling fans?

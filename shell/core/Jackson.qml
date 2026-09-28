@@ -133,7 +133,11 @@ Singleton {
     property var decisions: ({})    // callId -> "once" | "always-project" | "deny"
     property var result: null       // the `done` event
     property var error: null        // {message, retryable, code}: code "no_local_model" on a fresh system
-    property var progress: null     // {done, total}: how far a local model has read the request (minutes on a CPU)
+    property var progress: null     // {done, total}: how far a local model has read the request (minutes on a CPU);
+                                    // {stage: "draw", phase, done, total}: a picture in the Studio
+    property string image: ""       // the picture this turn drew (tool event `image`)
+    property string imageDescription: ""   // what it was drawn from (tool event `description`)
+    property bool imageWallpaper: false   // asked for as a wallpaper («нарисуй обои»)
     property bool busy: false
     property real doneAt: 0           // when the panel's last turn finished (Date.now())
     property var suggestions: []    // optional done.suggestions: [{id, label, primary, prompt}]
@@ -287,6 +291,9 @@ Singleton {
         root.progress = null;
         root.route = null;
         root.suggestions = [];
+        root.image = "";
+        root.imageDescription = "";
+        root.imageWallpaper = false;
         root.voiceState = "";
         root.voiceNote = "";
     }
@@ -434,7 +441,11 @@ Singleton {
             }
             break;
         case "progress":
-            if (!foreign && Number(msg.total) > 0)
+            if (foreign)
+                break;
+            if (msg.stage === "draw")
+                root.progress = { stage: "draw", phase: msg.phase || "", done: Number(msg.done) || 0, total: Number(msg.total) || 0 };
+            else if (Number(msg.total) > 0)
                 root.progress = { done: Number(msg.done) || 0, total: Number(msg.total) };
             break;
         case "token":
@@ -456,6 +467,12 @@ Singleton {
                 if (!found)
                     list.push(msg);
                 root.tools = list;
+                if (msg.state === "done" && typeof msg.image === "string" && msg.image.length > 0) {
+                    root.image = msg.image;
+                    root.imageDescription = typeof msg.description === "string" ? msg.description : "";
+                    root.imageWallpaper = msg.wallpaper === true;
+                    root.progress = null;
+                }
             }
             break;
         case "approval":

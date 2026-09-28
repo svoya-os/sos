@@ -206,7 +206,8 @@ class OsControl:
             self.sleep(0.1)
         return True, False
 
-    def screenshots_dir(self) -> Path:
+    def pictures_dir(self) -> Path:
+        """The XDG pictures folder (~/Pictures, «Изображения» in a Russian session)."""
         pictures = self.paths.home / "Pictures"
         try:
             text = (self.paths.config_home / "user-dirs.dirs").read_text(encoding="utf-8")
@@ -215,7 +216,10 @@ class OsControl:
                 pictures = Path(m.group(1).replace("$HOME", str(self.paths.home)))
         except OSError:
             pass
-        return pictures / "Screenshots"
+        return pictures
+
+    def screenshots_dir(self) -> Path:
+        return self.pictures_dir() / "Screenshots"
 
     def screenshot(self) -> Path | None:
         if not self.has("grim"):

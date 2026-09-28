@@ -4,7 +4,8 @@
     single-file models as ``<name>.gguf`` symlinks; multi-shard or vision models as ``<name>/``
     directories (first shard ``-00001-of-``, ``mmproj*`` sidecar) — the layout llama.cpp scans.
 ``/srv/ai/views/comfyui/``     ``extra_model_paths.yaml`` + category folders of symlinks
-    (``split_files/<folder>/`` of Comfy-Org repackages is honoured; otherwise filename heuristics).
+    (``split_files/<folder>/`` of Comfy-Org repackages and top-level ComfyUI folders such as
+    ``diffusion_models/`` are honoured; otherwise filename heuristics).
 ``/srv/ai/views/ollama/``      one Modelfile per GGUF + ``import.sh`` with the ``ollama create`` commands
     (Ollama copies weights into its own store; put ``OLLAMA_MODELS`` on the same btrfs volume and
     run ``sos models dedup --apply`` afterwards to share the blocks).
@@ -83,6 +84,11 @@ def comfy_folder(f: CachedFile) -> str | None:
     if m:
         folder = m.group(1)
         return {"unet": "diffusion_models", "clip": "text_encoders"}.get(folder, folder)
+    # Comfy-Org's newer repackages keep ComfyUI's own folders at the top (diffusion_models/…,
+    # text_encoders/…, vae/…); a diffusers repository also has vae/, with diffusion_pytorch_model*
+    top = low.split("/", 1)[0] if "/" in low else ""
+    if top in COMFY_FOLDERS and low.count("/") == 1 and not Path(low).name.startswith("diffusion_pytorch_model"):
+        return top
     entry = match_catalog(f"{f.repo}/{f.filename}")
     media = (entry is not None and entry.get("kind") in ("image", "video")) or \
         any(h in f.repo.lower() for h in MEDIA_HINTS)

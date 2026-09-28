@@ -126,6 +126,10 @@ DEFAULTS: dict[str, Any] = {
     "fastpath": {"decide": True},
     "mcp": {"on_change": "block", "servers": {}},
     "voice": {"enabled": False},  # v0.2, see jackson/voice.py
+    # «нарисуй …» (jackson/draw.py): kit = "" draws with FLUX.2 [klein] 4B (`sos install draw`);
+    # "qwen-image-2.1" after `sos install qwen-image-2.1 --accept-license` (non-commercial). The Studio
+    # Jackson started stops after idle_minutes without a drawing (0 = keep it running).
+    "draw": {"kit": "", "enhance": True, "idle_minutes": 10, "folder": ""},
 }
 
 _TOP_KEYS = set(DEFAULTS)
@@ -239,6 +243,7 @@ class Config:
     mcp_on_change: str = "block"
     mcp_servers: dict[str, McpServerConfig] = field(default_factory=dict)
     voice: dict[str, Any] = field(default_factory=dict)
+    draw: dict[str, Any] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
     sources: list[str] = field(default_factory=list)
     raw: dict[str, Any] = field(default_factory=dict)
@@ -464,6 +469,7 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
             timeout=_as_num(sv.get("timeout"), 30, 1, 3600),
         )
     cfg.voice = dict(data.get("voice") or {})
+    cfg.draw = dict(data.get("draw") or {})
     return cfg
 
 

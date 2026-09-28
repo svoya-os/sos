@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from ..config import Config
-from . import fs, memory_tools, shell, system, web
+from . import fs, image, memory_tools, shell, system, web
 from .base import (T0, T1, T2, T3, T4, Assessment, Tool, ToolContext, ToolRegistry, ToolResult, UndoSpec,
                    validate_args, wire_name)
 
@@ -13,7 +13,7 @@ __all__ = ["T0", "T1", "T2", "T3", "T4", "Assessment", "Tool", "ToolContext", "T
 
 
 def builtin_tools(config: Config) -> list[Tool]:
-    tools = fs.tools() + system.tools() + memory_tools.tools()
+    tools = fs.tools() + system.tools() + image.tools() + memory_tools.tools()
     if config.tools.shell:
         tools += shell.tools()
     if config.tools.web_fetch:

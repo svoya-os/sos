@@ -95,6 +95,59 @@ class InstallResolveTest(SandboxTest):
         self.assertEqual(install.main(args, self.sb.ctx(r2, dry_run=True)), 0)
         self.assertNotIn("llm-local", self.output())
 
+    def test_draw_brings_the_studio_then_the_kit(self):
+        from unittest import mock
+
+        from svoya_cli.models import remote
+
+        kind, obj = install.resolve(self.sb.ctx(FakeRunner()), "draw")
+        self.assertEqual((kind, obj.id), ("kit", "flux2-klein-4b"))
+        self.assertEqual(install.resolve(self.sb.ctx(FakeRunner()), "рисование")[1].id, "flux2-klein-4b")
+
+        def api_model(repo, revision="main", token=None, **kw):
+            files = {f.file: 5 for f in obj.files}
+            return {"sha": "c" * 40, "siblings": [{"rfilename": f, "size": n} for f, n in files.items()]}
+
+        r = FakeRunner(dry_run=True)
+        ctx = self.sb.ctx(r, dry_run=True)
+        self.sb.mkdir("/srv/ai")
+        args = argparse.Namespace(cmd="install", things=["draw"], yes=True, json=False)
+        with mock.patch.object(remote, "api_model", api_model):
+            self.assertEqual(install.main(args, ctx), 0)
+        out = self.output()
+        self.assertIn("installing the module studio first", out)
+        self.assertLess(out.index("module studio"), out.index("FLUX.2 [klein] 4B"))   # the Studio, then the files
+        self.assertIn("vae/flux2-vae.safetensors", out)
+        self.assertIn("dry run: nothing downloaded", out)
+        self.assertTrue(any(c[0] == "bash" and c[-1].endswith("modules/studio/install.sh") for c in r.calls))
+
+    def test_draw_updates_a_studio_from_before(self):
+        from unittest import mock
+
+        from svoya_cli.models import remote
+
+        kind, kit = install.resolve(self.sb.ctx(FakeRunner()), "draw")
+        self.sb.write("/var/lib/svoya/modules.json", json.dumps({"v": 1, "modules": {"studio": {}, "base-ai": {}}}))
+        r = FakeRunner(dry_run=True, available={"sos-studio"})
+        ctx = self.sb.ctx(r, dry_run=True)
+        self.sb.mkdir("/srv/ai")
+        with mock.patch.object(remote, "api_model", lambda repo, *a, **k: {"sha": "c" * 40, "siblings": [
+                {"rfilename": f.file, "size": 5} for f in kit.files]}):
+            self.assertEqual(install.main(argparse.Namespace(cmd="install", things=["draw"], yes=True, json=False), ctx), 0)
+        self.assertIn("updating the Studio", self.output())
+        self.assertTrue(any(c[0] == "bash" and c[-1].endswith("modules/studio/install.sh") for c in r.calls))
+        # with the user unit in place, the Studio is left as it is
+        self.sb.write("/usr/lib/systemd/user/sos-studio.service", "[Service]\n")
+        r2 = FakeRunner(dry_run=True, available={"sos-studio"})
+        self.buf.truncate(0)
+        self.buf.seek(0)
+        with mock.patch.object(remote, "api_model", lambda repo, *a, **k: {"sha": "c" * 40, "siblings": [
+                {"rfilename": f.file, "size": 5} for f in kit.files]}):
+            install.main(argparse.Namespace(cmd="install", things=["draw"], yes=True, json=False),
+                         self.sb.ctx(r2, dry_run=True))
+        self.assertNotIn("Studio", self.output().split("FLUX.2")[0])
+        self.assertFalse(any(c[0] == "bash" and c[-1].endswith("modules/studio/install.sh") for c in r2.calls))
+
     def test_unknown_suggests(self):
         ctx = self.sb.ctx(FakeRunner())
         err = io.StringIO()

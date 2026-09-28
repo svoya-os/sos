@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
 from . import aiswitch, decide, fastpath
+from . import draw as draw_mod
 from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
@@ -54,6 +55,7 @@ class Session:
     history: list[list[dict[str, Any]]] = field(default_factory=list)
     taint: Taint = field(default_factory=Taint)
     cwd: Path | None = None
+    pending_draw: Any = None       # «нарисуй» without a subject: the next reply is what to draw
 
     def reset(self) -> None:
         self.history.clear()
@@ -93,6 +95,7 @@ class Turn:
     model: str = ""
     provider: str = ""
     finished: bool = False
+    suggestions: list[dict[str, Any]] = field(default_factory=list)   # buttons under the answer
 
     @property
     def lang(self) -> str:
@@ -197,8 +200,17 @@ class Engine:
                 cwd = Path(str(turn.context["cwd"])).expanduser()
                 if cwd.is_dir():
                     turn.session.cwd = cwd
-            if not turn.context.get("noFastpath") and await self._fastpath(turn):
-                return
+            if not turn.context.get("noFastpath"):
+                pending, turn.session.pending_draw = turn.session.pending_draw, None
+                req = draw_mod.parse(turn.text, (self.app.avatar.name,))
+                if req is None and pending is not None and \
+                        await asyncio.to_thread(fastpath.match, turn.text, self.app.osc, (self.app.avatar.name,)) is None:
+                    req = draw_mod.answer_to_what(turn.text, pending)      # «Что нарисовать?» — «кота в шляпе»
+                if req is not None:
+                    await self._draw_turn(turn, req)
+                    return
+                if await self._fastpath(turn):
+                    return
             off = aiswitch.off_reason(self.app.paths)
             if off:  # the AI switch (sos ai off): only deterministic commands, no model at all
                 self.app.audit.append("ask.refused", turn=turn.id, reason=f"ai-off:{off}")
@@ -276,6 +288,8 @@ class Engine:
         }
         if cancelled:
             event["cancelled"] = True
+        if turn.suggestions and not cancelled:
+            event["suggestions"] = turn.suggestions
         await self._emit(turn, event)
         log.info("turn done in %d ms: %s, %d+%d tokens%s%s", int(round(latency)),
                  "/".join(x for x in (turn.provider, route_model or turn.model) if x) or "fast path",
@@ -344,6 +358,99 @@ class Engine:
         if result.after is not None:  # e.g. `sos ai off`, which stops Jackson himself: answer first
             self._after(result.after, match.name)
         return True
+
+    # ------------------------------------------------------------------
+    # «нарисуй …»: the Studio draws, no language model needed (jackson/draw.py)
+
+    def _progress_emitter(self, turn: Turn) -> Callable[..., None]:
+        """progress(phase=…, done=…, total=…) from a worker thread → a `progress` event (stage draw)."""
+        loop = asyncio.get_running_loop()
+
+        def progress(**p: Any) -> None:
+            event = {"type": "progress", "stage": "draw", "phase": str(p.get("phase") or "")}
+            if p.get("total"):
+                event.update(done=int(p.get("done") or 0), total=int(p["total"]))
+            asyncio.run_coroutine_threadsafe(self._emit(turn, event), loop)
+        return progress
+
+    def draw_answer(self, res: "draw_mod.Result", lang: str) -> str:
+        """What Jackson says about a drawing (the draw turn and the image.draw tool's summary)."""
+        kit = draw_mod.KITS.get(res.kit, draw_mod.KLEIN)
+        if res.ok and res.path is not None:
+            home = str(self.app.paths.home)
+            shown = "~" + str(res.path)[len(home):] if str(res.path).startswith(home + "/") else str(res.path)
+            text = t("draw.done", lang, path=shown)
+            wanted = next((n.split(":", 1)[1] for n in res.notes if n.startswith("instead-of:")), "")
+            if wanted in draw_mod.KITS:
+                w = draw_mod.KITS[wanted]
+                text += "\n\n" + t("draw.instead", lang, wanted=w.name, kit=kit.name, install=w.install)
+            return text
+        key = f"draw.{res.code}" if res.code in ("not-installed", "no-kit", "not-built", "old-studio", "no-start",
+                                                 "gone", "rejected", "oom", "timeout") else "draw.failed"
+        return t(key, lang, kit=kit.name, install=res.install or kit.install, detail=res.detail or res.code)
+
+    async def _draw_turn(self, turn: Turn, req: "draw_mod.DrawRequest") -> None:
+        app = self.app
+        lang = turn.lang
+        off = aiswitch.off_reason(app.paths)
+        if off:        # drawing is a neural network too: the AI switch stops it like any model
+            app.audit.append("ask.refused", turn=turn.id, reason=f"ai-off:{off}")
+            await self._error(turn, t("ai.off." + ("system" if off == "system" else "user"), lang,
+                                      name=app.name(lang)), False, aiOff=True, off=off)
+            return
+        if not req.prompt:
+            turn.model, turn.provider = "draw", "jackson"
+            question = t("draw.what", lang)
+            turn.session.pending_draw = req
+            turn.session.history.append([{"role": "user", "content": turn.text},
+                                         {"role": "assistant", "content": question}])
+            turn.session.trim()
+            await self._state(turn, "speaking")
+            await self._emit(turn, {"type": "token", "text": question})
+            await self._done(turn)
+            return
+        kit, _ = await asyncio.to_thread(app.draw.kit_for, req)
+        turn.model, turn.provider = kit.id, "studio"
+        await self._emit(turn, {"type": "route", "model": kit.id, "provider": "studio", "local": True,
+                                "reason": t("route.draw", turn.session.lang, kit=kit.name), "task": "image"})
+        call_id = new_id("call")
+        width, height = req.dims
+        args = {"prompt": req.prompt, "size": f"{width}x{height}", "kit": kit.id}
+        await self._state(turn, "working")
+        await self._emit(turn, {"type": "tool", "callId": call_id, "name": "draw", "args": args, "tier": 1,
+                                "state": "running", "summary": ""})
+        res = await asyncio.to_thread(app.draw.draw, req, turn.cancel, self._progress_emitter(turn))
+        if res.code == "cancelled" or turn.cancel.is_set():
+            await self._emit(turn, {"type": "tool", "callId": call_id, "name": "draw", "args": args, "tier": 1,
+                                    "state": "failed", "summary": t("err.cancelled", lang)})
+            await self._done(turn, cancelled=True)
+            return
+        app.audit.append("draw", turn=turn.id, client=turn.session.client, kit=res.kit, ok=res.ok, code=res.code,
+                         seconds=round(res.seconds, 1), size=list(res.size), path=str(res.path) if res.path else None)
+        text = self.draw_answer(res, lang)
+        event: dict[str, Any] = {"type": "tool", "callId": call_id, "name": "draw", "args": args, "tier": 1,
+                                 "state": "done" if res.ok else "failed", "verified": bool(res.ok and res.path)}
+        if res.ok and res.path is not None:
+            event["summary"] = t("draw.summary", lang, kit=draw_mod.KITS[res.kit].name, w=res.size[0], h=res.size[1],
+                                 prompt=res.prompt[:160])
+            event["image"] = str(res.path)
+            event["wallpaper"] = req.wallpaper
+            event["description"] = res.prompt
+            turn.suggestions = [{"label": t("draw.again", lang), "prompt": turn.text, "primary": True}]
+            turn.session.history.append([
+                {"role": "user", "content": turn.text},
+                {"role": "assistant", "content": f"{text}\n(Drawn in the Studio with {draw_mod.KITS[res.kit].name}, "
+                                                 f"{res.size[0]}×{res.size[1]}, from this description: {res.prompt})"}])
+            turn.session.trim()
+        else:
+            event["summary"] = res.code
+        await self._emit(turn, event)
+        await self._state(turn, "speaking")
+        token: dict[str, Any] = {"type": "token", "text": text}
+        if res.ok:
+            token["speak"] = t("draw.done.spoken", lang)     # the voice does not read out a file name
+        await self._emit(turn, token)
+        await self._done(turn)
 
     def _local_decider(self) -> tuple[Any, str] | None:
         """A healthy local OpenAI-compatible server and its smallest good chat model (cached health)."""
@@ -620,7 +727,9 @@ class Engine:
         return ToolContext(paths=app.paths, config=self.config, lang=turn.lang, cwd=cwd,
                            project=project_root(turn.session.cwd, app.paths.home), runner=app.runner,
                            svoya=app.svoya, undo=app.undo, memory=app.memory, sandbox=app.sandbox, cancel=cancel,
-                           turn_id=turn.id, client=turn.session.client, tainted=bool(turn.session.taint))
+                           turn_id=turn.id, client=turn.session.client, tainted=bool(turn.session.taint),
+                           extra={"draw": app.draw, "progress": self._progress_emitter(turn),
+                                  "draw_answer": self.draw_answer})
 
     async def _tool_call(self, turn: Turn, call: ToolCall) -> dict[str, Any]:
         app = self.app
@@ -717,9 +826,13 @@ class Engine:
         app.audit.append("tool", turn=turn.id, client=turn.session.client, callId=call_id, tool=tool.name,
                          ok=result.ok, verified=result.verified, summary=result.summary, actions=new_actions,
                          taint=result.taint, leftTo=result.left_to)
-        await self._emit(turn, {"type": "tool", "callId": call_id, "name": tool.name, "args": args, "tier": tier,
-                                "state": "done" if result.ok else "failed", "summary": result.summary,
-                                "verified": result.verified, "actions": new_actions})
+        done_event = {"type": "tool", "callId": call_id, "name": tool.name, "args": args, "tier": tier,
+                      "state": "done" if result.ok else "failed", "summary": result.summary,
+                      "verified": result.verified, "actions": new_actions}
+        if result.ok and isinstance(result.data, dict) and result.data.get("image"):
+            done_event["image"] = str(result.data["image"])          # the shell shows the picture
+            turn.suggestions = []
+        await self._emit(turn, done_event)
         content = result.content
         if result.verified is not None:
             content += f"\n[verified: {'true' if result.verified else 'false'}]"

@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 # sos-studio — ComfyUI in a sandbox (SOS module studio).  SPDX-License-Identifier: Apache-2.0
-#   sos-studio start | stop | build | status | snapshot | node-add <git-url>
+#   sos-studio up | down | ready | start | stop | build | status | snapshot | node-add <git-url>
+#   up/down: in the background (the user unit sos-studio.service), up waits until ComfyUI answers;
+#   start runs it in this terminal (what the unit runs). Jackson uses up/down for «нарисуй …».
 # Sandbox: rootless podman, no capabilities, models read-only, network port only on 127.0.0.1.
 set -euo pipefail
 DATA=${XDG_DATA_HOME:-$HOME/.local/share}/svoya/studio
 SNAPS=$DATA.snapshots
 IMAGE=localhost/sos-studio:latest
 RECIPE=/usr/lib/svoya/studio
+URL=http://127.0.0.1:8188
+UNIT=sos-studio.service
+
+ready() { curl -fsS --max-time 2 "$URL/system_stats" >/dev/null 2>&1; }
 
 backend() {
   if [[ -n "${UV_TORCH_BACKEND:-}" ]]; then echo "$UV_TORCH_BACKEND"; return; fi
@@ -31,15 +37,38 @@ snapshot() {
 cmd=${1:-start}
 case "$cmd" in
   build)
-    podman build --build-arg TORCH_BACKEND="$(backend)" -t "$IMAGE" -f "$RECIPE/Containerfile" "$RECIPE" ;;
+    # the newest ComfyUI commit: a changed one fetches ComfyUI again, PyTorch stays cached
+    commit=$(git ls-remote https://github.com/comfyanonymous/ComfyUI "refs/heads/${COMFY_REF:-master}" 2>/dev/null | cut -f1)
+    podman build --build-arg TORCH_BACKEND="$(backend)" --build-arg COMFY_REF="${COMFY_REF:-master}" \
+      --build-arg COMFY_COMMIT="${commit:-unknown}" -t "$IMAGE" -f "$RECIPE/Containerfile" "$RECIPE" ;;
   start)
     podman image exists "$IMAGE" || "$0" build
     mkdir -p "$DATA"/{custom_nodes,user,output,input}
+    # ComfyUI reads the model view's extra_model_paths.yaml: make sure it is there and current
+    command -v sos >/dev/null && sos models views --quiet >/dev/null 2>&1 || true
+    # keep-id: you are the container's user «studio» (uid 1000), so your folders are writable in it;
+    # SIGINT: ComfyUI runs as PID 1 and stops cleanly on Ctrl+C (a SIGTERM would wait for the kill)
     # shellcheck disable=SC2046
-    exec podman run --rm --name sos-studio $(gpu_args) -p 127.0.0.1:8188:8188 \
+    exec podman run --rm --replace --name sos-studio $(gpu_args) -p 127.0.0.1:8188:8188 \
+      --userns=keep-id:uid=1000,gid=1000 --stop-signal=SIGINT \
       --security-opt=no-new-privileges --cap-drop=ALL \
       -v /srv/ai:/srv/ai:ro -v "$DATA":/data:Z -v "$DATA/custom_nodes":/opt/ComfyUI/custom_nodes:Z "$IMAGE" ;;
-  stop) podman stop sos-studio ;;
+  up)
+    ready && { echo "$URL"; exit 0; }
+    if [[ -f /usr/lib/systemd/user/$UNIT ]] && systemctl --user start "$UNIT" 2>/dev/null; then :; else
+      mkdir -p "$DATA"
+      nohup "$0" start >"$DATA/studio.log" 2>&1 &
+    fi
+    for _ in $(seq 1 "${SOS_STUDIO_WAIT:-180}"); do
+      ready && { echo "$URL"; exit 0; }
+      sleep 1
+    done
+    echo "× the Studio did not answer at $URL (journalctl --user -u $UNIT)" >&2; exit 1 ;;
+  down)
+    systemctl --user stop "$UNIT" 2>/dev/null || true
+    podman stop --ignore --time 10 sos-studio >/dev/null ;;   # started by hand, not by the unit
+  ready) ready ;;
+  stop) podman stop --ignore --time 10 sos-studio ;;
   status) podman ps --filter name=sos-studio ;;
   snapshot) snapshot ;;
   node-add)
@@ -60,5 +89,5 @@ case "$cmd" in
       fi
     fi
     echo "› restart the studio to load $name (undo: restore the snapshot above)" ;;
-  *) echo "usage: sos-studio start|stop|build|status|snapshot|node-add <git-url>" >&2; exit 2 ;;
+  *) echo "usage: sos-studio up|down|ready|start|stop|build|status|snapshot|node-add <git-url>" >&2; exit 2 ;;
 esac

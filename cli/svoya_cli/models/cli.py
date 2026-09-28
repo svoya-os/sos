@@ -16,7 +16,7 @@ from ..i18n import tr
 from ..util import iso
 from . import dedup as dedup_mod
 from . import estimate as est_mod
-from . import gguf, hfcache, licenses, remote, views
+from . import gguf, hfcache, kits, licenses, remote, views
 from .registry import Registry
 
 GiB = 2**30
@@ -336,8 +336,192 @@ def _plan_from_alias(alias: "suggest_mod.Choice") -> tuple[str, list[str], dict[
     return alias.model["repo"], files, sizes
 
 
+def _fetch(ctx: Ctx, ev: "_Events", repo: str, files: list[str], revision: str, token: str | None,
+           siblings: dict, info: dict, sizes: dict[str, int]) -> tuple[str, int] | None:
+    """Download *files* of *repo* into the store (HF cache layout) → None, or (message, exit code)."""
+    root = ctx.paths.ai_root
+    hub = root / "hub"
+    if ctx.runner.which("hf") and not ev.enabled:
+        env = {**ctx.env, "HF_HOME": str(root)}
+        rc = ctx.runner.stream(["hf", "download", repo, *files, "--revision", revision], env=env)
+        if rc != 0:
+            return tr("hf download failed", "hf download завершился с ошибкой"), rc
+    else:
+        for f in files:
+            url = remote.HFRef(repo, f, revision).url()
+            try:
+                meta = remote.head(url, token)
+                etag = meta.etag or (siblings.get(f, {}).get("lfs") or {}).get("sha256") or siblings.get(f, {}).get("blobId")
+                if not etag:
+                    return f"{f}: no etag from the Hub", 1
+                commit = meta.commit or info.get("sha") or revision
+                dest = hfcache.blob_dest(hub, repo, etag)
+                if not ev.enabled:
+                    ui.note(f"↓ {f}")
+                ev("file", file=f, totalBytes=meta.size or sizes.get(f))
+                done = dest if dest.exists() else remote.download(
+                    url, dest, token=token, expected_size=meta.size or sizes.get(f) or None,
+                    expected_sha256=etag if len(etag) == 64 else None,
+                    progress=lambda d, t, _f=f: ev.progress(_f, d, t))
+                hfcache.add_file(hub, repo, commit, f, done, etag, revision)
+                ev("file-done", file=f)
+            except remote.RemoteError as e:
+                return f"{f}: {e}", 1
+    reg = _open_registry(ctx)
+    sync_registry(reg, [c for c in hfcache.scan(hub) if c.repo == repo and c.filename in files], iso(ctx.now()))
+    if reg:
+        reg.close()
+    return None
+
+
+def _refresh_views(ctx: Ctx) -> None:
+    """The ComfyUI view links what a kit brought (the llama.cpp and Ollama views stay as they are)."""
+    out = ctx.paths.ai_root / "views" / "comfyui"
+    try:
+        views.apply(views.comfy_plan(hfcache.scan(ctx.paths.ai_root / "hub"), out), out)
+    except OSError as e:
+        ui.note(tr(f"could not update the ComfyUI view: {e} — run `sos models views`",
+                   f"не обновилось представление ComfyUI: {e} — выполни `sos models views`"))
+
+
+def _gated(repo: str, e: Exception) -> str:
+    """Hugging Face answers 401 for a gated repository and for one that does not exist (without a token)."""
+    msg = str(e)
+    if "401" in msg or "403" in msg:
+        return tr(f"{repo} is not available ({msg}). If https://huggingface.co/{repo} asks you to accept its terms, "
+                  f"accept them and run `hf auth login`",
+                  f"{repo} недоступен ({msg}). Если https://huggingface.co/{repo} просит принять условия, прими их "
+                  f"и выполни `hf auth login`")
+    return f"{repo}: {msg}"
+
+
+def _kit_fit(ctx: Ctx, kit: "kits.Kit") -> tuple[str | None, str]:
+    """(verdict ok | slow | cpu | None, a line for people) from the GPU's memory and the kit's need."""
+    if not kit.vram_gb:
+        return None, ""
+    need = kit.vram_gb
+    try:
+        g = gpu_budget(ctx, "auto")
+    except Exception:  # no GPU tools: say nothing rather than guess
+        return None, ""
+    if g["backend"] == "cpu" or not g["total"]:
+        return "cpu", tr(f"no graphics card: a picture takes minutes on the processor (the kit wants {i18n.smart(need)} GB of VRAM)",
+                         f"видеокарты нет: картинка на процессоре — минуты (набору нужно {i18n.smart(need)} ГБ видеопамяти)")
+    total = g["total"] / GiB
+    if total + 0.3 >= need:
+        return "ok", tr(f"{i18n.smart(need)} GB of VRAM, you have {i18n.smart(round(total, 1))} GB",
+                        f"{i18n.smart(need)} ГБ видеопамяти, у тебя {i18n.smart(round(total, 1))} ГБ")
+    return "slow", tr(f"{i18n.smart(need)} GB of VRAM, you have {i18n.smart(round(total, 1))} GB: it works, more slowly",
+                      f"{i18n.smart(need)} ГБ видеопамяти, у тебя {i18n.smart(round(total, 1))} ГБ: заработает, но медленнее")
+
+
+def _pull_kit(kit: "kits.Kit", args, ctx: Ctx) -> int:
+    """``sos models pull flux2-klein-4b``: every file the kit needs, from its repositories, one plan."""
+    cfg = config_mod.load(ctx.paths)
+    st = ui.style()
+    ev = _Events(bool(getattr(args, "json", False)))
+    say = (lambda *a, **k: None) if ev.enabled else ui.kv
+    head = (lambda *a, **k: None) if ev.enabled else ui.head
+    token = remote.hf_token(ctx.env, ctx.paths.ai_root, ctx.paths.home)
+    region = str(cfg["models"].get("region", "EU"))
+    commercial = bool(cfg["models"].get("commercial", True))
+
+    def fail(msg: str, rc: int = 1) -> int:
+        ev("error", message=msg)
+        if not ev.enabled:
+            ui.err(f"sos: {msg}")
+        return rc
+
+    have = kits.present(hfcache.scan(ctx.paths.ai_root / "hub"), kit)
+    todo: list[tuple[kits.KitFile, str, dict, dict, int]] = []     # (file, repo, info, siblings, size)
+    for kf in kit.files:
+        if have.get(kf.name) is not None:
+            continue
+        chosen, last = None, None
+        for repo in (kf.repo, *kf.alt):
+            try:
+                info = remote.api_model(repo, args.revision, token)
+            except remote.RemoteError as e:
+                last = _gated(repo, e)
+                continue
+            siblings = {s_["rfilename"]: s_ for s_ in info.get("siblings", [])}
+            if kf.file in siblings:
+                sib = siblings[kf.file]
+                chosen = (kf, repo, info, siblings, int((sib.get("lfs") or {}).get("size") or sib.get("size") or 0))
+                break
+            last = tr(f"not in {repo}: {kf.file}", f"нет в {repo}: {kf.file}")
+        if chosen is None:
+            return fail(last or kf.file)
+        todo.append(chosen)
+
+    entry = next((e for e in licenses.catalog() if e.get("id") == kit.model), None)
+    verdict = licenses.from_catalog(entry) if entry else licenses.classify(repo=kit.files[0].repo, filename=kit.files[0].file)
+    status, reason = verdict.allows(region, commercial)
+    total = sum(t[4] for t in todo)
+    fit, fit_line = _kit_fit(ctx, kit)
+    root = ctx.paths.ai_root
+    try:
+        free = shutil.disk_usage(root if root.exists() else root.parent).free
+    except OSError:
+        free = None
+    in_ram = live.is_live(ctx)
+    files = [t[0].name for t in todo]
+    ev("plan", kit=kit.id, repo=kit.id, revision=args.revision, files=files, totalBytes=total,
+       license=verdict.as_json(), usable={"status": status, "reason": reason, "region": region}, fit=fit,
+       diskFreeBytes=free, live=in_ram, have=[n for n, c in have.items() if c is not None])
+    head(f"{kit.name} {st.faint('· ' + i18n.count(len(kit.files), 'file', 'files', 'файл', 'файла', 'файлов') + (' · ' + i18n.gib(total) if total else ''))}")
+    for kf in kit.files:
+        mark = st.ok("✓") if have.get(kf.name) is not None else st.faint("↓")
+        if not ev.enabled:
+            ui.note(f"{mark} {kf.folder}/{kf.name}")
+    say(tr("license", "лицензия"), f"{verdict.license or tr('unknown', 'неизвестна')}  "
+        + {"ok": st.ok("✓ " + (reason or tr('OK for you', 'подходит'))), "warn": st.warn("! " + reason),
+           "no": st.bad("× " + reason)}[status], width=11)
+    if fit_line:
+        say(tr("VRAM", "видеопамять"), fit_line if fit == "ok" else st.warn(fit_line), width=11)
+    if free is not None and total:
+        say(tr("disk", "диск"), tr(f"{i18n.gib(total)} of {i18n.gib(free)} free", f"{i18n.gib(total)} из {i18n.gib(free)} свободных"), width=11)
+    if in_ram:
+        say(tr("live", "живая"), st.warn(tr("! live session: the files go to RAM and are gone after a reboot — install SOS first",
+                                          "! живая сессия: файлы лягут в оперативную память и пропадут после перезагрузки — сначала установи СОС")), width=11)
+    if not todo:
+        if not args.dry_run:
+            _refresh_views(ctx)
+        ev("done", ok=True, kit=kit.id, repo=kit.id, files=[])
+        head(tr("already here · the Studio sees it", "уже на месте · Студия его видит"))
+        return 0
+    if args.dry_run:
+        ev("done", ok=True, dryRun=True)
+        if not ev.enabled:
+            ui.note(tr("dry run: nothing downloaded", "пробный запуск: ничего не скачано"))
+        return 0
+    if status == "no" and not args.accept_license:
+        if not ev.enabled:
+            ui.note(tr("not downloading. If your use is covered (e.g. personal, not commercial), add --accept-license",
+                       "не скачиваю. Если твоё использование разрешено (например, личное, не коммерческое) — добавь --accept-license"))
+        return fail(reason, 3) if ev.enabled else 3
+    if free is not None and total > free:
+        return fail(tr("not enough disk space in the store", "не хватает места в хранилище"))
+    if not args.yes:
+        if ev.enabled:
+            return fail(tr("add --yes to download", "добавьте --yes, чтобы скачать"), 3)
+        if not ui.confirm(tr("Download?", "Скачать?"), default=True):
+            return 1
+    for kf, repo, info, siblings, size in todo:
+        err = _fetch(ctx, ev, repo, [kf.file], args.revision, token, siblings, info, {kf.file: size})
+        if err is not None:
+            return fail(err[0], err[1])
+    _refresh_views(ctx)
+    ev("done", ok=True, kit=kit.id, repo=kit.id, files=files)
+    head(tr("done · the Studio sees it (ComfyUI view updated)", "готово · Студия его видит (представление ComfyUI обновлено)"))
+    return 0
+
+
 def cmd_pull(args, ctx: Ctx) -> int:
     from . import suggest as suggest_mod
+    kit = kits.resolve(args.repo) if "/" not in args.repo else None
+    if kit is not None:
+        return _pull_kit(kit, args, ctx)
     cfg = config_mod.load(ctx.paths)
     st = ui.style()
     ev = _Events(bool(getattr(args, "json", False)))
@@ -467,37 +651,9 @@ def cmd_pull(args, ctx: Ctx) -> int:
         if not ui.confirm(tr("Download?", "Скачать?"), default=True):
             return 1
 
-    hub = root / "hub"
-    if ctx.runner.which("hf") and not ev.enabled:
-        env = {**ctx.env, "HF_HOME": str(root)}
-        rc = ctx.runner.stream(["hf", "download", repo, *files, "--revision", revision], env=env)
-        if rc != 0:
-            return fail(tr("hf download failed", "hf download завершился с ошибкой"), rc)
-    else:
-        for f in files:
-            url = remote.HFRef(repo, f, revision).url()
-            try:
-                meta = remote.head(url, token)
-                etag = meta.etag or (siblings.get(f, {}).get("lfs") or {}).get("sha256") or siblings.get(f, {}).get("blobId")
-                if not etag:
-                    return fail(f"{f}: no etag from the Hub")
-                commit = meta.commit or info.get("sha") or revision
-                dest = hfcache.blob_dest(hub, repo, etag)
-                if not ev.enabled:
-                    ui.note(f"↓ {f}")
-                ev("file", file=f, totalBytes=meta.size or sizes.get(f))
-                done = dest if dest.exists() else remote.download(
-                    url, dest, token=token, expected_size=meta.size or sizes.get(f) or None,
-                    expected_sha256=etag if len(etag) == 64 else None,
-                    progress=lambda d, t, _f=f: ev.progress(_f, d, t))
-                hfcache.add_file(hub, repo, commit, f, done, etag, revision)
-                ev("file-done", file=f)
-            except remote.RemoteError as e:
-                return fail(f"{f}: {e}")
-    reg = _open_registry(ctx)
-    sync_registry(reg, [c for c in hfcache.scan(hub) if c.repo == repo and c.filename in files], iso(ctx.now()))
-    if reg:
-        reg.close()
+    err = _fetch(ctx, ev, repo, files, revision, token, siblings, info, sizes)
+    if err is not None:
+        return fail(err[0], err[1])
     ev("done", ok=True, repo=repo, files=files)
     head(tr("done · `sos models views` updates the llama.cpp/ComfyUI/Ollama views",
             "готово · `sos models views` обновит представления llama.cpp/ComfyUI/Ollama"))
@@ -624,12 +780,52 @@ def cmd_suggest(args, ctx: Ctx) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- kits
+
+STUDIO_IMAGE = "localhost/sos-studio:latest"
+
+
+def studio_state(ctx: Ctx) -> tuple[bool, bool | None]:
+    """(the Studio is installed, its container is built — None when podman cannot say)."""
+    studio = bool(ctx.runner.which("sos-studio")) or ctx.sys("/usr/local/bin/sos-studio").exists()
+    if not studio or not ctx.runner.which("podman"):
+        return studio, None if studio else False
+    return studio, ctx.runner.run(["podman", "image", "exists", STUDIO_IMAGE], timeout=20).ok
+
+
+def cmd_kits(args, ctx: Ctx) -> int:
+    """``sos models kits``: the model kits (Jackson's drawing, the Studio) and what of them is here."""
+    studio, built = studio_state(ctx)
+    rows = [kits.status(ctx.paths.ai_root, k, studio, built) for k in kits.kits()]
+    if args.json:
+        ui.print_json({"kits": rows})
+        return 0
+    st = ui.style()
+    ui.head(tr("model kits · sos models pull <kit>", "наборы моделей · sos models pull <набор>"))
+    for r in rows:
+        have = sum(1 for f in r["files"] if f["present"])
+        mark = st.ok("✓") if r["ready"] else (st.warn("◐") if have else st.faint("·"))
+        extra = tr(" · Jackson draws with it", " · им рисует Джексон") if r["default"] else ""
+        vram = f"{i18n.smart(r['vramGb'])} {tr('GB VRAM', 'ГБ видеопамяти')}" if r["vramGb"] else ""
+        ui.out(f"  {mark} {r['id'].ljust(16)} {r['name'].ljust(20)} {st.faint(vram + extra)}")
+        entry = next((e for e in licenses.catalog() if e.get("id") == r["model"]), None)
+        if entry and entry.get("commercial") is False:
+            ui.note(st.warn(tr(f"{entry.get('license')}: not for commercial use", f"{entry.get('license')}: не для коммерции")), indent=4)
+        if r["complete"] and not r["ready"]:
+            ui.note(tr(f"the files are here; the Studio is not ready: sos install {r['id']}",
+                       f"файлы на месте, Студия не готова: sos install {r['id']}"), indent=4)
+    return 0
+
+
 # ---------------------------------------------------------------- rm
 
 def cmd_rm(args, ctx: Ctx) -> int:
     hub = ctx.paths.ai_root / "hub"
     files = hfcache.scan(hub)
     t = args.target
+    kit = kits.resolve(t) if "/" not in t else None
+    if kit is not None:
+        return _rm_kit(kit, files, args, ctx)
     if re.fullmatch(r"[A-Za-z0-9][\w.-]*/[\w.-]+", t) and not Path(t).exists():
         victims = [f for f in files if f.repo == t]
         whole_repo = True
@@ -662,6 +858,33 @@ def cmd_rm(args, ctx: Ctx) -> int:
     if reg and not reg.readonly:
         reg.delete_paths(paths)
         reg.close()
+    ui.head(tr("removed", "удалено") + f" · {i18n.gib(size)}")
+    return 0
+
+
+def _rm_kit(kit: "kits.Kit", files: list, args, ctx: Ctx) -> int:
+    """The kit's own files only (not whole repositories: Comfy-Org/flux2-dev may hold more)."""
+    hub = ctx.paths.ai_root / "hub"
+    victims = [c for c in files for kf in kit.files if c.repo in (kf.repo, *kf.alt) and c.filename == kf.file]
+    if not victims:
+        ui.err(tr(f"sos: {kit.id} is not in the store", f"sos: набора {kit.id} нет в хранилище"))
+        return 1
+    size = sum(f.size for f in {f.blob_path: f for f in victims}.values())
+    ui.head(tr(f"remove {kit.name}: {len(victims)} file(s), {i18n.gib(size)}",
+               f"удалить {kit.name}: {len(victims)} файл(ов), {i18n.gib(size)}"))
+    for f in victims:
+        ui.note(f"{f.repo}/{f.filename}")
+    if args.dry_run:
+        return 0
+    if not ui.confirm(tr("Delete?", "Удалить?"), assume=True if args.yes else None):
+        return 1
+    for f in victims:
+        hfcache.remove_file(hub, f, files)
+    reg = _open_registry(ctx)
+    if reg and not reg.readonly:
+        reg.delete_paths([str(f.blob_path) for f in victims])
+        reg.close()
+    _refresh_views(ctx)
     ui.head(tr("removed", "удалено") + f" · {i18n.gib(size)}")
     return 0
 
@@ -743,5 +966,5 @@ def main(args, ctx: Ctx | None = None) -> int:
     if cmd == "list" and not hasattr(args, "catalog"):
         args.catalog, args.all, args.kind, args.json = False, False, None, False
     return {"list": cmd_list, "fit": cmd_fit, "pull": cmd_pull, "rm": cmd_rm, "dedup": cmd_dedup,
-            "views": cmd_views, "suggest": cmd_suggest, "serve": cmd_serve}[cmd](args, ctx)
+            "views": cmd_views, "suggest": cmd_suggest, "serve": cmd_serve, "kits": cmd_kits}[cmd](args, ctx)
 

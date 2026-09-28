@@ -1,8 +1,9 @@
 """``sos install <thing>`` / ``sos remove <thing>`` — one verb for modules, apps and models.
 
 Resolution order (first hit wins): module id or alias (``obsidian`` → module ``notes``) → app alias
-(``data/apps.toml`` → Flathub, per user) → local model id from ``sos models suggest``
-(``qwen3.5-9b``) → Hugging Face repo (``org/repo[/file.gguf]``). Unknown names get suggestions.
+(``data/apps.toml`` → Flathub, per user) → model kit (``draw`` → FLUX.2 [klein] for the Studio and
+Jackson's «нарисуй») → local model id from ``sos models suggest`` (``qwen3.5-9b``) → Hugging Face
+repo (``org/repo[/file.gguf]``). Unknown names get suggestions.
 """
 from __future__ import annotations
 
@@ -97,6 +98,10 @@ def resolve(ctx: Ctx, thing: str) -> tuple[str, object] | None:
     apps = load_apps()
     if t.lower() in apps:
         return "app", apps[t.lower()]
+    from .models.kits import resolve as kit
+    k = kit(t)
+    if k is not None:
+        return "kit", k
     from .models.suggest import resolve as ladder
     c = ladder(t)
     if c is not None:
@@ -107,8 +112,8 @@ def resolve(ctx: Ctx, thing: str) -> tuple[str, object] | None:
 
 
 def _candidates(ctx: Ctx) -> list[str]:
-    from .commands import _ladder_ids, _module_ids
-    return _module_ids() + sorted(load_apps()) + _ladder_ids()
+    from .commands import _kit_ids, _ladder_ids, _module_ids
+    return _module_ids() + sorted(load_apps()) + _kit_ids() + _ladder_ids()
 
 
 def _ns(**kw) -> argparse.Namespace:
@@ -170,6 +175,49 @@ def _ensure_engine(ctx: Ctx, thing: str, args) -> int:
     return modules.main(ns, ctx)
 
 
+STUDIO_IMAGE = "localhost/sos-studio:latest"
+
+
+def install_kit(ctx: Ctx, kit, args) -> int:
+    """``sos install draw``: the Studio (module studio, asks for the password), the kit's files, and the
+    Studio's container built once — so the first «нарисуй» only has to wait for the picture."""
+    from . import modules
+    from .models import cli as models_cli
+    try:
+        have_studio = "studio" in modules.load_state(ctx)["modules"]
+    except Exception:  # an unreadable state file: let `modules add` decide
+        have_studio = False
+    have_studio = have_studio or bool(ctx.runner.which("sos-studio"))
+    # a Studio from before Jackson could draw has no user unit: its install runs again (idempotent)
+    current = ctx.sys("/usr/lib/systemd/user/sos-studio.service").exists()
+    if not have_studio or not current:
+        ui.note(tr("the kit runs in the Studio (ComfyUI in a container): installing the module studio first"
+                   if not have_studio else "updating the Studio (module studio) so Jackson can start it",
+                   "набор работает в Студии (ComfyUI в контейнере): сначала ставлю модуль «Студия» (studio)"
+                   if not have_studio else "обновляю Студию (модуль studio), чтобы Джексон мог её запускать"))
+        ns = _ns(modules_cmd="add", modules=["studio"], options=[], profile=None, offline=False,
+                 dry_run=ctx.dry_run, yes=args.yes, json=args.json, force=False, show_scripts=False,
+                 no_snapshot=False, root_only=False)
+        rc = modules.main(ns, ctx)
+        if rc:
+            return rc
+    ns = _ns(models_cmd="pull", repo=kit.id, files=[], revision="main", include=[], ctx=8192, yes=args.yes,
+             accept_license=getattr(args, "accept_license", False), dry_run=ctx.dry_run, json=args.json)
+    rc = models_cli.main(ns, ctx)
+    if rc:
+        return rc
+    if ctx.dry_run or not ctx.runner.which("sos-studio") or not ctx.runner.which("podman"):
+        return 0
+    if ctx.runner.run(["podman", "image", "exists", STUDIO_IMAGE], timeout=30).ok:
+        return 0
+    ui.note(tr("building the Studio once (Python, PyTorch and ComfyUI in a container, ≈ 9 GB to download)",
+               "собираю Студию один раз (Python, PyTorch и ComfyUI в контейнере, ≈ 9 ГБ скачать)"))
+    rc = ctx.runner.stream(["sos-studio", "build"])
+    if rc == 0:
+        ui.head(tr("ready · tell Jackson «draw a cat in a hat»", "готово · скажи Джексону «нарисуй кота в шляпе»"))
+    return rc
+
+
 def main(args, ctx: Ctx) -> int:
     rc = 0
     verb = args.cmd
@@ -191,6 +239,13 @@ def main(args, ctx: Ctx) -> int:
             rc = modules.main(ns, ctx) or rc
         elif kind == "app":
             rc = (install_app if verb == "install" else remove_app)(ctx, obj, args) or rc
+        elif kind == "kit":
+            if verb == "install":
+                rc = install_kit(ctx, obj, args) or rc
+            else:
+                from .models import cli as models_cli
+                ns = _ns(models_cmd="rm", target=obj.id, dry_run=ctx.dry_run, yes=args.yes)
+                rc = models_cli.main(ns, ctx) or rc
         else:
             from .models import cli as models_cli
             if verb == "install":
@@ -199,7 +254,7 @@ def main(args, ctx: Ctx) -> int:
                     rc = engine
                     continue
                 ns = _ns(models_cmd="pull", repo=obj, files=[], revision="main", include=[], ctx=8192, yes=args.yes,
-                         accept_license=False, dry_run=ctx.dry_run, json=args.json)
+                         accept_license=getattr(args, "accept_license", False), dry_run=ctx.dry_run, json=args.json)
             else:
                 from .models.suggest import resolve as ladder
                 c = ladder(obj)

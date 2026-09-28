@@ -132,6 +132,33 @@ Singleton {
         const pct = total > 0 ? Math.max(0, Math.min(100, Math.floor(done * 100 / total))) : 0;
         return root.t("читаю запрос… ", "reading the request… ") + pct + "%";
     }
+    // «нарисуй …»: what the Studio is doing (jackson/draw.py phases)
+    function drawPhase(phase, done, total) {
+        if (phase === "draw" && total > 0)
+            return root.t("рисую… ", "drawing… ") + Math.max(0, Math.min(100, Math.floor(done * 100 / total))) + "%";
+        switch (phase) {
+        case "studio":
+            return root.t("запускаю Студию…", "starting the Studio…");
+        case "queue":
+            return root.t("жду очереди в Студии…", "waiting in the Studio's queue…");
+        case "load":
+            return root.t("загружаю модель…", "loading the model…");
+        case "think":
+            return root.t("придумываю, как нарисовать…", "working out the picture…");
+        case "read":
+        case "draw":
+            return root.t("рисую…", "drawing…");
+        case "finish":
+            return root.t("проявляю…", "developing…");
+        default:
+            return root.t("готовлю холст…", "preparing the canvas…");
+        }
+    }
+    readonly property string drawOpen: root.t("Открыть", "Open")
+    readonly property string drawFolder: root.t("В папке", "In folder")
+    readonly property string drawWallpaper: root.t("На рабочий стол", "Set as wallpaper")
+    readonly property string drawWallpaperSet: root.t("Теперь это рабочий стол", "It's your wallpaper now")
+    readonly property string drawCopied: root.t("Картинка скопирована", "Picture copied")
     readonly property string local: root.t("локально", "local")
     readonly property string cloud: root.t("облако", "cloud")
     readonly property string refine: root.t("уточнить", "refine")

@@ -49,6 +49,16 @@ class InstallTest(Base):
         self.assertIn("пароль", r.text)
         self.assertEqual(self.spawned()[0][-3:], ["sos", "install", "gaming"])
 
+    def test_drawing_installs_the_kit(self):
+        m, r = self.say("установи рисование")
+        self.assertIn("Открыл установку FLUX.2 [klein] 4B в терминале", r.text)
+        self.assertIn("от 12 ГБ", r.text)
+        self.assertEqual(self.spawned()[0][-3:], ["sos", "install", "flux2-klein-4b"])
+        self.runner.kit_ready = True
+        self.osc.svoya._catalog = None
+        m, r = self.say("поставь рисовалку")
+        self.assertIn("уже на месте. Скажи «нарисуй кота в шляпе»", r.text)
+
     def test_installed_and_unknown(self):
         m, r = self.say("установи гимп")
         self.assertIn("уже стоит", r.text)

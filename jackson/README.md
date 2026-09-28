@@ -34,6 +34,7 @@ Stdlib-only Python (≥ 3.11; target 3.13 on Ubuntu 26.04). No LiteLLM, no pip d
 | `jackson/undo.py`, `trash.py` | undo registry, freedesktop Trash, `sos undo` / snapper |
 | `jackson/memory.py`, `skills.py` | Markdown memory + FTS5 index; Agent Skills (`SKILL.md`) |
 | `jackson/fastpath.py`, `osctl.py` | ~40 RU/EN commands without a model, each verified |
+| `jackson/draw.py`, `tools/image.py` | «нарисуй …»: pictures in the Studio (ComfyUI API, FLUX.2 [klein] 4B), and the `image.draw` tool |
 | `jackson/avatar.py`, `aiswitch.py` | look and name (`avatar.json`, DESIGN §13); the AI switch (`sos ai off`) |
 | `jackson/persona.py`, `prompts/` | system prompts (RU/EN), personas, humor level |
 | `jackson/voice/` | voice: the speech service (`service.py`, VAD, STT, TTS) and jacksond's side (`client.py`, `speech.py`) |
@@ -166,6 +167,12 @@ dir = "~/Obsidian/SOS"   # default: ~/.local/share/svoya/jackson/memory
 obsidian = "auto"        # auto (a parent has .obsidian/) | on | off
 journal = true
 
+[draw]                   # «нарисуй …» (needs `sos install draw`)
+kit = ""                 # "" = FLUX.2 [klein] 4B · "qwen-image-2.1" (non-commercial, ≈ 16 GB VRAM)
+enhance = true           # a short request becomes an English description first (klein's own text encoder)
+idle_minutes = 10        # stop the Studio Jackson started after this long without a drawing (0 = never)
+folder = ""              # default: the XDG pictures folder + /Jackson
+
 [mcp]
 on_change = "block"      # block | warn — what to do when a pinned tool definition changes
 [mcp.servers.files]
@@ -296,6 +303,39 @@ when the model is at least 90 % sure (80 % for read-only ones such as battery an
 otherwise the request goes to the model as before. The route event says so («понял команду по
 смыслу: qwen3.5-4b уверена на 96%»), and the audit log records the decision. The constant list of
 options comes first in the prompt, so llama.cpp's prompt cache keeps it and only the request is read.
+
+## Drawing («нарисуй …»)
+
+«Нарисуй кота в шляпе», «сделай обои с горами», "draw a coloring page with a dragon" — matched like
+the fast path (anchored, RU/EN; «…и отправь в телеграм» is a plan and goes to the model, which has
+the `image.draw` tool). No language model is needed: `jackson/draw.py` sends a graph to the Studio's
+ComfyUI (`sos-studio.service`, rootless podman, 127.0.0.1:8188), follows it over ComfyUI's
+WebSocket (a small stdlib reader; the history API when that fails), and saves the picture in
+`~/Pictures/Jackson/<date> <request>.png`.
+
+- **Graphs** mirror Comfy-Org's templates: FLUX.2 [klein] 4B distilled (4 steps, cfg 1) and
+  Qwen-Image 2.1 (25 steps). The file names are the ones `sos models pull <kit>` links into
+  `/srv/ai/views/comfyui`; a test compares them with the CLI's `[[kit]]` table.
+- **The description:** klein reads an English paragraph of 40–120 words best, so a short request
+  first goes to its own text encoder, Qwen3 4B, through ComfyUI's `TextGenerate` (greedy, ≤ 220
+  tokens). The paragraph is kept per request, so «Ещё вариант» only draws again with a new seed; if
+  the step fails, the request goes as it is. A long English prompt (≥ 30 words) is used as given.
+- **Shape words** pick the size (≈ 1 MP, sides in multiples of 32): «для телефона» 768×1344,
+  «обои» 1344×768, «вертикальную»/«портрет» 832×1216, «горизонтальную»/«пейзаж» 1216×832.
+- **The Studio's lifecycle:** Jackson starts the user unit when it is not answering and stops it
+  after `idle_minutes` without a drawing, or when he stops himself — only if he started it (a
+  marker in `$XDG_RUNTIME_DIR/svoya/` survives a crash of jacksond). A Studio busy with a job of
+  its own is looked at again later; `sos ai off` stops it too. Out of video memory: ComfyUI's
+  `/free`, then one more try. Cancel: the prompt leaves the queue or is interrupted. A Studio that
+  goes away mid-picture is noticed within seconds, not after the timeout.
+- **Events:** `route` (provider `studio`, local), `tool` `draw` with `image`, `description`,
+  `wallpaper`; `progress` `stage: draw` with `phase`; the answer's `token` carries `speak`
+  («Готово, нарисовал.»), so the voice does not read a file name; `done.suggestions` = «Ещё вариант».
+- **Errors say what to do:** no Studio or kit, the container not built, or a Studio from before
+  the user unit → `sos install draw`; ComfyUI refusing a node → `sos-studio build` (fetches the
+  newest ComfyUI, PyTorch stays cached). The AI switch stops drawing like any model.
+- **«Нарисуй» alone** asks what to draw, and the next reply is the picture (in the shape asked for
+  first); a question or «не надо» is not.
 
 ## Look, name and the AI switch
 

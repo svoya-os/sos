@@ -69,6 +69,25 @@ things done. Talk to him in English or Russian.
 - **Cloud models are off by default.** To use one, add the provider's API key (in the wizard, or
   later) and change the route policy. See [privacy.md](privacy.md#how-cloud-routing-is-shown).
 
+## Jackson draws
+
+"Jackson, draw a cat in a hat" (or «нарисуй кота в шляпе») makes a picture on your computer:
+FLUX.2 [klein] 4B in the Studio, a few seconds on a graphics card with 8 GB or more, minutes on a
+processor. It lands in `~/Pictures/Jackson` and in his panel, with buttons to open it, copy it or
+set it as the wallpaper; Enter draws another one.
+
+- **Set it up once:** say "install drawing" or run `sos install draw` (the Studio, ≈ 12 GB of
+  models and the Studio's container, built once). Nothing leaves the machine after that.
+- **The shape comes from your words:** "for my phone", "a wallpaper" (wide), "vertical",
+  "a portrait", "a landscape". "A coloring page with a dragon" and "a logo for my cafe" work too.
+- A short request in any language becomes a detailed description first, written by the model's
+  own text encoder; the panel shows it under the picture.
+- **Qwen-Image 2.1** draws text on pictures and 2K better, needs about 16 GB of video memory, and
+  its license does not allow commercial use: `sos install qwen-image-2.1 --accept-license`, then
+  "draw … with qwen". FLUX.2 [klein] 4B is Apache-2.0, fine for work you sell.
+- The Studio starts when he draws and stops after ten quiet minutes, so games and the local
+  model get the graphics card back (`[draw] idle_minutes` in `jackson.toml`).
+
 ## Your GPU
 
 ```sh

@@ -129,6 +129,9 @@ def _parser() -> argparse.ArgumentParser:
     ins.add_argument("--dry-run", action="store_true")
     ins.add_argument("--yes", "-y", action="store_true")
     ins.add_argument("--json", action="store_true")
+    ins.add_argument("--accept-license", action="store_true",
+                     help=tr("download a model whose license restricts your use (e.g. non-commercial) anyway",
+                             "скачать модель, чья лицензия ограничивает твоё использование (например, некоммерческая)"))
     rem = cmd("remove", "remove a module, an app or a model", "удалить модуль, приложение или модель")
     rem.add_argument("things", nargs="+", metavar="thing")
     rem.add_argument("--dry-run", action="store_true")
@@ -139,7 +142,7 @@ def _parser() -> argparse.ArgumentParser:
     # models
     mo = cmd("models", "shared model store /srv/ai: fit, licenses, dedup, views",
              "общее хранилище моделей /srv/ai: влезет ли, лицензии, дубликаты, представления")
-    mosub = mo.add_subparsers(dest="models_cmd", metavar="<list|suggest|pull|fit|serve|rm|dedup|views>")
+    mosub = mo.add_subparsers(dest="models_cmd", metavar="<list|suggest|pull|kits|fit|serve|rm|dedup|views>")
     mos = mosub.add_parser("suggest", help=tr("best local model for this machine (+2 alternatives); offers to download it",
                                               "лучшая локальная модель для этой машины (+2 варианта); предложит скачать"))
     mos.add_argument("--json", action="store_true")
@@ -169,8 +172,11 @@ def _parser() -> argparse.ArgumentParser:
     mop.add_argument("--accept-license", action="store_true")
     mop.add_argument("--dry-run", action="store_true")
     mop.add_argument("--json", action="store_true", help=tr("progress as JSON lines", "прогресс строками JSON"))
+    mok = mosub.add_parser("kits", help=tr("model kits for the Studio and Jackson's drawing: what is there",
+                                           "наборы моделей для Студии и рисования Джексона: что уже есть"))
+    mok.add_argument("--json", action="store_true")
     mor = mosub.add_parser("rm", help=tr("remove from the store", "удалить из хранилища"))
-    mor.add_argument("target", help="org/repo | path | sha256")
+    mor.add_argument("target", help="org/repo | path | sha256 | kit")
     mor.add_argument("--dry-run", action="store_true")
     mor.add_argument("--yes", "-y", action="store_true")
     mod = mosub.add_parser("dedup", help=tr("find duplicate files; reflink them on btrfs", "найти дубликаты; reflink на btrfs"))

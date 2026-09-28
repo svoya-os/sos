@@ -3,8 +3,11 @@
 # shellcheck source=../lib/common.sh
 source "${SVOYA_LIB:?}/common.sh"
 sv_require_root
+if [[ -n "${SVOYA_TARGET_USER:-}" ]] && sv_have podman; then
+  sv_as_user podman stop --ignore --time 10 sos-studio >/dev/null 2>&1 || true
+fi
 rm -rf /usr/lib/svoya/studio
-rm -f /usr/local/bin/sos-studio
+rm -f /usr/local/bin/sos-studio /usr/lib/systemd/user/sos-studio.service
 if [[ -n "${SVOYA_TARGET_USER:-}" ]] && sv_have podman; then
   sv_as_user podman rmi -f localhost/sos-studio:latest >/dev/null 2>&1 || true
 fi

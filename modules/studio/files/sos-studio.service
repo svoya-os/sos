@@ -1,0 +1,24 @@
+# SOS module studio: ComfyUI in a rootless container, http://127.0.0.1:8188 (localhost only).
+# Not enabled by default — Jackson starts it when you ask him to draw, and stops it when he has been
+# idle a while, so the graphics card is free again: systemctl --user start sos-studio
+[Unit]
+Description=SOS Studio (ComfyUI in a sandbox, 127.0.0.1:8188)
+Documentation=https://github.com/comfyanonymous/ComfyUI
+# The AI switch (`sos ai off`): never start while it is off, for this user or for everyone
+ConditionPathExists=!%h/.config/svoya/ai.off
+ConditionPathExists=!/etc/svoya/ai.off
+
+[Service]
+Type=exec
+# the models Jackson draws with are linked where ComfyUI looks for them
+ExecStartPre=-/usr/bin/sos models views --quiet
+ExecStart=/usr/local/bin/sos-studio start
+ExecStop=/usr/bin/podman stop --ignore --time 10 sos-studio
+# a stop ends ComfyUI with SIGINT (130), or the kill after the wait (137): not a failure
+SuccessExitStatus=130 137 143
+# the first start builds the container (≈ 9 GB) when `sos install draw` did not
+TimeoutStartSec=45min
+Restart=no
+
+[Install]
+WantedBy=default.target

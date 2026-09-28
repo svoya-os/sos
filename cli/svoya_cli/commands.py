@@ -62,7 +62,7 @@ AI_SUB = {"off": "off", "выкл": "off", "выключить": "off", "вык�
           "on": "on", "вкл": "on", "включить": "on", "включи": "on",
           "status": "status", "статус": "status", "состояние": "status"}
 MODELS_SUB_RU = {"список": "list", "скачать": "pull", "влезет": "fit", "подобрать": "suggest", "совет": "suggest",
-                 "удалить": "rm", "дубликаты": "dedup", "представления": "views"}
+                 "удалить": "rm", "дубликаты": "dedup", "представления": "views", "наборы": "kits"}
 MODULES_SUB_RU = {"список": "list", "инфо": "info", "добавить": "add", "установить": "add", "удалить": "remove",
                   "профили": "profiles"}
 
@@ -178,11 +178,12 @@ def complete(words: list[str]) -> list[str]:
     elif cmd == "ai":
         pool = ["off", "on", "status", "--system", "--json"]
     elif cmd == "models":
-        pool = ["list", "pull", "fit", "suggest", "rm", "dedup", "views"] if len(prev) == 1 else _ladder_ids()
+        pool = ["list", "pull", "kits", "fit", "suggest", "rm", "dedup", "views"] if len(prev) == 1 \
+            else _ladder_ids() + _kit_ids()
     elif cmd == "modules":
         pool = ["list", "info", "add", "remove", "profiles"] if len(prev) == 1 else _module_ids()
     elif cmd in ("install", "remove"):
-        pool = _module_ids() + _app_names() + _ladder_ids()
+        pool = _module_ids() + _app_names() + _ladder_ids() + _kit_ids()
     elif cmd == "new":
         pool = ["--template", "torch", "llm-finetune", "comfy-node", "agent", "upsil"]
     elif cmd == "snapshot":
@@ -222,6 +223,14 @@ def _app_names() -> list[str]:
     try:
         from .install import load_apps
         return sorted(load_apps())
+    except Exception:
+        return []
+
+
+def _kit_ids() -> list[str]:
+    try:
+        from .models.kits import kits
+        return [k.id for k in kits()] + [a for k in kits() for a in k.aliases if a.isascii()]
     except Exception:
         return []
 

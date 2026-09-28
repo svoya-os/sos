@@ -456,7 +456,9 @@ class VoiceDesk:
             kind = event.get("type")
             if talk is not None and not talk.finished and not talk.hushed:
                 if kind == "token":
-                    for sentence in talk.stream.feed(str(event.get("text") or "")):
+                    # `speak`: what to say instead of the text («Готово, нарисовал.», not a file name)
+                    said = event["speak"] if isinstance(event.get("speak"), str) else event.get("text")
+                    for sentence in talk.stream.feed(str(said or "")):
                         await self._say(talk, sentence)
                 elif kind == "done":
                     for sentence in talk.stream.flush():

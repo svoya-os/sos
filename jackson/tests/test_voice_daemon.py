@@ -275,6 +275,29 @@ class VoiceProtocolTest(unittest.TestCase):
             await conn.close()
         self.run_async(scenario)
 
+    def test_a_drawing_is_announced_not_read_out(self):
+        from jackson import draw
+        from tests.test_draw import FakeComfy, StudioRunner
+        comfy = FakeComfy()
+        self.addCleanup(comfy.close)
+        views = self.root / "views"
+        for folder, name in draw.KLEIN.files():
+            (views / folder).mkdir(parents=True, exist_ok=True)
+            (views / folder / name).write_bytes(b"w")
+        self.app.draw = draw.Drawer(StudioRunner(comfy), lambda: self.app.paths.home / "Pictures", {}, views=views,
+                                    comfy=draw.Comfy(comfy.url, poll=0.02), sleep=lambda s: None)
+
+        async def scenario(svc, fake):
+            conn, _ = await self.ready_client(svc)
+            await conn.send({"type": "listen", "id": "t1", "action": "start", "mode": "hold"})
+            await conn.send({"type": "listen", "id": "t1", "action": "stop"})
+            events = await until(conn, ("spoken",), "t1")
+            token = next(e for e in events if e["type"] == "token")
+            self.assertIn("~/Pictures/Jackson/", token["text"])                  # the panel shows the file
+            self.assertEqual([m["text"] for m in fake.said()], ["Готово, нарисовал.", ""])   # the voice does not
+            await conn.close()
+        self.run_async(scenario, heard="нарисуй кота")
+
     def test_a_typed_question_silences_jackson_and_is_not_read_out(self):
         async def scenario(svc, fake):
             fake.hold_spoken = True                   # the answer is still being said…

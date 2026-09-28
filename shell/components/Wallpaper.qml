@@ -126,7 +126,8 @@ Item {
 
         anchors.fill: parent
         visible: root.useImage
-        source: root.image.length > 0 ? "file://" + root.image : ""
+        // encodeURI: Jackson's pictures have spaces and Cyrillic in their names («… кот в шляпе.png»)
+        source: root.image.length > 0 ? "file://" + encodeURI(root.image).replace(/#/g, "%23").replace(/\?/g, "%3F") : ""
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: false

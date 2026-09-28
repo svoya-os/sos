@@ -262,6 +262,64 @@ MESSAGES: dict[str, dict[str, str]] = {
     "err.internal": {"ru": "Внутренняя ошибка: {why}", "en": "Internal error: {why}"},
     "voice.bye": {"ru": "Ок, я тут, если что.", "en": "Okay, I'm here if you need me."},
     "voice.preview": {"ru": "Здарова! Вот так я звучу.", "en": "Hey! This is how I sound."},
+    # «нарисуй …» (jackson/draw.py)
+    "route.draw": {
+        "ru": "рисую на этом компьютере: {kit} в Студии",
+        "en": "drawing on this computer: {kit} in the Studio",
+    },
+    "draw.done": {"ru": "Готово: `{path}`", "en": "Done: `{path}`"},
+    "draw.done.spoken": {"ru": "Готово, нарисовал.", "en": "Done, here it is."},
+    "draw.what": {
+        "ru": "Что нарисовать? Например: «нарисуй кота в шляпе», «нарисуй обои с горами», "
+              "«нарисуй раскраску с драконом».",
+        "en": "What should I draw? For example: \"draw a cat in a hat\", \"draw a wallpaper with mountains\", "
+              "\"draw a coloring page with a dragon\".",
+    },
+    "draw.instead": {
+        "ru": "{wanted} не установлен, нарисовал {kit}. Поставить: `sos install {install}`.",
+        "en": "{wanted} is not installed, so I drew with {kit}. To add it: `sos install {install}`.",
+    },
+    "draw.not-installed": {
+        "ru": "Рисовать я пока не умею: нужна Студия и модель {kit} (≈ 12 ГБ скачать, лучше с видеокартой "
+              "от 8 ГБ). Скажи «установи рисование» или выполни `sos install {install}`.",
+        "en": "I can't draw yet: that takes the Studio and the {kit} model (≈ 12 GB to download, best with a "
+              "graphics card of 8 GB or more). Say \"install drawing\" or run `sos install {install}`.",
+    },
+    "draw.no-kit": {
+        "ru": "Студия есть, а модели {kit} в ней нет ({detail}). Поставить: `sos install {install}`.",
+        "en": "The Studio is here, but not the {kit} model ({detail}). To add it: `sos install {install}`.",
+    },
+    "draw.not-built": {
+        "ru": "Студию ещё не собрали: `sos install {install}` соберёт её (≈ 9 ГБ, один раз).",
+        "en": "The Studio is not built yet: `sos install {install}` builds it (≈ 9 GB, once).",
+    },
+    "draw.old-studio": {
+        "ru": "Студия у тебя старой версии и сама не запускается. Обновить: `sos install {install}`.",
+        "en": "Your Studio is an older version that does not start by itself. To update it: `sos install {install}`.",
+    },
+    "draw.gone": {
+        "ru": "Студия остановилась посреди работы. Что с ней: `journalctl --user -u sos-studio`; попробуй ещё раз.",
+        "en": "The Studio stopped in the middle of the work. What happened: `journalctl --user -u sos-studio`; try again.",
+    },
+    "draw.no-start": {
+        "ru": "Студия не запустилась. Что с ней: `journalctl --user -u sos-studio`.",
+        "en": "The Studio did not start. What happened: `journalctl --user -u sos-studio`.",
+    },
+    "draw.rejected": {
+        "ru": "Студия не приняла задание: {detail}. Возможно, ComfyUI старее модели — обнови: `sos-studio build`.",
+        "en": "The Studio refused the job: {detail}. ComfyUI may be older than the model — update it: `sos-studio build`.",
+    },
+    "draw.oom": {
+        "ru": "Видеопамяти не хватило даже со второй попытки. Закрой игру или другую модель и попробуй ещё раз.",
+        "en": "Not enough video memory, even on a second try. Close a game or another model and try again.",
+    },
+    "draw.timeout": {
+        "ru": "Рисование заняло слишком долго ({detail}) — остановил. На процессоре попробуй картинку поменьше.",
+        "en": "Drawing took too long ({detail}), so I stopped it. On a processor, try a smaller picture.",
+    },
+    "draw.failed": {"ru": "Не нарисовалось: {detail}", "en": "The drawing failed: {detail}"},
+    "draw.again": {"ru": "Ещё вариант", "en": "Another one"},
+    "draw.summary": {"ru": "{kit} · {w}×{h} · {prompt}", "en": "{kit} · {w}×{h} · {prompt}"},
     "err.max_steps": {
         "ru": "Остановился: слишком много шагов с инструментами ({n}). Уточни задачу.",
         "en": "Stopped: too many tool steps ({n}). Please narrow the task.",

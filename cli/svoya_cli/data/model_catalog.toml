@@ -11,15 +11,29 @@
 #   params_b     parameters in billions
 #
 # Default `sos models list --catalog` view = models usable commercially in the user's region (EU).
+#
+# [[kit]] (at the end): the files one ComfyUI graph loads together, from several repositories.
+
+[[model]]
+id = "flux2-vae"
+name = "FLUX.2 VAE"
+kind = "image"
+match = ["flux2-vae", "flux2_vae", "flux.2-vae", "flux-2-vae"]
+license = "Apache-2.0"
+commercial = true
+note = { en = "The FLUX.2 autoencoder, shared by klein and dev; Apache-2.0 even inside the dev repositories.", ru = "Автоэнкодер FLUX.2, общий для klein и dev; Apache-2.0, даже в репозиториях dev." }
 
 [[model]]
 id = "qwen-image-2.1"
 name = "Qwen-Image 2.1"
 kind = "image"
+repo = "Comfy-Org/Qwen-Image-2.1"
 match = ["qwen-image-2.1", "qwen_image_2.1", "qwen-image-2_1"]
 license = "Qwen non-commercial"
 commercial = false
-note = { en = "Non-commercial license, unlike Qwen-Image (Apache-2.0).", ru = "Некоммерческая лицензия, в отличие от Qwen-Image (Apache-2.0)." }
+params_b = 7
+vram_gb = 16
+note = { en = "Non-commercial license, unlike Qwen-Image (Apache-2.0). Draws text and 2K pictures very well; about 16 GB of VRAM.", ru = "Некоммерческая лицензия, в отличие от Qwen-Image (Apache-2.0). Отлично рисует текст и картинки 2K; около 16 ГБ видеопамяти." }
 
 [[model]]
 id = "qwen-image"
@@ -57,10 +71,22 @@ note = { en = "Non-commercial; the 4B variant is Apache-2.0.", ru = "Неком�
 id = "flux2-klein-4b"
 name = "FLUX.2 klein 4B"
 kind = "image"
+repo = "black-forest-labs/FLUX.2-klein-4b-fp8"
 match = ["flux.2-klein-4b", "flux2-klein-4b", "flux-2-klein-4b", "flux2_klein_4b"]
 license = "Apache-2.0"
 commercial = true
 params_b = 4
+vram_gb = 8.4
+note = { en = "A picture in about a second on a modern card, in four steps; also edits pictures.", ru = "Картинка примерно за секунду на современной карте, в четыре шага; умеет и править картинки." }
+
+[[model]]
+id = "flux2-dev"
+name = "FLUX.2 dev"
+kind = "image"
+match = ["flux.2-dev", "flux2-dev", "flux2_dev", "flux-2-dev"]
+license = "FLUX [dev] non-commercial"
+commercial = false
+params_b = 32
 
 [[model]]
 id = "wan2.2-ti2v-5b"
@@ -190,3 +216,38 @@ match = ["gemma-3", "gemma3"]
 license = "Gemma Terms of Use"
 commercial = "conditional"
 note = { en = "Commercial use allowed under Google's use policy.", ru = "Коммерческое использование разрешено с учётом политики Google." }
+
+# ---------------------------------------------------------------------------------------------------
+# Kits: the files one ComfyUI graph loads together, from several repositories. `sos models pull <kit>`
+# or `sos install <kit>` downloads them all and refreshes the ComfyUI view; Jackson draws with them
+# («нарисуй …»; `j draw`). Files keep their ComfyUI names: the graphs in jackson/draw.py load them so.
+#   model    the [[model]] entry whose license and notes apply to the kit
+#   files    repo + file; alt = other repositories with the same file, tried in order
+#   default  the kit Jackson draws with when nothing else is chosen
+
+[[kit]]
+id = "flux2-klein-4b"
+model = "flux2-klein-4b"
+name = "FLUX.2 [klein] 4B"
+kind = "image"
+default = true
+aliases = ["draw", "drawing", "рисование", "рисовалка", "рисовалку", "flux2-klein", "flux-klein", "klein"]
+vram_gb = 8.4
+files = [
+  { repo = "black-forest-labs/FLUX.2-klein-4b-fp8", file = "flux-2-klein-4b-fp8.safetensors" },
+  { repo = "Comfy-Org/flux2-klein-4B", file = "split_files/text_encoders/qwen_3_4b.safetensors", alt = ["Comfy-Org/flux2-klein", "Comfy-Org/vae-text-encorder-for-flux-klein-4b"] },
+  { repo = "Comfy-Org/flux2-dev", file = "split_files/vae/flux2-vae.safetensors", alt = ["Comfy-Org/vae-text-encorder-for-flux-klein-4b"] },
+]
+
+[[kit]]
+id = "qwen-image-2.1"
+model = "qwen-image-2.1"
+name = "Qwen-Image 2.1"
+kind = "image"
+aliases = ["qwen-image-2", "qwen-image2", "qwen-image-21"]
+vram_gb = 16
+files = [
+  { repo = "Comfy-Org/Qwen-Image-2.1", file = "diffusion_models/qwen_image_2.1_int8_convrot.safetensors" },
+  { repo = "Comfy-Org/Qwen-Image-2.1", file = "text_encoders/qwen3vl_8b_int8_convrot.safetensors" },
+  { repo = "Comfy-Org/Qwen-Image-2.1", file = "vae/qwen_image_2.1_vae_bf16.safetensors" },
+]

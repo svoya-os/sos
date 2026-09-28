@@ -4,7 +4,7 @@ import json
 import os
 
 from svoya_cli.models import cli as mcli
-from svoya_cli.models import dedup, hfcache, licenses, suggest, views
+from svoya_cli.models import dedup, hfcache, kits, licenses, remote, suggest, views
 from svoya_cli.models.registry import Registry
 
 from .gguf_synth import llama_like
@@ -92,6 +92,172 @@ class ViewsTest(SandboxTest):
         self.assertTrue(rep["commands"][0].startswith("ollama create qwen3.5-9b:q4_k_m -f "))
         self.assertIn("FROM ", (out / "qwen3.5-9b--q4_k_m.Modelfile").read_text())
         self.assertEqual(views.ollama_name("gpt-oss-20b-MXFP4.gguf"), "gpt-oss-20b-mxfp4:latest")
+
+
+class KitsTest(SandboxTest):
+    """FLUX.2 [klein] for «нарисуй»: three files from three repositories, linked where ComfyUI looks."""
+
+    def hub(self):
+        return self.sb.path("/srv/ai/hub")
+
+    def test_catalog_kits_resolve_and_folders(self):
+        klein = kits.resolve("draw")
+        self.assertIsNotNone(klein)
+        self.assertEqual(klein.id, "flux2-klein-4b")
+        self.assertIs(kits.resolve("Рисование"), klein)
+        self.assertEqual(kits.default("image").id, "flux2-klein-4b")
+        self.assertEqual({f.name: f.folder for f in klein.files},
+                         {"flux-2-klein-4b-fp8.safetensors": "diffusion_models",
+                          "qwen_3_4b.safetensors": "text_encoders", "flux2-vae.safetensors": "vae"})
+        qwen = kits.resolve("qwen-image-2.1")
+        self.assertEqual([f.folder for f in qwen.files], ["diffusion_models", "text_encoders", "vae"])
+        self.assertIsNone(kits.resolve("qwen3.5-9b"))
+
+    def test_kit_licenses(self):
+        # every file of the default kit is usable commercially in the EU — the VAE sits in the
+        # FLUX.2 [dev] repository, but is Apache-2.0
+        for f in kits.resolve("draw").files:
+            v = licenses.classify(repo=f.repo, filename=f.file)
+            self.assertEqual(v.allows("EU", True)[0], "ok", f"{f.repo}/{f.file}: {v.license}")
+        self.assertEqual(licenses.classify(repo="black-forest-labs/FLUX.2-dev", filename="flux2-dev.safetensors")
+                         .allows("EU", True)[0], "no")
+        self.assertEqual(licenses.classify(repo="Comfy-Org/Qwen-Image-2.1").allows("EU", True)[0], "no")
+
+    def test_comfy_top_level_folders(self):
+        cache_file(self.sb, "Comfy-Org/Qwen-Image-2.1", "diffusion_models/qwen_image_2.1_int8_convrot.safetensors", b"1")
+        cache_file(self.sb, "Comfy-Org/Qwen-Image-2.1", "text_encoders/qwen3vl_8b_int8_convrot.safetensors", b"2")
+        cache_file(self.sb, "Comfy-Org/Qwen-Image-2.1", "vae/qwen_image_2.1_vae_bf16.safetensors", b"3")
+        cache_file(self.sb, "Tongyi-MAI/Z-Image-Turbo", "vae/diffusion_pytorch_model.safetensors", b"4")   # diffusers
+        out = self.sb.path("/srv/ai/views/comfyui")
+        views.apply(views.comfy_plan(hfcache.scan(self.hub()), out), out)
+        self.assertTrue((out / "diffusion_models" / "qwen_image_2.1_int8_convrot.safetensors").is_symlink())
+        self.assertTrue((out / "text_encoders" / "qwen3vl_8b_int8_convrot.safetensors").is_symlink())
+        self.assertTrue((out / "vae" / "qwen_image_2.1_vae_bf16.safetensors").is_symlink())
+        self.assertFalse((out / "vae" / "diffusion_pytorch_model.safetensors").exists())
+
+    def test_present_counts_the_same_file_from_another_repo(self):
+        # Z-Image-Turbo brings the same Qwen3 4B text encoder: ComfyUI loads it by name
+        cache_file(self.sb, "Comfy-Org/z_image_turbo", "split_files/text_encoders/qwen_3_4b.safetensors", b"te")
+        have = kits.present(hfcache.scan(self.hub()), kits.resolve("draw"))
+        self.assertIsNotNone(have["qwen_3_4b.safetensors"])
+        self.assertIsNone(have["flux2-vae.safetensors"])
+        st = kits.status(self.sb.path("/srv/ai"), kits.resolve("draw"))
+        self.assertFalse(st["complete"])
+        self.assertEqual([r["present"] for r in st["files"]], [False, True, False])
+
+    def fake_hub(self, repos: dict[str, dict[str, bytes]], gated: tuple[str, ...] = ()):
+        """remote.* against an in-memory Hub: {repo: {file: content}}."""
+        from unittest import mock
+        calls = []
+
+        def api_model(repo, revision="main", token=None, **kw):
+            calls.append(repo)
+            if repo in gated:
+                raise remote.RemoteError(f"HTTP 401 for {repo}")
+            if repo not in repos:
+                raise remote.RemoteError(f"HTTP 404 for {repo}")
+            return {"sha": "c" * 40, "siblings": [{"rfilename": f, "size": len(b)} for f, b in repos[repo].items()]}
+
+        def find(url):
+            for repo, files in repos.items():
+                for f, b in files.items():
+                    if url.endswith(f"/{repo}/resolve/main/{f}"):
+                        return b
+            raise remote.RemoteError("HTTP 404: no such file")
+
+        def head(url, token=None, **kw):
+            b = find(url)
+            return remote.FileInfo(url=url, size=len(b), etag=hashlib.sha256(b).hexdigest(), commit="c" * 40)
+
+        def download(url, dest, token=None, expected_size=None, expected_sha256=None, progress=None, **kw):
+            b = find(url)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            tmp = dest.with_suffix(".part")
+            tmp.write_bytes(b)
+            if progress:
+                progress(len(b), len(b))
+            return tmp
+
+        patches = [mock.patch.object(remote, "api_model", api_model), mock.patch.object(remote, "head", head),
+                   mock.patch.object(remote, "download", download)]
+        for p_ in patches:
+            p_.start()
+            self.addCleanup(p_.stop)
+        return calls
+
+    def pull(self, name, **kw):
+        ctx = self.sb.ctx(FakeRunner())
+        self.sb.mkdir("/srv/ai")
+        args = argparse.Namespace(repo=name, files=[], revision="main", include=[], ctx=8192, yes=True,
+                                  accept_license=False, dry_run=False, json=True)
+        for k, v in kw.items():
+            setattr(args, k, v)
+        rc, out = capture(mcli.cmd_pull, args, ctx)
+        return rc, [json.loads(line) for line in out.splitlines() if line.startswith("{")]
+
+    def test_pull_kit_fetches_every_file_and_links_them(self):
+        calls = self.fake_hub({
+            "black-forest-labs/FLUX.2-klein-4b-fp8": {"flux-2-klein-4b-fp8.safetensors": b"dit"},
+            "Comfy-Org/flux2-klein": {"split_files/text_encoders/qwen_3_4b.safetensors": b"te"},
+            "Comfy-Org/flux2-dev": {"split_files/vae/flux2-vae.safetensors": b"vae"},
+        })
+        rc, events = self.pull("draw")
+        self.assertEqual(rc, 0, events)
+        plan = events[0]
+        self.assertEqual(plan["event"], "plan")
+        self.assertEqual(plan["kit"], "flux2-klein-4b")
+        self.assertEqual(plan["files"], ["flux-2-klein-4b-fp8.safetensors", "qwen_3_4b.safetensors", "flux2-vae.safetensors"])
+        self.assertEqual(plan["totalBytes"], 8)
+        self.assertEqual(plan["usable"]["status"], "ok")
+        # the text encoder is not in Comfy-Org/flux2-klein-4B here: the next repository has it
+        self.assertEqual(calls[:3], ["black-forest-labs/FLUX.2-klein-4b-fp8", "Comfy-Org/flux2-klein-4B",
+                                     "Comfy-Org/flux2-klein"])
+        self.assertEqual(events[-1]["event"], "done")
+        out = self.sb.path("/srv/ai/views/comfyui")
+        for rel in ("diffusion_models/flux-2-klein-4b-fp8.safetensors", "text_encoders/qwen_3_4b.safetensors",
+                    "vae/flux2-vae.safetensors"):
+            self.assertEqual((out / rel).read_bytes(), {"diffusion_models": b"dit", "text_encoders": b"te", "vae": b"vae"}[rel.split("/")[0]])
+        self.assertTrue(kits.status(self.sb.path("/srv/ai"), kits.resolve("draw"))["complete"])
+        # a second pull downloads nothing
+        rc, events = self.pull("flux2-klein-4b")
+        self.assertEqual((rc, events[0]["files"], events[0]["have"][0]), (0, [], "flux-2-klein-4b-fp8.safetensors"))
+
+    def test_pull_kit_explains_gated_repositories(self):
+        self.fake_hub({"Comfy-Org/flux2-dev": {"split_files/vae/flux2-vae.safetensors": b"vae"}},
+                      gated=("black-forest-labs/FLUX.2-klein-4b-fp8",))
+        rc, events = self.pull("draw")
+        self.assertEqual(rc, 1)
+        self.assertIn("huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8", events[-1]["message"])
+
+    def test_ready_means_the_studio_too(self):
+        for f, b in (("flux-2-klein-4b-fp8.safetensors", b"1"),):
+            cache_file(self.sb, "black-forest-labs/FLUX.2-klein-4b-fp8", f, b)
+        cache_file(self.sb, "Comfy-Org/flux2-klein-4B", "split_files/text_encoders/qwen_3_4b.safetensors", b"2")
+        cache_file(self.sb, "Comfy-Org/flux2-dev", "split_files/vae/flux2-vae.safetensors", b"3")
+
+        def kits_json(runner):
+            _, out = capture(mcli.cmd_kits, argparse.Namespace(json=True), self.sb.ctx(runner))
+            return {k["id"]: k for k in json.loads(out)["kits"]}["flux2-klein-4b"]
+
+        k = kits_json(FakeRunner())                                    # the files, but no Studio
+        self.assertEqual((k["complete"], k["studio"], k["ready"]), (True, False, False))
+        built = FakeRunner(available={"sos-studio", "podman"}, responses={"podman image exists": ""})
+        self.assertTrue(kits_json(built)["ready"])
+        unbuilt = FakeRunner(available={"sos-studio", "podman"})       # `podman image exists` fails
+        self.assertEqual((kits_json(unbuilt)["built"], kits_json(unbuilt)["ready"]), (False, False))
+
+    def test_pull_non_commercial_kit_needs_consent(self):
+        self.fake_hub({"Comfy-Org/Qwen-Image-2.1": {
+            "diffusion_models/qwen_image_2.1_int8_convrot.safetensors": b"1",
+            "text_encoders/qwen3vl_8b_int8_convrot.safetensors": b"2",
+            "vae/qwen_image_2.1_vae_bf16.safetensors": b"3"}})
+        rc, events = self.pull("qwen-image-2.1")
+        self.assertEqual(rc, 3)
+        self.assertEqual(events[0]["usable"]["status"], "no")
+        self.assertFalse(kits.status(self.sb.path("/srv/ai"), kits.resolve("qwen-image-2.1"))["complete"])
+        rc, events = self.pull("qwen-image-2.1", accept_license=True)
+        self.assertEqual(rc, 0, events)
+        self.assertTrue(kits.status(self.sb.path("/srv/ai"), kits.resolve("qwen-image-2.1"))["complete"])
 
 
 class DedupTest(SandboxTest):

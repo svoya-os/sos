@@ -21,7 +21,8 @@ from .runner import svoya_argv
 from .util import atomic_write, iso, read_json, write_json
 
 # user services that run AI (jacksond first: it is the one that talks to the others)
-USER_UNITS = ("jacksond.service", "svoya-llm.service", "llama-swap.service", "llama-server.service", "ollama.service")
+USER_UNITS = ("jacksond.service", "svoya-llm.service", "llama-swap.service", "llama-server.service", "ollama.service",
+              "sos-studio.service")
 # system services (--system): our Ollama unit (modules/llm-local) and upstream's
 SYSTEM_UNITS = ("svoya-ollama.service", "ollama.service", "llama-swap.service")
 # model servers started by hand or by `sos models serve` without the unit (this user's only)

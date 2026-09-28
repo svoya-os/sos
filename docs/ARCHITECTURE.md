@@ -120,11 +120,11 @@ Daemon → client (events, all carry `id` of the turn when relevant):
 |---|---|
 | `welcome` | `version`, `models`, `route` |
 | `route` | `model`, `provider`, `local` (bool), `reason` |
-| `token` | `text` (streamed answer chunk, Markdown) |
-| `progress` | `stage` (`prompt`), `done`, `total`: how far a local model has read the request before it answers (additive) |
-| `tool` | `callId`, `name`, `args`, `tier` (0–4), `state` (`running`/`done`/`failed`), `summary` |
+| `token` | `text` (streamed answer chunk, Markdown), `speak?`: what the voice says instead of `text` («Готово, нарисовал.» rather than a file name; additive) |
+| `progress` | `stage` (`prompt`), `done`, `total`: how far a local model has read the request before it answers; `stage` `draw` with `phase` (`studio`/`queue`/`load`/`think`/`read`/`draw`/`finish`) and, while drawing, `done`/`total` steps: a picture in the Studio (additive) |
+| `tool` | `callId`, `name`, `args`, `tier` (0–4), `state` (`running`/`done`/`failed`), `summary`; `image?` (path of a picture it made), `description?` (what it was drawn from) and `wallpaper?` (asked for as a wallpaper), additive |
 | `approval` | `callId`, `name`, `preview` (exact action text/diff), `tier` |
-| `done` | `usage` (`inTokens`,`outTokens`), `costEur`, `latencyMs`, `leftMachine` (bool), `actions` (list of undoable action ids) |
+| `done` | `usage` (`inTokens`,`outTokens`), `costEur`, `latencyMs`, `leftMachine` (bool), `actions` (list of undoable action ids), `suggestions?` (`[{label, prompt, primary}]`: buttons under the answer, e.g. «Ещё вариант»; additive) |
 | `error` | `message`, `retryable` |
 | `state` | `listening`/`thinking`/`working`/`speaking`/`idle` (drives the scope animation) |
 
@@ -165,6 +165,12 @@ license_note = { en = "...", ru = "..." }
 Single source of truth: Hugging Face cache layout under `/srv/ai/hub` (`HF_HOME=/srv/ai`).
 Per-tool views are generated (llama.cpp models dir, Ollama import, ComfyUI `extra_model_paths.yaml`).
 `/srv/ai/registry.db` (SQLite) tracks hash, source, license, EU/commercial flags, VRAM estimate, last use.
+Kits (`[[kit]]` in `cli/svoya_cli/data/model_catalog.toml`) are the files one ComfyUI graph loads
+together, from several repositories: `sos install draw` = the Studio + FLUX.2 [klein] 4B (diffusion
+model, Qwen3 4B text encoder, VAE) + the Studio's container built once. Jackson's «нарисуй …»
+(`jackson/draw.py`) starts `sos-studio.service` (rootless podman, 127.0.0.1:8188) on demand, sends
+the graph over ComfyUI's API, saves the picture in `~/Pictures/Jackson` and stops the Studio he
+started after `[draw] idle_minutes` (10) without a drawing.
 
 ## 5. Session startup
 

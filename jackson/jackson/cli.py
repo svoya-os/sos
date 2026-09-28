@@ -142,16 +142,29 @@ class Renderer:
         self.err.write(text + "\n")
         self.err.flush()
 
+    DRAW_PHASES = {"studio": ("запускаю Студию…", "starting the Studio…"),
+                   "queue": ("жду очереди в Студии…", "waiting in the Studio's queue…"),
+                   "load": ("загружаю модель…", "loading the model…"),
+                   "think": ("придумываю, как нарисовать…", "working out the picture…"),
+                   "read": ("рисую…", "drawing…"), "draw": ("рисую…", "drawing…"),
+                   "finish": ("проявляю…", "developing…")}
+
     def progress(self, ev: dict[str, Any]) -> None:
-        """«читаю запрос… 45%» on one line of the terminal until the answer starts."""
+        """«читаю запрос… 45%» (a local model) or «рисую… 50%» (the Studio) on one line of the terminal."""
         total = int(ev.get("total") or 0)
-        if not self.err_tty or total <= 0:
+        if not self.err_tty or (total <= 0 and ev.get("stage") != "draw"):
             return
-        pct = max(0, min(100, int(ev.get("done") or 0) * 100 // total))
+        pct = max(0, min(100, int(ev.get("done") or 0) * 100 // total)) if total > 0 else 0
+        if ev.get("stage") == "draw":
+            ru, en = self.DRAW_PHASES.get(str(ev.get("phase") or ""), ("готовлю холст…", "preparing the canvas…"))
+            if total > 0 and ev.get("phase") == "draw":
+                ru, en = f"рисую… {pct}%", f"drawing… {pct}%"
+            text = say(self.lang, ru, en)
+        else:
+            text = say(self.lang, f"читаю запрос… {pct}%", f"reading the request… {pct}%")
         if self.shared_tty:
             self._break_line()
-        self.err.write("\r\033[K" + self.se.dim(say(self.lang, f"читаю запрос… {pct}%",
-                                                      f"reading the request… {pct}%")))
+        self.err.write("\r\033[K" + self.se.dim(text))
         self.err.flush()
         self.progress_shown = True
 

@@ -34,7 +34,8 @@
 | Feature | When | Goes to | What is sent | How you see it |
 |---|---|---|---|---|
 | **Cloud AI** (Jackson) | Only after you add a provider key **and** change the route policy from `local-only` | The provider you set up, for example Anthropic, Google Gemini, DeepSeek or Mistral | Your message, the context you attach (selection, clipboard, screenshot), what Jackson's tools read in that turn, and a few snippets from his memory | Route chip names the provider; footer says the data left the machine and what it cost; counters in the control center; audit log |
-| **Models** | When you click install: the wizard's suggested model, `sos models pull`, a module (`sos install voice` fetches the speech models, `sos install voice-gpu` Qwen3-TTS with PyTorch and its CUDA libraries from PyPI) | Hugging Face, or the source shown before the download | Which files you download, your IP address, your Hugging Face token for gated models | Size, fit and license are shown before the download starts; progress in the bar |
+| **Models** | When you click install: the wizard's suggested model, `sos models pull`, a module (`sos install voice` fetches the speech models, `sos install voice-gpu` Qwen3-TTS with PyTorch and its CUDA libraries from PyPI), a kit (`sos install draw` fetches FLUX.2 [klein] for Jackson's drawing) | Hugging Face, or the source shown before the download | Which files you download, your IP address, your Hugging Face token for gated models | Size, fit and license are shown before the download starts; progress in the bar |
+| **The Studio's container** | Once, when `sos install draw` or the first `sos-studio start` builds it | Docker Hub (the Python image), GitHub (ComfyUI), PyPI and the PyTorch index | Which packages you download, your IP address | You start it; the build runs in your terminal |
 | **Modules and apps** | When you install one: `sos install <module>`, the wizard, Obsidian | Our APT repository, the engine's package mirrors, Flathub | Which packages you download, your IP address | You start it; progress in the bar |
 | **System updates** | When you run `sos update`, or after you turn on automatic update checks | Our APT repository and the engine's package mirrors | Package lists and versions | Update count in the bar |
 | **Web pages for a task** | When Jackson or an agent opens a page for a task you gave | That website | The request for the page | Contacting a new domain needs your approval first (tier T2); audit log |
@@ -115,6 +116,8 @@ All of it is plain files you can read, move and delete.
 | `~/.local/share/svoya/jackson/index.sqlite`, `logs/` | Search index of the memory; logs |
 | `~/.local/state/svoya/` | Generated state: current theme, bar status, jobs |
 | `/srv/ai/` | Models and datasets shared by all tools, with `registry.db` (hashes, sources, licenses); the voice models in `/srv/ai/voice/` |
+| `~/Pictures/Jackson/` | What Jackson drew («нарисуй …»). The PNG keeps the ComfyUI graph that made it, with the description, so ComfyUI can open it again |
+| `~/.local/share/svoya/studio/` | The Studio (ComfyUI): your workflows, custom nodes, inputs and outputs |
 | `/var/lib/svoya/` | Installed modules and update history |
 | Secret Service keyring | API keys |
 | Btrfs snapshots | Earlier versions of the system and your files, for undo |
