@@ -1,0 +1,199 @@
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+SOS-DIAG end ready
+[   13.537759] chronyd[1090]: Selected source 91.189.91.113 (4.ntp.ubuntu.com)
+[   13.537790] chronyd[1090]: System clock wrong by 1.171354 seconds
+[   14.709290] systemd-resolved[729]: Clock change detected. Flushing caches.
+[   14.709174] chronyd[1090]: System clock was stepped by 1.171354 seconds
+[   14.709229] chronyd[1090]: System clock TAI offset set to 37 seconds
+[   17.510924] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+[   26.416859] systemd[1272]: Started kitty-1742-0.scope - kitty child process: 1756 launched by: 1742.
+[   35.483386] sos-vm-test[1782]: SOS-STEP installer-start
+[   35.509501] sudo[1784]:    svoya : TTY=pts/0 ; PWD=/home/svoya ; USER=root ; COMMAND=/usr/bin/env WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 XDG_SESSION_TYPE=wayland QT_QPA_PLATFORM=wayland;xcb QT_WAYLAND_DISABLE_WINDOWDECORATION=0 LANG=en_US.UTF-8 XCURSOR_THEME=Adwaita XCURSOR_SIZE=24 /usr/lib/svoya/installer/launch -c /tmp/sos-vm-test-calamares
+[   35.510070] sudo[1784]: pam_unix(sudo:session): session opened for user root(uid=0) by svoya(uid=1000)
+[   35.764661] dbus-daemon[1043]: [system] Activating via systemd: service name='org.freedesktop.locale1' unit='dbus-org.freedesktop.locale1.service' requested by ':1.48' (uid=0 pid=1787 comm="calamares -c /tmp/sos-vm-test-calamares" label="unconfined")
+[   35.771716] systemd[1]: Starting systemd-localed.service - Locale Service...
+[   35.826956] systemd[1]: Started systemd-localed.service - Locale Service.
+[   35.827233] dbus-daemon[1043]: [system] Successfully activated service 'org.freedesktop.locale1'
+[   36.009565] dbus-daemon[1043]: [system] Activating service name='org.kde.kpmcore.helperinterface' requested by ':1.48' (uid=0 pid=1787 comm="calamares -c /tmp/sos-vm-test-calamares" label="unconfined") (using servicehelper)
+[   36.026036] org.kde.kpmcore.helperinterface[1807]: Detected locale "C" with character encoding "ANSI_X3.4-1968", which is not UTF-8.
+[   36.026036] org.kde.kpmcore.helperinterface[1807]: Qt depends on a UTF-8 locale, and has switched to "C.UTF-8" instead.
+[   36.026036] org.kde.kpmcore.helperinterface[1807]: If this causes problems, reconfigure your locale. See the locale(1) manual
+[   36.026036] org.kde.kpmcore.helperinterface[1807]: for more information.
+[   36.027296] dbus-daemon[1043]: [system] Successfully activated service 'org.kde.kpmcore.helperinterface'
+[   36.396588] dbus-daemon[1043]: [system] Rejected send message, 5 matched rules; type="method_call", sender=":1.48" (uid=0 pid=1787 comm="calamares -c /tmp/sos-vm-test-calamares" label="unconfined") interface="org.freedesktop.locale1" member="SetX11Keyboard" error name="(unset)" requested_reply="0" destination="org.freedesktop.locale1" (uid=0 pid=1798 comm="/usr/lib/systemd/systemd-localed" label="unconfined")
+[   36.583073] kernel: SGI XFS with ACLs, security attributes, realtime, quota, no debug enabled
+[   36.601076] kernel: JFS: nTxBlock = 8192, nTxLock = 65536
+[   36.646450] kernel: QNX4 filesystem 0.2.3 registered.
+[   36.675131] kernel: raid6: avx512x4 gen() 64063 MB/s
+[   36.692074] kernel: raid6: avx512x2 gen() 47102 MB/s
+[   36.709069] kernel: raid6: avx512x1 gen() 47677 MB/s
+[   36.727037] kernel: raid6: avx2x4   gen() 55432 MB/s
+[   36.743065] kernel: raid6: avx2x2   gen() 53885 MB/s
+[   36.759132] kernel: raid6: avx2x1   gen() 52010 MB/s
+[   36.759201] kernel: raid6: using algorithm avx512x4 gen() 64063 MB/s
+[   36.776116] kernel: raid6: .... xor() 34777 MB/s, rmw enabled
+[   36.776213] kernel: raid6: using avx512x2 recovery algorithm
+[   36.779069] kernel: xor: automatically using best checksumming function   avx       
+[   36.897418] kernel: Btrfs loaded, zoned=yes, fsverity=yes
+[   37.042603] netavark[1048]: timeout met: exiting after 30 secs of inactivity
+[   37.044148] systemd[1]: netavark-dhcp-proxy.service: Deactivated successfully.
+[   37.258877] systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+[   62.001240] dbus-daemon[1043]: [system] Activating via systemd: service name='org.freedesktop.timedate1' unit='dbus-org.freedesktop.timedate1.service' requested by ':1.53' (uid=0 pid=1972 comm="/usr/bin/timedatectl set-timezone Europe/Tallinn" label="unconfined")
+[   62.005692] systemd[1]: Starting systemd-timedated.service - Time & Date Service...
+[   62.051293] systemd[1]: Started systemd-timedated.service - Time & Date Service.
+[   62.051503] dbus-daemon[1043]: [system] Successfully activated service 'org.freedesktop.timedate1'
+[   62.053409] systemd-timedated[1973]: Changed time zone to 'Europe/Tallinn' (EEST).
+[   65.860857] systemd[1]: systemd-localed.service: Deactivated successfully.
+[   69.922951] systemd[1]: snapperd.service: Deactivated successfully.
+[   80.049767] chronyd[1090]: Selected source 185.125.190.122 (1.ntp.ubuntu.com)
+[   92.073660] systemd[1]: systemd-timedated.service: Deactivated successfully.
+[   97.941127] kernel:  nvme0n1:
+[   98.348091] kernel:  nvme0n1: p1
+[   98.380145] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   98.413101] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   98.428165] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   98.474410] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   98.506416] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   98.552104] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   98.814251] kernel:  nvme0n1: p1
+[   99.944471] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   99.973286] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[   99.989918] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  100.036060] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  100.053404] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  100.091340] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  100.119031] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  100.372080] kernel:  nvme0n1: p1
+[  100.937461] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  100.986438] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.000260] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.044303] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.073625] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.106896] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.122169] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.179812] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.239610] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.291371] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.574117] kernel:  nvme0n1: p1
+[  101.938529] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.971806] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  101.986873] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  102.035042] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  102.068258] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  102.103836] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  102.400122] kernel:  nvme0n1: p1 p2
+[  102.942967] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  102.943056] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  102.975130] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  102.975775] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  102.991350] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  102.991484] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.036767] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.037402] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.075737] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.075830] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.106894] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.106952] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.377094] kernel:  nvme0n1: p1 p2
+[  103.452793] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.452889] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.497600] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.497678] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.525550] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.526700] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.575043] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.575356] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.604796] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.611649] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  103.655237] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  103.655300] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  105.466711] (udev-worker)[2018]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  105.482160] (udev-worker)[2018]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  105.716071] kernel:  nvme0n1: p1 p2
+[  106.942347] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  106.942386] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  106.994295] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  106.994356] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.031214] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.038419] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  107.077967] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.078768] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  107.107373] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  107.109706] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.154936] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  107.155885] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.174548] (udev-worker)[2018]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.231422] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  107.231545] (udev-worker)[2023]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.345637] (udev-worker)[2018]: nvme0n1p1: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p1/queue/scheduler", ignoring: No such file or directory
+[  107.346034] (udev-worker)[2021]: nvme0n1p2: /usr/lib/udev/rules.d/60-svoya-iosched.rules:2 ATTR{queue/scheduler}="none": Could not chase sysfs attribute "/sys/devices/pci0000:00/0000:00:04.0/nvme/nvme0/nvme0n1/nvme0n1p2/queue/scheduler", ignoring: No such file or directory
+[  107.481055] kernel: BTRFS: device label sos_root devid 1 transid 9 /dev/nvme0n1p2 (259:4) scanned by mount (2213)
+[  107.483059] kernel: BTRFS info (device nvme0n1p2): first mount of filesystem 1f57f843-ad87-4868-90ba-f5cfc1ca333d
+[  107.483092] kernel: BTRFS info (device nvme0n1p2): using crc32c checksum algorithm
+[  107.505032] kernel: BTRFS info (device nvme0n1p2): checking UUID tree
+[  107.505090] kernel: BTRFS info (device nvme0n1p2): enabling ssd optimizations
+[  107.505109] kernel: BTRFS info (device nvme0n1p2): turning on async discard
+[  107.505118] kernel: BTRFS info (device nvme0n1p2): enabling free space tree
+[  107.505127] kernel: BTRFS info (device nvme0n1p2): use zstd compression, level 1
+[  107.536941] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5.mount: Deactivated successfully.
+[  107.543066] kernel: BTRFS info (device nvme0n1p2): last unmount of filesystem 1f57f843-ad87-4868-90ba-f5cfc1ca333d
+[  107.550095] kernel: BTRFS: device label sos_root devid 1 transid 11 /dev/nvme0n1p2 (259:4) scanned by mount (2239)
+[  107.550254] kernel: BTRFS info (device nvme0n1p2): first mount of filesystem 1f57f843-ad87-4868-90ba-f5cfc1ca333d
+[  107.550278] kernel: BTRFS info (device nvme0n1p2): using crc32c checksum algorithm
+[  107.552546] kernel: BTRFS info (device nvme0n1p2): enabling ssd optimizations
+[  107.552567] kernel: BTRFS info (device nvme0n1p2): turning on async discard
+[  107.552577] kernel: BTRFS info (device nvme0n1p2): enabling free space tree
+[  107.552585] kernel: BTRFS info (device nvme0n1p2): use zstd compression, level 1
+[  182.217426] systemd[1]: tmp-tmpl2yyl98x-filesystem.mount: Deactivated successfully.
+[  197.678104] sos-installer[2425]: pool: resolute (main)
+[  199.507600] sos-installer[2659]: boot loader packages installed from the medium: grub-efi-amd64-signed shim-signed grub-efi-amd64
+[  206.978067] kernel: NET: Registered PF_ALG protocol family
+[  210.562315] sos-installer[5820]: dracut installed from the medium
+[  210.569508] sos-installer[5823]: dracut for 7.0.0-31-generic
+[  220.239337] sos-installer[8980]: no NVIDIA GPU found; nothing to install
+[  221.709742] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-tmp-grub\x2dbtrfs.sXxbhdRAqX.mount: Deactivated successfully.
+[  221.781151] sos-installer[9546]: fallback boot path installed
+[  221.870534] sos-installer[9558]: firmware boot entry: SOS
+[  222.072260] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-media-sos\x2dmedium.mount: Deactivated successfully.
+[  222.082932] sos-installer[9617]: installation finalized
+[  222.105776] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-var-log.mount: Deactivated successfully.
+[  222.151299] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-var-lib-containers.mount: Deactivated successfully.
+[  222.688539] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-sys-firmware-efi-efivars.mount: Deactivated successfully.
+[  222.688652] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-sys.mount: Deactivated successfully.
+[  222.688696] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-run-udev.mount: Deactivated successfully.
+[  222.688742] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-run-systemd-resolve.mount: Deactivated successfully.
+[  222.688786] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-run.mount: Deactivated successfully.
+[  222.688834] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-proc.mount: Deactivated successfully.
+[  222.688891] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-dev.mount: Deactivated successfully.
+[  222.688945] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-boot-efi.mount: Deactivated successfully.
+[  222.689049] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-srv-ai.mount: Deactivated successfully.
+[  222.689105] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-var-cache.mount: Deactivated successfully.
+[  222.689156] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-.snapshots.mount: Deactivated successfully.
+[  222.689209] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5-home.mount: Deactivated successfully.
+[  222.689258] systemd[1]: tmp-calamares\x2droot\x2db3y7kek5.mount: Deactivated successfully.
+[  223.345079] kernel: BTRFS info (device nvme0n1p2): last unmount of filesystem 1f57f843-ad87-4868-90ba-f5cfc1ca333d
+[=3h[=3h[=3hBdsDxe: loading Boot0005 "SOS" from HD(1,GPT,2843F291-D08F-4874-ABA7-9A3DD052DCCA,0x1000,0x100000)/\EFI\ubuntu\shimx64.efi
+BdsDxe: starting Boot0005 "SOS" from HD(1,GPT,2843F291-D08F-4874-ABA7-9A3DD052DCCA,0x1000,0x100000)/\EFI\ubuntu\shimx64.efi
