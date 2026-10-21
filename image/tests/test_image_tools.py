@@ -6,10 +6,12 @@ from __future__ import annotations
 import json
 import pathlib
 import re
+import struct
 import subprocess
 import sys
 import tempfile
 import unittest
+from xml.etree import ElementTree
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "image" / "lib"))
@@ -169,6 +171,33 @@ class PrepareScriptTests(unittest.TestCase):
                         "usr/share/svoya/fastfetch/logo.txt"):
                 self.assertTrue((files / rel).exists(), rel)
             self.assertTrue((files / "usr/share/svoya/sounds").is_symlink())
+            # SOS ASCII: folders in characters over Papirus, the cursor theme (links kept as links)
+            for variant, base in (("Dark", "Papirus-Dark"), ("Light", "Papirus-Light")):
+                theme = files / f"usr/share/icons/SOS-Symbols-{variant}"
+                index = (theme / "index.theme").read_text()
+                self.assertIn(f"Inherits={base},", index)
+                for rel in index.split("Directories=")[1].splitlines()[0].split(","):
+                    self.assertIn(f"[{rel}]", index)
+                self.assertTrue((theme / "scalable/places/user-home.svg").is_file())
+                self.assertTrue((theme / "16x16/places/folder.svg").is_file())
+                self.assertTrue((theme / "scalable/mimetypes/inode-directory.svg").is_symlink())
+                for svg in theme.rglob("*.svg"):
+                    ElementTree.parse(svg)                  # well formed
+            cursors = files / "usr/share/icons/sos-symbols/cursors"
+            self.assertIn("Inherits=Adwaita", (cursors.parent / "index.theme").read_text())
+            self.assertTrue((cursors / "pointer").is_symlink())
+            for name in ("left_ptr", "xterm", "hand2", "watch", "left_ptr_watch", "not-allowed"):
+                data = (cursors / name).read_bytes()
+                magic, hsize, _, n = struct.unpack_from("<4sIII", data, 0)
+                self.assertEqual((magic, hsize), (b"Xcur", 16))
+                sizes = set()
+                for i in range(n):
+                    typ, nominal, pos = struct.unpack_from("<III", data, 16 + 12 * i)
+                    hs, _, sub, _, w, h, xh, yh, _ = struct.unpack_from("<IIIIIIIII", data, pos)
+                    self.assertEqual((typ, hs, sub, w, h), (0xFFFD0002, 36, nominal, nominal, nominal))
+                    self.assertTrue(0 <= xh < w and 0 <= yh < h)
+                    sizes.add(nominal)
+                self.assertEqual(sizes, {24, 32, 48, 64}, name)
 
     def test_shell_ships_the_ascii_page_and_firefox_autoconfig(self):
         with tempfile.TemporaryDirectory() as tmp:

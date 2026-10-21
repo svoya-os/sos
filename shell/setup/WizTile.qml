@@ -13,7 +13,7 @@ Rectangle {
 
     width: 32
     height: 32
-    radius: 8
+    radius: Theme.r(8)
     color: Theme.surface3
     border.width: 1
     border.color: root.accent ? Theme.alpha(Theme.text, 0.45) : Theme.lineStrong

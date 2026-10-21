@@ -5,7 +5,7 @@ import qs.components
 
 // Workspaces 1…N (N = max(4, highest used), ≤ 10) as 19×19 squares, radius 5:
 // active = `text` fill + `surface` number (neutral, DESIGN §5/§11), occupied = textDim,
-// empty = textFaint.
+// empty = textFaint. With symbol widgets: «[1] 2 3 4», the active one in brackets, no fill.
 Row {
     id: root
 
@@ -43,10 +43,10 @@ Row {
             readonly property bool active: wsId === root.activeId
             readonly property bool occupied: (root.occupancy[wsId] || 0) > 0
 
-            width: 19
+            width: Theme.symbolWidgets ? (wsId >= 10 ? 27 : 21) : 19
             height: 19
-            radius: 5
-            color: active ? Theme.selected : (cell.containsMouse ? Theme.surface3 : "transparent")
+            radius: Theme.r(5)
+            color: active && !Theme.symbolWidgets ? Theme.selected : (cell.containsMouse ? Theme.surface3 : "transparent")
 
             Behavior on color {
                 ColorAnimation {
@@ -56,10 +56,10 @@ Row {
 
             MText {
                 anchors.centerIn: parent
-                text: wsId
+                text: Theme.symbolWidgets && active ? "[" + wsId + "]" : wsId
                 size: 10.5
                 font.weight: Font.Medium
-                color: active ? Theme.surface : (occupied ? Theme.textDim : Theme.textFaint)
+                color: active ? (Theme.symbolWidgets ? Theme.text : Theme.surface) : (occupied ? Theme.textDim : Theme.textFaint)
             }
 
             MouseArea {

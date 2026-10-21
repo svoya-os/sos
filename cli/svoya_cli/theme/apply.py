@@ -16,7 +16,7 @@ from .. import config as config_mod
 from ..context import Ctx
 from ..paths import Paths
 from ..util import atomic_write, iso, read_json, read_text, write_json
-from . import accents, engine, solar
+from . import accents, engine, solar, symbols
 from .colors import Color, terminal_palette
 
 MARKER = "svoya:generated"
@@ -454,7 +454,8 @@ def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool,
         if ctx.exists(f"/usr/share/themes/{gtk3}"):
             do(["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtk3])
             ran.append(f"gsettings gtk-theme {gtk3}")
-        icons = "Papirus-Dark" if theme.mode == "dark" else "Papirus-Light"
+        # folders in symbols while the SOS ASCII layer covers them (the shell sets the same)
+        icons = symbols.icon_theme(ctx.paths, theme.id, theme.mode, lambda n: ctx.exists(f"/usr/share/icons/{n}"))
         if ctx.exists(f"/usr/share/icons/{icons}"):
             do(["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", icons])
             ran.append(f"gsettings icon-theme {icons}")

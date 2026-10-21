@@ -8,7 +8,7 @@ PanelFrame {
 
     width: 248
     implicitHeight: col.implicitHeight + 16
-    radius: 12
+    radius: Theme.r(12)
     highlight: false
 
     onShownChanged: {

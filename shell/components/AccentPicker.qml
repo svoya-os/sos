@@ -220,7 +220,7 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 14
                 height: 14
-                radius: 4
+                radius: Theme.r(4)
                 color: root.typed.length > 0 ? root.typed : Theme.surface3
                 border.width: 1
                 border.color: Qt.rgba(0.5, 0.5, 0.5, 0.3)
@@ -265,7 +265,7 @@ Column {
                 visible: root.typedTokens !== null
                 width: visible ? badgeRow.implicitWidth + 16 : 0
                 height: 24
-                radius: 7
+                radius: Theme.r(7)
                 color: badge.ok ? Theme.alpha(Theme.ok, 0.12) : "transparent"
                 border.width: badge.ok ? 0 : 1
                 border.color: Theme.lineStrong
@@ -306,7 +306,7 @@ Column {
             visible: root.typedTokens !== null && root.typedTokens.adjusted
             width: 9
             height: 9
-            radius: 3
+            radius: Theme.r(3)
             color: root.typedTokens ? root.typedTokens.color : "transparent"
         }
         MText {

@@ -34,7 +34,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: promiseCol.height + 32
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -80,7 +80,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 14 + 20 + 3 + snapSub.height + 14 + 34 + 16
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -142,7 +142,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 48
-                radius: 14
+                radius: Theme.r(14)
                 visible: root.wizard.queuedModules.length > 0
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
@@ -171,7 +171,7 @@ Item {
         Rectangle {
             width: 1040 - 608 - 16
             height: 14 + 20 + 12 + root.combos.length * 32 + 12
-            radius: 14
+            radius: Theme.r(14)
             color: Theme.isDark ? Theme.surface : Theme.surface2
             border.width: 1
             border.color: Theme.line

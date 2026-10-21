@@ -64,7 +64,7 @@ FocusScope {
 
                 width: col.width
                 height: 34
-                radius: 8
+                radius: Theme.r(8)
                 color: row.index === root.current ? Theme.surface3 : "transparent"
 
                 Icon {

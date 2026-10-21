@@ -122,7 +122,7 @@ PanelFrame {
 
                         width: 44
                         height: 44
-                        radius: 10
+                        radius: Theme.r(10)
                         color: cell.current ? Theme.surface3 : (cellMouse.containsMouse ? Theme.surface : "transparent")
                         border.width: cell.current ? 1 : 0
                         border.color: Theme.lineStrong

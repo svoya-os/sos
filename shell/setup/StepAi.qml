@@ -41,7 +41,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: gpuCol.height + 32
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -159,7 +159,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 14 + 20 + 12 + 1 + 52 + 1 + 52
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -382,7 +382,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 14 + 20 + 4 + cloudSub.height + 12 + root.wizard.providers.length * 47
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -513,7 +513,7 @@ Item {
                                 Rectangle {
                                     width: prow.width - 36 - saveBtn.width - closeKey.width - 16
                                     height: 30
-                                    radius: 7
+                                    radius: Theme.r(7)
                                     color: Theme.surface2
                                     border.width: 1
                                     border.color: keyField.input.activeFocus ? Theme.text : Theme.lineStrong
@@ -576,7 +576,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: noteCol.height + 30
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line

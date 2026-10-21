@@ -187,6 +187,43 @@ ShellRoot {
         }
     }
 
+    // SOS ASCII outside the shell (Theme.symbolsFor): the folders (the GTK icon theme SOS-Symbols-*)
+    // and the cursor (sos-symbols, for Hyprland and GTK) while the symbol layer covers them; put back
+    // when it stops, but only while they are still ours (an icon theme or a cursor you chose yourself
+    // stays). `sos theme apply` picks the same icon theme (cli/svoya_cli/theme/symbols.py).
+    QtObject {
+        id: systemLook
+
+        readonly property string icons: Theme.symbolsFor("folders") ? (Theme.isDark ? "SOS-Symbols-Dark" : "SOS-Symbols-Light") : ""
+        readonly property string plainIcons: Theme.isDark ? "Papirus-Dark" : "Papirus-Light"
+        readonly property string cursor: Theme.symbolsFor("cursor") ? "sos-symbols" : ""
+
+        function apply() {
+            Sys.sh('command -v gsettings >/dev/null || exit 0; s=org.gnome.desktop.interface; '
+                + 'icons=$(gsettings get $s icon-theme | tr -d "\'"); '
+                + 'if [ -n "$1" ]; then [ -d "/usr/share/icons/$1" ] && [ "$icons" != "$1" ] && gsettings set $s icon-theme "$1"; '
+                + 'else case $icons in SOS-Symbols*) [ -d "/usr/share/icons/$2" ] && gsettings set $s icon-theme "$2";; esac; fi; '
+                + 'size=${XCURSOR_SIZE:-24}; cur=$(gsettings get $s cursor-theme | tr -d "\'"); '
+                + 'if [ -n "$3" ] && [ -d "/usr/share/icons/$3/cursors" ]; then [ "$cur" = "$3" ] || gsettings set $s cursor-theme "$3"; '
+                + 'command -v hyprctl >/dev/null && hyprctl setcursor "$3" "$size" >/dev/null; '
+                + 'elif [ "$cur" = sos-symbols ]; then gsettings set $s cursor-theme Adwaita; '
+                + 'command -v hyprctl >/dev/null && hyprctl setcursor Adwaita "$size" >/dev/null; fi; exit 0',
+                [systemLook.icons, systemLook.plainIcons, systemLook.cursor]);
+        }
+
+        onIconsChanged: systemLookLater.restart()
+        onPlainIconsChanged: systemLookLater.restart()
+        onCursorChanged: systemLookLater.restart()
+        Component.onCompleted: systemLookLater.restart()
+    }
+    Timer {
+        id: systemLookLater
+
+        // after theme.json is read and a theme switch has settled
+        interval: 1500
+        onTriggered: systemLook.apply()
+    }
+
     // SOS ASCII over everything: qs ipc call ascii eye | story | planets | saver
     IpcHandler {
         target: "ascii"

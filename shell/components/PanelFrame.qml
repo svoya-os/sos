@@ -6,7 +6,8 @@ import qs.core
 // 1px lineStrong border, radius 16, a thin edge light on the top edge (inset 88px:
 // neutral `text` at 16 %; `live` panels — Jackson — get the accent at 55 %, DESIGN §11)
 // and one soft, large shadow. Opens with opacity 0->1, scale 0.985->1, y -6->0 in 180 ms; closes
-// in 120 ms (DESIGN.md §4). Children go into the panel body.
+// in 120 ms (DESIGN.md §4). Children go into the panel body. With symbol widgets the corners are
+// square and marked «+», an ASCII box.
 Item {
     id: root
 
@@ -92,6 +93,20 @@ Item {
         id: body
 
         anchors.fill: parent
+    }
+
+    Repeater {
+        model: Theme.symbolWidgets ? 4 : 0
+
+        MText {
+            required property int index
+
+            x: (index % 2 === 0 ? 0 : root.width) - width / 2
+            y: (index < 2 ? 0 : root.height) - height / 2
+            text: "+"
+            size: 13
+            color: Theme.textDim
+        }
     }
 
     // thin edge light on the top edge

@@ -128,7 +128,7 @@ PanelFrame {
 
         width: 30
         height: 30
-        radius: 8
+        radius: Theme.r(8)
         color: mbMouse.containsMouse ? Theme.surface3 : "transparent"
         opacity: mb.enabled ? 1 : 0.35
         activeFocusOnTab: mb.enabled
@@ -236,7 +236,7 @@ PanelFrame {
                         Rectangle {
                             width: parent.width
                             height: 32
-                            radius: 8
+                            radius: Theme.r(8)
                             color: netMouse.containsMouse || netRow.activeFocus ? Theme.surface3 : "transparent"
 
                             Item {
@@ -318,7 +318,7 @@ PanelFrame {
                             visible: root.passwordFor === net.modelData.ssid
                             width: parent.width
                             height: visible ? 38 : 0
-                            radius: 8
+                            radius: Theme.r(8)
                             color: Theme.surface
                             border.width: 1
                             border.color: Theme.lineStrong
@@ -411,7 +411,7 @@ PanelFrame {
 
                     width: parent.width
                     height: 54
-                    radius: 10
+                    radius: Theme.r(10)
                     color: Theme.surface
                     border.width: 1
                     border.color: Theme.line
@@ -424,7 +424,7 @@ PanelFrame {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 36
                         height: 36
-                        radius: 6
+                        radius: Theme.r(6)
                         color: Theme.surface2
                         clip: true
 
@@ -625,7 +625,7 @@ PanelFrame {
 
                         width: 52
                         height: 30
-                        radius: 8
+                        radius: Theme.r(8)
                         color: lookMouse.containsMouse ? Theme.surface3 : Theme.surface
                         border.width: 1
                         border.color: Theme.line
@@ -643,7 +643,7 @@ PanelFrame {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 14
                                 height: 14
-                                radius: 7
+                                radius: Theme.r(7)
                                 color: Theme.accent
                                 border.width: 1
                                 border.color: Qt.rgba(0.5, 0.5, 0.5, 0.3)
@@ -893,7 +893,7 @@ PanelFrame {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 28
                     height: 28
-                    radius: 8
+                    radius: Theme.r(8)
                     color: backMouse.containsMouse ? Theme.surface3 : "transparent"
                     border.width: 1
                     border.color: Theme.lineStrong
@@ -978,10 +978,55 @@ PanelFrame {
                 }
             }
 
-            // ---- SOS ASCII: the Phosphor wallpaper's scene, the lock screen's screensaver ------------------
+            // ---- SOS ASCII: the symbol layer, what it covers, the wallpaper's scene, the screensaver -----
+            SectionHead {
+                text: Strings.symbolsTitle
+                note: "ASCII"
+            }
+
+            Segmented {
+                width: parent.width
+                current: Settings.asciiStyle
+                fontSize: 12
+                options: ["auto", "always", "off"].map(k => ({ "id": k, "label": Strings.symbolsStyles[k] }))
+                onPicked: key => Settings.asciiStyle = key
+            }
+
+            Repeater {
+                model: ["widgets", "folders", "cursor", "browser"]
+
+                Item {
+                    required property string modelData
+                    readonly property bool partOn: (Settings.asciiParts || []).indexOf(modelData) >= 0
+
+                    width: parent.width
+                    height: 30
+                    opacity: Settings.asciiStyle === "off" ? 0.45 : 1
+
+                    SText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Strings.symbolsParts[modelData]
+                        size: 13
+                        color: Theme.textDim
+                    }
+
+                    Toggle {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        checked: parent.partOn
+                        onToggled: value => {
+                            const now = (Settings.asciiParts || []).filter(p => p !== modelData);
+                            if (value)
+                                now.push(modelData);
+                            Settings.asciiParts = now;
+                        }
+                    }
+                }
+            }
+
             SectionHead {
                 text: Strings.asciiWallpaper
-                note: Strings.asciiPhosphorOnly
+                note: Strings.asciiWithSymbols
             }
 
             Segmented {
@@ -1026,7 +1071,7 @@ PanelFrame {
             Rectangle {
                 width: parent.width
                 height: 58
-                radius: 12
+                radius: Theme.r(12)
                 color: "transparent"
                 border.width: 1
                 border.color: Theme.line
@@ -1074,7 +1119,7 @@ PanelFrame {
             Rectangle {
                 width: parent.width
                 height: jkCol.implicitHeight
-                radius: 12
+                radius: Theme.r(12)
                 color: "transparent"
                 border.width: 1
                 border.color: Theme.line
@@ -1096,7 +1141,7 @@ PanelFrame {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 64
                             height: 64
-                            radius: 12
+                            radius: Theme.r(12)
                             color: Theme.surface3
                             border.width: 1
                             border.color: Theme.lineStrong
@@ -1173,7 +1218,7 @@ PanelFrame {
 
                                 width: charRow.implicitWidth + 18
                                 height: 40
-                                radius: 10
+                                radius: Theme.r(10)
                                 color: charTile.isCurrent ? Theme.surface3 : (charMouse.containsMouse ? Theme.surface2 : "transparent")
                                 border.width: 1
                                 border.color: charTile.isCurrent ? Theme.lineStrong : Theme.line

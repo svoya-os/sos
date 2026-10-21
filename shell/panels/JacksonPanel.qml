@@ -344,7 +344,7 @@ PanelFrame {
                     anchors.centerIn: parent
                     width: 36
                     height: 36
-                    radius: 18
+                    radius: Theme.r(18)
                     color: Theme.accentSoft
                     visible: mic.lit
                     scale: 0.78 + 0.5 * Math.min(1, Jackson.level)
@@ -361,7 +361,7 @@ PanelFrame {
                     anchors.centerIn: parent
                     width: 30
                     height: 30
-                    radius: 15
+                    radius: Theme.r(15)
                     color: micArea.containsMouse ? Theme.surface3 : "transparent"
                     border.width: 1
                     border.color: mic.lit ? Theme.accent : (micArea.containsMouse ? Theme.lineStrong : Theme.line)

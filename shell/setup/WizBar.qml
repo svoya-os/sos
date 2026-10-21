@@ -15,7 +15,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: 3
+        radius: Theme.r(3)
         color: Theme.surface3
         antialiasing: true
     }
@@ -23,7 +23,7 @@ Item {
     Rectangle {
         width: Math.max(root.value > 0 ? 6 : 0, root.width * Math.max(0, Math.min(1, root.value)))
         height: parent.height
-        radius: 3
+        radius: Theme.r(3)
         color: root.fill
         antialiasing: true
 

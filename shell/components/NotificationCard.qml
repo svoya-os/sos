@@ -44,7 +44,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible: root.compact
-        radius: 8
+        radius: Theme.r(8)
         color: hover.hovered ? Theme.surface3 : "transparent"
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "user-journeys",
-  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, morse, the teapot, apps, Jackson's skills, the model kits, upsil zen and an UpsiL project), the Jackson panel (a model question, coin, d20, a joke, Morse, a drawing without the Studio, the skills folder, «install telegram» in a terminal), the launcher (install suggestions, the install mode, iddqd, 42, undo), the Windows keys (a tap of Win with the calculator, Win+Tab, Alt+Tab held and quick, Win+arrows, Win+., Win+D, Win+G), the night light, SOS ASCII with the Phosphor theme (Jackson's eye called up, the Firefox new tab, the live wallpaper), the control center, System Doctor and the lock screen with its screensaver. A screenshot after every step; nothing stops the journey.",
+  "description": "A bot uses the live system like a new user: cheat sheet, launcher search, terminal with sos commands (doctor, models, accent + undo, morse, the teapot, apps, Jackson's skills, the model kits, upsil zen and an UpsiL project), the Jackson panel (a model question, coin, d20, a joke, Morse, a drawing without the Studio, the skills folder, «install telegram» in a terminal), the launcher (install suggestions, the install mode, iddqd, 42, undo), the Windows keys (a tap of Win with the calculator, Win+Tab, Alt+Tab held and quick, Win+arrows, Win+., Win+D, Win+G), the night light, SOS ASCII with the Phosphor theme (Jackson's eye called up, the Firefox new tab, the live wallpaper, folders in Thunar, the symbol style settings), the control center, System Doctor and the lock screen with its screensaver. A screenshot after every step; nothing stops the journey.",
   "vm": {
     "memory_mib": 8192,
     "smp": 4,
@@ -234,6 +234,16 @@
     {"id": "ascii", "action": "screenshot", "name": "10z-phosphor-live-wallpaper", "continue_on_failure": true},
     {"id": "ascii", "action": "key", "keys": ["meta_l", "d"], "hold_ms": 120, "continue_on_failure": true},
     {"id": "ascii", "action": "sleep", "seconds": 2},
+    {"id": "ascii", "action": "type", "text": "clear; thunar ~ >/dev/null 2>&1 &\n", "continue_on_failure": true},
+    {"id": "ascii", "action": "sleep", "seconds": 6},
+    {"id": "ascii", "action": "screenshot", "name": "10z1-folders-in-symbols", "continue_on_failure": true},
+    {"id": "ascii", "action": "key", "keys": ["ctrl", "q"], "hold_ms": 80, "continue_on_failure": true},
+    {"id": "ascii", "action": "sleep", "seconds": 2},
+    {"id": "ascii", "action": "type", "text": "clear; quickshell -p /usr/share/svoya/shell ipc call controlcenter look\n", "continue_on_failure": true},
+    {"id": "ascii", "action": "sleep", "seconds": 3},
+    {"id": "ascii", "action": "screenshot", "name": "10z2-symbol-style-settings", "continue_on_failure": true},
+    {"id": "ascii", "action": "key", "keys": ["esc"], "continue_on_failure": true},
+    {"id": "ascii", "action": "sleep", "seconds": 1},
     {"id": "ascii", "action": "type", "text": "clear; sos theme apply auto\n", "continue_on_failure": true},
     {"id": "ascii", "action": "sleep", "seconds": 5},
 

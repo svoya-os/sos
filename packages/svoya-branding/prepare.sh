@@ -94,6 +94,12 @@ done
 [ -f "$f/usr/share/icons/hicolor/scalable/apps/sos.svg" ] ||
     echo "warning: branding/logo/icon/sos.svg missing; no scalable \"sos\" icon" >&2
 
+# SOS ASCII: the folders in characters (branding/icons/generate.py) and the cursor
+# (branding/cursors/generate.py); the shell switches to them with the symbol layer
+for t in "$b"/icons/SOS-Symbols-*/ "$b"/cursors/sos-symbols/; do
+    [ -f "$t/index.theme" ] || continue
+    copy_tree "$t" "$f/usr/share/icons/$(basename "$t")"
+done
 # fastfetch
 copy_tree "$b/fastfetch" "$f/usr/share/svoya/fastfetch"
 if [ -f "$b/fastfetch/config.jsonc" ]; then

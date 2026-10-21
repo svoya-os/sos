@@ -3,6 +3,7 @@ import qs.core
 
 // Switch (components.css .switch): 32×18 track (surface3 + 1px lineStrong; `text` when on —
 // never the accent, DESIGN §11), 12px knob 3px in (textFaint; surface when on). Space/Enter toggles when focused.
+// With symbol widgets (Theme.symbolWidgets) it is a mono [x] / [ ] in the same box.
 Item {
     id: root
 
@@ -20,8 +21,18 @@ Item {
     Keys.onSpacePressed: root.flip()
     Keys.onReturnPressed: root.flip()
 
+    MText {
+        anchors.centerIn: parent
+        visible: Theme.symbolWidgets
+        text: root.checked ? "[x]" : "[ ]"
+        size: 13
+        font.weight: root.checked ? Font.Medium : Font.Normal
+        color: root.checked ? Theme.text : Theme.textFaint
+    }
+
     Rectangle {
         anchors.fill: parent
+        visible: !Theme.symbolWidgets
         radius: height / 2
         color: root.checked ? Theme.selected : Theme.surface3
         border.width: root.checked ? 0 : 1
@@ -37,7 +48,7 @@ Item {
         Rectangle {
             width: 12
             height: 12
-            radius: 6
+            radius: Theme.r(6)
             y: 3
             x: root.checked ? parent.width - width - 3 : 3
             color: root.checked ? Theme.surface : Theme.textFaint
@@ -59,6 +70,6 @@ Item {
     }
 
     FocusRing {
-        radiusBase: 9
+        radiusBase: Theme.r(9)
     }
 }

@@ -82,7 +82,7 @@ Rectangle {
                     Rectangle {
                         anchors.fill: parent
                         visible: row.status !== "bad"
-                        radius: 3
+                        radius: Theme.r(3)
                         color: Theme.surface3
                     }
 
@@ -90,7 +90,7 @@ Rectangle {
                         visible: row.status === "ok"
                         width: Math.min(1, row.fraction) * parent.width
                         height: parent.height
-                        radius: 3
+                        radius: Theme.r(3)
                         color: Theme.textDim // a measurement, not a signal (DESIGN §11)
                     }
 
@@ -98,7 +98,7 @@ Rectangle {
                     Rectangle {
                         visible: row.status === "warn"
                         anchors.fill: parent
-                        radius: 3
+                        radius: Theme.r(3)
                         color: "transparent"
                         border.width: 1
                         border.color: Theme.warn

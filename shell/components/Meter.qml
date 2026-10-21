@@ -11,7 +11,7 @@ Rectangle {
 
     implicitWidth: 34
     implicitHeight: 4
-    radius: height / 2
+    radius: Theme.r(height / 2)
     color: Theme.surface3
     clip: true
 

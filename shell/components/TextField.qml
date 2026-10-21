@@ -2,7 +2,8 @@ import QtQuick
 import qs.core
 
 // Single-line input with the signature 2px accent caret. `big` = the 20px
-// title style (Jackson, launcher); otherwise 14px body text.
+// title style (Jackson, launcher); otherwise 14px body text. With symbol widgets: mono, and the
+// caret is a terminal's block.
 Item {
     id: root
 
@@ -13,6 +14,7 @@ Item {
     property bool password: false
     property real size: root.big ? Theme.fsTitle : Theme.fsBody
     property bool mono: false          // Plex Mono (hex values, paths)
+    readonly property bool monoNow: root.mono || Theme.symbolWidgets
 
     signal accepted
     signal escapePressed
@@ -37,9 +39,9 @@ Item {
         color: Theme.text
         selectionColor: Theme.accentSoft
         selectedTextColor: Theme.text
-        font.family: root.mono ? Theme.mono : Theme.sans
+        font.family: root.monoNow ? Theme.mono : Theme.sans
         font.pixelSize: root.size
-        font.features: root.mono ? Theme.monoFeatures : Theme.sansFeatures
+        font.features: root.monoNow ? Theme.monoFeatures : Theme.sansFeatures
         font.letterSpacing: root.size >= 20 ? -0.005 * root.size : 0
         echoMode: root.password ? TextInput.Password : TextInput.Normal
         passwordCharacter: "•"
@@ -47,8 +49,8 @@ Item {
         focus: true
         selectByMouse: true
         cursorDelegate: Rectangle {
-            width: 2
-            color: Theme.accent
+            width: Theme.symbolWidgets ? Math.round(root.size * 0.6) : 2
+            color: Theme.symbolWidgets ? Theme.alpha(Theme.accent, 0.6) : Theme.accent
             visible: input.activeFocus
         }
         Keys.onReturnPressed: root.accepted()
@@ -75,6 +77,7 @@ Item {
         visible: input.text.length === 0
         text: root.placeholder
         size: root.size
+        font.family: root.monoNow ? Theme.mono : Theme.sans
         color: Theme.textFaint
         elide: Text.ElideRight
     }

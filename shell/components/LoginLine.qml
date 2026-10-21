@@ -324,7 +324,7 @@ Item {
                 y: root.lineY - root.dotR
                 width: 2 * root.dotR
                 height: 2 * root.dotR
-                radius: root.dotR
+                radius: Theme.r(root.dotR)
                 color: Theme.text
                 opacity: root.phase === "checking" ? 1 - root.flow * (0.65 - 0.5 * index / Math.max(1, root.shownDots)) : 1
                 antialiasing: true
@@ -360,7 +360,7 @@ Item {
                 y: root.lineY - root.dotR + (root.motion ? jitter[index % 8] * root.s : 0) + (1 - root.ghostFade) * 18 * root.s
                 width: 2 * root.dotR
                 height: 2 * root.dotR
-                radius: root.dotR
+                radius: Theme.r(root.dotR)
                 color: Theme.bad
                 opacity: root.ghostFade
                 antialiasing: true
@@ -389,7 +389,7 @@ Item {
         y: root.lineY - 13 * root.s
         width: 2 * root.s
         height: 26 * root.s
-        radius: 1
+        radius: Theme.r(1)
         color: Theme.accent
         layer.enabled: Theme.glow
         layer.effect: MultiEffect {
@@ -455,7 +455,7 @@ Item {
         y: root.lineY - 3 * root.s
         width: 88 * root.s
         height: 7 * root.s
-        radius: height / 2
+        radius: Theme.r(height / 2)
         color: "#000000"
         opacity: Theme.isDark ? 0.5 : 0.18
         layer.enabled: true
@@ -506,7 +506,7 @@ Item {
         color: Theme.surface2
         border.width: 1
         border.color: Theme.lineStrong
-        radius: 12 * root.s
+        radius: Theme.r(12 * root.s)
         bottomLeftRadius: 3 * root.s
         antialiasing: true
 

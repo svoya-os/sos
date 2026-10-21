@@ -58,7 +58,7 @@ Flow {
                 visible: modelData.code
                 width: code.implicitWidth + 10
                 height: 18
-                radius: 5
+                radius: Theme.r(5)
                 color: Theme.surface3
 
                 MText {

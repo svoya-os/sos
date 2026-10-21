@@ -46,7 +46,7 @@ Item {
                     y: 8
                     width: 232
                     height: 145
-                    radius: 8
+                    radius: Theme.r(8)
                     color: Theme.surface3
 
                     Image {
@@ -66,7 +66,7 @@ Item {
                     y: 8
                     width: 232
                     height: 145
-                    radius: 8
+                    radius: Theme.r(8)
                     color: "transparent"
                     border.width: 1
                     border.color: Qt.rgba(0.5, 0.5, 0.5, 0.18)
@@ -129,7 +129,7 @@ Item {
                                 visible: modelData.hex !== undefined
                                 width: 9
                                 height: 9
-                                radius: 3
+                                radius: Theme.r(3)
                                 color: modelData.hex !== undefined ? "#" + modelData.hex : "transparent"
                                 border.width: 1
                                 border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
@@ -161,7 +161,7 @@ Item {
         y: cards.height + 20
         width: parent.width
         height: Math.max(accentText.height, picker.height, 56) + 36
-        radius: 14
+        radius: Theme.r(14)
         color: Theme.isDark ? Theme.surface : Theme.surface2
         border.width: 1
         border.color: Theme.line

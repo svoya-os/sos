@@ -152,7 +152,7 @@ PanelFrame {
 
                     width: chipText.implicitWidth + 22
                     height: 26
-                    radius: 13
+                    radius: Theme.r(13)
                     color: chip.modelData.focused ? Theme.surface3 : (chipMouse.containsMouse ? Theme.surface2 : "transparent")
                     border.width: 1
                     border.color: chip.modelData.focused ? Theme.lineStrong : Theme.line
@@ -216,7 +216,7 @@ PanelFrame {
 
                     width: root.tileWidth
                     height: root.thumbHeight + 42
-                    radius: 12
+                    radius: Theme.r(12)
                     color: tile.current ? Theme.surface3 : (tileMouse.containsMouse ? Theme.surface : "transparent")
                     border.width: tile.current ? 1.5 : 1
                     border.color: tile.current ? Theme.selected : Theme.line
@@ -228,7 +228,7 @@ PanelFrame {
                         y: 8
                         width: parent.width - 16
                         height: root.thumbHeight
-                        radius: 8
+                        radius: Theme.r(8)
                         color: Theme.surface
                         clip: true
 

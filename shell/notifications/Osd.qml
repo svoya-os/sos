@@ -52,7 +52,7 @@ PanelWindow {
         id: pill
 
         anchors.fill: parent
-        radius: 12
+        radius: Theme.r(12)
         color: Theme.surface2
         border.width: 1
         border.color: Theme.lineStrong

@@ -85,7 +85,7 @@ FocusScope {
                             id: seg
 
                             anchors.fill: parent
-                            radius: 2
+                            radius: Theme.r(2)
                             // neutral progress (DESIGN §11): now = text, done = textDim, ahead = lineStrong
                             color: index === root.step ? Theme.selected : (index < root.step ? Theme.textFaint : Theme.lineStrong)
                         }

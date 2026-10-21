@@ -206,7 +206,7 @@ PanelFrame {
                 Rectangle {
                     width: parent.width
                     height: 292
-                    radius: 12
+                    radius: Theme.r(12)
                     color: Theme.surface
                     border.width: 1
                     border.color: Theme.line
@@ -250,7 +250,7 @@ PanelFrame {
                         anchors.bottomMargin: 10
                         width: 28
                         height: 28
-                        radius: 8
+                        radius: Theme.r(8)
                         color: pauseMouse.containsMouse ? Theme.surface3 : "transparent"
                         border.width: 1
                         border.color: Theme.lineStrong
@@ -268,13 +268,13 @@ PanelFrame {
                             Rectangle {
                                 width: 3
                                 height: 10
-                                radius: 1
+                                radius: Theme.r(1)
                                 color: Theme.textDim
                             }
                             Rectangle {
                                 width: 3
                                 height: 10
-                                radius: 1
+                                radius: Theme.r(1)
                                 color: Theme.textDim
                             }
                         }
@@ -330,7 +330,7 @@ PanelFrame {
                             Rectangle {
                                 width: 42
                                 height: 42
-                                radius: 10
+                                radius: Theme.r(10)
                                 color: Theme.surface3
                                 border.width: thumb.isShown ? 2 : 1
                                 border.color: thumb.isShown ? Theme.selected : Theme.line
@@ -383,7 +383,7 @@ PanelFrame {
                 Rectangle {
                     width: parent.width
                     height: 52
-                    radius: 12
+                    radius: Theme.r(12)
                     color: Theme.surface2
                     border.width: 1
                     border.color: Theme.lineStrong
@@ -437,7 +437,7 @@ PanelFrame {
 
                                 width: charRow.implicitWidth + 20
                                 height: 44
-                                radius: 10
+                                radius: Theme.r(10)
                                 color: charTile.isCurrent ? Theme.surface3 : (charMouse.containsMouse ? Theme.surface2 : "transparent")
                                 border.width: 1
                                 border.color: charTile.isCurrent ? Theme.lineStrong : Theme.line
@@ -551,7 +551,7 @@ PanelFrame {
                             anchors.verticalCenter: parent.verticalCenter
                             width: likeRow.implicitWidth + 22
                             height: 30
-                            radius: 15
+                            radius: Theme.r(15)
                             color: likeMouse.containsMouse && !likeAccent.isCurrent ? Theme.surface2 : "transparent"
                             border.width: likeAccent.isCurrent ? 1.5 : 1
                             border.color: likeAccent.isCurrent ? Theme.selected : Theme.line
@@ -571,7 +571,7 @@ PanelFrame {
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: 14
                                     height: 14
-                                    radius: 7
+                                    radius: Theme.r(7)
                                     color: Avatar.outfitColor("accent", root.character)
                                     border.width: 1
                                     border.color: Qt.rgba(0.5, 0.5, 0.5, 0.3)
@@ -823,7 +823,7 @@ PanelFrame {
 
                                 width: (root.rightWidth - 112 - 8) / 2
                                 height: 50
-                                radius: 10
+                                radius: Theme.r(10)
                                 color: cardMouse.containsMouse && !card.isCurrent ? Theme.surface2 : "transparent"
                                 border.width: card.isCurrent ? 1.5 : 1
                                 border.color: card.isCurrent ? Theme.selected : Theme.line
@@ -841,7 +841,7 @@ PanelFrame {
                                     y: 10
                                     width: 16
                                     height: 16
-                                    radius: 8
+                                    radius: Theme.r(8)
                                     color: "transparent"
                                     border.width: card.isCurrent ? 5 : 1.5
                                     border.color: card.isCurrent ? Theme.selected : Theme.lineStrong

@@ -9,7 +9,8 @@ import qs.core
 // While a job runs, Jackson says how far it got. Bottom left: accessibility.
 // After Settings.lockSaverSeconds without input the screensaver takes over (SOS ASCII, every theme):
 // the face fades, Jackson turns into his eye, the eye looks around and follows the pointer, and
-// every few minutes it looks closer (the short film). A key or a click brings the face back.
+// every few minutes it looks closer (the short film). A key, a click or a decisive move of the mouse
+// (half the screen within about a second) brings the face back; a slow one only gets looked at.
 Item {
     id: root
 
@@ -57,6 +58,11 @@ Item {
     // ---- the screensaver -----------------------------------------------------------------------------------------
     property bool saving: false
     property bool night: false
+
+    onSavingChanged: {
+        wakeMove.travel = 0;
+        wakeMove.last = Qt.point(-1, -1);
+    }
     readonly property bool saverOn: Settings.lockSaverSeconds > 0
 
     function poke() {
@@ -287,7 +293,7 @@ Item {
             anchors.bottomMargin: 12
             width: 272
             height: a11yCol.implicitHeight + 24
-            radius: 12
+            radius: Theme.r(12)
             color: Theme.surface2
             border.width: 1
             border.color: Theme.lineStrong
@@ -357,6 +363,31 @@ Item {
                 noise: "#5a5a5a"
                 alive: "#ff2e88"
             }
+        }
+
+        // a slow move is looked at; a decisive one wakes the face, as a key does
+        HoverHandler {
+            id: wakeMove
+
+            property point last: Qt.point(-1, -1)
+            property real travel: 0
+
+            enabled: root.saving
+            onPointChanged: {
+                const p = point.position;
+                if (wakeMove.last.x >= 0)
+                    wakeMove.travel += Math.hypot(p.x - wakeMove.last.x, p.y - wakeMove.last.y);
+                wakeMove.last = p;
+                if (wakeMove.travel > root.width * 0.5)
+                    root.poke();
+            }
+        }
+        Timer {
+            // the travel fades: only movement within about a second adds up
+            running: root.saving
+            interval: 200
+            repeat: true
+            onTriggered: wakeMove.travel *= 0.75
         }
 
         // a click wakes the face; it never reaches the faded buttons underneath

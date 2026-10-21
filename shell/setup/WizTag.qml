@@ -15,7 +15,7 @@ Rectangle {
 
     implicitWidth: label.implicitWidth + 16
     implicitHeight: 20
-    radius: 10
+    radius: Theme.r(10)
     color: root.kind === "line" ? "transparent" : (root.kind === "ok" || root.kind === "warn" ? Theme.alpha(root.tint, 0.13) : Theme.surface3)
     border.width: root.kind === "line" ? 1 : 0
     border.color: Theme.lineStrong

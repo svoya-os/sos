@@ -39,7 +39,7 @@ Item {
                     y: 8
                     width: 320
                     height: 200
-                    radius: 8
+                    radius: Theme.r(8)
                     color: Theme.surface3
 
                     Image {
@@ -58,7 +58,7 @@ Item {
                     y: 8
                     width: 320
                     height: 200
-                    radius: 8
+                    radius: Theme.r(8)
                     color: "transparent"
                     border.width: 1
                     border.color: Qt.rgba(0.5, 0.5, 0.5, 0.18)

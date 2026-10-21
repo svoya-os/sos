@@ -41,7 +41,7 @@ FocusScope {
     Rectangle {
         anchors.fill: frame
         anchors.margins: -3
-        radius: 12
+        radius: Theme.r(12)
         visible: root.focused || root.error
         color: root.error ? Theme.alpha(Theme.bad, 0.16) : Theme.line
         antialiasing: true
@@ -51,7 +51,7 @@ FocusScope {
         id: frame
 
         anchors.fill: parent
-        radius: 9
+        radius: Theme.r(9)
         color: Theme.surface2
         border.width: 1
         border.color: root.focused || root.error ? root.ringColor : Theme.lineStrong
@@ -101,7 +101,7 @@ FocusScope {
             Rectangle {
                 width: 7
                 height: 7
-                radius: 3.5
+                radius: Theme.r(3.5)
                 color: root.busy ? Theme.textDim : Theme.text
                 antialiasing: true
             }
@@ -115,7 +115,7 @@ FocusScope {
         anchors.verticalCenter: parent.verticalCenter
         width: 2
         height: 18
-        radius: 1
+        radius: Theme.r(1)
         color: Theme.accent
     }
 
@@ -137,7 +137,7 @@ FocusScope {
         anchors.verticalCenter: parent.verticalCenter
         width: 30
         height: 30
-        radius: 7
+        radius: Theme.r(7)
         color: goMouse.containsMouse ? Theme.lineStrong : Theme.surface3
         antialiasing: true
 

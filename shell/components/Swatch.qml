@@ -35,7 +35,7 @@ Item {
         anchors.centerIn: parent
         width: root.size + 7
         height: root.size + 7
-        radius: width / 2
+        radius: Theme.r(width / 2)
         visible: root.selected
         color: "transparent"
         border.width: 1.5
@@ -62,7 +62,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             visible: !root.split && !root.rainbow
-            radius: width / 2
+            radius: Theme.r(width / 2)
             color: root.color
             border.width: 1
             border.color: Qt.rgba(0.5, 0.5, 0.5, 0.3)

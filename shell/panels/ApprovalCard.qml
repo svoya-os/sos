@@ -13,7 +13,7 @@ Rectangle {
     readonly property int tier: Number(root.request.tier || 2)
 
     implicitHeight: col.implicitHeight + 28
-    radius: 12
+    radius: Theme.r(12)
     color: Theme.surface
     border.width: 1
     border.color: root.tier >= 3 ? Theme.warn : Theme.lineStrong
@@ -37,7 +37,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: tierLabel.implicitWidth + 12
                 height: 18
-                radius: 9
+                radius: Theme.r(9)
                 color: root.tier >= 3 ? Theme.alpha(Theme.warn, 0.14) : Theme.surface3
 
                 MText {

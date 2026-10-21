@@ -115,7 +115,7 @@ Item {
 
             width: root.stageWidth
             height: right.height
-            radius: 16
+            radius: Theme.r(16)
             color: Theme.isDark ? Theme.surface : Theme.surface2
             border.width: 1
             border.color: Theme.line
@@ -130,7 +130,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: stage.width - 64
                     height: hello.implicitHeight + 28
-                    radius: 12
+                    radius: Theme.r(12)
                     color: Theme.surface2
                     border.width: 1
                     border.color: Theme.lineStrong
@@ -243,7 +243,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 64
                             height: 64
-                            radius: 12
+                            radius: Theme.r(12)
                             color: Theme.surface3
                             border.width: 1
                             border.color: Theme.lineStrong
@@ -308,7 +308,7 @@ Item {
             Rectangle {
                 width: root.colWidth
                 height: lookCol.height
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -370,7 +370,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 16
                                 height: 16
-                                radius: 8
+                                radius: Theme.r(8)
                                 color: Avatar.outfitColor("accent", root.character)
                                 border.width: 1
                                 border.color: Qt.rgba(0.5, 0.5, 0.5, 0.3)
@@ -501,7 +501,7 @@ Item {
             Rectangle {
                 width: root.colWidth
                 height: 96
-                radius: 14
+                radius: Theme.r(14)
                 color: Theme.isDark ? Theme.surface : Theme.surface2
                 border.width: 1
                 border.color: Theme.line
@@ -512,7 +512,7 @@ Item {
                     y: 12
                     width: question.implicitWidth + 28
                     height: 32
-                    radius: 10
+                    radius: Theme.r(10)
                     color: Theme.surface3
 
                     SText {

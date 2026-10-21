@@ -17,7 +17,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: width / 2
+        radius: Theme.r(width / 2)
         color: root.checked && !root.radio ? Theme.selected : "transparent"
         border.width: root.checked ? (root.radio ? 5 : 0) : 1.5
         border.color: root.checked ? Theme.selected : Theme.lineStrong

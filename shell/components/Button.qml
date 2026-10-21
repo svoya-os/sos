@@ -7,6 +7,8 @@ import qs.core
 // `fill` (transparent by default).
 // `hint` renders a mono key hint («Enter») at 60% opacity. Keyboard: Tab to
 // focus, Enter/Space to press (2px accent focus ring).
+// With symbol widgets (Theme.symbolWidgets): square, no outline, a mono label in brackets
+// «[ Сохранить ]»; primary stays a filled block (inverse video), hover lights the brackets.
 Rectangle {
     id: root
 
@@ -23,11 +25,13 @@ Rectangle {
 
     signal clicked
 
-    implicitWidth: row.implicitWidth + (root.small ? 20 : (root.large ? 36 : 28))
+    readonly property bool sym: Theme.symbolWidgets
+
+    implicitWidth: row.implicitWidth + (root.sym ? 8 : (root.small ? 20 : (root.large ? 36 : 28)))
     implicitHeight: root.small ? 26 : (root.large ? 40 : 34)
-    radius: root.small ? 7 : Theme.radiusButton
+    radius: root.small ? Theme.r(7) : Theme.radiusButton
     color: root.primary ? (mouse.containsMouse || mouse.pressed ? Theme.accentStrong : Theme.accent) : (mouse.containsMouse ? Theme.surface3 : root.fill)
-    border.width: root.primary ? 0 : 1
+    border.width: root.primary || root.sym ? 0 : 1
     border.color: Theme.lineStrong
     opacity: root.enabledState ? 1 : 0.45
     antialiasing: true
@@ -58,6 +62,14 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 8
 
+        MText {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: root.sym
+            text: "["
+            size: root.small ? 12 : 13
+            color: root.primary ? root.textColor : (mouse.containsMouse || root.activeFocus ? Theme.accent : Theme.textFaint)
+        }
+
         Icon {
             anchors.verticalCenter: parent.verticalCenter
             visible: root.glyph.length > 0
@@ -71,6 +83,7 @@ Rectangle {
             text: root.text
             size: root.small ? 12 : (root.large ? 13.5 : 13)
             font.weight: Font.Medium
+            font.family: root.sym ? Theme.mono : Theme.sans
             color: root.textColor
         }
 
@@ -81,6 +94,14 @@ Rectangle {
             size: 11
             opacity: root.large ? 0.62 : 0.6
             color: root.primary ? Theme.accentInk : Theme.textDim
+        }
+
+        MText {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: root.sym
+            text: "]"
+            size: root.small ? 12 : 13
+            color: root.primary ? root.textColor : (mouse.containsMouse || root.activeFocus ? Theme.accent : Theme.textFaint)
         }
     }
 

@@ -7,7 +7,7 @@ Rectangle {
 
     width: size
     height: size
-    radius: size / 2
+    radius: Theme.r(size / 2)
     color: Theme.textDim
     antialiasing: true
 }

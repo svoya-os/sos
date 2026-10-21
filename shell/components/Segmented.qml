@@ -5,7 +5,8 @@ import qs.core
 // `swatch` is an optional theme dot: {fill, edge, inner?, half?} (half = the right half's color).
 // Segments share the width equally when the control is wider than its content. The selected
 // segment is neutral: surface3 + lineStrong edge + `text` label (DESIGN §11).
-// Arrow keys move the selection when focused.
+// Arrow keys move the selection when focused. With symbol widgets: no boxes, mono labels and
+// the selected one in brackets «[Фосфор]» (the others keep the brackets' room, nothing moves).
 Rectangle {
     id: root
 
@@ -27,9 +28,9 @@ Rectangle {
 
     implicitWidth: root.naturalWidth
     implicitHeight: 30
-    radius: 8
-    color: Theme.surface
-    border.width: 1
+    radius: Theme.r(8)
+    color: Theme.symbolWidgets ? "transparent" : Theme.surface
+    border.width: Theme.symbolWidgets ? 0 : 1
     border.color: Theme.line
     activeFocusOnTab: true
     Accessible.role: Accessible.PageTabList
@@ -71,9 +72,9 @@ Rectangle {
                 implicitWidth: seg.natural
                 width: root.width > root.naturalWidth + 1 ? Math.max(seg.natural, seg.share) : seg.natural
                 height: root.height - 4
-                radius: 6
-                color: seg.selected ? Theme.surface3 : (segMouse.containsMouse ? Theme.surface2 : "transparent")
-                border.width: seg.selected ? 1 : 0
+                radius: Theme.r(6)
+                color: seg.selected && !Theme.symbolWidgets ? Theme.surface3 : (segMouse.containsMouse ? Theme.surface2 : "transparent")
+                border.width: seg.selected && !Theme.symbolWidgets ? 1 : 0
                 border.color: Theme.lineStrong
                 Accessible.role: Accessible.PageTab
                 Accessible.name: seg.modelData.label
@@ -90,7 +91,7 @@ Rectangle {
                         visible: seg.modelData.swatch !== undefined
                         width: 12
                         height: 12
-                        radius: 6
+                        radius: Theme.r(6)
                         color: seg.modelData.swatch ? seg.modelData.swatch.fill : "transparent"
                         border.width: 1
                         border.color: seg.modelData.swatch ? seg.modelData.swatch.edge : "transparent"
@@ -117,7 +118,7 @@ Rectangle {
                             visible: seg.modelData.swatch !== undefined && seg.modelData.swatch.inner !== undefined
                             width: 4
                             height: 4
-                            radius: 2
+                            radius: Theme.r(2)
                             color: seg.modelData.swatch && seg.modelData.swatch.inner ? seg.modelData.swatch.inner : "transparent"
                         }
                     }
@@ -126,8 +127,9 @@ Rectangle {
                         id: label
 
                         anchors.verticalCenter: parent.verticalCenter
-                        text: seg.modelData.label
+                        text: Theme.symbolWidgets ? (seg.selected ? "[" : " ") + seg.modelData.label + (seg.selected ? "]" : " ") : seg.modelData.label
                         size: root.fontSize
+                        font.family: Theme.symbolWidgets ? Theme.mono : Theme.sans
                         font.weight: seg.selected ? Font.Medium : Font.Normal
                         color: seg.selected ? Theme.text : Theme.textDim
                     }
@@ -146,6 +148,6 @@ Rectangle {
     }
 
     FocusRing {
-        radiusBase: 8
+        radiusBase: Theme.r(8)
     }
 }

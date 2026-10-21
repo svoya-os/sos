@@ -503,15 +503,31 @@ Singleton {
         return px * value;
     }
 
+    // ---- SOS ASCII: the symbol layer ----------------------------------------------------------
+    // On with the Phosphor theme ("auto"), with every theme ("always") or never (Settings.asciiStyle);
+    // Settings.asciiParts says what it covers: "widgets" (square corners, switches as [x], choices in
+    // brackets, mono labels), "folders" (the SOS-Symbols icon theme), "cursor" (sos-symbols), "browser"
+    // (Firefox, assets/firefox/sos.cfg). Jackson (Settings.jacksonRender) and the wallpaper's scene
+    // follow the layer itself; the lock screen's screensaver is in every theme.
+    readonly property bool symbols: Settings.asciiStyle === "always" || (Settings.asciiStyle !== "off" && root.themeId === "phosphor")
+    function symbolsFor(part) {
+        return root.symbols && (Settings.asciiParts || []).indexOf(part) >= 0;
+    }
+    readonly property bool symbolWidgets: root.symbolsFor("widgets")
+    // a corner radius, or none with symbol widgets: every `radius: Theme.r(8)` squares with the layer
+    function r(px) {
+        return root.symbolWidgets ? 0 : px;
+    }
+
     // ---- shape (DESIGN.md §3) --------------------------------------------------
-    readonly property real radius: root.num("shape", "radius")           // windows
-    readonly property real radiusSmall: root.num("shape", "radiusSmall") // small controls
-    readonly property real radiusLarge: root.num("shape", "radiusLarge") // floating panels
+    readonly property real radius: root.r(root.num("shape", "radius"))           // windows
+    readonly property real radiusSmall: root.r(root.num("shape", "radiusSmall")) // small controls
+    readonly property real radiusLarge: root.r(root.num("shape", "radiusLarge")) // floating panels
     readonly property real border: root.num("shape", "border")
-    readonly property real radiusButton: 9
-    readonly property real radiusKeycap: 5
-    readonly property real radiusToast: 12
-    readonly property real radiusBlock: 10 // bordered blocks inside panels (tables)
+    readonly property real radiusButton: root.r(9)
+    readonly property real radiusKeycap: root.r(5)
+    readonly property real radiusToast: root.r(12)
+    readonly property real radiusBlock: root.r(10) // bordered blocks inside panels (tables)
 
     // 4px grid: 4 8 12 16 18 24 32 48
     readonly property int sp4: 4

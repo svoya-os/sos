@@ -3,7 +3,8 @@ import qs.core
 
 // Quiet mono text button (components.css .tbtn): optional 15px icon, 8px gap,
 // Plex Mono 11/16 +0.02em in textDim; `selected` or hover -> text color.
-// Enter/Space activate it when it has keyboard focus.
+// Enter/Space activate it when it has keyboard focus. With symbol widgets a «>» marks the one
+// under the pointer, selected or focused, as in a terminal menu (its place is kept, nothing moves).
 Item {
     id: root
 
@@ -26,6 +27,15 @@ Item {
 
         anchors.verticalCenter: parent.verticalCenter
         spacing: 8
+
+        MText {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: Theme.symbolWidgets
+            height: 16
+            text: root.selected || mouse.containsMouse || root.activeFocus ? ">" : " "
+            size: 11
+            color: Theme.accent
+        }
 
         Icon {
             anchors.verticalCenter: parent.verticalCenter

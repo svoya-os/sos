@@ -17,7 +17,7 @@ Rectangle {
     signal played
 
     implicitHeight: 60
-    radius: 14
+    radius: Theme.r(14)
     color: Theme.isDark ? Theme.surface : Theme.surface2
     border.width: 1
     border.color: Theme.line
@@ -59,7 +59,7 @@ Rectangle {
             visible: root.showPlay
             width: 26
             height: 26
-            radius: 13
+            radius: Theme.r(13)
             color: playMouse.containsMouse ? Theme.surface3 : "transparent"
             border.width: 1
             border.color: Theme.lineStrong

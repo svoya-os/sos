@@ -32,8 +32,7 @@ PanelFrame {
 
     width: 300
     implicitHeight: col.implicitHeight + 16
-    radius: 12
-
+    radius: Theme.r(12)
     onShownChanged: {
         root.pending = -1;
         if (root.shown)

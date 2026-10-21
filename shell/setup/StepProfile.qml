@@ -234,7 +234,7 @@ Item {
         y: grid.visible ? grid.height + 20 : 40
         width: parent.width
         height: 48
-        radius: 14
+        radius: Theme.r(14)
         color: Theme.isDark ? Theme.surface : Theme.surface2
         border.width: 1
         border.color: Theme.line
@@ -308,7 +308,7 @@ Item {
         signal flipped(bool value)
 
         height: 60
-        radius: 14
+        radius: Theme.r(14)
         color: Theme.isDark ? Theme.surface : Theme.surface2
         border.width: 1
         border.color: Theme.line

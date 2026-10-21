@@ -113,7 +113,7 @@ Item {
             visible: root.users.length > 1
             width: tabRow.implicitWidth + 16 * root.s
             height: 22 * root.s
-            radius: 6 * root.s
+            radius: Theme.r(6 * root.s)
             color: tabMouse.containsMouse ? Theme.surface2 : "transparent"
             border.width: 1
             border.color: Theme.line
@@ -442,7 +442,7 @@ Item {
         anchors.bottomMargin: 14 * root.s
         width: 300
         height: a11yCol.implicitHeight + 24
-        radius: 12
+        radius: Theme.r(12)
         color: Theme.surface2
         border.width: 1
         border.color: Theme.lineStrong

@@ -1,8 +1,9 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- SOS ASCII in Firefox: the new tab and the home page with the Phosphor theme (assets/firefox/sos.cfg
-     opens it as file:///usr/share/svoya/shell/assets/newtab/index.html#fg=<accent>). Jackson's eye,
-     drawn by the shell's own engine (components/ascii.js), looks at the pointer; below it the time. -->
+<!-- SOS ASCII in Firefox: the new tab and the home page with the symbol layer (assets/firefox/sos.cfg
+     opens it as file:///usr/share/svoya/shell/assets/newtab/index.html#fg=…&bg=…&noise=…, the theme's
+     colors). Jackson's eye, drawn by the shell's own engine (components/ascii.js), looks at the
+     pointer; below it the time. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -41,8 +42,16 @@
   document.documentElement.lang = ru ? "ru" : "en";
   document.title = ru ? "Новая вкладка" : "New tab";
   document.getElementById("hint").innerHTML = ru ? "<b>Ctrl L</b> — адрес или поиск  ·  SOS" : "<b>Ctrl L</b> — address or search  ·  SOS";
-  var hash = new URLSearchParams(location.hash.slice(1)), fg = hash.get("fg");
-  if (fg && /^[0-9a-fA-F]{6}$/.test(fg)) document.documentElement.style.setProperty("--fg", "#" + fg);
+  // the theme's colors from sos.cfg: #fg=…&bg=…&noise=…[&light=1]
+  var hash = new URLSearchParams(location.hash.slice(1)), root = document.documentElement.style;
+  ["fg", "bg", "noise"].forEach(function (k) {
+    var v = hash.get(k);
+    if (v && /^[0-9a-fA-F]{6}$/.test(v)) root.setProperty("--" + k, "#" + v);
+  });
+  if (hash.get("light") === "1") {
+    root.setProperty("--alive", "#d6246e");
+    document.querySelector('meta[name="color-scheme"]').setAttribute("content", "light");
+  }
 
   var scene = document.getElementById("scene"), pres = scene.querySelectorAll("pre");
   var layerOf = [3, 1, 2];                  // noise, phosphor, the alive pink

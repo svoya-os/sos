@@ -20,7 +20,7 @@ Rectangle {
     signal hovered
 
     implicitHeight: 40
-    radius: 9
+    radius: Theme.r(9)
     color: root.selected ? Theme.surface3 : "transparent"
 
     Item {

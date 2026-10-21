@@ -43,7 +43,7 @@ Item {
             y: 0
             width: modelData.w * root.unit
             height: root.h
-            radius: root.h / 2
+            radius: Theme.r(root.h / 2)
             color: modelData.letter === 1 && root.lit ? root.accent : root.color
 
             Behavior on color {

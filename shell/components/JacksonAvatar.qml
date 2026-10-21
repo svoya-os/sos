@@ -73,14 +73,14 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible: root.hasSprite && root.backing
-        radius: root.size / 4
+        radius: Theme.r(root.size / 4)
         color: Theme.surface3
     }
 
-    // Jackson in symbols (Settings.jacksonRender; "auto" = with the Phosphor theme): the same sprite and
-    // the same frames drawn as characters, his eyes and mouth in the alive pink. Small sizes stay in
-    // pixels: a character needs room.
-    readonly property bool symbols: root.hasSprite && root.size >= 120 && (Settings.jacksonRender === "symbols" || (Settings.jacksonRender === "auto" && Theme.themeId === "phosphor"))
+    // Jackson in symbols (Settings.jacksonRender; "auto" = with the symbol layer, Theme.symbols): the
+    // same sprite and the same frames drawn as characters, his eyes and mouth in the alive pink. Small
+    // sizes stay in pixels: a character needs room.
+    readonly property bool symbols: root.hasSprite && root.size >= 120 && (Settings.jacksonRender === "symbols" || (Settings.jacksonRender === "auto" && Theme.symbols))
 
     PixelSprite {
         id: sprite
@@ -179,7 +179,7 @@ Item {
         z: 100
         width: Math.max(customizeItem.implicitWidth, eyeItem.implicitWidth) + 8
         height: menuCol.implicitHeight + 8
-        radius: 8
+        radius: Theme.r(8)
         color: Theme.surface2
         border.width: 1
         border.color: Theme.lineStrong
@@ -248,7 +248,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: 6
+            radius: Theme.r(6)
             color: item.hovered ? Theme.surface3 : "transparent"
         }
 

@@ -100,14 +100,23 @@ Work towards v0.1 «Первый сигнал».
   theme: after 30 seconds without input the face fades, Jackson turns from where he stands into his
   eye, the eye looks around and follows the pointer, and every few minutes it looks closer (the
   film); a key or a click brings the face back (Control center → Appearance: 30 s, 2 min or off).
-  Jackson can be drawn in symbols instead of pixels (his customizer: Auto, Pixels, Symbols; Auto is
-  symbols with the Phosphor theme; from 120 px up, smaller he stays in pixels). With Phosphor the
+  Jackson can be drawn in symbols instead of pixels (his customizer: Auto, Pixels, Symbols; Auto
+  follows the symbol style; from 120 px up, smaller he stays in pixels). With Phosphor the
   wallpaper is alive: the planet or Jackson's eye (Control center → Appearance), moving only while
   you can see it (an empty workspace or Super+D) and still in game mode or with reduced motion.
   Jackson's right-click menu calls up his eye over everything (also `qs ipc call ascii eye`, `story`,
   `planets`, `saver`). Firefox with Phosphor: the new tab and the home page are Jackson's eye and the
   time, and the browser's frame is near-black with phosphor text and the mono font; other themes
   leave Firefox as it is (a theme change shows when Firefox starts again).
+- The symbol style is one setting with parts (Control center → Appearance → Symbol style): With
+  Phosphor (the default), Always or Off, and what it covers. Buttons and switches: square corners,
+  switches as [x], choices in brackets, sliders as [=====|-----], a terminal's block caret, «[1] 2 3»
+  workspaces in the bar, «+» on the corners of panels. Folders: an icon theme where folders are
+  drawn with box-drawing characters and a pink mark ([ ~ ] home, [ ↓ ] downloads, [doc], [img],
+  [mp3]…), over Papirus. The cursor: an arrow with a phosphor edge, pink over links, the [|] [/] [-]
+  [\] spinner while something loads. And Firefox. Jackson in symbols and the live wallpaper follow
+  the style. The lock screensaver also wakes on a decisive move of the mouse; a slow one only gets
+  looked at.
 - SOS downloads like any other Linux: the newest test build is one file,
   [sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)
   (about 1.7 GB), on the [test build](https://github.com/svoya-os/sos/releases/tag/test) page of

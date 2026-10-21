@@ -191,6 +191,32 @@ class ApplyTest(SandboxTest):
         self.assertEqual(kv, '#c\ncolor_theme = "svoya"\ntruecolor = true\n')
 
 
+class SymbolsTest(SandboxTest):
+    """The SOS ASCII symbol layer (the shell's shell.json): folders in symbols with Phosphor, the
+    icon theme `sos theme apply` sets agrees with the shell's."""
+
+    def icons_set(self, theme: str, shell: dict | None, installed=("Papirus-Dark", "Papirus-Light", "SOS-Symbols-Dark")):
+        if shell is not None:
+            (self.sb.home / ".config/svoya").mkdir(parents=True, exist_ok=True)
+            (self.sb.home / ".config/svoya/shell.json").write_text(json.dumps(shell))
+        for name in installed:
+            (self.sb.root / "usr/share/icons" / name).mkdir(parents=True, exist_ok=True)
+        r = FakeRunner(available={"gsettings"})
+        A.apply_theme(self.sb.ctx(r, WAYLAND_DISPLAY="wayland-1"), theme, cfg={"theme": {}, "location": {}}, force=True)
+        return [c[-1] for c in r.calls if c[:4] == ["gsettings", "set", "org.gnome.desktop.interface", "icon-theme"]]
+
+    def test_phosphor_gets_folders_in_symbols(self):
+        self.assertEqual(self.icons_set("phosphor", None), ["SOS-Symbols-Dark"])          # the default: auto
+        self.assertEqual(self.icons_set("graphite", None), ["Papirus-Dark"])
+
+    def test_the_shell_settings_decide(self):
+        self.assertEqual(self.icons_set("phosphor", {"asciiStyle": "off"}), ["Papirus-Dark"])
+        self.assertEqual(self.icons_set("phosphor", {"asciiParts": ["widgets", "cursor"]}), ["Papirus-Dark"])
+        self.assertEqual(self.icons_set("graphite", {"asciiStyle": "always"}), ["SOS-Symbols-Dark"])
+        # paper with "always": the light symbol theme only when it is installed
+        self.assertEqual(self.icons_set("paper", {"asciiStyle": "always"}), ["Papirus-Light"])
+
+
 class AutoTest(SandboxTest):
     def test_auto_by_sun_in_tallinn(self):
         cfg = {"theme": {}, "location": {"latitude": 59.437, "longitude": 24.745}}

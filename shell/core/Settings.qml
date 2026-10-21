@@ -44,9 +44,12 @@ Singleton {
     property alias recentEmoji: adapter.recentEmoji       // the emoji picker's recent ones, newest first
     property alias gamePowerBefore: adapter.gamePowerBefore // the power profile game mode replaced ("" = none)
     property alias voicePausesMedia: adapter.voicePausesMedia // music pauses while you talk to Jackson
-    // SOS ASCII (components/AsciiView.qml): Jackson drawn in "pixels" or "symbols" ("auto" = symbols
-    // with the Phosphor theme), the Phosphor wallpaper's scene ("planets", "eye", "off") and the
-    // lock screen's screensaver (seconds without input; 0 = never)
+    // SOS ASCII, the symbol layer (Theme.symbols): "auto" (with the Phosphor theme), "always" or
+    // "off", and the parts it covers ("widgets", "folders", "cursor", "browser"); Jackson drawn in
+    // "pixels" or "symbols" ("auto" = with the layer), the wallpaper's scene ("planets", "eye",
+    // "off") and the lock screen's screensaver (seconds without input; 0 = never, every theme)
+    property alias asciiStyle: adapter.asciiStyle
+    property alias asciiParts: adapter.asciiParts
     property alias jacksonRender: adapter.jacksonRender
     property alias asciiScene: adapter.asciiScene
     property alias lockSaverSeconds: adapter.lockSaverSeconds
@@ -90,6 +93,8 @@ Singleton {
             property var recentEmoji: []
             property string gamePowerBefore: ""
             property bool voicePausesMedia: true
+            property string asciiStyle: "auto"
+            property var asciiParts: ["widgets", "folders", "cursor", "browser"]
             property string jacksonRender: "auto"
             property string asciiScene: "planets"
             property int lockSaverSeconds: 30

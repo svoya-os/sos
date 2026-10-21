@@ -105,10 +105,11 @@ function check(what, ok) { checked++; if (!ok) { failed++; console.log("FAIL " +
 }
 
 // the Firefox autoconfig (assets/firefox/sos.cfg): the SOS page and frame only with Phosphor
-function runCfg(themeJson) {
+function runCfg(themeJson, shellJson) {
     const prefs = {}, sheets = [];
     let newTab = null;
     const files = { "/home/u/.local/state/svoya/theme.json": themeJson };
+    if (shellJson !== undefined) files["/home/u/.config/svoya/shell.json"] = shellJson;
     const fake = {
         "@mozilla.org/process/environment;1": { get: k => ({ HOME: "/home/u" })[k] || "" },
         "@mozilla.org/file/local;1": { initWithPath(p) { this.p = p; }, exists() { return this.p in files; } },
@@ -128,9 +129,15 @@ function runCfg(themeJson) {
     return { prefs, sheets, newTab, errors };
 }
 {
-    const ph = runCfg(JSON.stringify({ id: "phosphor", accent: "#ff3cffd0", wall: "#ff0a0a0a", text: "#ffceffef", mono: "IBM Plex Mono" }));
+    const phosphor = JSON.stringify({ id: "phosphor", mode: "dark", accent: "#ff3cffd0", wall: "#ff0a0a0a", text: "#ffceffef", textFaint: "#ff5a5a5a", mono: "IBM Plex Mono" });
+    const ph = runCfg(phosphor);
     check("phosphor: no errors in sos.cfg " + ph.errors.join(" "), ph.errors.length === 0);
-    check("phosphor: the new tab is the SOS page", ph.newTab === "file:///usr/share/svoya/shell/assets/newtab/index.html#fg=3cffd0" && ph.prefs["browser.startup.homepage"] === ph.newTab);
+    check("phosphor: the new tab is the SOS page", ph.newTab === "file:///usr/share/svoya/shell/assets/newtab/index.html#fg=3cffd0&bg=0a0a0a&noise=5a5a5a" && ph.prefs["browser.startup.homepage"] === ph.newTab);
+    check("phosphor: Firefox's dark theme underneath", ph.prefs["extensions.activeThemeID"] === "firefox-compact-dark@mozilla.org");
+    check("the symbol style off: Firefox as it is", runCfg(phosphor, JSON.stringify({ asciiStyle: "off" })).newTab === null);
+    check("without the browser part: Firefox as it is", runCfg(phosphor, JSON.stringify({ asciiParts: ["widgets"] })).sheets.length === 0);
+    const paper = runCfg(JSON.stringify({ id: "paper", mode: "light", accent: "#ff0b6e5a", wall: "#fff2efe8" }), JSON.stringify({ asciiStyle: "always" }));
+    check("always + paper: a light page, no dark Firefox theme", /&light=1$/.test(paper.newTab || "") && !("extensions.activeThemeID" in paper.prefs));
     check("phosphor: the frame is themed", ph.sheets.length === 1 && ph.sheets[0].includes("--toolbar-bgcolor") && ph.sheets[0].includes("rgba(10, 10, 10, 1.000)") && ph.sheets[0].includes('"IBM Plex Mono"'));
     const gr = runCfg(JSON.stringify({ id: "graphite", accent: "#ffffb547" }));
     check("graphite: Firefox as it is", gr.newTab === null && Object.keys(gr.prefs).length === 0 && gr.sheets.length === 0 && gr.errors.length === 0);

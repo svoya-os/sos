@@ -12,7 +12,7 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + 18
     implicitHeight: 22
-    radius: height / 2
+    radius: Theme.r(height / 2)
     color: "transparent"
     border.width: 1
     border.color: Theme.lineStrong

@@ -132,7 +132,7 @@ Item {
 
                         width: chipRow.implicitWidth + 24
                         height: 32
-                        radius: 9
+                        radius: Theme.r(9)
                         color: chip.chosen ? Theme.surface3 : (chipMouse.containsMouse ? Theme.surface3 : (Theme.isDark ? Theme.surface : Theme.surface2))
                         border.width: 1
                         border.color: chip.chosen ? Theme.selected : Theme.line
@@ -209,7 +209,7 @@ Item {
                 Rectangle {
                     width: 360
                     height: 40
-                    radius: 9
+                    radius: Theme.r(9)
                     color: Theme.surface2
                     border.width: 1
                     border.color: tryField.input.activeFocus ? Theme.selected : Theme.lineStrong
