@@ -3,7 +3,7 @@ pragma Singleton
 // Which overlay is open, on which screen, plus OSD requests. Only one modal
 // surface is open at a time (Overlay.qml hosts them all in one layer window).
 //
-// modal: "" | jackson | launcher | cc | sos | session | clipboard | cheatsheet | about | shot | customizer
+// modal: "" | jackson | launcher | cc | sos | session | clipboard | cheatsheet | about | shot | customizer | ascii
 
 import QtQuick
 import Quickshell
@@ -17,6 +17,7 @@ Singleton {
     property string launcherQuery: ""
     property string shotPath: ""         // screenshot waiting for an action
     property string ccPage: "main"       // the control center page to open: main | look
+    property string asciiScene: "saver"  // the ascii modal (SOS ASCII, called up): saver | eye | story | planets
     property bool locked: false          // set by the lock screen
 
     readonly property bool open: root.modal.length > 0
@@ -37,6 +38,11 @@ Singleton {
             root.hide();
         else
             root.show(name, screen);
+    }
+
+    function showAscii(scene) {
+        root.asciiScene = ["saver", "eye", "story", "planets"].indexOf(scene) >= 0 ? scene : "saver";
+        root.show("ascii");
     }
 
     function openLauncher(mode, query) {

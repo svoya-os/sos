@@ -646,6 +646,19 @@ PanelFrame {
                     }
                 }
 
+                // pixels or symbols (SOS ASCII; "auto" = symbols with the Phosphor theme): a display
+                // choice, saved at once, not part of the look
+                Field {
+                    label: Strings.cuRender
+
+                    Segmented {
+                        width: parent.width
+                        current: Settings.jacksonRender
+                        options: ["auto", "pixels", "symbols"].map(k => ({ "id": k, "label": Strings.cuRenders[k] }))
+                        onPicked: key => Settings.jacksonRender = key
+                    }
+                }
+
                 Field {
                     label: Strings.cuDetails
 

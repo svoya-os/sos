@@ -170,6 +170,18 @@ class PrepareScriptTests(unittest.TestCase):
                 self.assertTrue((files / rel).exists(), rel)
             self.assertTrue((files / "usr/share/svoya/sounds").is_symlink())
 
+    def test_shell_ships_the_ascii_page_and_firefox_autoconfig(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            files = self.prepare("svoya-shell", tmp)
+            shell = files / "usr/share/svoya/shell"
+            for rel in ("components/ascii.js", "components/AsciiView.qml", "assets/newtab/index.html"):
+                self.assertTrue((shell / rel).is_file(), rel)
+            self.assertFalse((shell / "tools").exists())               # the node tests stay in the tree
+            cfg = files / "usr/lib/firefox/sos.cfg"
+            self.assertTrue(cfg.read_text().startswith("//"))         # Firefox skips the first line
+            self.assertIn('"sos.cfg"', (files / "usr/lib/firefox/defaults/pref/sos-autoconfig.js").read_text())
+            self.assertIn("/usr/share/svoya/shell/assets/newtab/index.html", cfg.read_text())
+
     def test_installer_branding_images(self):
         with tempfile.TemporaryDirectory() as tmp:
             files = self.prepare("svoya-installer", tmp)

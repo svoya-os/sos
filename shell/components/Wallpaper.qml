@@ -4,7 +4,9 @@ import qs.core
 // The SOS wallpaper, drawn live from the theme (design/mockups/desktop.css):
 // gradient + soft glows, the horizon line with one Morse «СОС» burst, grain,
 // and the colophon «SOS 26.10 · первый сигнал». Paper adds the 22px dot grid,
-// Phosphor adds scanlines. A configured image (Settings.wallpaper) replaces it.
+// Phosphor adds scanlines and a live ASCII scene (Settings.asciiScene: the planet or Jackson's eye,
+// in place of the burst; it moves only while `live`, the desktop's call). A configured image
+// (Settings.wallpaper) replaces it.
 // Composition is defined on a 1440×900 canvas and scaled with the screen.
 Item {
     id: root
@@ -17,6 +19,11 @@ Item {
     readonly property color glowTint: root.ambient ? Theme.accent : Theme.text
     readonly property real glowGain: root.ambient ? 1 : 0.4
     property string image: Settings.wallpaper
+    // the desktop sets it while the wallpaper can be seen (an empty workspace, Super+D); the lock
+    // screen and the greeter leave it off and get no scene at all
+    property bool live: false
+    property bool ascii: false
+    readonly property string scene: root.ascii && root.recipe === "phosphor" && !root.useImage && ["planets", "eye"].indexOf(Settings.asciiScene) >= 0 ? Settings.asciiScene : ""
 
     readonly property real s: Math.max(1, Math.min(1.6, Math.max(width / 1440, height / 900)))
     readonly property string recipe: {
@@ -98,8 +105,20 @@ Item {
 
     SignalBurst {
         anchors.fill: parent
-        visible: root.showSignal
+        visible: root.showSignal && root.scene.length === 0
         s: root.s
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: root.scene.length > 0
+        sourceComponent: AsciiView {
+            scene: root.scene
+            rows: 48
+            fps: 10
+            running: root.live && !Theme.reduceMotion && !Hypr.gaming
+            opacity: 0.6
+        }
     }
 
     // Grain (dark: faint symmetric speckle that also dithers the glows;

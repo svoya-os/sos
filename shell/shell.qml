@@ -187,6 +187,24 @@ ShellRoot {
         }
     }
 
+    // SOS ASCII over everything: qs ipc call ascii eye | story | planets | saver
+    IpcHandler {
+        target: "ascii"
+
+        function saver(): void {
+            Ui.showAscii("saver");
+        }
+        function eye(): void {
+            Ui.showAscii("eye");
+        }
+        function story(): void {
+            Ui.showAscii("story");
+        }
+        function planets(): void {
+            Ui.showAscii("planets");
+        }
+    }
+
     IpcHandler {
         target: "clipboard"
 

@@ -6,7 +6,7 @@ import qs.components
 
 // One layer-shell window hosts every modal surface (Jackson, launcher, control
 // center, СОС menu, session, clipboard, shortcuts, about, screenshot actions,
-// Jackson's customizer, the overview of windows, emoji),
+// Jackson's customizer, the overview of windows, emoji, SOS ASCII called up),
 // so only one can be open and keyboard focus is exclusive while it is.
 // Transparent and matte: no dimming, no blur. A click outside closes; each
 // panel handles its own keys (Esc closes). The window lives on Ui.screen and
@@ -82,6 +82,41 @@ PanelWindow {
     Item {
         focus: true
         Keys.onEscapePressed: Ui.hide()
+    }
+
+    // SOS ASCII called up (Jackson's menu, `qs ipc call ascii …`): his eye, the film, the planet or the
+    // whole screensaver over everything; any key or click puts it away
+    Rectangle {
+        anchors.fill: parent
+        visible: Ui.modal === "ascii"
+        color: "#0a0a0a"
+
+        Loader {
+            anchors.fill: parent
+            active: parent.visible
+            sourceComponent: AsciiView {
+                id: called
+
+                focus: true
+                scene: Ui.asciiScene
+                running: !Theme.reduceMotion
+                from: Qt.rect(width / 2 - 64, height / 2, 128, 128)
+                fg: Theme.isDark ? Theme.accent : "#3cffd0"
+                noise: "#5a5a5a"
+                alive: "#ff2e88"
+                onFinished: Ui.hide()
+                Keys.onPressed: event => {
+                    Ui.hide();
+                    event.accepted = true;
+                }
+                Component.onCompleted: called.forceActiveFocus()
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: Ui.hide()
+        }
     }
 
     JacksonPanel {

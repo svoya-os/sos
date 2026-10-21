@@ -14,7 +14,6 @@ from __future__ import annotations
 import bisect
 import datetime as dt
 import math
-import random
 
 from .engine import (ACCENT, ASPECT, BLOCKS, FG, GLYPHS, NOISE, RAMP, Canvas, Effect, clamp, ease, ease_in,
                      ease_out, rnd)
@@ -25,37 +24,13 @@ STORY_LINE = "> LOOK CLOSER"
 FLASH_GAP = 0.5            # two flashes at least this far apart: never more than 3 a second
 ZOOM_MAX = 22.0
 
-# cat-Jackson for the story; "o" are his (pink) eyes, the second frame waves
-CAT = (
-    ["  ▄▀▄     ▄▀▄    ",
-     "  █ ▀▀▀▀▀▀▀ █    ",
-     "  █  o   o  █    ",
-     "  █    ▾    █    ",
-     "   ▀▄▄▄▄▄▄▄▀     ",
-     "    ▐▌   ▐▌      "],
-    ["  ▄▀▄     ▄▀▄  ▄▄",
-     "  █ ▀▀▀▀▀▀▀ █ ▐█▌",
-     "  █  o   o  █▄▀  ",
-     "  █    ▾    █    ",
-     "   ▀▄▄▄▄▄▄▄▀     ",
-     "    ▐▌   ▐▌      "],
-)
+FINE = " .,:;-~=+*xoO#%@"      # 16 densities: the eye's shading
+STROKE = "-\\|/"                   # a line at 0°, 45° (down-right), 90°, 135°
 
 
-BIG = {"█": ("██", "██"), "▀": ("██", "  "), "▄": ("  ", "██"), "▌": ("█ ", "█ "), "▐": (" █", " █"),
-       "o": ("oo", "oo"), "▾": ("▀▀", "  ")}
-
-
-def scale2(art: list[str]) -> list[str]:
-    """The cat twice as big for a big terminal: every cell becomes 2×2, blocks stay blocks."""
-    out = []
-    for line in art:
-        top, bot = "", ""
-        for c in line:
-            a, b = BIG.get(c, (c + c if c != " " else "  ", "  "))
-            top, bot = top + a, bot + b
-        out += [top, bot]
-    return out
+def stroke(theta: float) -> str:
+    """The character that draws a short line in direction theta (radians, y down)."""
+    return STROKE[int((theta % math.pi + math.pi / 8) / (math.pi / 4)) % 4]
 
 
 def is_night(tz: str = "Europe/Tallinn", now: dt.datetime | None = None) -> bool:
@@ -71,7 +46,7 @@ class Eye(Effect):
     wants_mouse = True
 
     def __init__(self, state: str = "idle", hud: bool = True, seed: int = 7, night: bool | None = None,
-                 tz: str = "Europe/Tallinn", story: bool = False, clock=None):
+                 tz: str = "Europe/Tallinn", story: bool = False, clock=None, look: dict | None = None):
         self.mode = state if state in ("idle", "thinking", "listening") else "idle"
         self.recurring = state if state in ("done", "error") else None
         self.hud = hud and not story
@@ -82,26 +57,30 @@ class Eye(Effect):
         self.night = is_night(tz) if night is None else night
         self.night_fixed = night is not None
         self.clock = clock
+        self.look = look                                 # Jackson's look (avatar.json) for the story
+        self._jcache: dict = {}
         self.events: list[tuple[str, float]] = []        # ("done"|"error"|"blink", t)
         self.mouse: tuple[float, float, float] | None = None
         self.g_cur = (0.0, 0.0)
         self.last_t = None
-        rng = random.Random(seed)
-        self.blinks, t = [], 1.5
+        # schedules from the hash, not from random.Random: the JavaScript twin (shell/ascii/ascii.js)
+        # has to draw the same frames
+        self.blinks, t, k = [], 1.5, 0
         while t < 3600:
             self.blinks.append(t)
-            t += rng.uniform(4.0, 7.0)
-        self.saccades, t, prev = [(0.0, (0.0, 0.0))], 0.8, (0.0, 0.0)
+            t += 4.0 + 3.0 * rnd(k, seed, 31)
+            k += 1
+        self.saccades, t, k = [(0.0, (0.0, 0.0))], 0.8, 0
         while t < 3600:
-            if rng.random() < 0.35:
-                tgt = (rng.uniform(-0.15, 0.15), rng.uniform(-0.15, 0.15))
+            if rnd(k, seed, 32) < 0.35:
+                tgt = (-0.15 + 0.3 * rnd(k, seed, 33), -0.15 + 0.3 * rnd(k, seed, 34))
             else:
-                ang = rng.uniform(0, 2 * math.pi)
-                rad = rng.uniform(0.45, 1.0)
+                ang = 2 * math.pi * rnd(k, seed, 35)
+                rad = 0.45 + 0.55 * rnd(k, seed, 36)
                 tgt = (math.cos(ang) * rad, math.sin(ang) * rad * 0.8)
             self.saccades.append((t, tgt))
-            prev = tgt
-            t += rng.uniform(0.9, 3.2)
+            t += 0.9 + 2.3 * rnd(k, seed, 37)
+            k += 1
         self.saccade_t = [s[0] for s in self.saccades]
         self.w = self.h = 0
 
@@ -127,7 +106,7 @@ class Eye(Effect):
                 if v < 0.02:
                     self.bg_ch[i], self.bg_co[i] = ("·" if v < 0.013 else "."), NOISE
         # the sclera's grain is fixed to the cells: the lids only decide where it shows
-        self.grain = [(":" if v < 0.025 else ".") if v < 0.09 else None for v in (rnd(k, 7, 2) for k in range(n))]
+        self.grain = [rnd(k, 7, 2) for k in range(n)]
         self.scratch = Canvas(w, h)
 
     # ---- time ------------------------------------------------------------------------------------
@@ -200,7 +179,7 @@ class Eye(Effect):
 
     # ---- the film ----------------------------------------------------------------------------------
     def story_at(self, t: float) -> dict:
-        s = {"open": 1.0, "g": (0.0, 0.0), "z": 1.0, "inside": 0.0, "cat": 0.0, "paw": 0, "text": 0}
+        s = {"open": 1.0, "g": (0.0, 0.0), "z": 1.0, "inside": 0.0, "cat": 0.0, "pose": "idle", "text": 0}
         gx, gy = self.gmax
         s["open"] = ease((t - 0.3) / 1.0)
         for tb in (3.1, 12.5):
@@ -221,7 +200,13 @@ class Eye(Effect):
             s["z"] = ZOOM_MAX
             s["inside"] = min(ease((t - 6.0) / 0.4), 1 - ease((t - 9.6) / 0.4))
             s["cat"] = min(ease((t - 6.4) / 0.6), 1 - ease((t - 9.3) / 0.5))
-            s["paw"] = 1 if 7.1 <= t < 8.9 and int((t - 7.1) / 0.3) % 2 == 0 else 0
+            # he appears, blinks, says hi, is pleased
+            if 7.1 <= t < 7.35:
+                s["pose"] = "blink"
+            elif 7.5 <= t < 8.7:
+                s["pose"] = "talk1" if int((t - 7.5) / 0.14) % 2 == 0 else "talk2"
+            elif t >= 8.7:
+                s["pose"] = "happy"
         elif 10.0 <= t < 12.0:
             s["z"] = math.exp(math.log(ZOOM_MAX) * (1 - ease_out((t - 10.0) / 2.0)))
         if t < 1.6:
@@ -279,6 +264,8 @@ class Eye(Effect):
 
     def draw_eye(self, cv: Canvas, t: float, frame: int, op: float, g: tuple[float, float], rp: float,
                  z: float, thinking: bool) -> None:
+        """All characters, no blocks: a shaded eyeball, an iris of strokes that point at the pupil,
+        lids and lashes drawn with / \\ _ - | along their slope."""
         w, h = cv.w, cv.h
         ch, co = cv.ch, cv.co
         sin, sqrt, atan2 = math.sin, math.sqrt, math.atan2
@@ -288,10 +275,8 @@ class Eye(Effect):
         icx, icy = cx + g[0] * z, cy + g[1] * z
         breath = 1.0 + 0.07 * sin(t * 2 * math.pi / 6.4)
         narrow = self.narrow
-        # lids: per column the upper and lower edge (in column units, y down)
         up, lo = {}, {}
-        i0, i1 = max(0, int(cx - a)), min(w, int(cx + a) + 1)
-        for i in range(i0, i1):
+        for i in range(max(0, int(cx - a)), min(w, int(cx + a) + 1)):
             u = (i + 0.5 - cx) / a
             if u * u >= 1:
                 continue
@@ -299,21 +284,29 @@ class Eye(Effect):
             yc = cy + b * 0.30 * sh
             up[i] = yc + (cy - b * sh - yc) * op
             lo[i] = yc + (cy + b * 0.88 * sh - yc) * op
-        # sclera: sparse grey grain inside the lids
+        # the eyeball: grey shading, darker toward the lids and the corners
         grain = self.grain
         for i, yu in up.items():
             yl = lo[i]
+            span = yl - yu
+            if span <= 0.5:
+                continue
+            u = (i + 0.5 - cx) / a
+            side = (1 - u * u) ** 0.5
             for j in range(max(0, int(yu / ASPECT)), min(h - 1, int(yl / ASPECT)) + 1):
+                y = (j + 0.5) * ASPECT
+                if not yu < y < yl:
+                    continue
                 k = j * w + i
-                gr = grain[k]
-                if gr and yu < (j + 0.5) * ASPECT < yl:
-                    ch[k], co[k] = gr, NOISE
-        # iris, pupil, highlight
+                v = (0.10 + 0.24 * side * sin(math.pi * (y - yu) / span) ** 0.7) * breath + (grain[k] - 0.5) * 0.14
+                if v > 0.2:
+                    ch[k], co[k] = FINE[min(5, int(v * 15.999))], NOISE
+        # the iris: strokes along its fibers, a ring of knots, a dark rim; the pupil and its pink edge
         rot = t * 0.9 if thinking else 0.0
-        fa, fb = (17, 5) if narrow else (29, 7)
-        rc = rp / R + 0.13 if R else 0.5
-        ring = 1.7 * max(1.0, z ** 0.5)
-        hx, hy, hr = icx - 0.30 * R, icy - 0.34 * R, max(1.1, 0.13 * R)
+        fa, fb = (19, 5) if narrow else (34, 7)
+        rc = rp / R + 0.16 if R else 0.5
+        ring = 1.6 * max(1.0, z ** 0.5)
+        hx, hy, hr = icx - 0.30 * R, icy - 0.34 * R, max(1.3, 0.15 * R)
         ia, ib = max(0, int(icx - R)), min(w, int(icx + R) + 2)
         ja, jb = max(0, int((icy - R) / ASPECT)), min(h, int((icy + R) / ASPECT) + 2)
         R2 = R * R
@@ -331,63 +324,86 @@ class Eye(Effect):
                 if d2 > R2:
                     continue
                 k = base + i
-                d = sqrt(d2)
                 hd = sqrt((i + 0.5 - hx) ** 2 + (y - hy) ** 2)
                 if hd < hr:
-                    ch[k], co[k] = "█", FG
+                    ch[k], co[k] = ("@" if hd < hr * 0.45 else "O" if hd < hr * 0.75 else "o"), FG
                     continue
-                if hd < hr * 1.6:
-                    ch[k], co[k] = "▓", FG
-                    continue
+                d = sqrt(d2)
                 if d < rp:
                     ch[k], co[k] = " ", 0
                     continue
                 if d < rp + ring:
-                    ch[k], co[k] = BLOCKS[3 - int(2.999 * (d - rp) / ring)], ACCENT
+                    q = (d - rp) / ring
+                    ch[k], co[k] = ("#" if q < 0.4 else "*" if q < 0.75 else "+"), ACCENT
                     continue
                 rho = d / R
-                if rho > 0.94:
-                    ch[k], co[k] = (":" if rnd(i, j, frame // 4) < 0.8 else "."), FG
+                if rho > 0.9:
+                    v = rnd(i, j, frame // 3)
+                    ch[k], co[k] = (":" if v < 0.4 else "." if v < 0.75 else " "), FG
                     continue
                 th = atan2(dy, dx)
-                f1 = 0.5 + 0.5 * sin(th * fa + 1.4 * sin(th * fb + rho * 4.0) + rot)
-                f2 = 0.5 + 0.5 * sin(th * 47 - rho * 7.0 - rot * 0.5) if not narrow else 0.5
-                inten = (0.22 + 0.72 * (0.8 * f1 + 0.2 * f2)) * (1.0 - 0.6 * clamp((rho - 0.70) / 0.25))
-                inten += 0.22 * math.exp(-((rho - rc) / 0.07) ** 2)
-                ch[k], co[k] = RAMP[int(clamp(inten * breath) * 9.999)], FG
+                f = 0.5 + 0.5 * sin(th * fa + 1.5 * sin(th * fb + rho * 4.0) + rot)
+                f2 = 0.5 + 0.5 * sin(th * 53 - rho * 9.0 - rot * 0.6) if not narrow else 0.5
+                fib = (0.72 * f + 0.28 * f2) * breath * (1.0 - 0.35 * clamp((rho - 0.65) / 0.25))
+                if abs(rho - rc) < 0.05:
+                    ch[k], co[k] = ("o" if fib > 0.45 else "*"), FG
+                elif fib > 0.6:
+                    ch[k], co[k] = stroke(th), FG
+                elif fib > 0.36:
+                    ch[k], co[k] = FINE[3 + int((fib - 0.36) / 0.24 * 4.99)], FG
+                elif fib > 0.24:
+                    ch[k], co[k] = ".", FG
+                else:
+                    ch[k], co[k] = " ", 0
+        if op > 0.5:
+            cv.put(int(icx + 0.40 * R), int((icy + 0.30 * R) / ASPECT), ".", FG)       # a second, small light
         if thinking:
             self.thinking_ring(cv, t, icx, icy, R, up, lo)
-        # lids on top: the upper lid is a thick half-block line with lashes, the lower one thin
+        # lids, a crease above, lashes; the edges shiver a little
         lash = not narrow and z < 1.5
-        th_up = 1.8 * z ** 0.5
+        crease = not narrow and z < 1.5 and op > 0.3
         for i, yu in up.items():
             u = (i + 0.5 - cx) / a
-            taper = 0.45 + 0.55 * (1 - u * u)
-            self.halfline(cv, i, yu - th_up * taper, yu, FG)
-            self.halfline(cv, i, lo[i], lo[i] + 1.0, FG)
-            if lash and i % 3 == 0 and 0.18 < abs(u) < 0.9:
-                top = int((yu - th_up * taper) / ASPECT)
-                c = "\\" if u < -0.3 else "/" if u > 0.3 else "|"
-                step = -1 if c == "\\" else 1 if c == "/" else 0
-                for n in range(1, 3 if abs(u) < 0.45 else 2):
-                    cv.put(i + step * (n - 1), top - n, c, FG)
-            # the edges shiver a little
-            if rnd(i, frame, 5) < 0.18:
-                jj = int((yu - th_up * taper) / ASPECT) - 1 - int(rnd(i, frame, 6) * 2)
+            yl = lo[i]
+            su = (up.get(i + 1, yu) - up.get(i - 1, yu)) / (2 * ASPECT)
+            sl = (lo.get(i + 1, yl) - lo.get(i - 1, yl)) / (2 * ASPECT)
+            corner = ("<" if u < 0 else ">") if abs(u) > 0.965 else None
+            self.lidmark(cv, i, yu, su, "upper", corner, ACCENT if corner == "<" else FG)
+            if op > 0.08 and not corner:
+                self.lidmark(cv, i, yl, sl, "lower")
+            if crease and abs(u) < 0.7:
+                yk = yu - (b * 0.20 * (1 - u * u) ** 0.5 + 2.4) * (0.6 + 0.4 * op)
+                self.lidmark(cv, i, yk, su * 0.9, "crease", None, NOISE)
+            if lash and i % 3 == 0 and 0.25 < abs(u) < 0.92:
+                n = 1 + (0.40 < abs(u) < 0.85)
+                top = int(yu / ASPECT) - 1
+                lean = -1 if u < -0.22 else 1 if u > 0.22 else 0
+                c = "\\" if lean < 0 else "/" if lean > 0 else "|"
+                for m in range(n):
+                    cv.put(i + lean * m, top - m, c, FG)
+            if rnd(i, frame, 5) < 0.08:
+                jj = int(yu / ASPECT) - 2 - int(rnd(i, frame, 6) * 3)
                 if 0 <= jj < h and ch[jj * w + i] == " ":
                     ch[jj * w + i], co[jj * w + i] = ".", NOISE
 
     @staticmethod
-    def halfline(cv: Canvas, i: int, y0: float, y1: float, slot: int) -> None:
-        """Fills column i from y0 to y1 (column units) at half-row resolution: ▀ ▄ █."""
-        h0, h1 = int(y0 / ASPECT * 2), int(y1 / ASPECT * 2)
-        if h1 < h0:
-            h0, h1 = h1, h0
-        cells: dict[int, int] = {}
-        for hh in range(h0, h1 + 1):
-            cells[hh // 2] = cells.get(hh // 2, 0) | (1 if hh % 2 == 0 else 2)
-        for j, m in cells.items():
-            cv.put(i, j, "▀" if m == 1 else "▄" if m == 2 else "█", slot)
+    def lidmark(cv: Canvas, i: int, y: float, slope: float, kind: str, corner: str | None = None,
+                slot: int = FG) -> None:
+        """One character of a lid line at height y (column units), chosen by the slope (rows per
+        column) and where in its cell the line passes: _ - = for flat, / \\ for slanted, | steep."""
+        j = int(y / ASPECT)
+        frac = y / ASPECT - j
+        if corner:
+            c = corner
+        elif abs(slope) >= 1.4:
+            c = "|"
+        elif abs(slope) >= 0.32:
+            c = "/" if slope < 0 else "\\"
+        elif kind == "upper":
+            c = "_" if frac > 0.62 else "=" if frac > 0.3 else '"'
+        else:
+            c = "_" if frac > 0.62 else "-" if frac > 0.3 else "`"
+        cv.put(i, j, c, slot)
 
     def thinking_ring(self, cv: Canvas, t: float, icx: float, icy: float, R: float, up: dict, lo: dict) -> None:
         r = R + 2.0
@@ -408,13 +424,15 @@ class Eye(Effect):
             cv.put(i, int(y / ASPECT), c, FG)
 
     def flash(self, cv: Canvas, g: tuple[float, float], rp: float, amount: float) -> None:
-        """«Done»: the pupil fills with pink and fades (one flash, rate-limited by trigger())."""
+        """«Done»: the pupil fills with pink characters and fades (rate-limited by trigger())."""
         icx, icy = self.cx + g[0], self.cy + g[1]
-        c = BLOCKS[int(clamp(amount) * 4.999)]
         for j in range(max(0, int((icy - rp) / ASPECT)), min(cv.h, int((icy + rp) / ASPECT) + 2)):
             for i in range(max(0, int(icx - rp)), min(cv.w, int(icx + rp) + 2)):
-                if (i + 0.5 - icx) ** 2 + ((j + 0.5) * ASPECT - icy) ** 2 < rp * rp and c != " ":
-                    cv.put(i, j, c, ACCENT)
+                d = math.hypot(i + 0.5 - icx, (j + 0.5) * ASPECT - icy)
+                if d < rp:
+                    c = FINE[int(clamp(amount * (1.0 - 0.55 * d / rp)) * 15.999)]
+                    if c != " ":
+                        cv.put(i, j, c, ACCENT)
 
     def draw_error(self, cv: Canvas, t: float, frame: int, dt_: float, op: float, g: tuple[float, float],
                    rp: float) -> None:
@@ -457,7 +475,7 @@ class Eye(Effect):
             cv.put(nx, ny, c, slot)
 
     def draw_inside(self, cv: Canvas, t: float, s: dict) -> None:
-        """Inside the pupil: stars flying past and cat-Jackson waving."""
+        """Inside the pupil: stars flying past and Jackson himself (his look, in symbols) saying hi."""
         w, h = cv.w, cv.h
         f = 0.32 * min(w, h * ASPECT)
         cx, cy = w / 2.0, h * ASPECT / 2.0
@@ -473,13 +491,24 @@ class Eye(Effect):
                 c = "*" if z < 0.25 else "+" if z < 0.5 else "·" if z < 0.8 else "."
                 cv.put(i, j, c, FG if z < 0.35 else NOISE)
         if s["cat"] > 0:
-            art = CAT[s["paw"]] if w < 110 or h < 30 else scale2(CAT[s["paw"]])
-            x0 = int(cx - len(art[0]) / 2)
-            y0 = int(cy / ASPECT - len(art) / 2)
-            for dy, line in enumerate(art):
-                for dx, c in enumerate(line):
-                    if c != " " and rnd(x0 + dx, y0 + dy, 9) < s["cat"]:
-                        cv.put(x0 + dx, y0 + dy, "●" if c == "o" else c, ACCENT if c == "o" else FG)
+            cols = max(16, min(int(w * 0.36), int(h * ASPECT * 0.72)) // 2 * 2)
+            body = self.jackson(cols, s["pose"])
+            if not body:
+                return
+            x0, y0 = int(cx - cols / 2), int(cy / ASPECT - cols / 4)
+            for dx, dy, c, slot in body:
+                if rnd(x0 + dx, y0 + dy, 9) < s["cat"]:
+                    cv.put(x0 + dx, y0 + dy, c, slot)
+
+    def jackson(self, cols: int, pose: str) -> list:
+        """His own look (avatar.json), in symbols; cached per size and pose."""
+        key = (cols, pose)
+        if key not in self._jcache:
+            from . import jackson as jx
+            look = dict(self.look or {})
+            data = jx.load(str(look.get("character") or "imp"))
+            self._jcache[key] = jx.cells(data, look, pose, cols) if data else []
+        return self._jcache[key]
 
     def draw_line(self, cv: Canvas, s: dict) -> None:
         text = STORY_LINE[:s["text"]]

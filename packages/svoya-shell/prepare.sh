@@ -16,6 +16,12 @@ if [ -d "$src" ]; then
         mkdir -p "$PKG_DIR/files/etc/pam.d"
         cp -a "$src/assets/pam.d/." "$PKG_DIR/files/etc/pam.d/"
     fi
+    # Firefox (Mozilla's .deb in /usr/lib/firefox) reads sos.cfg: with the Phosphor theme the new tab is
+    # SOS ASCII (assets/newtab) and the frame wears the theme; other themes leave Firefox as it is.
+    if [ -f "$src/assets/firefox/sos.cfg" ]; then
+        install -D -m 0644 "$src/assets/firefox/sos-autoconfig.js" "$PKG_DIR/files/usr/lib/firefox/defaults/pref/sos-autoconfig.js"
+        install -D -m 0644 "$src/assets/firefox/sos.cfg" "$PKG_DIR/files/usr/lib/firefox/sos.cfg"
+    fi
 else
     echo "warning: shell/ not found; building an empty svoya-shell" >&2
 fi

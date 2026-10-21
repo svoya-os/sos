@@ -86,14 +86,28 @@ Work towards v0.1 «Первый сигнал».
   request only (`sos install qwen-image-2.1 --accept-license`, then «нарисуй … через квен»).
   `sos models kits` lists these model kits; `sos-studio up` and `down` run the Studio in the
   background.
-- Jackson's eye in the terminal, `sos eye` (`sos глаз`): an ASCII eye across the whole screen that
-  blinks every 4–7 seconds, follows the mouse (or looks around by itself) and opens its pupil wider
-  at night. Keys 1–5 show Jackson's states: thinking, listening, done (a pink flash), error (the eye
-  falls apart into symbols and comes back). `sos eye --story` is a 14-second film into the pupil and
-  back; `sos eye --idle` is a screensaver. `sos art planets` is the first of the ASCII screensavers.
+- Jackson's eye in the terminal, `sos eye` (`sos глаз`): an ASCII eye across the whole screen, drawn
+  only with characters (lids of slashes and dashes, lashes, an iris of fibers, a pink rim around the
+  pupil), that blinks every 4–7 seconds, follows the mouse (or looks around by itself) and opens its
+  pupil wider at night. Keys 1–5 show Jackson's states: thinking, listening, done (a pink flash),
+  error (the eye falls apart into symbols and comes back). `sos eye --story` is a 14-second film into
+  the pupil, where Jackson himself (the imp or the cat in his hoodie, in symbols) blinks, talks and
+  smiles; `sos eye --idle` is a screensaver. `sos art planets` is the first of the ASCII screensavers.
   Four colors, 30 frames a second, never more than three flashes a second; over SSH only the cells
   that changed are sent, a narrow terminal gets a simpler picture, a pipe or `--quiet` one still frame.
   Settings in `[ascii]` of svoya.toml (fps, speed, quiet, timezone, colors).
+- SOS ASCII in the interface, not only in the terminal. The lock screen has a screensaver in every
+  theme: after 30 seconds without input the face fades, Jackson turns from where he stands into his
+  eye, the eye looks around and follows the pointer, and every few minutes it looks closer (the
+  film); a key or a click brings the face back (Control center → Appearance: 30 s, 2 min or off).
+  Jackson can be drawn in symbols instead of pixels (his customizer: Auto, Pixels, Symbols; Auto is
+  symbols with the Phosphor theme; from 120 px up, smaller he stays in pixels). With Phosphor the
+  wallpaper is alive: the planet or Jackson's eye (Control center → Appearance), moving only while
+  you can see it (an empty workspace or Super+D) and still in game mode or with reduced motion.
+  Jackson's right-click menu calls up his eye over everything (also `qs ipc call ascii eye`, `story`,
+  `planets`, `saver`). Firefox with Phosphor: the new tab and the home page are Jackson's eye and the
+  time, and the browser's frame is near-black with phosphor text and the mono font; other themes
+  leave Firefox as it is (a theme change shows when Firefox starts again).
 - SOS downloads like any other Linux: the newest test build is one file,
   [sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)
   (about 1.7 GB), on the [test build](https://github.com/svoya-os/sos/releases/tag/test) page of

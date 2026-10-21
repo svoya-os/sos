@@ -978,6 +978,33 @@ PanelFrame {
                 }
             }
 
+            // ---- SOS ASCII: the Phosphor wallpaper's scene, the lock screen's screensaver ------------------
+            SectionHead {
+                text: Strings.asciiWallpaper
+                note: Strings.asciiPhosphorOnly
+            }
+
+            Segmented {
+                width: parent.width
+                current: Settings.asciiScene
+                fontSize: 12
+                options: ["planets", "eye", "off"].map(k => ({ "id": k, "label": Strings.asciiScenes[k] }))
+                onPicked: key => Settings.asciiScene = key
+            }
+
+            SectionHead {
+                text: Strings.lockSaver
+                note: Strings.lockSaverNote
+            }
+
+            Segmented {
+                width: parent.width
+                current: String(Settings.lockSaverSeconds)
+                fontSize: 12
+                options: ["30", "120", "0"].map(k => ({ "id": k, "label": Strings.lockSaverOptions[k] }))
+                onPicked: key => Settings.lockSaverSeconds = parseInt(key)
+            }
+
             // ---- accent ---------------------------------------------------------------------------
             SectionHead {
                 text: Strings.accentLabel

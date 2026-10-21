@@ -77,16 +77,37 @@ Item {
         color: Theme.surface3
     }
 
+    // Jackson in symbols (Settings.jacksonRender; "auto" = with the Phosphor theme): the same sprite and
+    // the same frames drawn as characters, his eyes and mouth in the alive pink. Small sizes stay in
+    // pixels: a character needs room.
+    readonly property bool symbols: root.hasSprite && root.size >= 120 && (Settings.jacksonRender === "symbols" || (Settings.jacksonRender === "auto" && Theme.themeId === "phosphor"))
+
     PixelSprite {
         id: sprite
 
         anchors.centerIn: parent
-        visible: root.hasSprite
+        visible: root.hasSprite && !root.symbols
         pixel: root.pixelScale
         // asleep when the AI switch is off or jacksond is not running
         opacity: root.forceAnim.length === 0 && (root.mode === "off" || root.mode === "offline") ? 0.55 : 1
         grid: root.hasSprite ? Sprite.compose(root.spriteData, root.look, root.spriteState) : null
         colors: root.hasSprite ? Sprite.colors(root.spriteData, root.look, root.spriteState, Avatar.mode, Avatar.spriteAccent) : ({})
+    }
+
+    Loader {
+        anchors.centerIn: parent
+        active: root.symbols
+        sourceComponent: AsciiView {
+            width: root.size
+            height: root.size
+            scene: "jackson"
+            mood: root.spriteState
+            look: root.look
+            cols: Math.max(20, Math.min(32, Math.floor(root.size / 12) * 2))
+            running: false
+            follow: false
+            opacity: sprite.opacity
+        }
     }
 
     // Frames of the current animation (blink: 3.6 s + up to 2.4 s, then 120 ms; talk: 140 ms).
@@ -139,7 +160,7 @@ Item {
         opacity: root.mode === "offline" || root.mode === "off" ? 0.5 : 1
     }
 
-    // ---- right-click: «Настроить Джексона» ------------------------------------------------------------
+    // ---- right-click: «Настроить Джексона», «Глаз Джексона» (SOS ASCII over everything) --------------------
     MouseArea {
         anchors.fill: parent
         enabled: root.menu
@@ -150,57 +171,57 @@ Item {
     Rectangle {
         id: popup
 
+        readonly property bool hovering: customizeItem.hovered || eyeItem.hovered
+
         visible: false
         x: 0
         y: root.height + 6
         z: 100
-        width: menuRow.implicitWidth + 24
-        height: 32
+        width: Math.max(customizeItem.implicitWidth, eyeItem.implicitWidth) + 8
+        height: menuCol.implicitHeight + 8
         radius: 8
         color: Theme.surface2
         border.width: 1
         border.color: Theme.lineStrong
 
-        Row {
-            id: menuRow
+        Column {
+            id: menuCol
 
-            x: 12
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 8
+            x: 4
+            y: 4
 
-            Icon {
-                anchors.verticalCenter: parent.verticalCenter
+            MenuRow {
+                id: customizeItem
+
+                width: popup.width - 8
                 glyph: "settings"
-                size: 14
-                color: menuMouse.containsMouse ? Theme.text : Theme.textDim
-            }
-            SText {
-                anchors.verticalCenter: parent.verticalCenter
                 text: Strings.customizeJackson
-                size: 13
+                onPicked: {
+                    popup.visible = false;
+                    Actions.customizeJackson();
+                }
             }
-        }
+            MenuRow {
+                id: eyeItem
 
-        MouseArea {
-            id: menuMouse
-
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                popup.visible = false;
-                Actions.customizeJackson();
-            }
-            onContainsMouseChanged: {
-                if (menuMouse.containsMouse)
-                    popupHide.stop();
-                else
-                    popupHide.restart();
+                width: popup.width - 8
+                glyph: "eye"
+                text: Strings.jacksonEye
+                onPicked: {
+                    popup.visible = false;
+                    Ui.showAscii("saver");
+                }
             }
         }
 
         onVisibleChanged: {
             if (popup.visible)
+                popupHide.restart();
+        }
+        onHoveringChanged: {
+            if (popup.hovering)
+                popupHide.stop();
+            else
                 popupHide.restart();
         }
 
@@ -209,6 +230,55 @@ Item {
 
             interval: 3000
             onTriggered: popup.visible = false
+        }
+    }
+
+    // (an inline component sees none of this file's ids: its width comes from the menu)
+    component MenuRow: Item {
+        id: item
+
+        property string glyph: ""
+        property string text: ""
+        readonly property bool hovered: itemMouse.containsMouse
+
+        signal picked
+
+        implicitWidth: itemRow.implicitWidth + 16
+        implicitHeight: 28
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 6
+            color: item.hovered ? Theme.surface3 : "transparent"
+        }
+
+        Row {
+            id: itemRow
+
+            x: 8
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 8
+
+            Icon {
+                anchors.verticalCenter: parent.verticalCenter
+                glyph: item.glyph
+                size: 14
+                color: item.hovered ? Theme.text : Theme.textDim
+            }
+            SText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: item.text
+                size: 13
+            }
+        }
+
+        MouseArea {
+            id: itemMouse
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: item.picked()
         }
     }
 }

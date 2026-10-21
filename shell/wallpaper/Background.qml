@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import qs.core
 import qs.components
 
@@ -31,8 +32,15 @@ PanelWindow {
     // click to focus (a terminal opened with Super+Enter would not get what you type).
     WlrLayershell.keyboardFocus: Hypr.desktopShown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
+    // the live wallpaper moves only while it can be seen: no windows on this screen's workspace
+    readonly property var monitor: Hyprland.monitorFor(bg.screen)
+    readonly property var workspace: bg.monitor ? bg.monitor.activeWorkspace : null
+    readonly property bool seen: Hypr.desktopShown || bg.workspace === null || bg.workspace.toplevels.values.length === 0
+
     Wallpaper {
         anchors.fill: parent
+        ascii: true
+        live: bg.seen
     }
 
     IdleInhibitor {

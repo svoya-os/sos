@@ -82,8 +82,8 @@ class StyleRules(unittest.TestCase):
                 cv = render(make(), w, h, 2.0)
                 self.assertEqual((cv.w, cv.h, len(cv.ch)), (w, h, w * h))
         wide, narrow = render(Eye(night=False), 120, 30, 2.2), render(Eye(night=False), 70, 30, 2.2)
-        self.assertIn("\\", "".join(wide.ch))                   # lashes on a wide terminal...
-        self.assertNotIn("\\", "".join(narrow.ch))              # ...none on a narrow one
+        self.assertIn("·", "".join(wide.ch))                    # star dust on a wide terminal...
+        self.assertNotIn("·", "".join(narrow.ch))               # ...none on a narrow one
 
     def test_still_frame_for_a_pipe(self):
         text = still(Eye(night=False), 80, 24, color=False)
@@ -94,10 +94,12 @@ class StyleRules(unittest.TestCase):
     def test_story_is_a_short_film(self):
         self.assertTrue(12.0 <= STORY_LEN <= 15.0)
         eye = Eye(story=True, night=False)
-        text = {t: "".join(render(eye, 100, 30, t).ch) for t in (0.5, 3.0, 7.5)}
+        text = {t: "".join(render(eye, 100, 30, t).ch) for t in (0.5, 3.0)}
         self.assertIn("LOOK", text[0.5])                       # the one line, at the start only
         self.assertNotIn("LOOK", text[3.0])
-        self.assertIn("●", text[7.5])                           # cat-Jackson's eyes inside the pupil
+        inside = render(Eye(story=True, night=False), 100, 30, 8.0)
+        self.assertIn(ACCENT, inside.co)                       # Jackson himself, his eyes pink
+        self.assertGreater(sum(1 for c in inside.ch if c in "#%@O"), 20)
 
 
 class Photosensitivity(unittest.TestCase):

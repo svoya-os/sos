@@ -1,0 +1,100 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- SOS ASCII in Firefox: the new tab and the home page with the Phosphor theme (assets/firefox/sos.cfg
+     opens it as file:///usr/share/svoya/shell/assets/newtab/index.html#fg=<accent>). Jackson's eye,
+     drawn by the shell's own engine (components/ascii.js), looks at the pointer; below it the time. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>SOS</title>
+<style>
+  :root { --bg: #0a0a0a; --fg: #3cffd0; --alive: #ff2e88; --noise: #5a5a5a;
+          --mono: "IBM Plex Mono", "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); overflow: hidden; }
+  body { font-family: var(--mono); -webkit-font-smoothing: antialiased; }
+  #scene { position: absolute; left: 0; right: 0; top: 0; height: 72vh; }
+  #scene pre { position: absolute; margin: 0; font-family: var(--mono); white-space: pre; pointer-events: none;
+               font-kerning: none; font-variant-ligatures: none; }
+  .noise { color: var(--noise); } .fg { color: var(--fg); } .alive { color: var(--alive); }
+  #time { position: absolute; left: 0; right: 0; top: 73vh; text-align: center;
+          font-size: clamp(30px, 6.5vh, 64px); font-weight: 300; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+  #date { position: absolute; left: 0; right: 0; top: calc(73vh + clamp(30px, 6.5vh, 64px) * 1.45); text-align: center;
+          color: var(--noise); font-size: 12px; letter-spacing: .24em; text-transform: uppercase; }
+  #hint { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; color: var(--noise);
+          font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+  #hint b { color: var(--fg); font-weight: 400; }
+  @media (max-height: 420px) { #date, #hint { display: none; } }
+</style>
+</head>
+<body>
+<div id="scene"><pre class="noise"></pre><pre class="fg"></pre><pre class="alive"></pre></div>
+<div id="time"></div>
+<div id="date"></div>
+<div id="hint"></div>
+<script src="../../components/ascii.js"></script>
+<script>
+"use strict";
+(function () {
+  var ru = (navigator.language || "en").toLowerCase().indexOf("ru") === 0;
+  document.documentElement.lang = ru ? "ru" : "en";
+  document.title = ru ? "Новая вкладка" : "New tab";
+  document.getElementById("hint").innerHTML = ru ? "<b>Ctrl L</b> — адрес или поиск  ·  SOS" : "<b>Ctrl L</b> — address or search  ·  SOS";
+  var hash = new URLSearchParams(location.hash.slice(1)), fg = hash.get("fg");
+  if (fg && /^[0-9a-fA-F]{6}$/.test(fg)) document.documentElement.style.setProperty("--fg", "#" + fg);
+
+  var scene = document.getElementById("scene"), pres = scene.querySelectorAll("pre");
+  var layerOf = [3, 1, 2];                  // noise, phosphor, the alive pink
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hour = new Date().getHours();
+  var eye = new AsciiEye({ hud: false, night: hour >= 22 || hour < 6 });
+  var cols = 0, rows = 0, cellW = 0, t0 = performance.now(), last = 0;
+
+  function layout() {
+    var probe = document.createElement("canvas").getContext("2d");
+    probe.font = "100px " + getComputedStyle(document.body).fontFamily;
+    var ratio = probe.measureText("M").width / 100 || 0.6;
+    var w = scene.clientWidth, h = scene.clientHeight;
+    var want = Math.max(16, Math.min(46, Math.round(h / 16)));   // rows: about 16 px each
+    cellW = h / want / 2;
+    cols = Math.max(10, Math.floor(w / cellW));
+    rows = Math.max(5, Math.floor(h / (2 * cellW)));
+    var px = cellW / ratio, left = (w - cols * cellW) / 2, top = (h - rows * 2 * cellW) / 2;
+    for (var i = 0; i < pres.length; i++) {
+      var s = pres[i].style;
+      s.fontSize = px + "px"; s.lineHeight = (2 * cellW) + "px"; s.left = left + "px"; s.top = top + "px";
+    }
+    draw(true);
+  }
+  function now() { return (performance.now() - t0) / 1000; }
+  function draw(force) {
+    if (!cols) return;
+    var cv = asciiCanvas(cols, rows);
+    eye.draw(cv, still ? 2.2 : now() % 3600);
+    var l = asciiLayers(cv);
+    for (var i = 0; i < pres.length; i++) if (force || pres[i].textContent !== l[layerOf[i]]) pres[i].textContent = l[layerOf[i]];
+  }
+  function tick(ts) {
+    if (ts - last >= 1000 / 30) { last = ts; draw(false); }
+    requestAnimationFrame(tick);
+  }
+  function clock() {
+    var d = new Date(), loc = ru ? "ru-RU" : "en-GB";
+    document.getElementById("time").textContent = d.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("date").textContent = d.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long" });
+  }
+  window.addEventListener("mousemove", function (e) {
+    var r = scene.getBoundingClientRect(), left = (r.width - cols * cellW) / 2, top = (r.height - rows * 2 * cellW) / 2;
+    eye.pointer(Math.floor((e.clientX - r.left - left) / cellW), Math.floor((e.clientY - r.top - top) / (2 * cellW)), now() % 3600);
+  });
+  window.addEventListener("resize", layout);
+  clock(); setInterval(clock, 5000);
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () {
+    layout();
+    if (!still) requestAnimationFrame(tick);
+  });
+})();
+</script>
+</body>
+</html>
