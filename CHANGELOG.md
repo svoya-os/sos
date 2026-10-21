@@ -86,6 +86,14 @@ Work towards v0.1 «Первый сигнал».
   request only (`sos install qwen-image-2.1 --accept-license`, then «нарисуй … через квен»).
   `sos models kits` lists these model kits; `sos-studio up` and `down` run the Studio in the
   background.
+- Jackson's eye in the terminal, `sos eye` (`sos глаз`): an ASCII eye across the whole screen that
+  blinks every 4–7 seconds, follows the mouse (or looks around by itself) and opens its pupil wider
+  at night. Keys 1–5 show Jackson's states: thinking, listening, done (a pink flash), error (the eye
+  falls apart into symbols and comes back). `sos eye --story` is a 14-second film into the pupil and
+  back; `sos eye --idle` is a screensaver. `sos art planets` is the first of the ASCII screensavers.
+  Four colors, 30 frames a second, never more than three flashes a second; over SSH only the cells
+  that changed are sent, a narrow terminal gets a simpler picture, a pipe or `--quiet` one still frame.
+  Settings in `[ascii]` of svoya.toml (fps, speed, quiet, timezone, colors).
 - SOS downloads like any other Linux: the newest test build is one file,
   [sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)
   (about 1.7 GB), on the [test build](https://github.com/svoya-os/sos/releases/tag/test) page of

@@ -55,6 +55,7 @@ def _parser() -> argparse.ArgumentParser:
             "  sos ai off | on                               the AI switch\n"
             "  sos models suggest                            the best local model for this machine\n"
             "  sos morse hello                               Morse code, with sound (just `sos morse`: SOS)\n"
+            "  sos eye · sos art planets                     Jackson's eye · ASCII screensavers\n"
             "Russian works too: sos установить, удалить, починить, видеокарта, обновить, откатить, тема, модели.",
             "каждый день:\n"
             "  sos установить obsidian | llm-local | qwen3.5-9b   приложение, модуль или модель\n"
@@ -66,6 +67,7 @@ def _parser() -> argparse.ArgumentParser:
             "  sos ии выкл | вкл                                 выключатель ИИ\n"
             "  sos модели подобрать                              лучшая локальная модель для этой машины\n"
             "  sos морзе привет                                  азбука Морзе со звуком (просто `sos морзе`: SOS)\n"
+            "  sos глаз · sos арт planets                        глаз Джексона · ASCII-заставки\n"
             "По-английски тоже можно: sos install, remove, fix, gpu, update, undo, theme, models."))
     p.add_argument("--version", action="version", version=f"sos {__version__}")
     p.add_argument("--no-color", action="store_true", help=tr("plain output", "без цвета"))
@@ -321,6 +323,26 @@ def _parser() -> argparse.ArgumentParser:
     mo.add_argument("--no-sound", action="store_true", help=tr("text only", "только текст"))
     mo.add_argument("--json", action="store_true")
 
+    ey = cmd("eye", "Jackson's eye in the terminal (ASCII): 1-5 states, B blink, Q quit",
+             "глаз Джексона в терминале (ASCII): 1-5 состояния, B моргнуть, Q выход")
+    ey.add_argument("--state", choices=["idle", "thinking", "listening", "done", "error"], default="idle",
+                    help=tr("what Jackson is doing", "что делает Джексон"))
+    ey.add_argument("--idle", action="store_true", help=tr("screensaver: no frame, any key closes it",
+                                                           "заставка: без рамки, любая клавиша закрывает"))
+    ey.add_argument("--story", action="store_true", help=tr("the 14-second film: into the pupil and back",
+                                                            "14-секундный ролик: в зрачок и обратно"))
+    ey.add_argument("--quiet", action="store_true", help=tr("one still frame, no animation",
+                                                            "один кадр, без анимации"))
+    ey.add_argument("--fps", type=int, help=tr("frames a second (30)", "кадров в секунду (30)"))
+    ey.add_argument("--seconds", type=float, help=tr("close after this long", "закрыть через столько секунд"))
+    ar = cmd("art", "ASCII screensavers: planets (rain, logo, heart are coming)",
+             "ASCII-заставки: planets (скоро rain, logo, heart)")
+    ar.add_argument("effect", nargs="?", choices=["planets"])
+    ar.add_argument("--quiet", action="store_true", help=tr("one still frame, no animation",
+                                                            "один кадр, без анимации"))
+    ar.add_argument("--fps", type=int, help=tr("frames a second (30)", "кадров в секунду (30)"))
+    ar.add_argument("--seconds", type=float, help=tr("close after this long", "закрыть через столько секунд"))
+
     ss = cmd("session-start", "start the desktop session (Hyprland exec-once)", "запуск сеанса (exec-once в Hyprland)")
     ss.add_argument("--dry-run", action="store_true")
     ss.add_argument("--json", action="store_true")
@@ -419,6 +441,12 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "tea":
             from . import fun
             return fun.main_tea(args, ctx)
+        if args.cmd == "eye":
+            from .ascii import cli as ascii_cli
+            return ascii_cli.main_eye(args, ctx)
+        if args.cmd == "art":
+            from .ascii import cli as ascii_cli
+            return ascii_cli.main_art(args, ctx)
     except KeyboardInterrupt:
         return 130
     except BrokenPipeError:

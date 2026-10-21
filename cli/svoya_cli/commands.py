@@ -17,7 +17,8 @@ import difflib
 
 # canonical commands (argparse sub-parsers)
 COMMANDS = ("status", "doctor", "fix", "gpu", "install", "remove", "modules", "models", "theme", "accent", "accents",
-            "ai", "new", "update", "undo", "snapshot", "run", "job", "apps", "morse", "session-start", "menu", "help", "version")
+            "ai", "new", "update", "undo", "snapshot", "run", "job", "apps", "morse", "eye", "art", "session-start", "menu",
+            "help", "version")
 # easter eggs: they work, but stay out of help, completion and did-you-mean
 HIDDEN = ("tea",)
 HIDDEN_ALIASES = {"чай": "tea", "чаю": "tea", "чайку": "tea", "coffee": "tea", "кофе": "tea", "кофейку": "tea",
@@ -45,6 +46,7 @@ ALIASES = {
     "запустить": "run", "задача": "job",
     "меню": "menu", "помощь": "help", "справка": "help",
     "морзе": "morse", "морзянка": "morse", "морзянкой": "morse",
+    "глаз": "eye", "арт": "art", "заставка": "art", "заставки": "art",
     "приложения": "apps", "программы": "apps", "каталог": "apps",
 }
 
