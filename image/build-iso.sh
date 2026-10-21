@@ -87,7 +87,7 @@ mmdebstrap_args() {
     # shellcheck disable=SC2054  # --include takes a comma-separated list
     MMDEBSTRAP_ARGS=(--mode=root --variant=minbase --arch="$ARCH" --format=directory
         --include=ca-certificates,gpgv,ubuntu-keyring
-        --aptopt='Acquire::Retries "5"')
+        --aptopt='Acquire::Retries "10"' --aptopt='Acquire::Retries::Delay::Maximum "60"')
     if [ "$SNAPSHOT" != none ]; then
         MMDEBSTRAP_ARGS+=(--aptopt='Acquire::Check-Valid-Until "false"')
     fi

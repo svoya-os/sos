@@ -12,7 +12,8 @@ chroot_dns "$root"
 write_file "$root/etc/apt/apt.conf.d/00svoya-build" 0644 <<EOF
 APT::Install-Recommends "false";
 APT::Install-Suggests "false";
-Acquire::Retries "5";
+Acquire::Retries "10";
+Acquire::Retries::Delay::Maximum "60";
 Acquire::http::Timeout "60";
 Dpkg::Use-Pty "false";
 $( [ "${SNAPSHOT:-none}" != none ] && echo 'Acquire::Check-Valid-Until "false";' )

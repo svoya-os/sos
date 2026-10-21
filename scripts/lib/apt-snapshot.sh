@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Point the APT of a disposable ubuntu:26.04 build container at a frozen archive snapshot, so that
 # packages/ (build dependencies, e.g. Qt for quickshell) and image/ (the ISO rootfs) see the same archive.
+# The snapshot server sometimes answers 500/503 for minutes (21.10.2026, twice): every fetch is tried
+# 10 times with a growing pause of up to a minute (image/build-iso.sh and the rootfs hook say the same).
 #
 #   SNAPSHOT=20260920T000000Z   -> https://snapshot.ubuntu.com/ubuntu/20260920T000000Z
 #   SNAPSHOT=none               -> keep the live archive (not reproducible)
@@ -17,7 +19,8 @@ container_apt_setup() {
     cat >/etc/apt/apt.conf.d/90svoya-build <<'EOF'
 APT::Install-Recommends "false";
 APT::Install-Suggests "false";
-Acquire::Retries "5";
+Acquire::Retries "10";
+Acquire::Retries::Delay::Maximum "60";
 Acquire::http::Timeout "60";
 Dpkg::Use-Pty "false";
 EOF
