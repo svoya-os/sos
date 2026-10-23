@@ -199,12 +199,20 @@ ShellRoot {
         readonly property string cursor: Theme.symbolsFor("cursor") ? "sos-symbols" : ""
 
         property bool cursorSet: false     // this shell set the symbol cursor: it may put Adwaita back
+        property string lastKey: ""        // "icons|cursor" as last applied
 
-        // gsettings (GTK) when it is there; Hyprland's cursor (hyprctl) in any case
+        // gsettings (GTK) when it is there; Hyprland's cursor (hyprctl) in any case. When the choice
+        // changes while the shell runs, the theme files that name it are written again first: the
+        // cursor apps get at the next login (XCURSOR_THEME in svoya-colors.conf), Qt's and fuzzel's
+        // icons. That may reload Hyprland, so its cursor is set a second later.
         function apply() {
+            const key = systemLook.icons + "|" + systemLook.cursor;
+            const rerender = systemLook.lastKey.length > 0 && systemLook.lastKey !== key;
+            systemLook.lastKey = key;
             const putBack = systemLook.cursor.length === 0 && systemLook.cursorSet;
             systemLook.cursorSet = systemLook.cursor.length > 0;
-            Sys.sh('s=org.gnome.desktop.interface; gs() { command -v gsettings >/dev/null 2>&1 && gsettings "$@"; }; '
+            Sys.sh((rerender ? 'c=$(command -v sos || command -v svoya) && "$c" theme apply --quiet --only hyprland --only qt6ct --only fuzzel >/dev/null 2>&1 && sleep 1; ' : '')
+                + 's=org.gnome.desktop.interface; gs() { command -v gsettings >/dev/null 2>&1 && gsettings "$@"; }; '
                 + 'icons=$(gs get $s icon-theme 2>/dev/null | tr -d "\'"); '
                 + 'if [ -n "$1" ]; then [ -d "/usr/share/icons/$1" ] && [ "$icons" != "$1" ] && gs set $s icon-theme "$1"; '
                 + 'else case $icons in SOS-Symbols*) [ -d "/usr/share/icons/$2" ] && gs set $s icon-theme "$2";; esac; fi; '

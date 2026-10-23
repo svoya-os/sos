@@ -172,7 +172,9 @@ def template_context(theme: Theme, paths: Paths, accent: accents.Resolved | None
         "motion": dict(d.get("motion") or {}),
         "effects": dict(d.get("effects") or {}),
         "term": terminal_palette(colors, theme.mode),
-        "icons": "Papirus-Dark" if theme.mode == "dark" else "Papirus-Light",
+        # the symbol layer's folders and cursor when it covers them (the shell's shell.json decides)
+        "icons": symbols.icon_theme(paths, theme.id, theme.mode, lambda n: paths.sys(f"/usr/share/icons/{n}").is_dir()),
+        "cursor": symbols.cursor_theme(paths, theme.id, lambda n: paths.sys(f"/usr/share/icons/{n}/cursors").is_dir()),
         "colorScheme": "prefer-dark" if theme.mode == "dark" else "prefer-light",
         "path": {"home": str(paths.home), "config": str(paths.config_home), "state": str(paths.state_home)},
     }

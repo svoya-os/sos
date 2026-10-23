@@ -75,8 +75,12 @@ class TemplatesTest(SandboxTest):
     def test_all_templates_all_themes(self):
         for theme_id in THEMES:
             out = self.rendered(theme_id)
-            self.assertEqual(set(out), {"hyprland", "kitty", "foot", "gtk3", "gtk4", "qt6ct-colors", "qt6ct",
-                                        "btop-theme", "btop", "fastfetch", "fuzzel"})
+            self.assertEqual(set(out), {"hyprland", "kitty", "foot", "gtk3", "gtk4", "gtk3-settings", "gtk4-settings",
+                                        "qt6ct-colors", "qt6ct", "btop-theme", "btop", "fastfetch", "fuzzel"})
+            # GTK apps on stock Adwaita take its dark variant with a dark theme (Thunar was white in Phosphor)
+            for tid in ("gtk3-settings", "gtk4-settings"):
+                want = "false" if theme_id == "paper" else "true"
+                self.assertIn(f"gtk-application-prefer-dark-theme={want}", out[tid], f"{theme_id}/{tid}")
             for tid, text in out.items():
                 self.assertNotIn("{{", text, f"{theme_id}/{tid}")
             # hyprland: balanced braces, rgb()/rgba() hex only, hyprbars colors, no gaps
@@ -208,6 +212,20 @@ class SymbolsTest(SandboxTest):
     def test_phosphor_gets_folders_in_symbols(self):
         self.assertEqual(self.icons_set("phosphor", None), ["SOS-Symbols-Dark"])          # the default: auto
         self.assertEqual(self.icons_set("graphite", None), ["Papirus-Dark"])
+
+    def test_apps_get_the_symbol_cursor_and_folders(self):
+        (self.sb.root / "usr/share/icons/sos-symbols/cursors").mkdir(parents=True)
+        (self.sb.root / "usr/share/icons/SOS-Symbols-Dark").mkdir(parents=True)
+        ctx = self.sb.ctx()
+        def rendered(theme_id):
+            vars_ = A.template_context(A.load_theme(ctx.paths, theme_id), ctx.paths)
+            return {t.id: A.render_target(t, vars_, ctx.paths) for t in A.load_manifest(ctx.paths)}
+        ph = rendered("phosphor")
+        self.assertIn("env = XCURSOR_THEME,sos-symbols", ph["hyprland"])
+        self.assertIn("icon_theme=SOS-Symbols-Dark", ph["qt6ct"])
+        gr = rendered("graphite")
+        self.assertIn("env = XCURSOR_THEME,Adwaita", gr["hyprland"])
+        self.assertIn("icon_theme=Papirus-Dark", gr["qt6ct"])
 
     def test_the_shell_settings_decide(self):
         self.assertEqual(self.icons_set("phosphor", {"asciiStyle": "off"}), ["Papirus-Dark"])

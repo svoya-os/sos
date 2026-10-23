@@ -2,7 +2,7 @@
 it are on for a theme, read from the shell's settings (``~/.config/svoya/shell.json``: ``asciiStyle``
 "auto" = with Phosphor, "always", "off"; ``asciiParts``). ``sos theme apply`` uses it to pick the
 same icon theme the shell sets (folders in symbols: SOS-Symbols-Dark/-Light), so neither undoes the
-other.
+other, and the cursor theme Hyprland hands to every app it starts (XCURSOR_THEME in svoya-colors.conf).
 """
 from __future__ import annotations
 
@@ -31,3 +31,10 @@ def icon_theme(paths: Paths, theme_id: str, mode: str, exists=lambda name: True)
         if exists(sym):
             return sym
     return plain
+
+
+def cursor_theme(paths: Paths, theme_id: str, exists=lambda name: True) -> str:
+    """XCURSOR_THEME for the session: the symbol cursor when the layer covers it (and it is installed)."""
+    if "cursor" in parts(paths, theme_id) and exists("sos-symbols"):
+        return "sos-symbols"
+    return "Adwaita"

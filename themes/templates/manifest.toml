@@ -45,6 +45,20 @@ template = "gtk-4.0.css"
 path = "{config}/gtk-4.0/gtk.css"
 keep_original = '@import url("file://{backup}");'
 
+# GTK apps without adw-gtk3 (Thunar, Mousepad, Ristretto: stock Adwaita) take its dark variant with a
+# dark theme; only this key is touched in the user's settings.ini
+[[target]]
+id = "gtk3-settings"
+template = "gtk-3.0-settings.ini"
+path = "{config}/gtk-3.0/settings.ini"
+merge = "ini"
+
+[[target]]
+id = "gtk4-settings"
+template = "gtk-4.0-settings.ini"
+path = "{config}/gtk-4.0/settings.ini"
+merge = "ini"
+
 [[target]]
 id = "qt6ct-colors"
 template = "qt6ct-colors.conf"
