@@ -139,6 +139,10 @@ jobs:
           cp "$dir"/screens/*.png "$out"/ 2>/dev/null || true
           cp "$dir/report.md" "$out/README.md" 2>/dev/null || true
           cp "$dir/report.json" "$out/report.json" 2>/dev/null || true
+          # a boot that never reached the desktop: QEMU's state, the host's load, the kernel's SysRq dump
+          if [ -f "$dir/stall.txt" ]; then
+              cp "$dir/stall.txt" "$dir/host.log" "$dir/qemu.log" "$out"/ 2>/dev/null || true
+          fi
           if [ -f "$dir/serial.log" ]; then
               # (llama-server: its requests, slots and prompt progress — what a slow local answer is made of)
               awk '/SOS-DIAG begin/{d=1} d{print} /SOS-DIAG end/{d=0; next}
@@ -175,5 +179,7 @@ jobs:
             dist/vm-${{ matrix.firmware }}/qemu-command.txt
             dist/vm-${{ matrix.firmware }}/report.json
             dist/vm-${{ matrix.firmware }}/report.md
+            dist/vm-${{ matrix.firmware }}/stall.txt
+            dist/vm-${{ matrix.firmware }}/host.log
           retention-days: 14
           if-no-files-found: warn

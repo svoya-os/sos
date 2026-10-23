@@ -1,0 +1,13 @@
+{
+  "name": "boot-soak",
+  "description": "Boots the ISO to the live desktop and stops. The soak (.github/workflows/boot-soak.yml) does it many times on fresh runners, from the optical drive and from a USB stick, to catch the rare boot that stops in casper's scripts (about 1 in 10–20 in the ISO runs, a different line each time, no kernel message); such a boot leaves stall.txt (tests/vm/run.py: QEMU's state, busy or idle vCPUs, the host's load, the kernel's SysRq dump). The VM is the user journeys' one.",
+  "vm": {"memory_mib": 8192, "smp": 4, "resolution": [1440, 900], "smbios_product": "sos-vm-test"},
+  "steps": [
+    {"id": "boot", "action": "wait_serial", "pattern": "SOS 26\\.10", "timeout_s": 60, "optional": true},
+    {"id": "boot", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
+    {"id": "boot", "action": "key", "keys": ["ret"]},
+    {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
+    {"id": "desktop", "action": "sleep", "seconds": 5},
+    {"id": "desktop", "action": "screenshot", "name": "01-desktop", "assert": "not_blank"}
+  ]
+}

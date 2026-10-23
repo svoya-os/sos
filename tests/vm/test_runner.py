@@ -108,6 +108,39 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(any(p.name.startswith("fail-01") for p in (out / "screens").iterdir()))
             qmp.close()
 
+    def test_a_boot_that_never_reaches_the_desktop_is_diagnosed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp)
+            (out / "serial.log").write_text("Generating locales...\nReading package lists...\n")
+            a, b = socket.socketpair()
+            fake = ScreenQEMU(b, [frame((0, 0, 0))])
+            fake.start()
+            qmp = QMPClient(a, timeout=2)
+            qmp.negotiate()
+            runner = run.Runner(qmp, out, scale=0.01, proc=None)
+            ok = runner.run([{"id": "desktop", "action": "wait_serial", "pattern": r"SOS-MARK \S+ desktop-ready",
+                              "timeout_s": 2}])
+            self.assertFalse(ok)
+            stall = (out / "stall.txt").read_text()
+            self.assertIn("did not reach the desktop", stall)
+            self.assertIn("host: load", stall)
+            # the kernel's account: blocked tasks, CPUs, all tasks
+            self.assertEqual([k for k in fake.keys if "sysrq" in k], [["alt", "sysrq", "w"], ["alt", "sysrq", "l"],
+                                                                       ["alt", "sysrq", "t"]])
+            qmp.close()
+
+    def test_the_iso_as_a_usb_stick(self):
+        import argparse
+        args = argparse.Namespace(accel="tcg", qemu="qemu-system-x86_64", smp=None, memory=None, firmware="bios",
+                                  iso="/x/sos.iso", cdrom="usb")
+        cmd = " ".join(run.qemu_command(args, {"vm": {}}, pathlib.Path("/out"), None, None))
+        self.assertIn("usb-storage,drive=cd0,bootindex=0", cmd)
+        self.assertIn("file=/x/sos.iso,format=raw", cmd)
+        self.assertLess(cmd.index("qemu-xhci"), cmd.index("usb-storage"))
+        args.cdrom = None
+        cmd = " ".join(run.qemu_command(args, {"vm": {}}, pathlib.Path("/out"), None, None))
+        self.assertIn("ide-cd,drive=cd0,bus=ide.0,bootindex=0", cmd)    # as the tests always booted
+
     def test_the_nth_serial_event_decides(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = pathlib.Path(tmp)

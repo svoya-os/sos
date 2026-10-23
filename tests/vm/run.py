@@ -120,6 +120,16 @@ def display_args(display: str, xres: int, yres: int) -> list[str]:
     return ["-vga", display]        # vmware, std: the guest picks its mode
 
 
+def cdrom_args(iso: str, bus: str) -> list[str]:
+    """The ISO as an optical drive on the SATA controller ("ide": what the tests always did) or, as
+    people boot it, as a USB stick ("usb": the hybrid ISO written to a stick)."""
+    if bus == "usb":
+        return ["-drive", f"file={iso},format=raw,if=none,id=cd0,readonly=on",
+                "-device", "usb-storage,drive=cd0,bootindex=0,id=cdrom,removable=on"]
+    return ["-drive", f"file={iso},media=cdrom,if=none,id=cd0,readonly=on",
+            "-device", "ide-cd,drive=cd0,bus=ide.0,bootindex=0,id=cdrom"]
+
+
 def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_copy: str | None,
                  code: str | None, disk: str | None = None) -> list[str]:
     vm = plan.get("vm", {})
@@ -138,9 +148,9 @@ def qemu_command(args: argparse.Namespace, plan: dict, out: pathlib.Path, vars_c
            "-smbios", f"type=1,manufacturer=SOS,product={vm.get('smbios_product', 'sos-vm-test')}",
            *display_args(vm.get("display", "virtio"), xres, yres),
            "-display", "none",
-           "-drive", f"file={args.iso},media=cdrom,if=none,id=cd0,readonly=on",
-           "-device", "ide-cd,drive=cd0,bus=ide.0,bootindex=0,id=cdrom",
-           "-device", "qemu-xhci", "-device", "usb-tablet",
+           "-device", "qemu-xhci",
+           *cdrom_args(args.iso, getattr(args, "cdrom", None) or vm.get("cdrom", "ide")),
+           "-device", "usb-tablet",
            "-nic", "user,model=virtio-net-pci",
            "-serial", f"file:{out / 'serial.log'}",
            "-qmp", f"unix:{out / 'qmp.sock'},server=on,wait=off"]
@@ -321,6 +331,8 @@ class Runner:
                 if not step.get("optional"):
                     ok = False
                     self.evidence(f"fail-{n:02d}-{entry['id']}")
+                    if action == "wait_serial" and ("desktop-ready" in step.get("pattern", "") or step.get("diagnose")):
+                        self.diagnose(f"step {n} ({entry['id']})")
             entry["seconds"] = round(time.monotonic() - started, 1)
             self.results.append(entry)
             print(f"[{entry['status']:>7}] {n:2d} {entry['id']:<12} {action:<11} {entry['detail']}", flush=True)
@@ -335,11 +347,93 @@ class Runner:
             self.held = []
         return ok
 
+    def diagnose(self, what: str) -> None:
+        """A boot that never reached the desktop (#ISO-stall: 1 boot in 10–20 stops in casper's
+        scripts, at a different line each time, with no kernel message): what the VM was doing.
+        QEMU's state, whether the virtual CPUs were busy or idle, the host's load, then the kernel's
+        own account through SysRq (the test entry boots with sysrq_always_enabled): blocked tasks (w),
+        every CPU's backtrace (l), all tasks (t). Written to stall.txt next to the screenshots."""
+        lines = [f"# {what}: the VM did not reach the desktop ({time.strftime('%H:%M:%S')})"]
+        try:
+            lines.append(f"QEMU: {self.qmp.status()}")
+        except Exception as exc:  # noqa: BLE001 - best effort, the VM may be gone
+            lines.append(f"QEMU: {exc}")
+        try:
+            cpus = self.qmp.execute("query-cpus-fast") or []
+            tids = [c["thread-id"] for c in cpus if isinstance(c, dict) and c.get("thread-id")]
+            before = {t: thread_ticks(self.proc, t) for t in tids}
+            if tids:
+                time.sleep(3)
+            after = {t: thread_ticks(self.proc, t) for t in tids}
+            busy = [f"vCPU{i} {(after[t] - before[t]) / 3:.0f}%" for i, t in enumerate(tids)
+                    if after[t] is not None and before[t] is not None]
+            lines.append("vCPUs busy over 3 s: " + (", ".join(busy) or "unknown"))
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"vCPUs: {exc}")
+        lines.append("host: " + host_state())
+        start = len(self.serial())
+        for key, wait in (("w", 4), ("l", 4), ("t", 15)):
+            try:
+                self.qmp.send_key(["alt", "sysrq", key], hold_ms=200)
+                time.sleep(wait * min(1.0, max(0.05, self.scale)))
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"SysRq {key}: {exc}")
+        dump = self.serial()[start:]
+        lines += ["", "## serial after SysRq w (blocked tasks), l (CPUs), t (all tasks)", dump[-250000:]]
+        (self.out / "stall.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print("\n".join(lines[:4]), flush=True)
+
     def evidence(self, name: str) -> None:
         try:
             image.write_png(self.grab(), str(self.out / "screens" / f"{name}.png"))
         except Exception as exc:  # noqa: BLE001 - best effort, the VM may be gone
             print(f"(no failure screenshot: {exc})", file=sys.stderr)
+
+
+def thread_ticks(proc: subprocess.Popen | None, tid: int) -> int | None:
+    """CPU time (clock ticks, user + system) of one thread of QEMU."""
+    if proc is None:
+        return None
+    try:
+        fields = pathlib.Path(f"/proc/{proc.pid}/task/{tid}/stat").read_text().rsplit(")", 1)[1].split()
+        return int(fields[11]) + int(fields[12])
+    except (OSError, IndexError, ValueError):
+        return None
+
+
+def host_state() -> str:
+    """The CI host's load and free memory: a starved host makes a slow guest."""
+    try:
+        load = " ".join(f"{v:.2f}" for v in os.getloadavg())
+    except OSError:
+        load = "?"
+    avail = "?"
+    try:
+        for line in pathlib.Path("/proc/meminfo").read_text().splitlines():
+            if line.startswith("MemAvailable:"):
+                avail = f"{int(line.split()[1]) // 1024} MiB"
+    except OSError:
+        pass
+    return f"load {load} · {os.cpu_count()} CPUs · {avail} available"
+
+
+def sample_host(out: pathlib.Path, proc: subprocess.Popen, every: float = 15.0) -> None:
+    """host.log: the host's load and QEMU's CPU time every 15 s for the whole run."""
+    start, last = time.monotonic(), None
+    with open(out / "host.log", "a") as log:
+        while proc.poll() is None:
+            try:
+                fields = pathlib.Path(f"/proc/{proc.pid}/stat").read_text().rsplit(")", 1)[1].split()
+                ticks = int(fields[11]) + int(fields[12])
+            except (OSError, IndexError, ValueError):
+                ticks = None
+            qemu = ""
+            if ticks is not None and last is not None:
+                qemu = f" · QEMU {(ticks - last) / every:.0f}% of a CPU"
+            last = ticks
+            log.write(f"t+{time.monotonic() - start:5.0f}s {host_state()}{qemu}\n")
+            log.flush()
+            time.sleep(every)
 
 
 def write_reports(out: pathlib.Path, meta: dict, results: list[dict], ok: bool) -> None:
@@ -390,6 +484,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--memory", type=int)
     ap.add_argument("--smp", type=int)
     ap.add_argument("--qemu", default="qemu-system-x86_64")
+    ap.add_argument("--cdrom", choices=("ide", "usb"), default=None,
+                    help="how the ISO is attached: an optical drive (default) or a USB stick")
     ap.add_argument("--timeout-scale", type=float, default=None,
                     help="multiply waits/timeouts (default 1 with KVM, 4 with TCG)")
     ap.add_argument("--dry-run", action="store_true", help="validate the plan and print the QEMU command")
@@ -432,6 +528,7 @@ def main(argv: list[str] | None = None) -> int:
     (out / "qemu-command.txt").write_text(" ".join(cmd) + "\n")
     qemu_log = open(out / "qemu.log", "w")
     proc = subprocess.Popen(cmd, stdout=qemu_log, stderr=subprocess.STDOUT)
+    threading.Thread(target=sample_host, args=(out, proc), daemon=True).start()
     ok = False
     runner = None
     try:

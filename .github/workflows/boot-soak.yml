@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: Apache-2.0
+# Boot soak: the newest test build (GitHub Releases, tag "test") booted to the live desktop 36 times
+# on fresh runners — 18 from the optical drive, as the ISO tests do, and 18 from a USB stick, as
+# people do — to catch the rare boot that stops in casper's scripts (about 1 in 10–20 boots of the
+# ISO runs since September) and to tell whether it is the emulated drive or SOS. A stalled boot
+# leaves stall.txt: QEMU's state, busy or idle vCPUs, the host's load and the kernel's SysRq dump of
+# blocked tasks, CPUs and all tasks (tests/vm/run.py). Results: ci-screens/soak/<run>/<drive>-<n>/.
+name: Boot soak
+
+on:
+  workflow_run:
+    workflows: [ISO]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      boots:
+        description: "Boots per job (12 jobs)"
+        default: "3"
+
+permissions: {}
+
+jobs:
+  soak:
+    name: Soak (${{ matrix.cdrom }} ${{ matrix.n }})
+    # after an ISO run that published a test build (push or nightly), or by hand
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    permissions:
+      contents: write   # results → ci-screens branch (never main)
+    strategy:
+      fail-fast: false
+      matrix:
+        cdrom: [ide, usb]
+        n: [1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the test build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download test --repo "$GITHUB_REPOSITORY" --dir iso \
+              --pattern 'sos-*-amd64.iso' --pattern 'sos-*-amd64.iso.part*' --pattern SHA256SUMS
+          rm -f iso/*nvidia*
+          scripts/split-artifact.sh join iso
+          isos=(iso/*.iso)
+          [ -f "${isos[0]}" ] || { echo "::error::no ISO in the test release"; exit 1; }
+          echo "ISO=${isos[0]}" >>"$GITHUB_ENV"
+
+      - name: Install QEMU and OVMF
+        run: |
+          set -euo pipefail
+          sudo apt-get -o Acquire::Retries=3 update -q
+          sudo apt-get -o Acquire::Retries=3 install -y -q --no-install-recommends qemu-system-x86 qemu-utils ovmf python3-pil
+
+      - name: Enable KVM
+        run: scripts/ci-enable-kvm.sh
+
+      - name: Boot again and again
+        env:
+          BOOTS: ${{ inputs.boots || '3' }}
+          CDROM: ${{ matrix.cdrom }}
+        run: |
+          set -uo pipefail
+          for i in $(seq 1 "$BOOTS"); do
+              python3 tests/vm/run.py --iso "$ISO" --plan tests/vm/boot-soak.json --firmware uefi \
+                  --cdrom "$CDROM" --out "dist/soak-$i" || true
+          done
+          python3 - <<'PY'
+          import json, os, pathlib
+          rows = ["| boot | drive | desktop | seconds | detail |", "|---|---|---|---|---|"]
+          for d in sorted(pathlib.Path("dist").glob("soak-*")):
+              try:
+                  r = json.loads((d / "report.json").read_text())
+              except (OSError, ValueError):
+                  rows.append(f"| {d.name} | {os.environ['CDROM']} | no report | | |")
+                  continue
+              desk = next((s for s in r["steps"] if s["id"] == "desktop" and s["action"] == "wait_serial"), {})
+              detail = str(desk.get("detail", "")).replace("|", "\\|")[:100]
+              rows.append(f"| {d.name} | {os.environ['CDROM']} | {'reached' if r['ok'] else 'STALLED'} | "
+                          f"{desk.get('seconds', '')} | {detail} |")
+          pathlib.Path("dist/summary.md").write_text("\n".join(rows) + "\n")
+          PY
+          cat dist/summary.md >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Publish (ci-screens branch)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+          SUB: ${{ matrix.cdrom }}-${{ matrix.n }}
+        run: |
+          set -uo pipefail
+          out=$(mktemp -d)
+          cp dist/summary.md "$out/README.md" 2>/dev/null || true
+          for d in dist/soak-*; do
+              [ -d "$d" ] || continue
+              n=$(basename "$d")
+              if [ -f "$d/stall.txt" ]; then          # the stalled ones keep everything
+                  mkdir -p "$out/$n"
+                  cp "$d/stall.txt" "$d/host.log" "$d/report.json" "$d/qemu.log" "$d/qemu-command.txt" "$out/$n"/ 2>/dev/null || true
+                  cp "$d"/screens/*.png "$out/$n"/ 2>/dev/null || true
+                  tail -n 300 "$d/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$out/$n/serial-tail.txt"
+              fi
+          done
+          scripts/ci-publish.sh "$out" "soak/$RUN/$SUB" "soak: run $RUN ($SUB)"
