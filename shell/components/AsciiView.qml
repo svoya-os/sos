@@ -73,7 +73,7 @@ Item {
         const sprite = Avatar.dataFor(look.character || "imp");
         const night = root.night;
         if (root.scene === "planets") {
-            root.fx = new Ascii.AsciiPlanets();
+            root.fx = new Ascii.AsciiPlanets({ hud: false });       // no "Q QUIT" frame: nothing here takes keys
         } else if (root.scene === "story") {
             root.fx = new Ascii.AsciiEye({ story: true, night: night, sprite: sprite, look: look });
         } else if (root.scene === "saver") {

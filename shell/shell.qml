@@ -198,17 +198,22 @@ ShellRoot {
         readonly property string plainIcons: Theme.isDark ? "Papirus-Dark" : "Papirus-Light"
         readonly property string cursor: Theme.symbolsFor("cursor") ? "sos-symbols" : ""
 
+        property bool cursorSet: false     // this shell set the symbol cursor: it may put Adwaita back
+
+        // gsettings (GTK) when it is there; Hyprland's cursor (hyprctl) in any case
         function apply() {
-            Sys.sh('command -v gsettings >/dev/null || exit 0; s=org.gnome.desktop.interface; '
-                + 'icons=$(gsettings get $s icon-theme | tr -d "\'"); '
-                + 'if [ -n "$1" ]; then [ -d "/usr/share/icons/$1" ] && [ "$icons" != "$1" ] && gsettings set $s icon-theme "$1"; '
-                + 'else case $icons in SOS-Symbols*) [ -d "/usr/share/icons/$2" ] && gsettings set $s icon-theme "$2";; esac; fi; '
-                + 'size=${XCURSOR_SIZE:-24}; cur=$(gsettings get $s cursor-theme | tr -d "\'"); '
-                + 'if [ -n "$3" ] && [ -d "/usr/share/icons/$3/cursors" ]; then [ "$cur" = "$3" ] || gsettings set $s cursor-theme "$3"; '
-                + 'command -v hyprctl >/dev/null && hyprctl setcursor "$3" "$size" >/dev/null; '
-                + 'elif [ "$cur" = sos-symbols ]; then gsettings set $s cursor-theme Adwaita; '
-                + 'command -v hyprctl >/dev/null && hyprctl setcursor Adwaita "$size" >/dev/null; fi; exit 0',
-                [systemLook.icons, systemLook.plainIcons, systemLook.cursor]);
+            const putBack = systemLook.cursor.length === 0 && systemLook.cursorSet;
+            systemLook.cursorSet = systemLook.cursor.length > 0;
+            Sys.sh('s=org.gnome.desktop.interface; gs() { command -v gsettings >/dev/null 2>&1 && gsettings "$@"; }; '
+                + 'icons=$(gs get $s icon-theme 2>/dev/null | tr -d "\'"); '
+                + 'if [ -n "$1" ]; then [ -d "/usr/share/icons/$1" ] && [ "$icons" != "$1" ] && gs set $s icon-theme "$1"; '
+                + 'else case $icons in SOS-Symbols*) [ -d "/usr/share/icons/$2" ] && gs set $s icon-theme "$2";; esac; fi; '
+                + 'size=${XCURSOR_SIZE:-24}; cur=$(gs get $s cursor-theme 2>/dev/null | tr -d "\'"); '
+                + 'if [ -n "$3" ] && [ -d "/usr/share/icons/$3/cursors" ]; then [ "$cur" = "$3" ] || gs set $s cursor-theme "$3"; '
+                + 'hyprctl setcursor "$3" "$size" >/dev/null 2>&1; '
+                + 'elif [ "$cur" = sos-symbols ] || [ "$4" = 1 ]; then [ "$cur" = sos-symbols ] && gs set $s cursor-theme Adwaita; '
+                + 'hyprctl setcursor Adwaita "$size" >/dev/null 2>&1; fi; exit 0',
+                [systemLook.icons, systemLook.plainIcons, systemLook.cursor, putBack ? "1" : ""]);
         }
 
         onIconsChanged: systemLookLater.restart()
