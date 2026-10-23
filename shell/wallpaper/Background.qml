@@ -40,7 +40,7 @@ PanelWindow {
     Wallpaper {
         anchors.fill: parent
         ascii: true
-        live: bg.seen
+        live: bg.seen && !Ui.locked     // under the lock screen it cannot be seen either
     }
 
     IdleInhibitor {

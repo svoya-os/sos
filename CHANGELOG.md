@@ -171,5 +171,14 @@ Work towards v0.1 «Первый сигнал».
   under repository names, asked Hugging Face before loading those, and ran two copies of one
   model: Jackson's local answers timed out. Jackson now waits up to five minutes for a local
   answer (a CPU reads his whole prompt first) and does not load another model after a timeout.
+- The symbol cursor shows: Hyprland took every shape the theme shared with Adwaita, its parent,
+  from Adwaita, so the cursor stayed Adwaita's everywhere. The theme now draws every shape itself,
+  with a + for copying or zooming in and a - for zooming out.
+- SOS ASCII costs a third of the processor time it did: the eye's white, the planet and its ring
+  are worked out once and only what moves is drawn again. The lock screen no longer draws at the
+  display's rate under its screensaver (the blinking caret and Jackson on the line stood still
+  only when you could see them), and the live wallpaper stops while the screen is locked.
+- Firefox with the symbol style: the new tab leaves the address bar empty instead of showing a long
+  file:// address, and the frame keeps the theme's colors over a built-in theme's gradient.
 
 [Unreleased]: https://github.com/svoya-os/sos/commits/main

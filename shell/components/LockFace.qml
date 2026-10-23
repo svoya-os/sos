@@ -179,6 +179,9 @@ Item {
             inputX: root.leftX
             burstX: root.rightX
             jacksonX: Math.round(root.width * 632 / 1440)
+            // under the screensaver nothing on the face moves: a blinking caret alone would make the
+            // whole screen draw at the display's rate, saver included
+            paused: root.saving
             busy: root.busy
             error: root.error
             inputEnabled: root.inputEnabled

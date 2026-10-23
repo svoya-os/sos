@@ -125,8 +125,8 @@ class RunnerTests(unittest.TestCase):
             self.assertIn("did not reach the desktop", stall)
             self.assertIn("host: load", stall)
             # the kernel's account: blocked tasks, CPUs, all tasks
-            self.assertEqual([k for k in fake.keys if "sysrq" in k], [["alt", "sysrq", "w"], ["alt", "sysrq", "l"],
-                                                                       ["alt", "sysrq", "t"]])
+            self.assertEqual([k for k in fake.keys if "sysrq" in k], [["alt", "sysrq", "9"], ["alt", "sysrq", "w"],
+                                                                       ["alt", "sysrq", "l"], ["alt", "sysrq", "t"]])
             qmp.close()
 
     def test_the_iso_as_a_usb_stick(self):

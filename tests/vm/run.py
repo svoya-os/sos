@@ -351,8 +351,10 @@ class Runner:
         """A boot that never reached the desktop (#ISO-stall: 1 boot in 10–20 stops in casper's
         scripts, at a different line each time, with no kernel message): what the VM was doing.
         QEMU's state, whether the virtual CPUs were busy or idle, the host's load, then the kernel's
-        own account through SysRq (the test entry boots with sysrq_always_enabled): blocked tasks (w),
-        every CPU's backtrace (l), all tasks (t). Written to stall.txt next to the screenshots."""
+        own account through SysRq (the test entry boots with sysrq_always_enabled): first the console
+        log level to 9 (the entry boots `quiet`, which keeps the dumps below off the serial line; only
+        their headers came through), then blocked tasks (w), every CPU's backtrace (l), all tasks (t).
+        Written to stall.txt next to the screenshots."""
         lines = [f"# {what}: the VM did not reach the desktop ({time.strftime('%H:%M:%S')})"]
         try:
             lines.append(f"QEMU: {self.qmp.status()}")
@@ -372,14 +374,14 @@ class Runner:
             lines.append(f"vCPUs: {exc}")
         lines.append("host: " + host_state())
         start = len(self.serial())
-        for key, wait in (("w", 4), ("l", 4), ("t", 15)):
+        for key, wait in (("9", 1), ("w", 4), ("l", 4), ("t", 15)):
             try:
                 self.qmp.send_key(["alt", "sysrq", key], hold_ms=200)
                 time.sleep(wait * min(1.0, max(0.05, self.scale)))
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"SysRq {key}: {exc}")
         dump = self.serial()[start:]
-        lines += ["", "## serial after SysRq w (blocked tasks), l (CPUs), t (all tasks)", dump[-250000:]]
+        lines += ["", "## serial after SysRq 9 (log level), w (blocked tasks), l (CPUs), t (all tasks)", dump[-400000:]]
         (self.out / "stall.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
         print("\n".join(lines[:4]), flush=True)
 

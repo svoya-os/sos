@@ -94,14 +94,21 @@ function check(what, ok) { checked++; if (!ok) { failed++; console.log("FAIL " +
     check("the film plays after storyEvery seconds", film === story);
     check("tiny screens still draw", A.asciiCells(A.asciiRender(new A.AsciiSaver({ sprite: imp, from: { x: 1, y: 1, cols: 8 } }), 20, 6, 3)).length > 0);
 }
-// fast enough for a 1080p lock screen (228×63 cells at 30 fps leaves room)
+// fast enough for a 1080p lock screen and a live wallpaper: what stands still (the eye's white, the
+// planet, its ring) is kept between frames. Node is faster than the shell's QML engine; the shell's
+// timer slows a frame down rather than spend more than a third of a core (AsciiView.qml).
 {
-    const s = new A.AsciiSaver({ sprite: imp, from: { x: 90, y: 20, cols: 24 } });
-    s.resize(228, 63);
-    const t0 = Date.now();
-    for (let n = 0; n < 30; n++) { const cv = A.asciiCanvas(228, 63); s.draw(cv, 3 + n / 30); A.asciiLayers(cv); }
-    const ms = (Date.now() - t0) / 30;
-    check(`a 228×63 frame in ${ms.toFixed(1)} ms (< 25)`, ms < 25);
+    const timed = (fx, w, h, t0) => {
+        for (let n = 0; n < 5; n++) { const cv = A.asciiCanvas(w, h); fx.draw(cv, t0 + n / 24); A.asciiLayers(cv); }
+        const start = Date.now();
+        for (let n = 0; n < 48; n++) { const cv = A.asciiCanvas(w, h); fx.draw(cv, t0 + 1 + n / 24); A.asciiLayers(cv); }
+        return (Date.now() - start) / 48;
+    };
+    const saver = timed(new A.AsciiSaver({ sprite: imp, from: { x: 90, y: 20, cols: 24 } }), 228, 63, 12);
+    const planet = timed(new A.AsciiPlanets({ hud: false }), 179, 48, 3);
+    if (process.env.SOS_ASCII_TIMES) console.log(`saver ${saver.toFixed(1)} ms, planet ${planet.toFixed(1)} ms`);
+    check(`a 228×63 screensaver frame in ${saver.toFixed(1)} ms (< 20)`, saver < 20);
+    check(`a 179×48 planet frame in ${planet.toFixed(1)} ms (< 12)`, planet < 12);
 }
 
 // the Firefox autoconfig (assets/firefox/sos.cfg): the SOS page and frame only with Phosphor
@@ -132,12 +139,17 @@ function runCfg(themeJson, shellJson) {
     const phosphor = JSON.stringify({ id: "phosphor", mode: "dark", accent: "#ff3cffd0", wall: "#ff0a0a0a", text: "#ffceffef", textFaint: "#ff5a5a5a", mono: "IBM Plex Mono" });
     const ph = runCfg(phosphor);
     check("phosphor: no errors in sos.cfg " + ph.errors.join(" "), ph.errors.length === 0);
-    check("phosphor: the new tab is the SOS page", ph.newTab === "file:///usr/share/svoya/shell/assets/newtab/index.html#fg=3cffd0&bg=0a0a0a&noise=5a5a5a" && ph.prefs["browser.startup.homepage"] === ph.newTab);
+    check("phosphor: the new tab is the SOS page, a plain address (Firefox then leaves the address bar empty)",
+          ph.newTab === "file:///usr/share/svoya/shell/assets/newtab/index.html" && ph.prefs["browser.startup.homepage"] === ph.newTab);
+    check("phosphor: the page gets the theme's colors from the sheet",
+          /@-moz-document url-prefix\("file:\/\/\/usr\/share\/svoya\/shell\/assets\/newtab\/index\.html"\) \{\s*:root \{ --fg: #3cffd0 !important; --bg: #0a0a0a !important; --noise: #5a5a5a !important; \}/.test(ph.sheets[0] || ""));
+    check("phosphor: theme images and gradients are painted over", /#navigator-toolbox, #titlebar, #TabsToolbar, #toolbar-menubar \{ background: rgba\(10, 10, 10, 1\.000\) !important;/.test(ph.sheets[0] || ""));
     check("phosphor: Firefox's dark theme underneath", ph.prefs["extensions.activeThemeID"] === "firefox-compact-dark@mozilla.org");
     check("the symbol style off: Firefox as it is", runCfg(phosphor, JSON.stringify({ asciiStyle: "off" })).newTab === null);
     check("without the browser part: Firefox as it is", runCfg(phosphor, JSON.stringify({ asciiParts: ["widgets"] })).sheets.length === 0);
     const paper = runCfg(JSON.stringify({ id: "paper", mode: "light", accent: "#ff0b6e5a", wall: "#fff2efe8" }), JSON.stringify({ asciiStyle: "always" }));
-    check("always + paper: a light page, no dark Firefox theme", /&light=1$/.test(paper.newTab || "") && !("extensions.activeThemeID" in paper.prefs));
+    check("always + paper: a light page, no dark Firefox theme", /--alive: #d6246e !important; color-scheme: light !important;/.test(paper.sheets[0] || "")
+          && /--bg: #f2efe8 !important/.test(paper.sheets[0] || "") && !("extensions.activeThemeID" in paper.prefs));
     check("phosphor: the frame is themed", ph.sheets.length === 1 && ph.sheets[0].includes("--toolbar-bgcolor") && ph.sheets[0].includes("rgba(10, 10, 10, 1.000)") && ph.sheets[0].includes('"IBM Plex Mono"'));
     const gr = runCfg(JSON.stringify({ id: "graphite", accent: "#ffffb547" }));
     check("graphite: Firefox as it is", gr.newTab === null && Object.keys(gr.prefs).length === 0 && gr.sheets.length === 0 && gr.errors.length === 0);

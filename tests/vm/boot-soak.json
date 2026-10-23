@@ -6,7 +6,7 @@
     {"id": "boot", "action": "wait_serial", "pattern": "SOS 26\\.10", "timeout_s": 60, "optional": true},
     {"id": "boot", "action": "wait_screen", "min_delay_s": 4, "timeout_s": 60},
     {"id": "boot", "action": "key", "keys": ["ret"]},
-    {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 600},
+    {"id": "desktop", "action": "wait_serial", "pattern": "SOS-MARK \\S+ desktop-ready", "fail_pattern": "SOS-MARK \\S+ desktop-timeout", "timeout_s": 240},
     {"id": "desktop", "action": "sleep", "seconds": 5},
     {"id": "desktop", "action": "screenshot", "name": "01-desktop", "assert": "not_blank"}
   ]

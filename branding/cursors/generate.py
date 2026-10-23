@@ -7,8 +7,12 @@
 The arrow is near-black with a phosphor edge (seen on dark and on light), the text cursor is a mono
 I-beam, a link turns the arrow's edge pink (pink is what is alive), waiting is the terminal spinner
 [|] [/] [-] [\\] and working the arrow with a small spinner; a plus for precision, arrows for moving
-and resizing, a pink [×] where nothing can go. 24, 32, 48 and 64 px; everything else (zoom,
-copy, alias…) comes from Adwaita (Inherits).
+and resizing, a pink [×] where nothing can go, the arrow with a + to copy or zoom in and a - to
+zoom out. 24, 32, 48 and 64 px.
+
+The theme names every shape itself (the CSS names, the X11 ones and their hashes) and inherits
+nothing: Hyprland's own XCursor loader keeps a theme's folders in a sorted set, so an inherited
+Adwaita ("A" before "s") would win every shape both have, and the symbol cursor would never show.
 
 Packaged by svoya-branding into /usr/share/icons/sos-symbols; the shell sets it (hyprctl setcursor,
 gsettings cursor-theme) while the symbol layer covers the cursor (Settings.asciiParts).
@@ -140,7 +144,11 @@ def forbidden(size: int) -> Image.Image:
 
 
 def help_arrow(size: int) -> Image.Image:
-    return arrow(size, extra=lambda d, k: glyph(d, "?", 23, 24, 12, k, PHOSPHOR))
+    return glyph_arrow(size, "?")
+
+
+def glyph_arrow(size: int, ch: str) -> Image.Image:
+    return arrow(size, extra=lambda d, k: glyph(d, ch, 23, 24, 12, k, PHOSPHOR))
 
 
 # cursor -> (drawing for a size [-> list of frames for animations], hotspot in the 32 grid)
@@ -154,22 +162,28 @@ CURSORS = {
     "fleur": (lambda s: [plus(s, arrows=True)], (16, 16)),
     "not-allowed": (lambda s: [forbidden(s)], (16, 16)),
     "question_arrow": (lambda s: [help_arrow(s)], (3, 2)),
+    "copy": (lambda s: [glyph_arrow(s, "+")], (3, 2)),
+    "zoom-out": (lambda s: [glyph_arrow(s, "-")], (3, 2)),
     "sb_h_double_arrow": (lambda s: [double_arrow(s, 0)], (16, 16)),
     "sb_v_double_arrow": (lambda s: [double_arrow(s, 90)], (16, 16)),
     "bd_double_arrow": (lambda s: [double_arrow(s, 45)], (16, 16)),
     "fd_double_arrow": (lambda s: [double_arrow(s, -45)], (16, 16)),
 }
 ALIASES = {
-    "left_ptr": ["default", "arrow", "top_left_arrow", "left-arrow"],
-    "xterm": ["text", "ibeam"],
+    "left_ptr": ["default", "arrow", "top_left_arrow", "left-arrow", "context-menu", "alias", "dnd-link",
+                 "3085a0e285430894940527032f8b26df", "640fb0e74195791501fd1ed57b41487f", "a2a266d0498c3104214a47bd64ab0fc8"],
+    "xterm": ["text", "ibeam", "vertical-text"],
     "hand2": ["pointer", "hand1", "hand", "pointing_hand", "9d800788f1b08800ae810202380a0822", "e29285e634086352946a0e7090d73106"],
     "watch": ["wait"],
     "left_ptr_watch": ["progress", "half-busy", "00000000000000020006000e7e9ffc3f", "08e8e1c95fe2fc01f976f1e063a24ccd",
                        "3ecb610c1bf2410f44200f48c40d3599"],
-    "crosshair": ["cross", "tcross", "cross_reverse", "diamond_cross"],
-    "fleur": ["move", "all-scroll", "size_all", "grabbing", "closedhand", "dnd-move", "grab", "openhand",
+    "crosshair": ["cross", "tcross", "cross_reverse", "diamond_cross", "cell", "plus"],
+    "fleur": ["move", "all-scroll", "all-resize", "size_all", "grabbing", "closedhand", "dnd-move", "grab", "openhand",
               "4498f0e0c1937ffe01fd06f973665830", "9081237383d90e509aa00f00170e968f"],
-    "not-allowed": ["crossed_circle", "no-drop", "forbidden", "circle", "dnd-no-drop", "03b6e0fcb3499374a867c041f52298f0"],
+    "not-allowed": ["crossed_circle", "no-drop", "forbidden", "circle", "dnd-no-drop", "dnd-none", "X_cursor", "pirate",
+                    "03b6e0fcb3499374a867c041f52298f0"],
+    "copy": ["dnd-copy", "zoom-in", "1081e37283d90000800003c07f3ef6bf", "6407b0e94181790501fd1e167b474872",
+             "b66166c04f8c3109214a4fbd64a50fc8"],
     "question_arrow": ["help", "whats_this", "left_ptr_help", "dnd-ask", "5c6cd98b3f3ebcb1f9c7f1c204630408",
                        "d9ce0ab605698f320427677b8b1a4aeb"],
     "sb_h_double_arrow": ["ew-resize", "col-resize", "h_double_arrow", "size_hor", "split_h", "left_side", "right_side",
@@ -235,8 +249,8 @@ def build(out_root: pathlib.Path = HERE) -> pathlib.Path:
         (d / "cursors" / name).write_bytes(xcursor(images))
         for alias in ALIASES.get(name, []):
             (d / "cursors" / alias).symlink_to(name)
-    (d / "index.theme").write_text(f"[Icon Theme]\nName={NAME}\nComment=SOS ASCII: the cursor of the symbol layer\n"
-                                   "Inherits=Adwaita\n", encoding="utf-8")
+    (d / "index.theme").write_text(f"[Icon Theme]\nName={NAME}\nComment=SOS ASCII: the cursor of the symbol layer\n",
+                                   encoding="utf-8")
     return d
 
 

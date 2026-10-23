@@ -19,7 +19,8 @@ var ASCII_STORY_LINE = "> LOOK CLOSER";
 var ASCII_ZOOM_MAX = 22.0;
 var ASCII_FLASH_GAP = 0.5;
 
-function asciiTrunc(x) { return x < 0 ? Math.ceil(x) : Math.floor(x); }
+// toward zero, like Python's int(); `| 0` is exact inside the int32 range (NaN and ±Infinity stay)
+function asciiTrunc(x) { return x > -2147483649 && x < 2147483648 ? x | 0 : x < 0 ? Math.ceil(x) : Math.floor(x); }
 function asciiMod(a, b) { return ((a % b) + b) % b; }
 function asciiClamp(v, lo, hi) {
     if (lo === undefined) lo = 0.0;
@@ -296,6 +297,39 @@ AsciiEye.prototype.resize = function (w, h) {
         }
     }
     this.scratch = asciiCanvas(w, h);
+    this.lidCache = null;
+};
+
+// The lids for one openness and zoom, and the white between them (cell index, shade before breathing
+// and grain): the same frame after frame until the eye blinks, so they are kept, not recomputed.
+AsciiEye.prototype.lids = function (w, h, op, z) {
+    var c = this.lidCache;
+    if (c && c.op === op && c.z === z && c.w === w && c.h === h) return c;
+    var A = ASCII_ASPECT, cx = this.cx, cy = this.cy, a = this.a * z, b = this.b * z;
+    var up = new Array(w), lo = new Array(w), ks = [], ps = [], i, j, u, y;
+    for (i = Math.max(0, asciiTrunc(cx - a)); i < Math.min(w, asciiTrunc(cx + a) + 1); i++) {
+        u = (i + 0.5 - cx) / a;
+        if (u * u >= 1) continue;
+        var sh = Math.pow(1 - u * u, 0.8), yc = cy + b * 0.30 * sh;
+        up[i] = yc + (cy - b * sh - yc) * op;
+        lo[i] = yc + (cy + b * 0.88 * sh - yc) * op;
+    }
+    for (i = 0; i < w; i++) {
+        var yu = up[i];
+        if (yu === undefined) continue;
+        var yl = lo[i], span = yl - yu;
+        if (span <= 0.5) continue;
+        u = (i + 0.5 - cx) / a;
+        var side = Math.pow(1 - u * u, 0.5);
+        for (j = Math.max(0, asciiTrunc(yu / A)); j < Math.min(h - 1, asciiTrunc(yl / A)) + 1; j++) {
+            y = (j + 0.5) * A;
+            if (!(yu < y && y < yl)) continue;
+            ks.push(j * w + i);
+            ps.push(0.10 + 0.24 * side * Math.pow(Math.sin(Math.PI * (y - yu) / span), 0.7));
+        }
+    }
+    this.lidCache = c = { op: op, z: z, w: w, h: h, up: up, lo: lo, ks: new Int32Array(ks), ps: new Float64Array(ps) };
+    return c;
 };
 
 AsciiEye.prototype.key = function (k, t) {
@@ -429,29 +463,12 @@ AsciiEye.prototype.drawEye = function (cv, t, frame, op, g, rp, z, thinking) {
     rp *= z;
     var icx = cx + g[0] * z, icy = cy + g[1] * z;
     var breath = 1.0 + 0.07 * Math.sin(t * 2 * Math.PI / 6.4), narrow = this.narrow;
-    var up = new Array(w), lo = new Array(w), i, j, k, u, y;
-    for (i = Math.max(0, asciiTrunc(cx - a)); i < Math.min(w, asciiTrunc(cx + a) + 1); i++) {
-        u = (i + 0.5 - cx) / a;
-        if (u * u >= 1) continue;
-        var sh = Math.pow(1 - u * u, 0.8), yc = cy + b * 0.30 * sh;
-        up[i] = yc + (cy - b * sh - yc) * op;
-        lo[i] = yc + (cy + b * 0.88 * sh - yc) * op;
-    }
-    var grain = this.grain;
-    for (i = 0; i < w; i++) {
-        var yu = up[i];
-        if (yu === undefined) continue;
-        var yl = lo[i], span = yl - yu;
-        if (span <= 0.5) continue;
-        u = (i + 0.5 - cx) / a;
-        var side = Math.pow(1 - u * u, 0.5);
-        for (j = Math.max(0, asciiTrunc(yu / A)); j < Math.min(h - 1, asciiTrunc(yl / A)) + 1; j++) {
-            y = (j + 0.5) * A;
-            if (!(yu < y && y < yl)) continue;
-            k = j * w + i;
-            var v = (0.10 + 0.24 * side * Math.pow(Math.sin(Math.PI * (y - yu) / span), 0.7)) * breath + (grain[k] - 0.5) * 0.14;
-            if (v > 0.2) { ch[k] = ASCII_FINE[Math.min(5, asciiTrunc(v * 15.999))]; co[k] = NOISE; }
-        }
+    var lids = this.lids(w, h, op, z), up = lids.up, lo = lids.lo, ks = lids.ks, ps = lids.ps;
+    var grain = this.grain, i, j, k, u, y;
+    for (var n = 0; n < ks.length; n++) {
+        k = ks[n];
+        var v = ps[n] * breath + (grain[k] - 0.5) * 0.14;
+        if (v > 0.2) { ch[k] = ASCII_FINE[Math.min(5, asciiTrunc(v * 15.999))]; co[k] = NOISE; }
     }
     var rot = thinking ? t * 0.9 : 0.0, fa = narrow ? 19 : 34, fb = narrow ? 5 : 7;
     var rc = R ? rp / R + 0.16 : 0.5, ring = 1.6 * Math.max(1.0, Math.pow(z, 0.5));
@@ -671,6 +688,8 @@ AsciiPlanets.prototype.resize = function (w, h) {
     this.d = this.rb * 2.35;
     this.tilt = -0.22;
     var n = Math.max(12, Math.floor(w * h / (this.narrow ? 44 : 30))), s = this.seed;
+    this.ringCache = {};
+    this.globe = null;
     this.dust = [];
     for (var k = 0; k < n; k++)
         this.dust.push([asciiRnd(k, s, 1), asciiRnd(k, s, 2), 0.002 + 0.006 * asciiRnd(k, s, 3), (asciiRnd(k, s, 4) - 0.5) * 0.002,
@@ -714,8 +733,46 @@ AsciiPlanets.prototype.draw = function (cv, t) {
         asciiText(cv, w - stamp.length - 4, h - 1, " " + stamp + " ", NOISE);
     }
 };
+// The planet's cells (it stands still and only its surface turns): index, place and everything
+// about the light that does not depend on time, kept from frame to frame.
+AsciiPlanets.prototype.globeCells = function (w, h) {
+    var g = this.globe;
+    if (g && g.w === w && g.h === h) return g;
+    var ox = this.px, oy = this.py, r = this.rb, lx = -0.35, ly = -0.30, lz = 0.89;
+    var tb = Math.sin(0.35), cb = Math.cos(0.35), list = { k: [], x: [], y: [], r2: [], lam: [], lat: [], lon: [], rim: [] };
+    for (var j = Math.max(0, asciiTrunc((oy - r) / ASCII_ASPECT)); j < Math.min(h, asciiTrunc((oy + r) / ASCII_ASPECT) + 2); j++) {
+        var y = (j + 0.5) * ASCII_ASPECT, ny = (y - oy) / r;
+        for (var i = Math.max(0, asciiTrunc(ox - r)); i < Math.min(w, asciiTrunc(ox + r) + 2); i++) {
+            var nx = (i + 0.5 - ox) / r, r2 = nx * nx + ny * ny;
+            if (r2 > 1.0) continue;
+            var nz = Math.sqrt(1.0 - r2), lam = nx * lx + ny * ly + nz * lz;
+            list.k.push(j * w + i); list.x.push(i + 0.5); list.y.push(y); list.r2.push(r2);
+            list.lam.push(Math.max(0.0, lam));
+            list.lat.push(-nx * tb + ny * cb);
+            list.lon.push(Math.atan2(nx * cb + ny * tb, nz));
+            list.rim.push(0.35 * Math.pow(1.0 - nz, 4) * Math.max(0.0, -nx * 0.6 - ny * 0.4 + 0.2));
+        }
+    }
+    this.globe = g = { w: w, h: h, k: new Int32Array(list.k), x: new Float64Array(list.x), y: new Float64Array(list.y),
+                       r2: new Float64Array(list.r2), lam: new Float64Array(list.lam), lat: new Float64Array(list.lat),
+                       lon: new Float64Array(list.lon), rim: new Float64Array(list.rim) };
+    return g;
+};
 AsciiPlanets.prototype.sphere = function (cv, ox, oy, r, t, moon, shadow) {
     var w = cv.w, h = cv.h, ch = cv.ch, co = cv.co, lx = -0.35, ly = -0.30, lz = 0.89;
+    if (!moon && ox === this.px && oy === this.py && r === this.rb) {
+        var g = this.globeCells(w, h), spin0 = t * 0.35, sr0 = this.rm * 1.1;
+        var sx0 = shadow ? shadow[0] + 0.30 * this.rb : 0, sy0 = shadow ? shadow[1] + 0.22 * this.rb : 0;
+        for (var n = 0; n < g.k.length; n++) {
+            var lat0 = g.lat[n], lon0 = g.lon[n] + spin0, k0 = g.k[n];
+            var in0 = g.lam[n] * (0.86 + 0.14 * Math.sin(lat0 * 9.0 + 1.6 * Math.sin(lon0 * 2.0 + lat0 * 4.0)));
+            in0 += g.rim[n];
+            if (shadow && (g.x[n] - sx0) * (g.x[n] - sx0) + (g.y[n] - sy0) * (g.y[n] - sy0) < sr0 * sr0) in0 *= 0.12;
+            if (in0 < 0.07) { ch[k0] = g.r2[n] > 0.86 ? "." : " "; co[k0] = NOISE; }
+            else { ch[k0] = ASCII_RAMP[asciiTrunc(asciiClamp(in0) * 9.999)]; co[k0] = FG; }
+        }
+        return;
+    }
     var tb = Math.sin(0.35), cb = Math.cos(0.35), spin = t * 0.35, sr = this.rm * 1.1;
     var sx = shadow ? shadow[0] + 0.30 * this.rb : 0, sy = shadow ? shadow[1] + 0.22 * this.rb : 0;
     for (var j = Math.max(0, asciiTrunc((oy - r) / ASCII_ASPECT)); j < Math.min(h, asciiTrunc((oy + r) / ASCII_ASPECT) + 2); j++) {
@@ -745,7 +802,17 @@ AsciiPlanets.prototype.cutout = function (cv, ox, oy, r) {
                 asciiPut(cv, i, j, " ", BG);
 };
 AsciiPlanets.prototype.ring = function (cv, back) {
-    var w = cv.w, h = cv.h, rb = this.rb, ox = this.px, oy = this.py, ca = Math.cos(this.tilt), sa = Math.sin(this.tilt);
+    var key = (back ? "b" : "f") + cv.w + "x" + cv.h, kept = this.ringCache[key];
+    if (!kept) {
+        // the ring never moves: its cells (and, in front, the planet's edge it clears) are worked out once
+        var puts = [];
+        kept = this.ringCache[key] = puts;
+        this.ringCells(cv.w, cv.h, back, function (i, j, c, slot) { puts.push([i, j, c, slot]); });
+    }
+    for (var n = 0; n < kept.length; n++) asciiPut(cv, kept[n][0], kept[n][1], kept[n][2], kept[n][3]);
+};
+AsciiPlanets.prototype.ringCells = function (w, h, back, put) {
+    var rb = this.rb, ox = this.px, oy = this.py, ca = Math.cos(this.tilt), sa = Math.sin(this.tilt);
     var ro = 1.82 * rb, kq = 0.28, span = ro * Math.abs(sa) + ro * kq * ca + 1, cells = [], i, j;
     for (j = Math.max(0, asciiTrunc((oy - span) / ASCII_ASPECT)); j < Math.min(h, asciiTrunc((oy + span) / ASCII_ASPECT) + 2); j++) {
         var y = (j + 0.5) * ASCII_ASPECT - oy;
@@ -768,11 +835,11 @@ AsciiPlanets.prototype.ring = function (cv, back) {
         order.forEach(function (ci) {
             [spanJ[ci][0] - 1, spanJ[ci][1] + 1].forEach(function (jj) {
                 var ax = (ci + 0.5 - ox) / rb, ay = ((jj + 0.5) * ASCII_ASPECT - oy) / rb;
-                if (ax * ax + ay * ay < 1) asciiPut(cv, ci, jj, " ", BG);
+                if (ax * ax + ay * ay < 1) put(ci, jj, " ", BG);
             });
         });
     }
-    cells.forEach(function (e) { asciiPut(cv, e[0], e[1], e[2], e[3]); });
+    cells.forEach(function (e) { put(e[0], e[1], e[2], e[3]); });
 };
 
 // ---- for the shell and the page: text layers, cells, the morph, the screensaver ---------------------

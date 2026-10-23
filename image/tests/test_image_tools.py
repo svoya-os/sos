@@ -184,8 +184,18 @@ class PrepareScriptTests(unittest.TestCase):
                 for svg in theme.rglob("*.svg"):
                     ElementTree.parse(svg)                  # well formed
             cursors = files / "usr/share/icons/sos-symbols/cursors"
-            self.assertIn("Inherits=Adwaita", (cursors.parent / "index.theme").read_text())
+            # no Inherits: Hyprland's loader would let an inherited Adwaita win every shared shape;
+            # so every shape a client or Hyprland asks for is in the theme itself
+            self.assertNotIn("Inherits", (cursors.parent / "index.theme").read_text())
             self.assertTrue((cursors / "pointer").is_symlink())
+            css = ("default context-menu help pointer progress wait cell crosshair text vertical-text alias copy move "
+                   "no-drop not-allowed grab grabbing e-resize n-resize ne-resize nw-resize s-resize se-resize sw-resize "
+                   "w-resize ew-resize ns-resize nesw-resize nwse-resize col-resize row-resize all-scroll zoom-in zoom-out")
+            legacy = ("left_ptr xterm hand1 hand2 watch left_ptr_watch crossed_circle dnd-none dnd-copy dnd-link dnd-move "
+                      "dnd-ask plus cross fleur right_side left_side top_side bottom_side top_left_corner top_right_corner "
+                      "bottom_left_corner bottom_right_corner sb_h_double_arrow sb_v_double_arrow question_arrow")
+            for name in (css + " " + legacy).split():
+                self.assertTrue((cursors / name).exists(), name)
             for name in ("left_ptr", "xterm", "hand2", "watch", "left_ptr_watch", "not-allowed"):
                 data = (cursors / name).read_bytes()
                 magic, hsize, _, n = struct.unpack_from("<4sIII", data, 0)

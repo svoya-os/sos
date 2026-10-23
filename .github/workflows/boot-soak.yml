@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-# Boot soak: the newest test build (GitHub Releases, tag "test") booted to the live desktop 36 times
-# on fresh runners — 18 from the optical drive, as the ISO tests do, and 18 from a USB stick, as
+# Boot soak: the newest test build (GitHub Releases, tag "test") booted to the live desktop 60 times
+# on fresh runners — 30 from the optical drive, as the ISO tests do, and 30 from a USB stick, as
 # people do — to catch the rare boot that stops in casper's scripts (about 1 in 10–20 boots of the
-# ISO runs since September) and to tell whether it is the emulated drive or SOS. A stalled boot
-# leaves stall.txt: QEMU's state, busy or idle vCPUs, the host's load and the kernel's SysRq dump of
-# blocked tasks, CPUs and all tasks (tests/vm/run.py). Results: ci-screens/soak/<run>/<drive>-<n>/.
+# ISO runs since September; 1 in 72 in the first two soaks, from the USB stick, so not the drive).
+# A stalled boot leaves stall.txt: QEMU's state, busy or idle vCPUs, the host's load and the
+# kernel's SysRq dump of blocked tasks, CPUs and all tasks (tests/vm/run.py), and its whole serial
+# log. Results: ci-screens/soak/<run>/<drive>-<n>/. Runs after a pushed build (not the nightly one)
+# or by hand.
 name: Boot soak
 
 on:
@@ -15,15 +17,15 @@ on:
     inputs:
       boots:
         description: "Boots per job (12 jobs)"
-        default: "3"
+        default: "5"
 
 permissions: {}
 
 jobs:
   soak:
     name: Soak (${{ matrix.cdrom }} ${{ matrix.n }})
-    # after an ISO run that published a test build (push or nightly), or by hand
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # after an ISO run of a push that published a test build, or by hand
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     permissions:
@@ -62,7 +64,7 @@ jobs:
 
       - name: Boot again and again
         env:
-          BOOTS: ${{ inputs.boots || '3' }}
+          BOOTS: ${{ inputs.boots || '5' }}
           CDROM: ${{ matrix.cdrom }}
         run: |
           set -uo pipefail
@@ -106,6 +108,7 @@ jobs:
                   cp "$d/stall.txt" "$d/host.log" "$d/report.json" "$d/qemu.log" "$d/qemu-command.txt" "$out/$n"/ 2>/dev/null || true
                   cp "$d"/screens/*.png "$out/$n"/ 2>/dev/null || true
                   tail -n 300 "$d/serial.log" | tr -d '\r' | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$out/$n/serial-tail.txt"
+                  tr -d '\r' <"$d/serial.log" | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g' >"$out/$n/serial.txt"
               fi
           done
           scripts/ci-publish.sh "$out" "soak/$RUN/$SUB" "soak: run $RUN ($SUB)"

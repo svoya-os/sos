@@ -40,6 +40,7 @@ Item {
 
     // ---- Jackson -------------------------------------------------------------------------------------
     property bool showJackson: true
+    property bool paused: false          // hidden under the lock's screensaver: no caret blink, Jackson still
     property var look: Avatar.look
     property string say: ""
     property string sayMeta: ""
@@ -401,7 +402,7 @@ Item {
         }
 
         SequentialAnimation on opacity {
-            running: caret.visible && root.motion && root.length === 0
+            running: caret.visible && root.motion && root.length === 0 && !root.paused
             loops: Animation.Infinite
             alwaysRunToEnd: true
 
@@ -475,6 +476,7 @@ Item {
         size: root.jSize
         backing: false
         menu: false
+        live: !root.paused
         look: root.look
         forceAnim: ({
                 idle: root.focused ? "listening" : "idle",

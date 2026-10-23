@@ -1,9 +1,10 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- SOS ASCII in Firefox: the new tab and the home page with the symbol layer (assets/firefox/sos.cfg
-     opens it as file:///usr/share/svoya/shell/assets/newtab/index.html#fg=…&bg=…&noise=…, the theme's
-     colors). Jackson's eye, drawn by the shell's own engine (components/ascii.js), looks at the
-     pointer; below it the time. -->
+     opens file:///usr/share/svoya/shell/assets/newtab/index.html and gives it the theme's colors
+     through a user style sheet: --fg, --bg, --noise and, for a light theme, --alive and color-scheme;
+     #fg=…&bg=…&noise=…[&light=1] still works when the page is opened by hand). Jackson's eye, drawn
+     by the shell's own engine (components/ascii.js), looks at the pointer; below it the time. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
