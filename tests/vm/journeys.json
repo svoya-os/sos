@@ -274,6 +274,8 @@
     {"id": "check", "action": "type", "text": "clear; logger -t sos-vm-test \"SOS-CHECK cursor=$(gsettings get org.gnome.desktop.interface cursor-theme) icons=$(gsettings get org.gnome.desktop.interface icon-theme) gtk=$(gsettings get org.gnome.desktop.interface gtk-theme) themes=$(ls /usr/share/themes | grep -c adw-gtk3) files=$(ls /usr/share/icons/sos-symbols/cursors | wc -l)\"\n", "continue_on_failure": true},
     {"id": "check", "action": "type", "text": "grep -iE 'warn|error' $XDG_RUNTIME_DIR/sos-shell.log | tail -n 80 | logger -t sos-vm-test\n", "continue_on_failure": true},
     {"id": "check", "action": "wait_serial", "pattern": "SOS-CHECK cursor=", "timeout_s": 20, "continue_on_failure": true},
+    {"id": "hardware", "action": "type", "text": "clear; sos hardware --save >/dev/null 2>&1; logger -t sos-vm-test \"SOS-HW rc=$? lines=$(grep -c . ~/sos-hardware-report.txt)\"; head -n 40 ~/sos-hardware-report.txt | logger -t sos-vm-test\n", "continue_on_failure": true},
+    {"id": "hardware", "action": "wait_serial", "pattern": "SOS-HW rc=\\d+ lines=\\d+", "timeout_s": 30, "continue_on_failure": true},
     {"id": "ascii", "action": "type", "text": "clear; sos theme apply auto\n", "continue_on_failure": true},
     {"id": "ascii", "action": "sleep", "seconds": 5},
 
@@ -288,8 +290,6 @@
     {"id": "doctor", "action": "screenshot", "name": "12-system-doctor", "continue_on_failure": true},
     {"id": "doctor", "action": "key", "keys": ["esc"], "continue_on_failure": true},
     {"id": "doctor", "action": "sleep", "seconds": 1},
-    {"id": "hardware", "action": "type", "text": "clear; sos hardware --save >/dev/null 2>&1; logger -t sos-vm-test \"SOS-HW rc=$? lines=$(grep -c . ~/sos-hardware-report.txt)\"; head -n 40 ~/sos-hardware-report.txt | logger -t sos-vm-test\n", "continue_on_failure": true},
-    {"id": "hardware", "action": "wait_serial", "pattern": "SOS-HW rc=\\d+ lines=\\d+", "timeout_s": 30, "continue_on_failure": true},
 
     {"id": "check", "action": "type", "text": "(sleep 75; grep -iE 'warn|error' $XDG_RUNTIME_DIR/sos-shell.log | tail -n 80 | logger -t sos-vm-test) &\n", "continue_on_failure": true},
     {"id": "perf", "action": "type", "text": "(sleep 40; top -bn2 -d10 -p $(pgrep -xo quickshell) | tail -1 | awk '{print \"SOS-PERF lock-saver \" $9 \"%\"}' | logger -t sos-vm-test) &\n", "continue_on_failure": true},
