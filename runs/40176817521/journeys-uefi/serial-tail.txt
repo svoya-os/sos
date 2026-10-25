@@ -1,0 +1,200 @@
+115:DEBUG from aquamarine ]: drm: Mode 21: 1280x768@59.87Hz 
+116:DEBUG from aquamarine ]: drm: Mode 22: 1024x768@60.00Hz 
+117:DEBUG from aquamarine ]: drm: Mode 23: 800x600@60.32Hz 
+118:DEBUG from aquamarine ]: drm: Mode 24: 640x480@60.00Hz 
+119:DEBUG from aquamarine ]: drm: Mode 25: 640x480@59.94Hz 
+120:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 360, y: 220] (mm)
+121:DEBUG from aquamarine ]: drm: Description Red Hat, Inc. QEMU Monitor  (Virtual-1)
+122:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+123:DEBUG from aquamarine ]: drm: Explicit sync supported
+124:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support CTM
+125:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support HDR (0)
+126:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support Colorspace (0)
+127:DEBUG from aquamarine ]: drm: gpu /dev/dri/card1 becomes primary drm
+131:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: Applying monitor rule for Virtual-1
+DEBUG ]: Monitor Virtual-1: requested preferred, using preferred mode 1440x900@75.00Hz
+DEBUG ]: output Virtual-1 succeeded basic test on format DRM_FORMAT_XRGB8888
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+ERR from aquamarine ]: drm: Cannot commit when a page-flip is awaiting
+ERR ]: Couldn't commit output named Virtual-1
+DEBUG ]: Monitor Virtual-1 data dump: res 1440x900@75.00Hz, scale 1.00, transform 0, pos 0x0, 10b 0
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+DEBUG ]: arrangeMonitors: 1 to arrange
+DEBUG ]: arrangeMonitors: Virtual-1 auto [0, 0]
+DEBUG ]: arrangeMonitors: Virtual-1 xwayland [0, 0]
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+ERR ]: CConfigWatcher: got an event for wd 29 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 30 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 31 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 32 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 33 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 34 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 35 which we don't have?!
+DEBUG ]: Hyprctl: new connection from pid 1427
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+DEBUG ]: Hyprctl: new connection from pid 1427
+DEBUG ]: Hyprctl: new connection from pid 1427
+DEBUG ]: Hyprctl: new connection from p## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1792918628_1103454474/hyprland.log (renderer, errors, config, exec)
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 1 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 2 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 3 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 4 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 5 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 6 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 7 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 8 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 9 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 10 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 11 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 12 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 13 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 14 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 15 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 16 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 17 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 18 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 19 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 20 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 21 which we don't have?!
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+SOS-DIAG end ready
+[   20.194011] systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+[   39.657892] netavark[1015]: timeout met: exiting after 30 secs of inactivity
+[   39.659665] systemd[1]: netavark-dhcp-proxy.service: Deactivated successfully.
+[   39.967302] systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+[   42.318230] systemd[1240]: Started kitty-1766-0.scope - kitty child process: 1783 launched by: 1766.
+[   49.337325] sos-vm-test[1808]: SOS-STEP doctor-typed
+[   73.520571] systemd[1]: snapperd.service: Deactivated successfully.
+[   97.394848] jacksond[1414]: INFO jackson.engine: turn done in 3 ms: jackson/fastpath, 0+0 tokens
+[  167.769769] jacksond[1414]: INFO jackson.engine: turn done in 179 ms: jackson/fastpath, 0+0 tokens
+[  184.296012] jacksond[1414]: INFO jackson.engine: turn done in 2 ms: jackson/fastpath, 0+0 tokens
+[  189.922010] jacksond[1414]: INFO jackson.engine: turn done in 2 ms: jackson/fastpath, 0+0 tokens
+[  195.825685] jacksond[1414]: INFO jackson.engine: turn done in 2 ms: jackson/fastpath, 0+0 tokens
+[  201.375480] jacksond[1414]: INFO jackson.engine: turn done in 1 ms: jackson/fastpath, 0+0 tokens
+[  208.589628] jacksond[1414]: INFO jackson.engine: turn done in 5 ms: studio/flux2-klein-4b, 0+0 tokens
+[  215.285733] jacksond[1414]: INFO jackson.engine: turn done in 9 ms: jackson/fastpath, 0+0 tokens
+[  215.759626] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.xfce.Xfconf' unit='xfconfd.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  215.764151] systemd[1240]: Starting xfconfd.service - Xfce configuration service...
+[  215.794342] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.xfce.Xfconf'
+[  215.794649] systemd[1240]: Started xfconfd.service - Xfce configuration service.
+[  215.922332] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.gtk.vfs.UDisks2VolumeMonitor' unit='gvfs-udisks2-volume-monitor.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  215.931093] systemd[1240]: Starting gvfs-udisks2-volume-monitor.service - Virtual filesystem service - disk device monitor...
+[  215.979397] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gtk.vfs.UDisks2VolumeMonitor'
+[  215.979759] systemd[1240]: Started gvfs-udisks2-volume-monitor.service - Virtual filesystem service - disk device monitor.
+[  215.983722] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.gtk.vfs.MTPVolumeMonitor' unit='gvfs-mtp-volume-monitor.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  215.990124] systemd[1240]: Starting gvfs-mtp-volume-monitor.service - Virtual filesystem service - Media Transfer Protocol monitor...
+[  216.011996] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gtk.vfs.MTPVolumeMonitor'
+[  216.012315] systemd[1240]: Started gvfs-mtp-volume-monitor.service - Virtual filesystem service - Media Transfer Protocol monitor.
+[  216.016965] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.gtk.vfs.GPhoto2VolumeMonitor' unit='gvfs-gphoto2-volume-monitor.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  216.023126] systemd[1240]: Starting gvfs-gphoto2-volume-monitor.service - Virtual filesystem service - digital camera monitor...
+[  216.089381] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gtk.vfs.GPhoto2VolumeMonitor'
+[  216.089748] systemd[1240]: Started gvfs-gphoto2-volume-monitor.service - Virtual filesystem service - digital camera monitor.
+[  216.093724] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.gtk.vfs.GoaVolumeMonitor' unit='gvfs-goa-volume-monitor.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  216.097406] systemd[1240]: Starting gvfs-goa-volume-monitor.service - Virtual filesystem service - GNOME Online Accounts monitor...
+[  216.119494] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating service name='org.gnome.OnlineAccounts' requested by ':1.57' (uid=1000 pid=2088 comm="/usr/libexec/gvfs-goa-volume-monitor" label="unconfined")
+[  216.182993] goa-daemon[2093]: goa-daemon version 3.58.0 starting
+[  216.188620] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating service name='org.gnome.Identity' requested by ':1.58' (uid=1000 pid=2093 comm="/usr/libexec/goa-daemon" label="unconfined")
+[  216.194968] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gnome.OnlineAccounts'
+[  216.203161] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gtk.vfs.GoaVolumeMonitor'
+[  216.203346] systemd[1240]: Started gvfs-goa-volume-monitor.service - Virtual filesystem service - GNOME Online Accounts monitor.
+[  216.207586] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gnome.Identity'
+[  216.211819] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.gtk.vfs.AfcVolumeMonitor' unit='gvfs-afc-volume-monitor.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  216.218654] systemd[1240]: Starting gvfs-afc-volume-monitor.service - Virtual filesystem service - Apple File Conduit monitor...
+[  216.248770] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gtk.vfs.AfcVolumeMonitor'
+[  216.249051] systemd[1240]: Started gvfs-afc-volume-monitor.service - Virtual filesystem service - Apple File Conduit monitor.
+[  216.296231] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.gtk.vfs.Metadata' unit='gvfs-metadata.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  216.303112] systemd[1240]: Starting gvfs-metadata.service - Virtual filesystem metadata service...
+[  216.369774] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.gtk.vfs.Metadata'
+[  216.369963] systemd[1240]: Started gvfs-metadata.service - Virtual filesystem metadata service.
+[  216.751401] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Activating via systemd: service name='org.freedesktop.thumbnails.Thumbnailer1' unit='tumblerd.service' requested by ':1.51' (uid=1000 pid=2055 comm="thunar /home/svoya/.local/share/svoya/jackson/skil" label="unconfined")
+[  216.757140] systemd[1240]: Starting tumblerd.service - Thumbnailing service...
+[  217.172393] dbus-daemon[1261]: [session uid=1000 pid=1261 pidfd=5] Successfully activated service 'org.freedesktop.thumbnails.Thumbnailer1'
+[  217.173277] systemd[1240]: Started tumblerd.service - Thumbnailing service.
+[  229.022261] jacksond[1414]: INFO jackson.engine: turn done in 485 ms: jackson/fastpath, 0+0 tokens
+[  230.500209] systemd[1240]: Started kitty-2368-0.scope - kitty child process: 2388 launched by: 2368.
+[  275.852780] jacksond[1414]: INFO jackson.engine: turn done in 2 ms: jackson/fastpath, 0+0 tokens
+[  283.921757] systemd[1240]: Started kitty-2440-0.scope - kitty child process: 2458 launched by: 2440.
+[  335.336289] systemd[1240]: Started kitty-2554-0.scope - kitty child process: 2572 launched by: 2554.
+[  371.221734] sos-vm-test[2604]: SOS-PERF desktop-idle 0.0%
+[  405.521168] sos-vm-test[2678]: SOS-PERF ascii-eye 91.4%
+[  452.502864] dbus-daemon[1009]: [system] Activating via systemd: service name='org.freedesktop.timedate1' unit='dbus-org.freedesktop.timedate1.service' requested by ':1.62' (uid=1000 pid=2713 comm="firefox --new-window" label="unconfined")
+[  452.510836] systemd[1]: Starting systemd-timedated.service - Time & Date Service...
+[  452.592545] systemd[1]: Started systemd-timedated.service - Time & Date Service.
+[  452.592991] dbus-daemon[1009]: [system] Successfully activated service 'org.freedesktop.timedate1'
+[  482.628339] systemd[1]: systemd-timedated.service: Deactivated successfully.
+[  504.653327] sos-vm-test[3158]: SOS-PERF live-wallpaper 69.8%
+[  543.643292] sos-vm-test[3423]: SOS-CHECK cursor='sos-symbols' icons='SOS-Symbols-Dark' files=113
+[  549.238954] sos-vm-test[3428]: libEGL warning: egl: failed to create dri2 screen
+[  549.238966] sos-vm-test[3428]: libEGL warning: egl: failed to create dri2 screen
+[  549.238971] sos-vm-test[3428]:   WARN qt.svg.draw: The requested buffer size is too big, ignoring
+[  549.238975] sos-vm-test[3428]:   WARN qt.svg.draw: The requested buffer size is too big, ignoring
+[  549.238978] sos-vm-test[3428]:   WARN qt.svg.draw: The requested buffer size is too big, ignoring
+[  549.238982] sos-vm-test[3428]:   WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+[  549.238988] sos-vm-test[3428]:   WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+[  549.238991] sos-vm-test[3428]:  ERROR quickshell.wayland.buffer.dmabuf: Failed to find render device: no render or primary node found.
+[  549.238996] sos-vm-test[3428]:   WARN quickshell.wayland.buffer: Render format initialization failed. All buffers will fall back to SHM.
+[  549.238999] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf1e15560 with focusing surface 0x77bb0ce0bbe0
+[  549.239061] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf61f2f80 with focusing surface 0x77baf1e15560
+[  549.239067] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf83d7d60 with focusing surface 0x77baf61f2f80
+[  549.239071] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77bad13f54e0 with focusing surface 0x77baf83d7d60
+[  549.239075] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf851b680 with focusing surface 0x77bad13f54e0
+[  549.239080] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77bafbcf59e0 with focusing surface 0x77baf851b680
+[  549.239085] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf7005f20 with focusing surface 0x77bafbcf59e0
+[  549.239091] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf70f42a0 with focusing surface 0x77baf7005f20
+[  549.239095] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77baf61f2aa0 with focusing surface 0x77baf70f42a0
+[  549.239100] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Try to enable surface 0x77bad13f57e0 with focusing surface 0x77baf61f2aa0
+[  549.239105] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Try to disable surface 0x77bad13f59c0 with focusing surface 0x77bad13f57e0
+[  549.239110] sos-vm-test[3428]:   WARN qt.qpa.wayland.textinput: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Try to disable surface 0x77baf6f1a8c0 with focusing surface 0x77bafbdb8d40
+[  560.915335] systemd[1240]: Started kitty-3522-0.scope - kitty child process: 3540 launched by: 3522.
+[  587.876538] unix_chkpwd[3562]: password check failed for user (svoya)
+[  587.877572] quickshell[3561]: pam_unix(svoya-lock:auth): authentication failure; logname=svoya uid=1000 euid=1000 tty= ruser= rhost=  user=svoya
+[  613.271281] dbus-daemon[1009]: [system] Activating via systemd: service name='org.opensuse.Snapper' unit='snapperd.service' requested by ':1.90' (uid=1000 pid=3573 comm="snapper --utc --jsonout -c root list --disable-use" label="unconfined")
+[  613.275505] systemd[1]: Starting snapperd.service - DBus interface for snapper...
+[  613.319869] dbus-daemon[1009]: [system] Successfully activated service 'org.opensuse.Snapper'
+[  613.321144] systemd[1]: Started snapperd.service - DBus interface for snapper.
+[  632.885294] sos-vm-test[3582]: SOS-PERF lock-saver 136.3%
