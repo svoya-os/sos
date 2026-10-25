@@ -1,0 +1,2466 @@
+{
+ "plan": "user-journeys",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "ok": false,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.2
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 18.56 desktop-ready'",
+   "status": "ok",
+   "seconds": 21.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 7,
+   "id": "cheatsheet",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+k",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 8,
+   "id": "cheatsheet",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 9,
+   "id": "cheatsheet",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 49.4% changed vs 01-desktop",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 10,
+   "id": "cheatsheet",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 11,
+   "id": "cheatsheet",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 12,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 13,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 14,
+   "id": "launcher",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 4 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 15,
+   "id": "launcher",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 16,
+   "id": "launcher",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 34.2% changed vs 01-desktop",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 17,
+   "id": "launcher",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 18,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 19,
+   "id": "terminal",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 20,
+   "id": "doctor-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 56 characters",
+   "status": "ok",
+   "seconds": 3.5
+  },
+  {
+   "n": 21,
+   "id": "doctor-cli",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[   49.243067] sos-vm-test[1827]: SOS-STEP doctor-typed'",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 22,
+   "id": "doctor-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 23,
+   "id": "doctor-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 24,
+   "id": "models",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 26 characters",
+   "status": "ok",
+   "seconds": 1.6
+  },
+  {
+   "n": 25,
+   "id": "models",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 26,
+   "id": "models",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 27,
+   "id": "model-kits",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 23 characters",
+   "status": "ok",
+   "seconds": 1.4
+  },
+  {
+   "n": 28,
+   "id": "model-kits",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 29,
+   "id": "model-kits",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 30,
+   "id": "accent",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 30 characters",
+   "status": "ok",
+   "seconds": 1.9
+  },
+  {
+   "n": 31,
+   "id": "accent",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 32,
+   "id": "accent",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 33,
+   "id": "accent",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 24 characters",
+   "status": "ok",
+   "seconds": 1.5
+  },
+  {
+   "n": 34,
+   "id": "accent",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 35,
+   "id": "accent",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 36,
+   "id": "jackson-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 29 characters",
+   "status": "ok",
+   "seconds": 1.8
+  },
+  {
+   "n": 37,
+   "id": "jackson-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 38,
+   "id": "jackson-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 39,
+   "id": "fun-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 49 characters",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 40,
+   "id": "fun-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 41,
+   "id": "fun-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 42,
+   "id": "apps-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 27 characters",
+   "status": "ok",
+   "seconds": 1.7
+  },
+  {
+   "n": 43,
+   "id": "apps-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 44,
+   "id": "apps-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 45,
+   "id": "skills-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 56 characters",
+   "status": "ok",
+   "seconds": 3.5
+  },
+  {
+   "n": 46,
+   "id": "skills-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 47,
+   "id": "skills-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 48,
+   "id": "upsil-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 92 characters",
+   "status": "ok",
+   "seconds": 5.7
+  },
+  {
+   "n": 49,
+   "id": "upsil-cli",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 50,
+   "id": "upsil-cli",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 51,
+   "id": "upsil-cli",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 5 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 52,
+   "id": "jackson",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+j",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 53,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 54,
+   "id": "jackson",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 31 characters",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 55,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 56,
+   "id": "jackson",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 57,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 12 characters",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 58,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 59,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 60,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 11 characters",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 61,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 62,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 63,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 15 characters",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 64,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 65,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 66,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 10 characters",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 67,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 68,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 69,
+   "id": "jackson-draw",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 20 characters",
+   "status": "ok",
+   "seconds": 1.3
+  },
+  {
+   "n": 70,
+   "id": "jackson-draw",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 71,
+   "id": "jackson-draw",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 72,
+   "id": "jackson-fun",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 12 characters",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 73,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 74,
+   "id": "jackson-fun",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 75,
+   "id": "jackson-fun",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 76,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 77,
+   "id": "jackson-fun",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+q",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 78,
+   "id": "jackson-fun",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 79,
+   "id": "jackson-install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+j",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 80,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 81,
+   "id": "jackson-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 17 characters",
+   "status": "ok",
+   "seconds": 1.1
+  },
+  {
+   "n": 82,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 83,
+   "id": "jackson-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 84,
+   "id": "jackson-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 2 characters",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 85,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 86,
+   "id": "jackson-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 1 characters",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 87,
+   "id": "jackson-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 88,
+   "id": "jackson",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 89,
+   "id": "jackson",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 90,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 91,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 92,
+   "id": "launcher-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 9 characters",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 93,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 94,
+   "id": "launcher-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 95,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 96,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 97,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 98,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 99,
+   "id": "launcher-install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 4 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 100,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 101,
+   "id": "launcher-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 102,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 103,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 104,
+   "id": "launcher-install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 105,
+   "id": "launcher-install",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 106,
+   "id": "launcher-install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 107,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 108,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 109,
+   "id": "launcher-eggs",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 5 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 110,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 111,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 112,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 113,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 114,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 115,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+spc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 116,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 117,
+   "id": "launcher-eggs",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 2 characters",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 118,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 119,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 120,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 121,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 122,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 123,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 124,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+z",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 125,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 126,
+   "id": "launcher-eggs",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 127,
+   "id": "launcher-eggs",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 128,
+   "id": "launcher-eggs",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 129,
+   "id": "win-tap",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 130,
+   "id": "win-tap",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 131,
+   "id": "win-tap",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 7 characters",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 132,
+   "id": "win-tap",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 133,
+   "id": "win-tap",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 134,
+   "id": "win-tap",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 135,
+   "id": "win-tap",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 136,
+   "id": "overview",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+tab",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 137,
+   "id": "overview",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 138,
+   "id": "overview",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 139,
+   "id": "overview",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 140,
+   "id": "overview",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 141,
+   "id": "alt-tab",
+   "action": "key_down",
+   "optional": false,
+   "detail": "down alt",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 142,
+   "id": "alt-tab",
+   "action": "key",
+   "optional": false,
+   "detail": "tab",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 143,
+   "id": "alt-tab",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 144,
+   "id": "alt-tab",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 145,
+   "id": "alt-tab",
+   "action": "key_up",
+   "optional": false,
+   "detail": "up alt",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 146,
+   "id": "alt-tab",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 147,
+   "id": "alt-tab",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 148,
+   "id": "alt-tab",
+   "action": "key",
+   "optional": false,
+   "detail": "alt+tab",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 149,
+   "id": "alt-tab",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 150,
+   "id": "snap",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+left",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 151,
+   "id": "snap",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 152,
+   "id": "snap",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.5
+  },
+  {
+   "n": 153,
+   "id": "snap",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+up",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 154,
+   "id": "snap",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 155,
+   "id": "snap",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 156,
+   "id": "snap",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+down",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 157,
+   "id": "snap",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 158,
+   "id": "snap",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 159,
+   "id": "emoji",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+dot",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 160,
+   "id": "emoji",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 161,
+   "id": "emoji",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 4 characters",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 162,
+   "id": "emoji",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 163,
+   "id": "emoji",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 164,
+   "id": "emoji",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 165,
+   "id": "emoji",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 166,
+   "id": "show-desktop",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+d",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 167,
+   "id": "show-desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 168,
+   "id": "show-desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.9
+  },
+  {
+   "n": 169,
+   "id": "show-desktop",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+d",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 170,
+   "id": "show-desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 171,
+   "id": "show-desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 172,
+   "id": "game-mode",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+g",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 173,
+   "id": "game-mode",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 174,
+   "id": "game-mode",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 175,
+   "id": "game-mode",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+g",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 176,
+   "id": "game-mode",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 177,
+   "id": "night-light",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 178,
+   "id": "night-light",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 179,
+   "id": "night-light",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 74 characters",
+   "status": "ok",
+   "seconds": 4.6
+  },
+  {
+   "n": 180,
+   "id": "night-light",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 181,
+   "id": "night-light",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 182,
+   "id": "night-light",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 68 characters",
+   "status": "ok",
+   "seconds": 4.2
+  },
+  {
+   "n": 183,
+   "id": "night-light",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 184,
+   "id": "perf",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 130 characters",
+   "status": "ok",
+   "seconds": 8.1
+  },
+  {
+   "n": 185,
+   "id": "perf",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 13s",
+   "status": "ok",
+   "seconds": 13.0
+  },
+  {
+   "n": 186,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 32 characters",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 187,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 188,
+   "id": "perf",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 133 characters",
+   "status": "ok",
+   "seconds": 8.3
+  },
+  {
+   "n": 189,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 58 characters",
+   "status": "ok",
+   "seconds": 3.6
+  },
+  {
+   "n": 190,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 15s",
+   "status": "ok",
+   "seconds": 15.0
+  },
+  {
+   "n": 191,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 192,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 193,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 194,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 64 characters",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 195,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 196,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 197,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 198,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 199,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 64 characters",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 200,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 9s",
+   "status": "ok",
+   "seconds": 9.0
+  },
+  {
+   "n": 201,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 202,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 203,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 204,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 65 characters",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 205,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 206,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.2
+  },
+  {
+   "n": 207,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 208,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 209,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 57 characters",
+   "status": "ok",
+   "seconds": 3.6
+  },
+  {
+   "n": 210,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 20s",
+   "status": "ok",
+   "seconds": 20.0
+  },
+  {
+   "n": 211,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 212,
+   "id": "ascii",
+   "action": "click",
+   "optional": false,
+   "detail": "clicked 720,372 of 1440x900",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 213,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 214,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "ctrl+t",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 215,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 4s",
+   "status": "ok",
+   "seconds": 4.0
+  },
+  {
+   "n": 216,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.4
+  },
+  {
+   "n": 217,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+q",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 218,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 219,
+   "id": "perf",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 138 characters",
+   "status": "ok",
+   "seconds": 8.6
+  },
+  {
+   "n": 220,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+d",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 221,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 222,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.8
+  },
+  {
+   "n": 223,
+   "id": "perf",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 10s",
+   "status": "ok",
+   "seconds": 10.0
+  },
+  {
+   "n": 224,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+d",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 225,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 226,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 34 characters",
+   "status": "ok",
+   "seconds": 2.1
+  },
+  {
+   "n": 227,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 228,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 229,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+q",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 230,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 231,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 72 characters",
+   "status": "ok",
+   "seconds": 4.5
+  },
+  {
+   "n": 232,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 233,
+   "id": "ascii",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 234,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 235,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 236,
+   "id": "ascii",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 237,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 238,
+   "id": "check",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 334 characters",
+   "status": "ok",
+   "seconds": 20.8
+  },
+  {
+   "n": 239,
+   "id": "check",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 90 characters",
+   "status": "ok",
+   "seconds": 5.6
+  },
+  {
+   "n": 240,
+   "id": "check",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched \"[  550.476395] sos-vm-test[3447]: SOS-CHECK cursor='sos-symbols' icons='SOS-Symbols-Dark' gtk='adw-gtk3-dark' themes=2 files=113\"",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 241,
+   "id": "ascii",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 28 characters",
+   "status": "ok",
+   "seconds": 1.7
+  },
+  {
+   "n": 242,
+   "id": "ascii",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 243,
+   "id": "control",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+a",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 244,
+   "id": "control",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 245,
+   "id": "control",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.6
+  },
+  {
+   "n": 246,
+   "id": "control",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 247,
+   "id": "control",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 248,
+   "id": "doctor",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 249,
+   "id": "doctor",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 6s",
+   "status": "ok",
+   "seconds": 6.0
+  },
+  {
+   "n": 250,
+   "id": "doctor",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.7
+  },
+  {
+   "n": 251,
+   "id": "doctor",
+   "action": "key",
+   "optional": false,
+   "detail": "esc",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 252,
+   "id": "doctor",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 253,
+   "id": "hardware",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 188 characters",
+   "status": "ok",
+   "seconds": 11.7
+  },
+  {
+   "n": 254,
+   "id": "hardware",
+   "action": "wait_serial",
+   "optional": false,
+   "status": "failed",
+   "detail": "timed out waiting for serial pattern 'SOS-HW rc=\\\\d+ lines=\\\\d+'",
+   "seconds": 30.7
+  },
+  {
+   "n": 255,
+   "id": "check",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 104 characters",
+   "status": "ok",
+   "seconds": 6.5
+  },
+  {
+   "n": 256,
+   "id": "perf",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 135 characters",
+   "status": "ok",
+   "seconds": 8.4
+  },
+  {
+   "n": 257,
+   "id": "perf",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 1s",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 258,
+   "id": "lock",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+l",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 259,
+   "id": "lock",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 3s",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 260,
+   "id": "lock",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 15 characters",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 261,
+   "id": "lock",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 262,
+   "id": "lock",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 263,
+   "id": "lock",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 264,
+   "id": "lock",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.0
+  },
+  {
+   "n": 265,
+   "id": "lock-saver",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 46s",
+   "status": "ok",
+   "seconds": 46.0
+  },
+  {
+   "n": 266,
+   "id": "lock-saver",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow), 100.0% changed vs 13b-lock-after-check",
+   "status": "ok",
+   "seconds": 0.3
+  },
+  {
+   "n": 267,
+   "id": "lock-saver",
+   "action": "key",
+   "optional": false,
+   "detail": "shift",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 268,
+   "id": "lock-saver",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 269,
+   "id": "lock-saver",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.1
+  },
+  {
+   "n": 270,
+   "id": "perf",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  371.324198] sos-vm-test[2615]: SOS-PERF desktop-idle 0.1%'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 271,
+   "id": "perf",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  405.607869] sos-vm-test[2703]: SOS-PERF ascii-eye 92.9%'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 272,
+   "id": "perf",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  504.678137] sos-vm-test[3172]: SOS-PERF live-wallpaper 70.8%'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 273,
+   "id": "perf",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched '[  682.097178] sos-vm-test[3638]: SOS-PERF lock-saver 137.3%'",
+   "status": "ok",
+   "seconds": 0.0
+  }
+ ]
+}
