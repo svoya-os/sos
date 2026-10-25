@@ -156,7 +156,9 @@ function runCfg(themeJson, shellJson) {
           && /--bg: #f2efe8 !important/.test(paper.sheets[0] || "") && !("extensions.activeThemeID" in paper.prefs));
     check("phosphor: the frame is themed", ph.sheets.length === 1 && ph.sheets[0].includes("--toolbar-bgcolor") && ph.sheets[0].includes("rgba(10, 10, 10, 1.000)") && ph.sheets[0].includes('"IBM Plex Mono"'));
     const gr = runCfg(JSON.stringify({ id: "graphite", accent: "#ffffb547" }));
-    check("graphite: Firefox as it is", gr.newTab === null && Object.keys(gr.prefs).length === 0 && gr.sheets.length === 0 && gr.errors.length === 0);
+    // the one default in every theme: spelling from the system dictionaries (Russian, Estonian too)
+    check("graphite: Firefox as it is", gr.newTab === null && Object.keys(gr.prefs).join() === "spellchecker.dictionary_path"
+          && gr.prefs["spellchecker.dictionary_path"] === "/usr/share/hunspell" && gr.sheets.length === 0 && gr.errors.length === 0);
     const none = runCfg("");
     check("no theme.json: Firefox as it is", none.newTab === null && none.sheets.length === 0 && none.errors.length === 0);
     check("the page exists", fs.existsSync(path.join(root, "shell", "assets", "newtab", "index.html")) &&

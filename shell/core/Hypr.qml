@@ -53,6 +53,7 @@ Singleton {
     // ---- keyboard layout -------------------------------------------------------
     property string layoutCode: ""      // "RU", "EN"… for the bar
     property int layoutCount: 1         // layouts to switch between (a wrong-password hint names the layout only when > 1)
+    property var layouts: []            // xkb codes in switch order, as Hyprland has them ("us", "ru"…)
     property string keyboardName: ""
 
     function refreshLayout() {
@@ -77,6 +78,9 @@ Singleton {
                 root.keyboardName = kb.name;
                 const layouts = (kb.layout || "").split(",");
                 root.layoutCount = Math.max(1, layouts.filter(l => l.trim().length > 0).length);
+                const codes = layouts.map(l => l.trim().toLowerCase()).filter(l => l.length > 0);
+                if (codes.join(",") !== root.layouts.join(","))
+                    root.layouts = codes;
                 const idx = kb.active_layout_index !== undefined ? kb.active_layout_index : 0;
                 root.layoutCode = root.shortLayout(layouts[idx] || "", kb.active_keymap || "");
             } catch (e) {}

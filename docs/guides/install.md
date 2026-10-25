@@ -225,12 +225,14 @@ Next: [first steps](first-steps.md) · [FAQ](faq.md).
 
 ## Updates and rollback
 
-- **Update the system:** `sos update` (a snapshot is taken first).
+- **Update the system:** `sos update` or *Update system* in the launcher (a snapshot is taken
+  first). It updates everything: Ubuntu's packages, Flatpak apps and SOS itself (the shell,
+  Jackson, the `sos` command) from the signed SOS repository that comes with every test build.
 - **Undo the last change:** `Super+Z` or `sos undo`.
 - **Something broke after an update:** the boot menu has "yesterday's system", a snapshot you
   can boot and roll back to.
-- **Test builds** are updated only by reinstalling for now: download a fresh image and install it
-  again (back up `/home` first).
+- **Installed a test build from before 26 October 2026?** It does not know the SOS repository
+  yet: install a fresh image once (back up `/home` first), then `sos update` is enough.
 
 ## Troubleshooting
 

@@ -1,0 +1,14 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Run by greetd before it takes the screen (greetd.service.d/50-svoya.conf). By then plymouth has
+# quit, or plymouth-quit-wait gave up after 30 s: a plymouthd that is still there is stuck (CI saw
+# one blocked in a tty read for good). Ask it to quit; if it does not answer, end it, so the login
+# screen can draw. Says so in the kernel log (and on the serial console of the test VMs).
+set -u
+pgrep -x plymouthd >/dev/null 2>&1 || exit 0
+if command -v plymouth >/dev/null 2>&1 && timeout 5 plymouth --ping 2>/dev/null; then
+    timeout 10 plymouth quit 2>/dev/null && exit 0
+fi
+echo "<3>sos: plymouthd did not answer; ended it so the login screen can start" >/dev/kmsg 2>/dev/null || true
+pkill -KILL -x plymouthd 2>/dev/null || true
+exit 0

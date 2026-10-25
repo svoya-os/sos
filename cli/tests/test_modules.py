@@ -11,7 +11,7 @@ from .helpers import FakeRunner, SandboxTest, capture, fixture
 
 MODDIR = REPO_ROOT / "modules"
 EXPECTED = {"base-ai", "nvidia", "cuda-devel", "rocm", "llm-local", "studio", "voice", "voice-gpu", "ml-lab", "agents",
-            "dev", "cloud-burst", "codecs", "gaming", "notes", "upsil"}
+            "dev", "cloud-burst", "codecs", "gaming", "notes", "upsil", "printing"}
 NV_FACTS = {"vendors": ["nvidia"], "vendor": "nvidia", "kernel.flavor": "generic", "torch": "cu130",
             "nvidia.arch": "ada", "nvidia.branch": "595", "nvidia.open": "-open"}
 

@@ -378,6 +378,13 @@ esac
         self.assertIn("test in RAM", cfg)
         self.assertIn("проверка в памяти", cfg)
         self.assertEqual(cfg.count("{"), cfg.count("}"))
+        # the splash must not redirect the console into itself: a stuck plymouthd froze PID 1 that way
+        linux = re.search(r"(?m)^    linux /casper/vmlinuz .*$", cfg).group(0)
+        self.assertIn(" plymouth.nolog ", linux)
+        grubd = (ROOT / "packages/svoya-base/files/etc/default/grub.d/50-svoya.cfg").read_text()
+        self.assertIn('GRUB_CMDLINE_LINUX_DEFAULT="quiet splash plymouth.nolog"', grubd)
+        # Calamares writes its own grub.d file, read after svoya-base's: it must carry it too
+        self.assertIn('"plymouth.nolog"', (ROOT / "installer/modules/grubcfg.conf").read_text())
         for placeholder in set(re.findall(r"@[A-Z_]+@", cfg)):
             self.assertIn(placeholder, ("@DISK_ID@", "@LIVE_USER@", "@LIVE_HOSTNAME@", "@VERSION@"))
 
@@ -480,6 +487,13 @@ class ReleaseNotesTests(unittest.TestCase):
         self.assertIn("(1.7 GB, one file)", text)
         self.assertEqual(text.count("sos-join.sh"), 2)              # the NVIDIA image only, RU and EN
         self.assertLess(text.index("Тестовая сборка"), text.index("SOS test build"))
+        self.assertNotIn("sos update", text)                       # no update repository in this build
+        with tempfile.TemporaryDirectory() as tmp:
+            d = pathlib.Path(tmp)
+            (d / "sos-26.10-amd64.iso.json").write_text(json.dumps({"iso": "sos-26.10-amd64.iso", "isoBytes": 1}))
+            text = notes.notes(d, "784544be5f10", "test", updates=True)
+        self.assertEqual(text.count("`sos update`"), 2)             # RU and EN
+        self.assertLess(text.index("`sos update` (в лаунчере"), text.index("---"))
 
     def test_windows_helpers(self):
         bat = (ROOT / "scripts/release/sos-join.bat").read_bytes()
@@ -491,3 +505,62 @@ class ReleaseNotesTests(unittest.TestCase):
         attrs = (ROOT / ".gitattributes").read_text()
         self.assertIn("*.bat   text eol=crlf", attrs)
 
+
+
+class FinalSourcesTests(unittest.TestCase):
+    """An installed SOS takes svoya-* updates from the flat repository on GitHub Releases, but only
+    when the image was built with the repository's signing key."""
+
+    def run_hook(self, root: pathlib.Path, key: str | None) -> str:
+        env = {"PATH": "/usr/bin:/bin", "SVOYA_IMAGE": str(ROOT / "image"), "SUITE": "resolute",
+               "COMPONENTS": "main restricted universe multiverse",
+               "TARGET_MIRROR": "http://archive.ubuntu.com/ubuntu/",
+               "TARGET_SECURITY_MIRROR": "http://security.ubuntu.com/ubuntu/",
+               "SOS_APT_URL": "https://github.com/svoya-os/sos/releases/download/test"}
+        if key:
+            env["SOS_APT_KEY_FILE"] = key
+        (root / "etc/apt/sources.list.d").mkdir(parents=True, exist_ok=True)
+        (root / "etc/apt/sources.list.d/svoya-build.list").write_text("deb [trusted=yes] file:/x ./\n")
+        r = subprocess.run(["bash", str(ROOT / "image/hooks/85-final-sources.sh"), str(root)], env=env,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return r.stderr
+
+    def test_with_the_key(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp, "root")
+            key = pathlib.Path(tmp, "key.asc")
+            key.write_text("-----BEGIN PGP PUBLIC KEY BLOCK-----\n...\n")
+            self.run_hook(root, str(key))
+            src = (root / "etc/apt/sources.list.d/sos.sources").read_text()
+            self.assertIn("URIs: https://github.com/svoya-os/sos/releases/download/test/\n", src)
+            self.assertIn("Suites: /\n", src)                     # flat: <URIs>InRelease, not <URIs>./InRelease
+            self.assertIn("Signed-By: /usr/share/keyrings/sos-archive-keyring.asc", src)
+            self.assertEqual((root / "usr/share/keyrings/sos-archive-keyring.asc").read_text(), key.read_text())
+            self.assertIn("Pin: release o=SOS", (root / "etc/apt/preferences.d/50sos.pref").read_text())
+            self.assertFalse((root / "etc/apt/sources.list.d/svoya-build.list").exists())
+            self.assertIn("Suites: resolute resolute-updates", (root / "etc/apt/sources.list.d/ubuntu.sources").read_text())
+
+    def test_without_the_key(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp, "root")
+            said = self.run_hook(root, None)
+            self.assertFalse((root / "etc/apt/sources.list.d/sos.sources").exists())
+            self.assertFalse((root / "etc/apt/preferences.d/50sos.pref").exists())
+            self.assertIn("updates come with new images", said)
+
+    def test_versions_come_in_order(self):
+        """Two builds of one day: the later commit must be the newer package."""
+        script = (ROOT / "packages/build-all.sh").read_text()
+        self.assertIn("+%Y%m%d.%H%M%S", script)
+        if subprocess.run(["which", "dpkg"], capture_output=True).returncode == 0:
+            r = subprocess.run(["dpkg", "--compare-versions", "0.1.0~git20261025.085500.7d46abce", "gt",
+                                "0.1.0~git20261025.074125.9b0c6a55"])
+            self.assertEqual(r.returncode, 0)
+
+    def test_flat_names_survive_github(self):
+        """Release assets keep [A-Za-z0-9._-] only; the flat repository names its files that way."""
+        script = (ROOT / "packages/build-all.sh").read_text()
+        flat = script.split("flat_repo() {", 1)[1].split("\n}\n", 1)[0]
+        self.assertIn("tr -c 'A-Za-z0-9._-' '-'", flat)
+        self.assertIn(r"sed 's|^Filename: \./|Filename: |'", flat)

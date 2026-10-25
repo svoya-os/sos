@@ -122,7 +122,9 @@ svoya_version() {
             return
         fi
         sha=$(git -C "$ROOT" rev-parse --short=8 HEAD)
-        day=$(date -u -d "@$(git -C "$ROOT" log -1 --format=%ct)" +%Y%m%d)
+        # date and time of the commit: two builds of one day must still come in order, or an
+        # installed system would not take the second one (`sos update` from the SOS repository)
+        day=$(date -u -d "@$(git -C "$ROOT" log -1 --format=%ct)" +%Y%m%d.%H%M%S)
         printf '%s~git%s.%s' "$SVOYA_PKG_VERSION" "$day" "$sha"
     else
         day=$(date -u -d "@$SDE" +%Y%m%d%H%M)
@@ -240,12 +242,13 @@ build_one() {
     [ "$KEEP" = 1 ] || rm -rf "$dir"
 }
 
-index_repo() {
-    log "Indexing $OUT"
+# release_file DIR: the Release of the repository in DIR (its Packages files already there).
+release_file() {
+    local tmp
+    tmp=$(mktemp)
     (
-        cd "$OUT"
-        apt-ftparchive packages pool >Packages
-        gzip -9nkf Packages
+        cd "$1"
+        rm -f Release InRelease Release.gpg
         apt-ftparchive \
             -o APT::FTPArchive::Release::Origin=SOS \
             -o APT::FTPArchive::Release::Label=SOS \
@@ -253,15 +256,67 @@ index_repo() {
             -o APT::FTPArchive::Release::Codename="$SUITE" \
             -o APT::FTPArchive::Release::Architectures="amd64 all" \
             -o APT::FTPArchive::Release::Description="SOS packages (svoya-*)" \
-            release . >Release
+            release . >"$tmp"
     )
+    mv "$tmp" "$1/Release"
+    chmod 0644 "$1/Release"
+}
+
+# sign_repo DIR GNUPGHOME: InRelease and Release.gpg next to DIR/Release.
+sign_repo() {
+    GNUPGHOME=$2 gpg --batch --yes --clearsign -o "$1/InRelease" "$1/Release"
+    GNUPGHOME=$2 gpg --batch --yes -abs -o "$1/Release.gpg" "$1/Release"
+}
+
+# The same packages as a flat repository for GitHub Releases, where an installed SOS takes its
+# updates from (image/README.md, «Updates»): no subdirectories there, and asset names keep only
+# letters, digits, dots, dashes and underscores (GitHub renames anything else, `~` included), so the
+# files get such names and Packages points at them directly.
+flat_repo() {
+    local flat=$OUT/flat deb name
+    rm -rf "$flat"
+    mkdir -p "$flat"
+    for deb in "$OUT"/pool/*.deb; do
+        [ -f "$deb" ] || continue
+        name=$(printf '%s_%s_%s' "$(dpkg-deb -f "$deb" Package)" "$(dpkg-deb -f "$deb" Version)" \
+            "$(dpkg-deb -f "$deb" Architecture)" | tr -c 'A-Za-z0-9._-' '-')
+        cp "$deb" "$flat/$name.deb"
+    done
+    (
+        cd "$flat"
+        apt-ftparchive packages . | sed 's|^Filename: \./|Filename: |' >Packages
+        gzip -9nkf Packages
+    )
+    release_file "$flat"
+}
+
+index_repo() {
+    log "Indexing $OUT"
+    rm -rf "$OUT/flat"                  # not in the Release of the repository it is made from
+    (
+        cd "$OUT"
+        apt-ftparchive packages pool >Packages
+        gzip -9nkf Packages
+    )
+    release_file "$OUT"
+    flat_repo
+    rm -f "$OUT/sos-archive-keyring.asc"
     if [ -n "${SVOYA_REPO_SIGNING_KEY:-}" ]; then
         log "Signing Release"
-        local gnupghome
+        local gnupghome fpr
         gnupghome=$(mktemp -d)
-        printf '%s\n' "$SVOYA_REPO_SIGNING_KEY" | GNUPGHOME=$gnupghome gpg --batch --import
-        GNUPGHOME=$gnupghome gpg --batch --yes --clearsign -o "$OUT/InRelease" "$OUT/Release"
-        GNUPGHOME=$gnupghome gpg --batch --yes -abs -o "$OUT/Release.gpg" "$OUT/Release"
+        printf '%s\n' "$SVOYA_REPO_SIGNING_KEY" | GNUPGHOME=$gnupghome gpg --batch --quiet --import
+        fpr=$(GNUPGHOME=$gnupghome gpg --batch --with-colons --list-secret-keys | awk -F: '$1 == "fpr" { print $10; exit }')
+        [ -n "$fpr" ] || die "SVOYA_REPO_SIGNING_KEY holds no secret key"
+        info "signing key $fpr"
+        if [ -n "${SOS_APT_KEY_FPR:-}" ] && [ "$fpr" != "$SOS_APT_KEY_FPR" ]; then
+            die "SVOYA_REPO_SIGNING_KEY is $fpr, image/config.env expects SOS_APT_KEY_FPR=$SOS_APT_KEY_FPR"
+        fi
+        sign_repo "$OUT" "$gnupghome"
+        sign_repo "$OUT/flat" "$gnupghome"
+        # the public half: images trust it for updates (image/hooks/85-final-sources.sh)
+        GNUPGHOME=$gnupghome gpg --batch --yes --armor --export -o "$OUT/sos-archive-keyring.asc" "$fpr"
+        cp "$OUT/sos-archive-keyring.asc" "$OUT/flat/"
         rm -rf "$gnupghome"
     else
         info "SVOYA_REPO_SIGNING_KEY not set: repository is unsigned (use [trusted=yes] locally)"

@@ -113,6 +113,18 @@ Work towards v0.1 «Первый сигнал».
 - For real computers: CPU microcode, the Wi-Fi regulatory database, ALSA's use-case maps (sound on
   many laptops), Intel's video decoder (cooler and longer on battery) and mpv for video and music
   files, which also gives Firefox H.264 and AAC.
+- **Privacy:** an installed SOS keeps itself up to date. `sos update` (or «Update system», new in
+  the launcher) now also brings new builds of SOS itself (the shell, Jackson, the `sos` command,
+  the branding) from a signed package repository that every good build of `main` publishes next to
+  the test ISO. A snapshot comes first and `sos undo` rolls back. Nothing checks for updates by
+  itself: the repository is read only when you update (GitHub then sees your IP address, as a
+  download would).
+- Printing and scanning in one word: `sos install printing` (`sos установить принтер`). Printers
+  on the network and modern USB ones work without drivers, Gutenprint and HP's drivers cover older
+  ones, and a window adds the rest; scanners too. Printer discovery stays off until you install it.
+- Estonian, Latvian, Lithuanian and Finnish keyboard layouts in the first-run wizard, which now
+  also shows the layouts picked in the installer instead of always English and Russian.
+- Spelling in Russian, English and Estonian: the dictionaries come with SOS, and Firefox uses them.
 - SOS ASCII in the interface, not only in the terminal. The lock screen has a screensaver in every
   theme: after 30 seconds without input the face fades, Jackson turns from where he stands into his
   eye, the eye looks around and follows the pointer, and every few minutes it looks closer (the
@@ -198,5 +210,9 @@ Work towards v0.1 «Первый сигнал».
   only when you could see them), and the live wallpaper stops while the screen is locked.
 - Firefox with the symbol style: the new tab leaves the address bar empty instead of showing a long
   file:// address, and the frame keeps the theme's colors over a built-in theme's gradient.
+- A boot that hung now and then before the desktop (about one in seventy in the test bots): the
+  boot splash took over the console for its log, and when it stopped reading, the system's first
+  process stopped too, on its next console message. The splash no longer takes the console, and a
+  splash that does not end is ended after 30 seconds, so the login screen comes anyway.
 
 [Unreleased]: https://github.com/svoya-os/sos/commits/main

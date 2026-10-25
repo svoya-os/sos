@@ -20,6 +20,7 @@ mapfile -t shell_files < <(
             installer/sos-install installer/scripts/launch \
             packages/svoya-session/files/usr/bin/svoya-session packages/svoya-session/files/usr/lib/svoya/greeter-session \
             packages/svoya-session/files/usr/lib/svoya/session-keyboard packages/svoya-session/files/usr/lib/svoya/shell-run \
+            packages/svoya-session/files/usr/lib/svoya/plymouth-release \
             packages/svoya-base/files/usr/lib/svoya/setup-snapper
     } | sort -u | while read -r f; do [ -f "$f" ] && echo "$f"; done
 )

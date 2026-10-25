@@ -107,6 +107,7 @@ sos apps                    # what one word installs: Telegram, Minecraft, OBS, 
 sos install telegram        # from Flathub, just for you, no password
 sos install steam           # games: Steam, GameMode, MangoHud, 32-bit drivers (asks for the password)
 sos install bazaar          # the Bazaar app store, to browse with pictures
+sos install printing        # printers and scanners: network and USB ones need no driver
 ```
 
 The easiest way is to type the name in the launcher (`Super+Space`): anything not installed yet

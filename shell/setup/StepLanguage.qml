@@ -5,14 +5,19 @@ import qs.components
 // Step 2 · language and keyboard. Two language cards (the whole UI switches at
 // once), layout chips (the first one drives shortcuts; English is kept first
 // when chosen), the switch key, and a field to try the result. Layout changes
-// go to Settings; the shell writes them to Hyprland (svoya-shell.conf).
+// go to Settings; the shell writes them to Hyprland (svoya-shell.conf). Until
+// then the chips show what Hyprland runs: the layouts picked in the installer.
 Item {
     id: root
 
     required property var wizard
 
-    readonly property var layouts: (Settings.kbLayouts || "us,ru").split(",").filter(x => x.length > 0)
-    readonly property var available: ["us", "ru", "ua", "by", "kz", "de", "fr", "es", "pl", "tr"]
+    readonly property var layouts: Settings.kbCustom || Hypr.layouts.length === 0
+        ? (Settings.kbLayouts || "us,ru").split(",").filter(x => x.length > 0)
+        : Hypr.layouts
+    readonly property var available: ["us", "ru", "ua", "by", "kz", "ee", "lv", "lt", "fi", "de", "fr", "es", "pl", "tr"]
+    // a layout from the installer that is not in the list still gets its chip
+    readonly property var chips: root.available.concat(root.layouts.filter(l => root.available.indexOf(l) < 0))
     readonly property var switches: [
         { id: "grp:alt_shift_toggle", label: "Alt + Shift" },
         { id: "grp:ctrl_shift_toggle", label: "Ctrl + Shift" },
@@ -121,7 +126,7 @@ Item {
                 spacing: 8
 
                 Repeater {
-                    model: root.available
+                    model: root.chips
 
                     Rectangle {
                         id: chip

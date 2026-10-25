@@ -265,6 +265,7 @@ Singleton {
     }
     readonly property string screenshotRegion: root.t("Снимок области", "Region screenshot")
     readonly property string clipboard: root.t("Буфер обмена", "Clipboard")
+    readonly property string updateSystem: root.t("Обновить систему", "Update system")
     readonly property string undoSystem: root.t("Отменить последнее изменение системы", "Undo last system change")
     readonly property string toggleTiling: root.t("Плитка на этом столе", "Tiling on this workspace")
     readonly property string dnd: root.t("Не беспокоить", "Do not disturb")
@@ -652,7 +653,7 @@ Singleton {
     readonly property string wzLayoutsHint: root.t("первая — для сочетаний клавиш", "the first one drives shortcuts")
     readonly property string wzSwitchWith: root.t("Переключать", "Switch with")
     readonly property string wzTryHere: root.t("Попробуй переключить раскладку здесь", "Try switching layouts here")
-    readonly property var kbNames: ({ us: root.t("Английская", "English"), ru: root.t("Русская", "Russian"), ua: root.t("Украинская", "Ukrainian"), by: root.t("Белорусская", "Belarusian"), kz: root.t("Казахская", "Kazakh"), de: root.t("Немецкая", "German"), fr: root.t("Французская", "French"), es: root.t("Испанская", "Spanish"), pl: root.t("Польская", "Polish"), tr: root.t("Турецкая", "Turkish") })
+    readonly property var kbNames: ({ us: root.t("Английская", "English"), ru: root.t("Русская", "Russian"), ua: root.t("Украинская", "Ukrainian"), by: root.t("Белорусская", "Belarusian"), kz: root.t("Казахская", "Kazakh"), ee: root.t("Эстонская", "Estonian"), lv: root.t("Латышская", "Latvian"), lt: root.t("Литовская", "Lithuanian"), fi: root.t("Финская", "Finnish"), de: root.t("Немецкая", "German"), fr: root.t("Французская", "French"), es: root.t("Испанская", "Spanish"), pl: root.t("Польская", "Polish"), tr: root.t("Турецкая", "Turkish") })
 
     // step 3
     readonly property string wzGraphiteSub: root.t("Тёмная, янтарный сигнал", "Dark, amber signal")

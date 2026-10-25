@@ -25,16 +25,26 @@ Components: ${COMPONENTS}
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 EOF
 
-# The SOS package repository for updates of svoya-* (only when it exists; see image/README.md).
+# The SOS package repository: updates of svoya-*, quickshell, uv, grub-btrfs and upsil through
+# `sos update` (image/README.md, «Updates»). Only in images built with the repository's signing key.
 if [ -n "${SOS_APT_URL:-}" ] && [ -n "${SOS_APT_KEY_FILE:-}" ] && [ -f "$SOS_APT_KEY_FILE" ]; then
     install -Dm0644 "$SOS_APT_KEY_FILE" "$root/usr/share/keyrings/sos-archive-keyring.asc"
+    # a flat repository: "/" asks APT for <URIs>InRelease, Packages.gz and the .debs next to them
     write_file "$root/etc/apt/sources.list.d/sos.sources" 0644 <<EOF
+# SOS packages, signed by the SOS archive key. Nothing reads this on its own: \`sos update\` does.
 Types: deb
-URIs: ${SOS_APT_URL}
-Suites: ./
+URIs: ${SOS_APT_URL%/}/
+Suites: /
 Signed-By: /usr/share/keyrings/sos-archive-keyring.asc
 EOF
+    # Our builds win over same-named archive packages (quickshell, uv, grub-btrfs could appear there).
+    write_file "$root/etc/apt/preferences.d/50sos.pref" 0644 <<'EOF'
+Package: *
+Pin: release o=SOS
+Pin-Priority: 900
+EOF
+    info "SOS repository for updates: ${SOS_APT_URL%/}/"
 else
-    info "no SOS_APT_URL/SOS_APT_KEY_FILE: svoya-* updates come with new images for now"
+    info "no SOS_APT_KEY_FILE: svoya-* updates come with new images"
 fi
 rm -f "$root/etc/apt/preferences.d/00svoya-build-local.pref"

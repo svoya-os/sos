@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+id = "printing"
+name = { en = "Printing and scanning", ru = "Печать и сканирование" }
+summary = { en = "CUPS: printers on your network and on USB without drivers, Gutenprint and HP drivers for older ones, a window to add them; scanners too.", ru = "CUPS: принтеры в сети и по USB без драйверов, драйверы Gutenprint и HP для старых, окно добавления; и сканеры." }
+category = "system"
+profiles = []
+requires = []
+apt = ["cups", "cups-browsed", "cups-filters", "ipp-usb", "printer-driver-gutenprint", "printer-driver-hpcups", "system-config-printer", "cups-pk-helper", "sane-airscan", "simple-scan"]
+flatpak = []
+scripts = { install = "install.sh", remove = "remove.sh" }
+disk_gb = 0.4
+vram_gb_min = 0
+aliases = ["printer", "printers", "print", "cups", "scanner", "принтер", "печать", "сканер"]
+license_note = { en = "Free software from the engine archive (GPL/LGPL/Apache).", ru = "Свободное ПО из архива движка (GPL/LGPL/Apache)." }

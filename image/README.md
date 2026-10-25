@@ -76,7 +76,8 @@ Useful switches (environment variables, see `config.env`):
 | `NVIDIA_BRANCHES` | `595-open 580` | offline driver pool; empty = no pool (`POOL_STRICT=0`) |
 | `SQUASHFS_LEVEL` | `19` | zstd level; 15 builds faster, the ISO gets ~5–8 % bigger |
 | `SVOYA_WORK_DIR` | `/var/tmp/sos-iso-work` | scratch space (rootfs, ISO tree, pool) |
-| `SOS_APT_URL`, `SOS_APT_KEY_FILE` | unset | SOS APT repository for updates of `svoya-*` (when it exists) |
+| `SOS_APT_URL` | the `test` release on GitHub | where installed systems take SOS updates from ([Updates](#updates-of-sos-itself)) |
+| `SOS_APT_KEY_FILE`, `SOS_APT_KEY_FPR` | unset (CI: from the signed packages) | the key that repository is signed with, and its fingerprint |
 
 `image/build-iso.sh --dry-run` validates the lists, hooks and boot menu and prints the exact
 mmdebstrap and xorriso command lines without root or network.
@@ -156,6 +157,28 @@ APT configuration (the pool is the only source, so nothing touches the network):
 
 Hook 75 resolves the pool against the finished rootfs and then simulates every install the installer
 will do, offline, against the pool alone — a broken pool fails the build, not the user's install.
+
+## Updates of SOS itself
+
+An installed SOS updates with `sos update`: Ubuntu's archive, Flatpak and SOS's own packages
+(`svoya-*`, quickshell, uv, grub-btrfs, upsil). Those come from a flat APT repository that every
+good build of `main` publishes next to the test ISO, at the top level of the `test` release:
+`InRelease`, `Release`, `Release.gpg`, `Packages(.gz)`, the `.deb` files and the public key
+`sos-archive-keyring.asc`.
+
+- `packages/build-all.sh` signs both its repository and the flat copy (`dist/repo/flat`) with
+  `SVOYA_REPO_SIGNING_KEY` (the GitHub secret `SOS_REPO_SIGNING_KEY`) and exports the public key.
+  Release asset names keep only `A-Za-z0-9._-`, so the flat copy renames the files (`~` → `-`)
+  and its `Packages` points at those names. A key other than `SOS_APT_KEY_FPR` fails the build.
+- `iso.yml` builds the image with that public key; `hooks/85-final-sources.sh` writes
+  `/etc/apt/sources.list.d/sos.sources` (`Suites: /`: APT asks for `<URIs>InRelease`) and pins
+  `o=SOS` at 900, so our builds win over same-named archive packages. Without the key the image
+  has no SOS source, and new SOS versions come only with a new image.
+- Versions are `0.1.0~git<date>.<time>.<commit>`: two builds of one day still come in order.
+  After a release `vX.Y.Z`, raise `SVOYA_PKG_VERSION` so the next test builds sort above it; a
+  change in a third-party package's packaging needs a new `-0svoyaN` revision.
+- Nothing contacts GitHub by itself: APT's periodic jobs are off, only `sos update` (or the
+  launcher's «Update system») reads the repository, a snapshot is taken first, `sos undo` rolls back.
 
 ## Reproducibility
 

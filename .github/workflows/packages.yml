@@ -88,6 +88,11 @@ jobs:
             echo '```'
             (cd dist/repo/pool && ls -1 -- *.deb)
             echo '```'
+            if [ -f dist/repo/InRelease ]; then
+              echo "Signed: installed systems take these as updates once this build is published."
+            else
+              echo "Not signed (no SOS_REPO_SIGNING_KEY): images built from these get no update source."
+            fi
           } >>"$GITHUB_STEP_SUMMARY"
 
       - name: Save third-party builds
@@ -102,5 +107,16 @@ jobs:
         with:
           name: sos-repo
           path: dist/repo
+          retention-days: 14
+          if-no-files-found: error
+
+      # The same packages as a flat, signed repository: iso.yml publishes it with the test build, and
+      # installed systems update from there (image/README.md, «Updates»).
+      - name: Upload the repository for installed systems (signed builds only)
+        if: hashFiles('dist/repo/flat/InRelease') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sos-apt
+          path: dist/repo/flat
           retention-days: 14
           if-no-files-found: error

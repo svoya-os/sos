@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """Release notes for the download page: which image to take, and how.
 
-    scripts/release/notes.py DIR SHA test|release [TAG] > DIR/NOTES.md
+    scripts/release/notes.py DIR SHA test|release [TAG] [--updates] > DIR/NOTES.md
 
 DIR holds what the ISO workflow made: *.iso (whole) and *.iso.partNN, SHA256SUMS and the *.iso.json
 build info (size, variant). The standard image is one file; the one with the NVIDIA drivers comes
 in parts (GitHub keeps files under 2 GiB) and sos-join.bat / sos-join.sh put it together.
+--updates: the release also carries the signed package repository installed systems update from.
 """
 from __future__ import annotations
 
@@ -55,7 +56,14 @@ def size(img: dict, ru: bool) -> str:
     return f"{gb(img['bytes'], ru)}, {one}"
 
 
-def notes(d: pathlib.Path, sha: str, kind: str, tag: str = "") -> str:
+UPDATES_RU = ("Уже установил СОС? `sos update` (в лаунчере «Обновить систему») берёт обновления отсюда: "
+              "файлы `*.deb`, `Packages`, `Release` и `InRelease` в этом выпуске — для него, скачивать их не нужно.")
+UPDATES_EN = ("Already running SOS? `sos update` (“Update system” in the launcher) takes its updates from here: "
+              "the `*.deb`, `Packages`, `Release` and `InRelease` files of this release are for it, no need to "
+              "download them.")
+
+
+def notes(d: pathlib.Path, sha: str, kind: str, tag: str = "", updates: bool = False) -> str:
     imgs = images(d)
     if not imgs:
         raise SystemExit("notes.py: no *.iso.json in " + str(d))
@@ -76,7 +84,10 @@ def notes(d: pathlib.Path, sha: str, kind: str, tag: str = "") -> str:
                      f"интернета.{fetch(nv, True)}")
     lines += ["", "Проверить образ: суммы в `SHA256SUMS`. Записать на флешку: [Rufus](https://rufus.ie) "
               "(режим DD), [balenaEtcher](https://etcher.balena.io) или Ventoy. Secure Boot выключать не нужно. "
-              f"Подробно: [установка]({INSTALL_RU}).", "", "---", ""]
+              f"Подробно: [установка]({INSTALL_RU}).", ""]
+    if updates:
+        lines += [UPDATES_RU, ""]
+    lines += ["---", ""]
     if kind == "test":
         lines += [f"**SOS test build** (pre-alpha, commit `{sha[:7]}`). Replaced automatically by every build "
                   "that boots, installs and passes the bots.", ""]
@@ -92,14 +103,18 @@ def notes(d: pathlib.Path, sha: str, kind: str, tag: str = "") -> str:
     lines += ["", "Checksums are in `SHA256SUMS`. Write the image to a USB stick with [Rufus](https://rufus.ie) "
               "(DD mode), [balenaEtcher](https://etcher.balena.io) or Ventoy; Secure Boot can stay on. "
               f"Details: [installing SOS]({INSTALL_EN}).", ""]
+    if updates:
+        lines += [UPDATES_EN, ""]
     return "\n".join(lines)
 
 
 def main(argv: list[str]) -> int:
+    updates = "--updates" in argv
+    argv = [a for a in argv if a != "--updates"]
     if len(argv) < 3 or argv[2] not in ("test", "release"):
         print(__doc__, file=sys.stderr)
         return 2
-    sys.stdout.write(notes(pathlib.Path(argv[0]), argv[1], argv[2], argv[3] if len(argv) > 3 else ""))
+    sys.stdout.write(notes(pathlib.Path(argv[0]), argv[1], argv[2], argv[3] if len(argv) > 3 else "", updates))
     return 0
 
 

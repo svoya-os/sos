@@ -83,6 +83,12 @@ jobs:
                   continue
               desk = next((s for s in r["steps"] if s["id"] == "desktop" and s["action"] == "wait_serial"), {})
               detail = str(desk.get("detail", "")).replace("|", "\\|")[:100]
+              # a splash that hung: greetd's plymouth-release ended it (packages/svoya-session)
+              try:
+                  if "plymouthd did not answer" in (d / "serial.log").read_text(errors="replace"):
+                      detail = "PLYMOUTH STUCK, ended by plymouth-release · " + detail
+              except OSError:
+                  pass
               rows.append(f"| {d.name} | {os.environ['CDROM']} | {'reached' if r['ok'] else 'STALLED'} | "
                           f"{desk.get('seconds', '')} | {detail} |")
           pathlib.Path("dist/summary.md").write_text("\n".join(rows) + "\n")

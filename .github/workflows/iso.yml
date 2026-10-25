@@ -93,6 +93,12 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$NVIDIA_BRANCHES" = none ]; then export NVIDIA_BRANCHES="" POOL_STRICT=0; fi
+          # signed packages: the image trusts their key and updates from the test release (85-final-sources)
+          if [ -f dist/repo/InRelease ] && [ -f dist/repo/sos-archive-keyring.asc ]; then
+              export SOS_APT_KEY_FILE=dist/repo/sos-archive-keyring.asc
+          else
+              echo "::notice::packages are not signed: this image gets no update source for svoya-*"
+          fi
           image/docker-build.sh
           ls -la dist/iso
 
@@ -305,6 +311,14 @@ jobs:
           merge-multiple: true
           path: release
 
+      # the flat, signed package repository installed systems update from (only in signed builds)
+      - name: Download the update repository
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sos-apt
+          path: apt
+
       - name: Notes and the join helpers
         env:
           SHA: ${{ github.sha }}
@@ -312,7 +326,9 @@ jobs:
           set -euo pipefail
           rm -f release/*.README.txt          # sos-join and the notes say how to join the parts
           cp scripts/release/sos-join.bat scripts/release/sos-join.ps1 scripts/release/sos-join.sh release/
-          python3 scripts/release/notes.py release "$SHA" test >"$RUNNER_TEMP/NOTES.md"
+          updates=()
+          [ ! -f apt/InRelease ] || updates=(--updates)
+          python3 scripts/release/notes.py release "$SHA" test "${updates[@]}" >"$RUNNER_TEMP/NOTES.md"
           cat "$RUNNER_TEMP/NOTES.md" >>"$GITHUB_STEP_SUMMARY"
           too_big=$(find release -type f -size +2047M)
           if [ -n "$too_big" ]; then echo "::error::assets larger than 2 GiB: $too_big"; exit 1; fi
@@ -334,6 +350,13 @@ jobs:
               exit 0
           fi
           assets=(release/*.iso release/*.iso.part[0-9][0-9] release/SHA256SUMS* release/sos-join.*)
+          # the update repository travels with the image it was built for: InRelease, Release(.gpg),
+          # Packages(.gz), the .debs and the public key, all at the top level of the release
+          if [ -f apt/InRelease ]; then
+              assets+=(apt/*)
+          else
+              echo "::notice::no signed update repository in this build"
+          fi
           # upload next to the current test build first (a draft), then swap: the page is gone for
           # seconds, not for the minutes the upload takes
           gh release delete test-next --repo "$REPO" --yes 2>/dev/null || true

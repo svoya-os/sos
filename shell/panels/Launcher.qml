@@ -75,6 +75,7 @@ PanelFrame {
         { key: "color picker пипетка цвет", title: Strings.colorPicker, secondary: "Super Shift C", glyph: "pipette", run: () => Actions.pickColor() },
         { key: "game mode игра игровой режим", title: Strings.csGame, secondary: Hypr.gaming ? Strings.btOn : Strings.btOff, glyph: "gamepad-2", run: () => Hypr.toggleGameMode() },
         { key: "task manager диспетчер задач btop процессы", title: Strings.csMonitor, secondary: "Ctrl Shift Esc", glyph: "cpu", run: () => Sys.terminal(["btop"]) },
+        { key: "update upgrade обновить обновление обновления апдейт", title: Strings.updateSystem, secondary: "sos update", glyph: "refresh-cw", run: () => Actions.update() },
         { key: "undo", title: Strings.undoSystem, secondary: "sos undo", glyph: "undo-2", run: () => Actions.undo() },
         { key: "doctor", title: Strings.doctor, secondary: "sos doctor", glyph: "stethoscope", run: () => Actions.doctor() },
         { key: "dnd", title: Strings.dnd, secondary: Settings.dnd ? Strings.btOn : Strings.btOff, glyph: Settings.dnd ? "bell-off" : "bell", run: () => Notifs.toggleDnd() },

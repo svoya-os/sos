@@ -130,6 +130,11 @@ Singleton {
         Sys.terminal(["sh", "-c", root.sosScript, Strings.t("Enter — закрыть", "Enter — close"), "doctor"]);
     }
 
+    // sos update: a snapshot, then apt (Ubuntu and the SOS repository) and Flatpak; asks for the password
+    function update() {
+        Sys.terminal(["sh", "-c", root.sosScript, Strings.t("Enter — закрыть", "Enter — close"), "update"]);
+    }
+
     // ---- setup wizard (separate Quickshell config) ----------------------------------------
     // step: "accessibility" | "" (the whole wizard). If the wizard already runs,
     // it jumps to the step over IPC; otherwise it starts (single instance).
