@@ -419,10 +419,23 @@ def host_state() -> str:
     return f"load {load} · {os.cpu_count()} CPUs · {avail} available"
 
 
+def host_cpu() -> str:
+    """The CI host's processor: GitHub's runners differ, and the guest's software rendering (the
+    SOS-PERF figures) is as fast as the host."""
+    try:
+        for line in pathlib.Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return " ".join(line.split(":", 1)[1].split())
+    except OSError:
+        pass
+    return "unknown"
+
+
 def sample_host(out: pathlib.Path, proc: subprocess.Popen, every: float = 15.0) -> None:
     """host.log: the host's load and QEMU's CPU time every 15 s for the whole run."""
     start, last = time.monotonic(), None
     with open(out / "host.log", "a") as log:
+        log.write(f"host CPU: {host_cpu()}\n")
         while proc.poll() is None:
             try:
                 fields = pathlib.Path(f"/proc/{proc.pid}/stat").read_text().rsplit(")", 1)[1].split()
@@ -441,7 +454,8 @@ def sample_host(out: pathlib.Path, proc: subprocess.Popen, every: float = 15.0) 
 def write_reports(out: pathlib.Path, meta: dict, results: list[dict], ok: bool) -> None:
     (out / "report.json").write_text(json.dumps({**meta, "ok": ok, "steps": results}, indent=1) + "\n")
     lines = [f"### VM test: {meta['plan']} ({meta['firmware']}, {meta['accel']}) — {'passed' if ok else 'FAILED'}",
-             "", "| # | step | action | status | time | detail |", "|---|---|---|---|---|---|"]
+             "", f"Host: {meta.get('hostCpu', 'unknown')}", "",
+             "| # | step | action | status | time | detail |", "|---|---|---|---|---|---|"]
     for r in results:
         detail = str(r.get("detail", "")).replace("|", "\\|")[:160]
         lines.append(f"| {r['n']} | {r['id']} | {r['action']} | {r['status']} | {r['seconds']}s | {detail} |")
@@ -558,7 +572,7 @@ def main(argv: list[str] | None = None) -> int:
             proc.wait()
         qemu_log.close()
         meta = {"plan": plan.get("name", plan_path.stem), "firmware": args.firmware, "accel": accel,
-                "iso": os.path.basename(args.iso)}
+                "iso": os.path.basename(args.iso), "hostCpu": host_cpu()}
         write_reports(out, meta, runner.results if runner else [], ok)
     print(f"{'PASSED' if ok else 'FAILED'} — screenshots in {out / 'screens'}")
     return 0 if ok else 1
