@@ -29,6 +29,10 @@ sv_write() {
   printf '  › wrote %s\n' "$path"
 }
 
+# sv_apt_update — refresh the package lists. A source that does not answer (the SOS repository on
+# GitHub between two builds, a mirror that is down) is a warning, not the end of the install:
+# apt-get update fails as a whole then, though every other list was refreshed.
+sv_apt_update() { sv_run apt-get update || sv_warn "some package lists were not refreshed; going on with the rest"; }
 # sv_apt_available PKG — is the package known to apt (archive or configured repos)?
 sv_apt_available() { apt-cache show "$1" >/dev/null 2>&1; }
 

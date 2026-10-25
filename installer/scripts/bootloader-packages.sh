@@ -18,7 +18,7 @@ if [ -s "$ROOT$POOL_LIST" ] && pool_apt install "${pkgs[@]}"; then
     log "boot loader packages installed from the medium: ${pkgs[*]}"
 elif online; then
     warn "pool install failed; trying the Ubuntu archive"
-    in_target apt-get -q update
+    in_target apt-get -q update || warn "some package lists were not refreshed; going on with the rest"
     in_target apt-get -y -q -o Dpkg::Options::=--force-confold install "${pkgs[@]}"
 else
     die "cannot install ${pkgs[*]}: not on the medium and no network"

@@ -564,3 +564,26 @@ class FinalSourcesTests(unittest.TestCase):
         flat = script.split("flat_repo() {", 1)[1].split("\n}\n", 1)[0]
         self.assertIn("tr -c 'A-Za-z0-9._-' '-'", flat)
         self.assertIn(r"sed 's|^Filename: \./|Filename: |'", flat)
+
+
+class ArchiveKeyTests(unittest.TestCase):
+    """packages/sos-archive-keyring.asc is what installed systems trust for SOS updates."""
+
+    KEY = ROOT / "packages/sos-archive-keyring.asc"
+    FPR = "BD279AFCEEB188F8768405A9AAEC6BC04DA47FFA"      # made 25.10.2026, the secret SOS_REPO_SIGNING_KEY
+
+    def test_the_public_key_and_only_that(self):
+        text = self.KEY.read_text()
+        self.assertTrue(text.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"))
+        self.assertNotIn("PRIVATE", text)                          # never the secret half
+        if subprocess.run(["which", "gpg"], capture_output=True).returncode == 0:
+            with tempfile.TemporaryDirectory() as home:
+                r = subprocess.run(["gpg", "--homedir", home, "--batch", "--with-colons", "--show-keys", str(self.KEY)],
+                                   capture_output=True, text=True)
+            fprs = [line.split(":")[9] for line in r.stdout.splitlines() if line.startswith("fpr:")]
+            self.assertEqual(fprs[:1], [self.FPR])
+
+    def test_the_build_checks_the_signing_key_against_it(self):
+        script = (ROOT / "packages/build-all.sh").read_text()
+        self.assertIn('"$ROOT/packages/sos-archive-keyring.asc"', script)
+        self.assertIn("installed systems trust $want", script)

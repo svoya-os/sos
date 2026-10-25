@@ -34,6 +34,22 @@ class CatalogTest(SandboxTest):
             for o, d in (m.get("options") or {}).items():
                 self.assertTrue(d.get("en") and d.get("ru"), f"{m['id']} option {o}")
 
+    def test_apt_update_survives_a_source_that_does_not_answer(self):
+        """apt-get update exits 100 when one repository has no Release file (the SOS repository on
+        GitHub between two builds): sv_apt_update warns and the module goes on (games bot, 25.10)."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            stub = os.path.join(tmp, "apt-get")
+            with open(stub, "w") as f:
+                f.write("#!/bin/sh\necho \"E: The repository 'https://github.com/svoya-os/sos/releases/download/test  Release' does not have a Release file.\" >&2\nexit 100\n")
+            os.chmod(stub, 0o755)
+            script = f"source {MODDIR / 'lib/common.sh'}; sv_apt_update; echo went-on"
+            r = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
+                               env={"PATH": tmp + ":/usr/bin:/bin"})
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("went-on", r.stdout)
+        self.assertIn("some package lists were not refreshed", r.stderr)
+
     def test_scripts_are_valid_bash_and_never_pipe_to_shell(self):
         scripts = sorted(MODDIR.glob("*/*.sh")) + [MODDIR / "lib/common.sh", MODDIR / "studio/files/sos-studio",
                                                    MODDIR / "nvidia/files/svoya-nvidia-uvm"]
@@ -64,6 +80,7 @@ class CatalogTest(SandboxTest):
                         "sv_require_root() { :; }\n"
                         "sv_run() { sv_log run \"$@\"; \"$@\"; }\n"
                         "sv_apt_available() { return 1; }\n"
+                        "sv_apt_update() { sv_log update; }\n"
                         "sv_apt_track_install() { sv_log apt \"$@\"; }\n"
                         "sv_flatpak_install() { sv_log flatpak \"$@\"; }\n"
                         "sv_write() { sv_log write \"$1\"; cat >\"$1\"; }\n"
@@ -89,6 +106,7 @@ class CatalogTest(SandboxTest):
             self.assertEqual(r.returncode, 0, r.stderr)
             calls = open(log).read()
             self.assertIn("run dpkg --add-architecture i386", calls)
+            self.assertIn("update", calls)
             self.assertIn("apt steam-installer", calls)
             # the launcher says «Steam», not Debian's «Install Steam», once Steam is installed
             with open(override) as f:

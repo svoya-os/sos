@@ -217,5 +217,10 @@ Work towards v0.1 «Первый сигнал».
   boot splash took over the console for its log, and when it stopped reading, the system's first
   process stopped too, on its next console message. The splash no longer takes the console, and a
   splash that does not end is ended after 30 seconds, so the login screen comes anyway.
+- Installing a module, Steam or the system no longer stops when one package source does not answer
+  (the SOS repository between two builds, a mirror that is down): the other lists are refreshed
+  and the install goes on with a warning.
+- `sos hardware` says when there is no internal disk at all, the usual sign of Intel RST or RAID
+  mode hiding an NVMe drive, and how to switch it to AHCI.
 
 [Unreleased]: https://github.com/svoya-os/sos/commits/main

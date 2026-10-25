@@ -6,7 +6,7 @@ source "${SVOYA_LIB:?}/common.sh"
 sv_require_root
 if ! dpkg --print-foreign-architectures | grep -qx i386; then
   sv_run dpkg --add-architecture i386
-  sv_run apt-get update
+  sv_apt_update
 fi
 extra=()
 # Gamepads, Steam Controller and VR headsets work without root (udev rules).

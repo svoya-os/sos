@@ -131,6 +131,10 @@ class Desktop(SandboxTest):
         self.assertTrue(any("local models" in p["en"] for p in rep["problems"]))
         self.assertEqual(rep["problems"][0]["level"], "fail")                       # the worst first
         self.assertEqual(rep["computer"]["firmware"], "bios")
+        # no disk at all: often a NVMe drive hidden by Intel RST/RAID mode
+        disk = next(p for p in rep["problems"] if p["en"].startswith("No internal disk"))
+        self.assertIn("AHCI", disk["fixEn"])
+        self.assertIn("Disks      none", H.render(rep, color=False))
 
 
 class Words(SandboxTest):

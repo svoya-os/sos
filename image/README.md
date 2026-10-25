@@ -77,7 +77,7 @@ Useful switches (environment variables, see `config.env`):
 | `SQUASHFS_LEVEL` | `19` | zstd level; 15 builds faster, the ISO gets ~5–8 % bigger |
 | `SVOYA_WORK_DIR` | `/var/tmp/sos-iso-work` | scratch space (rootfs, ISO tree, pool) |
 | `SOS_APT_URL` | the `test` release on GitHub | where installed systems take SOS updates from ([Updates](#updates-of-sos-itself)) |
-| `SOS_APT_KEY_FILE`, `SOS_APT_KEY_FPR` | unset (CI: from the signed packages) | the key that repository is signed with, and its fingerprint |
+| `SOS_APT_KEY_FILE`, `SOS_APT_KEY_FPR` | unset (CI: `packages/sos-archive-keyring.asc` with signed packages) | the key that repository is signed with; a fingerprint that overrides the committed key's |
 
 `image/build-iso.sh --dry-run` validates the lists, hooks and boot menu and prints the exact
 mmdebstrap and xorriso command lines without root or network.
@@ -167,9 +167,11 @@ good build of `main` publishes next to the test ISO, at the top level of the `te
 `sos-archive-keyring.asc`.
 
 - `packages/build-all.sh` signs both its repository and the flat copy (`dist/repo/flat`) with
-  `SVOYA_REPO_SIGNING_KEY` (the GitHub secret `SOS_REPO_SIGNING_KEY`) and exports the public key.
-  Release asset names keep only `A-Za-z0-9._-`, so the flat copy renames the files (`~` → `-`)
-  and its `Packages` points at those names. A key other than `SOS_APT_KEY_FPR` fails the build.
+  `SVOYA_REPO_SIGNING_KEY` (the GitHub secret `SOS_REPO_SIGNING_KEY`). The public key installed
+  systems trust is committed: `packages/sos-archive-keyring.asc`. A secret with any other key
+  fails the build, so a wrong or replaced secret cannot reach anyone's system. Release asset names
+  keep only `A-Za-z0-9._-`, so the flat copy renames the files (`~` → `-`) and its `Packages`
+  points at those names.
 - `iso.yml` builds the image with that public key; `hooks/85-final-sources.sh` writes
   `/etc/apt/sources.list.d/sos.sources` (`Suites: /`: APT asks for `<URIs>InRelease`) and pins
   `o=SOS` at 900, so our builds win over same-named archive packages. Without the key the image

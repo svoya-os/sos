@@ -290,6 +290,17 @@ flat_repo() {
     release_file "$flat"
 }
 
+# The fingerprint the signing key must have: SOS_APT_KEY_FPR when set, otherwise that of the public
+# key committed next to this script (packages/sos-archive-keyring.asc, the key images trust).
+expected_fpr() {
+    if [ -n "${SOS_APT_KEY_FPR:-}" ]; then
+        printf '%s' "$SOS_APT_KEY_FPR"
+    elif [ -f "$ROOT/packages/sos-archive-keyring.asc" ]; then
+        gpg --batch --with-colons --show-keys "$ROOT/packages/sos-archive-keyring.asc" 2>/dev/null |
+            awk -F: '$1 == "fpr" { print $10; exit }'
+    fi
+}
+
 index_repo() {
     log "Indexing $OUT"
     rm -rf "$OUT/flat"                  # not in the Release of the repository it is made from
@@ -303,19 +314,25 @@ index_repo() {
     rm -f "$OUT/sos-archive-keyring.asc"
     if [ -n "${SVOYA_REPO_SIGNING_KEY:-}" ]; then
         log "Signing Release"
-        local gnupghome fpr
+        local gnupghome fpr want
         gnupghome=$(mktemp -d)
         printf '%s\n' "$SVOYA_REPO_SIGNING_KEY" | GNUPGHOME=$gnupghome gpg --batch --quiet --import
         fpr=$(GNUPGHOME=$gnupghome gpg --batch --with-colons --list-secret-keys | awk -F: '$1 == "fpr" { print $10; exit }')
         [ -n "$fpr" ] || die "SVOYA_REPO_SIGNING_KEY holds no secret key"
         info "signing key $fpr"
-        if [ -n "${SOS_APT_KEY_FPR:-}" ] && [ "$fpr" != "$SOS_APT_KEY_FPR" ]; then
-            die "SVOYA_REPO_SIGNING_KEY is $fpr, image/config.env expects SOS_APT_KEY_FPR=$SOS_APT_KEY_FPR"
+        want=$(expected_fpr)
+        if [ -n "$want" ] && [ "$fpr" != "$want" ]; then
+            die "SVOYA_REPO_SIGNING_KEY is $fpr, but installed systems trust $want (packages/sos-archive-keyring.asc)"
         fi
         sign_repo "$OUT" "$gnupghome"
         sign_repo "$OUT/flat" "$gnupghome"
-        # the public half: images trust it for updates (image/hooks/85-final-sources.sh)
-        GNUPGHOME=$gnupghome gpg --batch --yes --armor --export -o "$OUT/sos-archive-keyring.asc" "$fpr"
+        # the public half that images trust for updates (image/hooks/85-final-sources.sh): the committed
+        # one when there is one, so what installed systems trust is reviewed in git
+        if [ -f "$ROOT/packages/sos-archive-keyring.asc" ]; then
+            cp "$ROOT/packages/sos-archive-keyring.asc" "$OUT/sos-archive-keyring.asc"
+        else
+            GNUPGHOME=$gnupghome gpg --batch --yes --armor --export -o "$OUT/sos-archive-keyring.asc" "$fpr"
+        fi
         cp "$OUT/sos-archive-keyring.asc" "$OUT/flat/"
         rm -rf "$gnupghome"
     else

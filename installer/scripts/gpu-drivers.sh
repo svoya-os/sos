@@ -44,7 +44,7 @@ fi
 
 if online && in_target sh -c 'command -v ubuntu-drivers' >/dev/null; then
     log "installing the driver chosen by ubuntu-drivers (online)"
-    in_target apt-get -q update
+    in_target apt-get -q update || warn "some package lists were not refreshed; going on with the rest"
     if in_target ubuntu-drivers install; then
         record ubuntu-drivers ""
         regen_initramfs

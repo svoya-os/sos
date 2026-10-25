@@ -278,8 +278,11 @@ def problems(rep: dict) -> list[dict]:
     if mem is not None and mem < 7.5:
         out.append(_p("warn", f"{mem:g} GB of memory: local models will be slow or will not fit",
                       f"Памяти {str(mem).replace('.', ',').removesuffix(',0')} ГБ: локальные модели будут медленными или не поместятся"))
-    if rep["disks"] and not any(not d["removable"] for d in rep["disks"]):
-        out.append(_p("warn", "No internal disk: nowhere to install SOS", "Нет внутреннего диска: SOS некуда установить"))
+    if not any(not d["removable"] for d in rep["disks"]):
+        # often the disk is there but hidden: Intel RST/RAID mode keeps NVMe drives from Linux
+        out.append(_p("warn", "No internal disk: nowhere to install SOS", "Нет внутреннего диска: SOS некуда установить",
+                      "if the firmware shows the storage in Intel RST or RAID mode, switch it to AHCI (Windows needs preparing first)",
+                      "если в настройках прошивки накопитель в режиме Intel RST или RAID, переключите на AHCI (Windows надо подготовить заранее)"))
     if rep["computer"]["firmware"] == "bios":
         out.append(_p("info", "Started in BIOS (legacy) mode: SOS installs, but UEFI is better",
                       "Компьютер загрузился в режиме BIOS: SOS установится, но лучше UEFI",
@@ -331,7 +334,7 @@ def lines(rep: dict) -> list[tuple[str, str]]:
     rows.append((tr("Input", "Ввод"), " · ".join(ins) or "—"))
     rows.append((tr("Disks", "Диски"), " · ".join(
         f"{d['name']} {d['model'] or ''} {d['sizeGB']} GB {'SSD' if d['ssd'] else 'HDD'}"
-        + (tr(" (removable)", " (съёмный)") if d["removable"] else "") for d in rep["disks"]) or "?"))
+        + (tr(" (removable)", " (съёмный)") if d["removable"] else "") for d in rep["disks"]) or tr("none", "нет")))
     rows.append((tr("Kernel", "Ядро"), c["kernel"]))
     return rows
 

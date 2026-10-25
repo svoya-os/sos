@@ -16,7 +16,7 @@ if ! target_installed dracut; then
     if [ -s "$ROOT$POOL_LIST" ] && pool_apt install dracut dracut-core "${remove[@]}"; then
         log "dracut installed from the medium"
     elif online; then
-        in_target apt-get -q update
+        in_target apt-get -q update || warn "some package lists were not refreshed; going on with the rest"
         in_target apt-get -y -q install dracut dracut-core "${remove[@]}"
     else
         die "dracut is not on the medium and there is no network"

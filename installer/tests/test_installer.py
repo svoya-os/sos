@@ -39,6 +39,21 @@ def fake_sysfs(root: pathlib.Path, devices: list[tuple[str, str, str, str]]) -> 
     return root
 
 
+class AptUpdateTests(unittest.TestCase):
+    def test_a_source_that_does_not_answer_does_not_end_the_install(self):
+        """apt-get update exits 100 when one repository does not answer (the SOS repository on GitHub
+        between two builds); under `set -e` that ended the install. Every call goes on with a warning."""
+        scripts = sorted(pathlib.Path(__file__).resolve().parents[1].joinpath("scripts").glob("*.sh"))
+        self.assertTrue(scripts)
+        for script in scripts:
+            for line in script.read_text().splitlines():
+                # the medium's own pool (POOL_OPTS: the only source) has to work, that one may stop it
+                if ("apt-get" in line and " update" in line and "POOL_OPTS" not in line
+                        and not line.lstrip().startswith("#")):
+                    with self.subTest(script=script.name, line=line.strip()):
+                        self.assertIn("|| warn", line)
+
+
 class GpuSelectTests(unittest.TestCase):
     def run_select(self, devices):
         with tempfile.TemporaryDirectory() as tmp:

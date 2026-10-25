@@ -37,7 +37,7 @@ if ! sv_have nvidia-ctk; then
     rm -f "$tmp"
     echo "deb [signed-by=$key] https://nvidia.github.io/libnvidia-container/stable/deb/\$(ARCH) /" |
       sv_write /etc/apt/sources.list.d/nvidia-container-toolkit.list
-    sv_run apt-get update
+    sv_apt_update
     sv_run apt-get install -y nvidia-container-toolkit
     install -d /var/lib/svoya/module-extra && echo nvidia-container-toolkit >>/var/lib/svoya/module-extra/nvidia.apt
   fi

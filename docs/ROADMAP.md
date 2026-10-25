@@ -4,7 +4,7 @@ SOS is pre-alpha. This roadmap turns [VISION.md](VISION.md) and [ARCHITECTURE.md
 into checklists. There are no dates: a milestone ships when its checklist is done and its
 "done when" criteria pass on real hardware. A box is ticked when the work is merged on `main`.
 
-Last reviewed: 2026-09-24.
+Last reviewed: 2026-10-25.
 
 - [v0.1 «Первый сигнал» / First Signal](#v01-первый-сигнал--first-signal): bootable system, shell, text Jackson, the `sos` command
 - [v0.2 «Голос» / Voice](#v02-голос--voice): voice, model store UI, Studio
@@ -29,81 +29,84 @@ turn something on.
 
 ### Image and installer
 
-- [ ] Hybrid ISO built from `image/`: mmdebstrap → squashfs → ISO
-- [ ] Boots and installs with Secure Boot on, through the engine's signed boot chain
-- [ ] Driver pool on the NVIDIA ISO: NVIDIA current branch (open kernel modules) and the 580
+- [x] Hybrid ISO built from `image/`: mmdebstrap → squashfs → ISO
+- [ ] Boots and installs with Secure Boot on, through the engine's signed boot chain (boots: a CI
+      test every build; installing with Secure Boot on: not tested yet)
+- [x] Driver pool on the NVIDIA ISO: NVIDIA current branch (open kernel modules) and the 580
       legacy branch for GTX 900/1000; installs offline. The standard ISO stays one file under
       2 GiB and downloads the driver during the install
-- [ ] Calamares installer with SOS branding: Btrfs with a subvolume layout ready for snapshots,
+- [x] Calamares installer with SOS branding: Btrfs with a subvolume layout ready for snapshots,
       optional disk encryption
 - [ ] No Ubuntu branding visible anywhere
 - [ ] Engine defaults reviewed for network silence: clock sync, connectivity checks, firmware
       metadata, periodic package list updates, crash reporters. Each one is off, or asked in the
       first-run wizard (see [privacy.md](guides/privacy.md))
-- [ ] ISO published with SHA-256 checksums and a signature
+- [ ] ISO published with SHA-256 checksums and a signature (checksums with every test build; the
+      signature waits for `SOS_RELEASE_SIGNING_KEY`)
 
 ### Packages
 
-- [ ] Debian packages: `svoya-shell`, `svoya-jackson`, `svoya-cli`, `svoya-theme`,
-      `svoya-branding`, `svoya-installer`
-- [ ] Our own signed APT repository
-- [ ] The `sos` command installed, with `svoya` as a compatibility alias, and no file conflict
+- [x] Debian packages: `svoya-shell`, `svoya-jackson`, `svoya-cli`, `svoya-session`,
+      `svoya-base`, `svoya-fonts`, `svoya-branding`, `svoya-installer` (there is no `svoya-theme`:
+      the theme tokens ship in `svoya-cli`, the GTK theme, icons and cursors in `svoya-branding`)
+- [x] Our own signed APT repository (flat, on the `test` release; `sos update` reads it)
+- [x] The `sos` command installed, with `svoya` as a compatibility alias, and no file conflict
       with the engine's unrelated `sos` support-tool package (sosreport)
 
 ### Svoya Shell
 
-- [ ] Bar: Morse mark, workspaces, window title, job meter, GPU, status icons, keyboard layout,
+- [x] Bar: Morse mark, workspaces, window title, job meter, GPU, status icons, keyboard layout,
       Jackson's mini-scope, clock; segments hide when data is missing
-- [ ] Launcher (`Super+Space`); `?` or `Tab` hands the query to Jackson
-- [ ] Jackson panel (`Super+J`): route chip, streamed answers, approval cards
+- [x] Launcher (`Super+Space`); `?` or `Tab` hands the query to Jackson
+- [x] Jackson panel (`Super+J`): route chip, streamed answers, approval cards
       (once · always in this project · deny), footer with latency, tokens, cost and
       local/cloud
-- [ ] Notifications and a notification center
-- [ ] Control center: Wi-Fi, Bluetooth, sound, brightness, theme, focus modes, and **AI &
+- [x] Notifications and a notification center
+- [x] Control center: Wi-Fi, Bluetooth, sound, brightness, theme, focus modes, and **AI &
       privacy**: route, today's spend, requests that left the machine, and the one switch that
       turns every AI feature off
-- [ ] Lock screen and greeter (greetd)
-- [ ] On-screen display and the POST screen
-- [ ] First-run wizard, at most seven steps, each skippable and reversible: accessibility,
+- [x] Lock screen and greeter (greetd)
+- [x] On-screen display and the POST screen
+- [x] First-run wizard, at most seven steps, each skippable and reversible: accessibility,
       language and keyboard, look, layout, profile, AI (detected GPU; **one suggested local model
       that fits the GPU and memory, installed with one click**; **Obsidian** from Flathub with one
       click, for Jackson's memory; optional cloud keys), privacy summary with the first snapshot
       and the shortcut cheat sheet
-- [ ] Keyboard map from [ARCHITECTURE.md §6](ARCHITECTURE.md#6-keyboard-map-defaults)
-- [ ] Reduce-motion and high-contrast variants; all copy in Russian and English
+- [x] Keyboard map from [ARCHITECTURE.md §6](ARCHITECTURE.md#6-keyboard-map-defaults)
+- [x] Reduce-motion and high-contrast variants; all copy in Russian and English
 
 ### Jackson (text)
 
-- [ ] Runs in the background as a user service; socket protocol from
+- [x] Runs in the background as a user service; socket protocol from
       [ARCHITECTURE.md §4.3](ARCHITECTURE.md#43-jackson-socket-protocol)
-- [ ] `j` in the terminal (`j найди мои датасеты`), `jackson` as the long name
-- [ ] Character and voice: a friendly guy from the 2000s internet, cheeky but useful; «ты» by
+- [x] `j` in the terminal (`j найди мои датасеты`), `jackson` as the long name
+- [x] Character and voice: a friendly guy from the 2000s internet, cheeky but useful; «ты» by
       default, «вы» as a setting; Russian and English
-- [ ] Router: local (llama.cpp, Ollama) and cloud providers; route policy `local-only` by
+- [x] Router: local (llama.cpp, Ollama) and cloud providers; route policy `local-only` by
       default; daily budget; cost and "left the machine" counters
-- [ ] Tools and MCP servers under permission tiers T0–T4; approval cards with the exact preview;
+- [x] Tools and MCP servers under permission tiers T0–T4; approval cards with the exact preview;
       taint tracking for untrusted content
-- [ ] Hash-chained audit log; undo through snapshots
-- [ ] Memory as Markdown in git, optionally inside the user's Obsidian vault
-- [ ] API keys in the Secret Service keyring, never in files or prompts
+- [x] Hash-chained audit log; undo through snapshots
+- [x] Memory as Markdown in git, optionally inside the user's Obsidian vault
+- [x] API keys in the Secret Service keyring, never in files or prompts
 
 ### The `sos` command
 
-- [ ] `sos gpu` (GPU Doctor): driver ↔ CUDA ↔ PyTorch, ROCm, Secure Boot, suspend/resume,
+- [x] `sos gpu` (GPU Doctor): driver ↔ CUDA ↔ PyTorch, ROCm, Secure Boot, suspend/resume,
       GPU access from containers
-- [ ] `sos fix`: safe fixes, snapshot first
-- [ ] `sos install <module>` and module add, remove, list, profiles; first module: Local LLMs
-- [ ] Model store in `/srv/ai`: fit check, license flags (EU, commercial use), duplicates,
+- [x] `sos fix`: safe fixes, snapshot first
+- [x] `sos install <module>` and module add, remove, list, profiles; first module: Local LLMs
+- [x] Model store in `/srv/ai`: fit check, license flags (EU, commercial use), duplicates,
       per-tool views (llama.cpp, Ollama, ComfyUI)
-- [ ] `sos theme`: Graphite, Paper, Phosphor, auto (sunrise and sunset); templates for Hyprland,
+- [x] `sos theme`: Graphite, Paper, Phosphor, auto (sunrise and sunset); templates for Hyprland,
       kitty, GTK, Qt, btop, fuzzel
-- [ ] `sos update` with a snapshot first; `sos undo` and `Super+Z`; yesterday's system in the
+- [x] `sos update` with a snapshot first; `sos undo` and `Super+Z`; yesterday's system in the
       boot menu
-- [ ] `sos status --json` for the bar
+- [x] `sos status --json` for the bar
 
 ### Quality
 
-- [ ] CI builds every commit, boots the ISO in QEMU and takes screenshots
+- [x] CI builds every commit, boots the ISO in QEMU and takes screenshots
 - [ ] Unit tests, shellcheck, qmllint and `reuse lint` in CI
 - [ ] Network silence test: a fresh install opens no outbound connection until the user turns a
       feature on
