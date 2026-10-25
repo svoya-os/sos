@@ -1,0 +1,25 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# The touchpad key (XF86TouchpadToggle, …On, …Off in hyprland.conf): every touchpad Hyprland knows
+# goes off or on, and a short notification says which. The state lives in $XDG_RUNTIME_DIR, so the
+# next login starts with the touchpad on.
+set -euo pipefail
+state=${XDG_RUNTIME_DIR:-/tmp}/sos-touchpad-off
+case ${1:-toggle} in
+    on) want=on ;;
+    off) want=off ;;
+    *) if [ -e "$state" ]; then want=on; else want=off; fi ;;
+esac
+names=$(hyprctl -j devices 2>/dev/null | jq -r '.mice[]?.name | select(test("touchpad"; "i"))' 2>/dev/null || true)
+[ -n "$names" ] || exit 0
+enabled=true
+[ "$want" = on ] || enabled=false
+while IFS= read -r name; do
+    hyprctl keyword "device[$name]:enabled" "$enabled" >/dev/null 2>&1 || true
+done <<<"$names"
+if [ "$want" = off ]; then : >"$state"; else rm -f "$state"; fi
+case ${LANG:-} in
+    ru*) msg=$([ "$want" = on ] && echo "Тачпад включён" || echo "Тачпад выключен") ;;
+    *) msg=$([ "$want" = on ] && echo "Touchpad on" || echo "Touchpad off") ;;
+esac
+command -v notify-send >/dev/null 2>&1 && notify-send -a SOS -e -t 1500 -i input-touchpad "$msg" || true

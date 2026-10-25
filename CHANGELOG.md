@@ -125,6 +125,9 @@ Work towards v0.1 «Первый сигнал».
 - Estonian, Latvian, Lithuanian and Finnish keyboard layouts in the first-run wizard, which now
   also shows the layouts picked in the installer instead of always English and Russian.
 - Spelling in Russian, English and Estonian: the dictionaries come with SOS, and Firefox uses them.
+- Laptop and multimedia keys: keyboard backlight up and down, the touchpad switch (it says
+  whether the touchpad is now on or off), Stop, and the Search, Calculator, Files, Browser and
+  Mail keys.
 - SOS ASCII in the interface, not only in the terminal. The lock screen has a screensaver in every
   theme: after 30 seconds without input the face fades, Jackson turns from where he stands into his
   eye, the eye looks around and follows the pointer, and every few minutes it looks closer (the
