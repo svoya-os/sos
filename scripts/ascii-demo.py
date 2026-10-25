@@ -6,7 +6,7 @@ with DejaVu Sans Mono; block and box characters are drawn as rectangles, as term
 
   scripts/ascii-demo.py eye-story  out.mp4 [--gif out.gif]       the 14-second film
   scripts/ascii-demo.py eye        out.mp4 --script states        idle, thinking, listening, done, error
-  scripts/ascii-demo.py planets    out.mp4 --seconds 15
+  scripts/ascii-demo.py planets    out.mp4 --seconds 15          (also rain, logo, heart)
   scripts/ascii-demo.py eye        --sheet sheet.png --times 1,2.5,4 [--cols 80 --rows 24]
 
 Needs Pillow and ffmpeg (a development machine, not SOS itself).
@@ -89,13 +89,18 @@ class Raster:
 
 def make(name: str, state: str):
     from svoya_cli.ascii.eye import Eye
+    from svoya_cli.ascii.heart import Heart
+    from svoya_cli.ascii.logo import Logo
     from svoya_cli.ascii.planets import Planets
+    from svoya_cli.ascii.rain import Rain
     if name == "eye-story":
         return Eye(story=True, night=False, clock=lambda: "21:47")
     if name == "eye":
         return Eye(state=state, night=False, clock=lambda: "21:47")
     if name == "planets":
         return Planets()
+    if name in ("rain", "logo", "heart"):
+        return {"rain": Rain, "logo": Logo, "heart": Heart}[name]()
     raise SystemExit(f"unknown effect {name}")
 
 
@@ -110,7 +115,7 @@ def states_script(eye, t: float, fired: set) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("effect", choices=["eye", "eye-story", "planets"])
+    ap.add_argument("effect", choices=["eye", "eye-story", "planets", "rain", "logo", "heart"])
     ap.add_argument("out", nargs="?")
     ap.add_argument("--state", default="idle")
     ap.add_argument("--script", choices=["states"])

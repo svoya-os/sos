@@ -17,7 +17,7 @@ Singleton {
     property string launcherQuery: ""
     property string shotPath: ""         // screenshot waiting for an action
     property string ccPage: "main"       // the control center page to open: main | look
-    property string asciiScene: "saver"  // the ascii modal (SOS ASCII, called up): saver | eye | story | planets
+    property string asciiScene: "saver"  // the ascii modal (SOS ASCII, called up): saver | eye | story | planets | rain | logo | heart
     property bool locked: false          // set by the lock screen
 
     readonly property bool open: root.modal.length > 0
@@ -41,7 +41,7 @@ Singleton {
     }
 
     function showAscii(scene) {
-        root.asciiScene = ["saver", "eye", "story", "planets"].indexOf(scene) >= 0 ? scene : "saver";
+        root.asciiScene = ["saver", "eye", "story", "planets", "rain", "logo", "heart"].indexOf(scene) >= 0 ? scene : "saver";
         root.show("ascii");
     }
 

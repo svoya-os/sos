@@ -17,8 +17,13 @@ from ..context import Ctx
 from ..i18n import tr
 from .engine import PALETTE, run, still
 
-ART = {"planets": ("two worlds and an eclipse", "две планеты и затмение")}
-SOON = ("rain", "logo", "heart")
+ART = {"planets": ("two worlds and an eclipse", "две планеты и затмение"),
+       "rain": ("rain at night; now and then it writes the signal into the water",
+                "ночной дождь; время от времени он пишет на воде сигнал"),
+       "logo": ("the letters SOS out of noise, the boot line, the signal",
+                "буквы SOS из шума, линия загрузки, сигнал"),
+       "heart": ("a heart beating seventy-two times a minute, and its monitor",
+                 "сердце, семьдесят два удара в минуту, и его монитор")}
 
 
 def settings(ctx: Ctx) -> dict:
@@ -65,9 +70,11 @@ def main_art(args, ctx: Ctx) -> int:
         ui.out(st.accent(tr("ASCII screensavers: sos art <name>", "ASCII-заставки: sos art <название>")))
         for name, (en, ru) in ART.items():
             ui.out(f"  {name:<9} {tr(en, ru)}")
-        ui.out(st.faint(tr("coming: ", "скоро: ") + ", ".join(SOON)))
         return 0
+    from .heart import Heart
+    from .logo import Logo
     from .planets import Planets
-    effects = {"planets": Planets}
+    from .rain import Rain
+    effects = {"planets": Planets, "rain": Rain, "logo": Logo, "heart": Heart}
     cfg = settings(ctx)
     return _show(effects[args.effect](), args, ctx, cfg, any_key=True)

@@ -21,7 +21,8 @@ var ASCII_FLASH_GAP = 0.5;
 
 // toward zero, like Python's int(); `| 0` is exact inside the int32 range (NaN and ±Infinity stay)
 function asciiTrunc(x) { return x > -2147483649 && x < 2147483648 ? x | 0 : x < 0 ? Math.ceil(x) : Math.floor(x); }
-function asciiMod(a, b) { return ((a % b) + b) % b; }
+// Python's float %: the sign of the divisor (adding b only when needed keeps positive a exact)
+function asciiMod(a, b) { var r = a % b; return r !== 0 && (r < 0) !== (b < 0) ? r + b : r; }
 function asciiClamp(v, lo, hi) {
     if (lo === undefined) lo = 0.0;
     if (hi === undefined) hi = 1.0;
@@ -966,6 +967,329 @@ AsciiSaver.prototype.draw = function (cv, t) {
     else this.eye.draw(cv, asciiMod(te, 3600));
 };
 
+// ---- the signal, written by the rain and under the logo: ··· ——— ··· in Morse rhythm ----------------
+var ASCII_SIGNAL = "··· ——— ···", ASCII_SIGNAL_UNIT = 0.16;
+function asciiSignalTimes() {
+    var times = [], pos = 0;
+    for (var n = 0; n < ASCII_SIGNAL.length; n++) {
+        var c = ASCII_SIGNAL[n];
+        times.push(pos * ASCII_SIGNAL_UNIT);
+        pos += c === "·" ? 2 : c === "—" ? 4 : 2;
+    }
+    return times;
+}
+function asciiHud(cv, title, short, narrow, label, t) {
+    var w = cv.w, h = cv.h, dash = new Array(Math.max(0, w - 4) + 1).join("─");
+    asciiText(cv, 0, 0, "┌─" + dash + "─┐", NOISE);
+    asciiText(cv, 2, 0, narrow ? " " + short + " " : " " + title + " ", FG);
+    asciiText(cv, w - label.length - 4, 0, " " + label + " ", FG);
+    asciiText(cv, 0, h - 1, "└─" + dash + "─┘", NOISE);
+    asciiText(cv, 2, h - 1, " Q QUIT ", NOISE);
+    var stamp = "T+" + ("00000" + asciiMod(t, 100).toFixed(1)).slice(-5);
+    asciiText(cv, w - stamp.length - 4, h - 1, " " + stamp + " ", NOISE);
+}
+
+// ---- sos art rain (cli/svoya_cli/ascii/rain.py) ---------------------------------------------------
+var ASCII_RAIN_PERIOD = 18.0, ASCII_RAIN_AT = 4.0, ASCII_RAIN_SLANT = -0.5, ASCII_RAIN_RING = 0.7;
+function AsciiRain(opts) {
+    opts = opts || {};
+    this.hud = opts.hud !== false;
+    this.seed = opts.seed === undefined ? 5 : opts.seed;
+    this.stillAt = 9.0;
+    this.duration = null;
+    this.wantsMouse = false;
+    this.w = this.h = 0;
+    this.times = asciiSignalTimes();
+}
+AsciiRain.prototype.resize = function (w, h) {
+    this.w = w; this.h = h;
+    this.tiny = w < 24 || h < 9;
+    this.narrow = w < 80;
+    this.top = this.hud && !this.tiny ? 1 : 0;
+    this.bottom = h - 1 - this.top;
+    this.ground = this.bottom - 2;
+    var s = this.seed, n = Math.max(8, Math.floor(w * h / (this.narrow ? 40 : 26)));
+    this.drops = [];
+    for (var k = 0; k < n; k++) {
+        var near = asciiRnd(k, s, 1) < 0.38;
+        var speed = near ? 34.0 + 16.0 * asciiRnd(k, s, 2) : 14.0 + 10.0 * asciiRnd(k, s, 2);
+        var length = near ? (asciiRnd(k, s, 3) > 0.5 ? 3 : 2) : 1;
+        var fall = (this.ground - (this.top - 1)) / speed;
+        var cycle = fall + 0.2 + 1.1 * asciiRnd(k, s, 4);
+        var rings = near && asciiRnd(k, s, 8) < 0.55;
+        this.drops.push([k, near, rings, speed, length, fall, cycle, asciiRnd(k, s, 5) * cycle]);
+    }
+    this.edge = [];
+    for (var i = 0; i < w; i++) this.edge.push(asciiRnd(i, s, 9) < 0.82 ? "─" : " ");
+};
+AsciiRain.prototype.key = function (k) { return ["q", "Q", "esc", "й", "Й"].indexOf(k) < 0; };
+AsciiRain.prototype.pointer = function () {};
+AsciiRain.prototype.column = function (k, c, y) {
+    var span = this.w + (this.ground - this.top + 1) * -ASCII_RAIN_SLANT;
+    return Math.floor(asciiRnd(k, c, 7) * span + ASCII_RAIN_SLANT * (y - (this.top - 1)));
+};
+AsciiRain.prototype.draw = function (cv, t) {
+    if (cv.w !== this.w || cv.h !== this.h) this.resize(cv.w, cv.h);
+    asciiFill(cv);
+    var w = cv.w, h = cv.h, i, j, n;
+    if (this.tiny) { asciiText(cv, Math.max(0, Math.floor(w / 2) - 3), Math.floor(h / 2), "' / '", FG); return; }
+    var top = this.top, ground = this.ground, bottom = this.bottom;
+    for (i = 0; i < w; i++) if (this.edge[i] !== " ") asciiPut(cv, i, ground, this.edge[i], NOISE);
+    var p = t - ASCII_RAIN_AT - Math.floor((t - ASCII_RAIN_AT) / ASCII_RAIN_PERIOD) * ASCII_RAIN_PERIOD;
+    var writing = p < 7.0, x0 = Math.floor((w - ASCII_SIGNAL.length) / 2);
+    for (j = ground + 1; j <= bottom; j++) {
+        for (i = 0; i < w; i++) {
+            if (writing && j === bottom && x0 - 2 <= i && i < x0 + ASCII_SIGNAL.length + 2) continue;
+            var v = Math.sin(i * 0.7 + t * 1.3 + j * 2.1) * Math.sin(i * 0.23 - t * 0.6) + 0.4 * (asciiRnd(i, j, 11) - 0.5);
+            if (v > 0.8) asciiPut(cv, i, j, "~", NOISE);
+        }
+    }
+    for (n = 0; n < this.drops.length; n++) {
+        var d = this.drops[n], k = d[0], near = d[1], rings = d[2], speed = d[3], length = d[4], fall = d[5], cycle = d[6];
+        var u = t + d[7], c = Math.floor(u / cycle), local = u - c * cycle;
+        if (local < fall) {
+            var head = (top - 1) + local * speed;
+            for (var m = 0; m < length; m++) {
+                var y = head - m, jj = Math.floor(y);
+                if (jj < top || jj >= ground) continue;
+                if (near) asciiPut(cv, this.column(k, c, y), jj, m < 2 ? "/" : "'", m < 2 ? FG : NOISE);
+                else asciiPut(cv, this.column(k, c, y), jj, "'", NOISE);
+            }
+        } else if (rings && local - fall < ASCII_RAIN_RING) {
+            this.ring(cv, this.column(k, c, ground), local - fall);
+        }
+    }
+    if (writing) {
+        for (n = 0; n < ASCII_SIGNAL.length; n++) {
+            var ch = ASCII_SIGNAL[n];
+            if (ch === " " || p < this.times[n]) continue;
+            asciiPut(cv, x0 + n, bottom, ch, p < 6.0 ? FG : NOISE);
+        }
+    }
+    if (this.hud) asciiHud(cv, "SOS::ART::RAIN", "RAIN", this.narrow, writing ? "SIGNAL" : "RAIN", t);
+};
+AsciiRain.prototype.ring = function (cv, x, age) {
+    var g = this.ground;
+    if (age < 0.1) { asciiPut(cv, x - 1, g - 1, ".", FG); asciiPut(cv, x + 1, g - 1, ".", FG); asciiPut(cv, x, g + 1, "o", FG); }
+    else if (age < 0.25) { asciiPut(cv, x - 1, g + 1, "(", FG); asciiPut(cv, x + 1, g + 1, ")", FG); }
+    else if (age < 0.45) { asciiPut(cv, x - 2, g + 1, "(", NOISE); asciiPut(cv, x + 2, g + 1, ")", NOISE); }
+    else { asciiPut(cv, x - 3, g + 1, ".", NOISE); asciiPut(cv, x + 3, g + 1, ".", NOISE); }
+};
+
+// ---- sos art logo (cli/svoya_cli/ascii/logo.py) ---------------------------------------------------
+var ASCII_LOGO_PERIOD = 16.0, ASCII_LOGO_SW = 0.12, ASCII_LOGO_HOLD = 12.0, ASCII_LOGO_SCATTER = 13.6;
+function asciiEllipse(x, y, rx, ry) {
+    var u = x / rx, v = y / ry, q = Math.sqrt(u * u + v * v);
+    if (q < 1e-6) return [Math.min(rx, ry), 0.0];
+    var gx = x / (rx * rx), gy = y / (ry * ry), grad = Math.sqrt(gx * gx + gy * gy) / q;
+    return [Math.abs(q - 1.0) / grad, Math.atan2(v, u)];
+}
+function asciiArc(x, y, rx, ry, upper) {
+    var r = asciiEllipse(x, y, rx, ry), th = r[1];
+    var keep = upper ? (th <= -0.35 || th >= Math.PI / 2) : (-Math.PI / 2 <= th && th <= Math.PI - 0.35);
+    if (keep) return r[0];
+    var ends = upper ? [-0.35, Math.PI / 2] : [-Math.PI / 2, Math.PI - 0.35], best = Infinity;
+    for (var n = 0; n < 2; n++) {
+        var dx = x - rx * Math.cos(ends[n]), dy = y - ry * Math.sin(ends[n]);
+        best = Math.min(best, Math.sqrt(dx * dx + dy * dy));
+    }
+    return best;
+}
+function asciiLetters(x, y) {
+    var sx = 0.33, sy = 0.265, best = asciiEllipse(x, y, 0.40, 0.53)[0], cxs = [-1.15, 1.15];
+    for (var n = 0; n < 2; n++) {
+        var top = asciiArc(x - cxs[n], y + sy, sx, sy, true), bot = asciiArc(x - cxs[n], y - sy, sx, sy, false);
+        best = Math.min(best, top, bot);
+    }
+    return best - ASCII_LOGO_SW;
+}
+function AsciiLogo(opts) {
+    opts = opts || {};
+    this.hud = opts.hud !== false;
+    this.seed = opts.seed === undefined ? 11 : opts.seed;
+    this.stillAt = 7.5;
+    this.duration = null;
+    this.wantsMouse = false;
+    this.w = this.h = 0;
+    this.times = asciiSignalTimes();
+}
+AsciiLogo.prototype.resize = function (w, h) {
+    this.w = w; this.h = h;
+    this.tiny = w < 24 || h < 9;
+    this.narrow = w < 80;
+    this.top = this.hud && !this.tiny ? 1 : 0;
+    var rows = h - 2 * this.top, s = this.seed;
+    this.scale = Math.min(0.80 * w / 3.2, 0.40 * rows * ASCII_ASPECT / 1.3);
+    this.cx = w / 2.0;
+    this.cy = (this.top + rows * 0.44) * ASCII_ASPECT;
+    this.lineY = Math.min(h - 1 - this.top, asciiTrunc((this.cy + 0.65 * this.scale) / ASCII_ASPECT) + 2);
+    var sc = this.scale, i, j;
+    this.cells = [];
+    for (j = Math.max(0, asciiTrunc((this.cy - 0.8 * sc) / ASCII_ASPECT)); j < Math.min(h, asciiTrunc((this.cy + 0.8 * sc) / ASCII_ASPECT) + 2); j++) {
+        var yl = ((j + 0.5) * ASCII_ASPECT - this.cy) / sc;
+        for (i = Math.max(0, asciiTrunc(this.cx - 1.7 * sc)); i < Math.min(w, asciiTrunc(this.cx + 1.7 * sc) + 2); i++) {
+            var xl = (i + 0.5 - this.cx) / sc, d = asciiLetters(xl, yl);
+            if (d >= 0) continue;
+            var k = this.cells.length;
+            this.cells.push([i, j, xl, yl, asciiClamp(-d / ASCII_LOGO_SW),
+                             asciiRnd(k, s, 21) * w, this.top + asciiRnd(k, s, 22) * rows,
+                             asciiRnd(k, s, 24) * w, this.top + asciiRnd(k, s, 25) * rows, 0.9 * asciiRnd(k, s, 23)]);
+        }
+    }
+    var n = Math.max(6, Math.floor(w * h / 70));
+    var y0 = asciiTrunc((this.cy - 0.75 * sc) / ASCII_ASPECT), y1 = this.lineY;
+    var x0 = asciiTrunc(this.cx - 1.7 * sc), x1 = asciiTrunc(this.cx + 1.7 * sc) + 1;
+    this.dust = [];
+    for (k = 0; k < n; k++) {
+        var x = asciiTrunc(asciiRnd(k, s, 31) * w), y = this.top + asciiTrunc(asciiRnd(k, s, 32) * rows);
+        if (!(x0 <= x && x <= x1 && y0 <= y && y <= y1)) this.dust.push([x, y, 0.6 + 1.6 * asciiRnd(k, s, 33), 6.28 * asciiRnd(k, s, 34)]);
+    }
+};
+AsciiLogo.prototype.key = function (k) { return ["q", "Q", "esc", "й", "Й"].indexOf(k) < 0; };
+AsciiLogo.prototype.pointer = function () {};
+AsciiLogo.prototype.shade = function (xl, yl, depth, tl) {
+    var b = (0.30 + 0.62 * Math.pow(depth, 0.6)) * (1.0 + 0.04 * Math.sin(tl * 2 * Math.PI / 5.0)), starts = [3.0, 8.0];
+    for (var n = 0; n < 2; n++) {
+        if (starts[n] <= tl && tl < starts[n] + 2.0) {
+            var band = -2.2 + 4.4 * asciiEase((tl - starts[n]) / 2.0), v = ((xl + 0.35 * yl) - band) / 0.18;
+            b += 0.55 * Math.exp(-v * v);
+        }
+    }
+    return ASCII_RAMP[asciiTrunc(asciiClamp(b) * 9.999)];
+};
+AsciiLogo.prototype.draw = function (cv, t) {
+    if (cv.w !== this.w || cv.h !== this.h) this.resize(cv.w, cv.h);
+    asciiFill(cv);
+    var w = cv.w, h = cv.h, n;
+    if (this.tiny) { asciiText(cv, Math.max(0, Math.floor(w / 2) - 1), Math.floor(h / 2), "SOS", FG); return; }
+    var loop = Math.floor(t / ASCII_LOGO_PERIOD), tl = t - loop * ASCII_LOGO_PERIOD;
+    for (n = 0; n < this.dust.length; n++) {
+        var dd = this.dust[n];
+        if (Math.sin(t * dd[2] + dd[3]) > 0.55) asciiPut(cv, dd[0], dd[1], ".", NOISE);
+    }
+    for (var k = 0; k < this.cells.length; k++) {
+        var e = this.cells[k], i = e[0], j = e[1], delay = e[9], p, x, y;
+        if (tl < ASCII_LOGO_HOLD) {
+            p = asciiEase((tl - delay) / 1.1);
+            if (p >= 1.0) { asciiPut(cv, i, j, this.shade(e[2], e[3], e[4], tl), FG); continue; }
+            x = e[5] + (i - e[5]) * p; y = e[6] + (j - e[6]) * p;
+        } else if (tl < ASCII_LOGO_SCATTER) {
+            p = asciiEase((tl - ASCII_LOGO_HOLD - 0.6 * delay) / 1.0);
+            if (p <= 0.0) { asciiPut(cv, i, j, this.shade(e[2], e[3], e[4], tl), FG); continue; }
+            if (p >= 1.0) continue;
+            x = i + (e[7] - i) * p; y = j + (e[8] - j) * p;
+        } else {
+            continue;
+        }
+        asciiPut(cv, Math.floor(x), Math.floor(y), ASCII_GLYPHS[asciiHash(k, asciiTrunc(t * 12), loop) % ASCII_GLYPHS.length], NOISE);
+    }
+    this.bootLine(cv, tl);
+    if (10.6 <= tl && tl < 10.67) this.glitch(cv, loop);
+    if (this.hud) asciiHud(cv, "SOS::ART::LOGO", "LOGO", this.narrow, "26.10", t);
+};
+AsciiLogo.prototype.bootLine = function (cv, tl) {
+    if (tl < 2.2 || tl >= 12.8) return;
+    var grow = tl < 12.0 ? asciiEase((tl - 2.2) / 0.8) : 1.0 - asciiEase((tl - 12.0) / 0.8);
+    var half = asciiTrunc(grow * this.scale * 1.6), gap = Math.floor(ASCII_SIGNAL.length / 2) + 2;
+    var cx = asciiTrunc(this.cx), y = this.lineY, n;
+    for (var dx = gap; dx < half; dx++) { asciiPut(cv, cx - dx - 1, y, "─", NOISE); asciiPut(cv, cx + dx, y, "─", NOISE); }
+    if (tl < 12.0) {
+        var x0 = cx - Math.floor(ASCII_SIGNAL.length / 2);
+        for (n = 0; n < ASCII_SIGNAL.length; n++) {
+            var ch = ASCII_SIGNAL[n];
+            if (ch !== " " && tl - 3.0 >= this.times[n]) asciiPut(cv, x0 + n, y, ch, FG);
+        }
+    }
+};
+AsciiLogo.prototype.glitch = function (cv, loop) {
+    var w = cv.w;
+    for (var j = 0; j < cv.h; j++) {
+        if (asciiRnd(j, loop, 41) >= 0.3) continue;
+        var shift = (1 + asciiTrunc(asciiRnd(j, loop, 42) * 4)) * (asciiRnd(j, loop, 43) < 0.5 ? 1 : -1);
+        var rowCh = cv.ch.slice(j * w, (j + 1) * w), rowCo = Array.prototype.slice.call(cv.co, j * w, (j + 1) * w);
+        for (var i = 0; i < w; i++) {
+            var src = i - shift, ok = 0 <= src && src < w;
+            cv.ch[j * w + i] = ok ? rowCh[src] : " ";
+            cv.co[j * w + i] = ok ? rowCo[src] : 0;
+        }
+    }
+};
+
+// ---- sos art heart (cli/svoya_cli/ascii/heart.py) -------------------------------------------------
+var ASCII_BPM = 72, ASCII_BEAT = 60.0 / ASCII_BPM, ASCII_HEART_WINDOW = 2.5;
+var ASCII_HEART_LIGHT = (function () {
+    var l = [-0.35, 0.35, 0.87], n = Math.sqrt(l[0] * l[0] + l[1] * l[1] + l[2] * l[2]);
+    return [l[0] / n, l[1] / n, l[2] / n];
+})();
+function asciiG(x) { return Math.exp(-x * x); }
+function asciiBeatPhase(t) { return (t - Math.floor(t / ASCII_BEAT) * ASCII_BEAT) / ASCII_BEAT; }
+function asciiPulse(t) {
+    var p = asciiBeatPhase(t);
+    return 0.10 * asciiG((p - 0.06) / 0.05) + 0.06 * asciiG((p - 0.30) / 0.06) + 0.10 * asciiG((p - 1.06) / 0.05);
+}
+function asciiEcg(t) {
+    var p = asciiBeatPhase(t);
+    return (-0.4 * asciiG((p - 0.025) / 0.008) + 3.0 * asciiG((p - 0.045) / 0.010) - 0.8 * asciiG((p - 0.065) / 0.010)
+            + 0.7 * asciiG((p - 0.30) / 0.05) + 0.4 * asciiG((p - 0.85) / 0.03));
+}
+function AsciiHeart(opts) {
+    opts = opts || {};
+    this.hud = opts.hud !== false;
+    this.stillAt = 0.07;
+    this.duration = null;
+    this.wantsMouse = false;
+    this.w = this.h = 0;
+}
+AsciiHeart.prototype.resize = function (w, h) {
+    this.w = w; this.h = h;
+    this.tiny = w < 24 || h < 9;
+    this.narrow = w < 80;
+    this.top = this.hud && !this.tiny ? 1 : 0;
+    var rows = h - 2 * this.top;
+    this.base = h - 1 - this.top - 1;
+    this.size = Math.min(0.30 * w, 0.29 * rows * ASCII_ASPECT) / 1.2;
+    this.hx = w / 2.0;
+    this.hy = (this.top + rows * 0.40) * ASCII_ASPECT;
+};
+AsciiHeart.prototype.key = function (k) { return ["q", "Q", "esc", "й", "Й"].indexOf(k) < 0; };
+AsciiHeart.prototype.pointer = function () {};
+AsciiHeart.prototype.draw = function (cv, t) {
+    if (cv.w !== this.w || cv.h !== this.h) this.resize(cv.w, cv.h);
+    asciiFill(cv);
+    var w = cv.w, h = cv.h;
+    if (this.tiny) { asciiText(cv, Math.max(0, Math.floor(w / 2) - 1), Math.floor(h / 2), "<3", ACCENT); return; }
+    this.heart(cv, this.size * (1.0 + asciiPulse(t)));
+    this.monitor(cv, t);
+    if (this.hud) asciiHud(cv, "SOS::ART::HEART", "HEART", this.narrow, ASCII_BPM + " BPM", t);
+};
+AsciiHeart.prototype.heart = function (cv, s) {
+    var w = cv.w, ch = cv.ch, co = cv.co, hx = this.hx, hy = this.hy, L = ASCII_HEART_LIGHT;
+    var ja = Math.max(this.top, asciiTrunc((hy - 1.25 * s) / ASCII_ASPECT)), jb = Math.min(this.base - 1, asciiTrunc((hy + 1.15 * s) / ASCII_ASPECT) + 2);
+    var ia = Math.max(0, asciiTrunc(hx - 1.2 * s)), ib = Math.min(w, asciiTrunc(hx + 1.2 * s) + 2);
+    for (var j = ja; j < jb; j++) {
+        var y = -((j + 0.5) * ASCII_ASPECT - hy) / s + 0.12;
+        for (var i = ia; i < ib; i++) {
+            var x = (i + 0.5 - hx) / s, a = x * x + y * y - 1.0, f = a * a * a - x * x * y * y * y;
+            if (f >= 0.0) continue;
+            var r = 3.0 * Math.pow(-f, 2.0 / 3.0);
+            var fx = 6.0 * x * a * a - 2.0 * x * y * y * y, fy = 6.0 * y * a * a - 3.0 * x * x * y * y;
+            var nx = fx / r, ny = fy / r, n = Math.sqrt(nx * nx + ny * ny + 1.0);
+            var lam = (nx * L[0] + ny * L[1] + L[2]) / n, k = j * w + i;
+            ch[k] = ASCII_RAMP[asciiTrunc(asciiClamp(0.15 + 0.81 * Math.max(0.0, lam)) * 9.999)];
+            co[k] = ACCENT;
+        }
+    }
+};
+AsciiHeart.prototype.monitor = function (cv, t) {
+    var w = cv.w, base = this.base, step = ASCII_HEART_WINDOW / w, rows = [], i;
+    for (i = 0; i <= w; i++) rows.push(base - Math.floor(asciiEcg(t - (w - 1 - i) * step) + 0.5));
+    for (i = 0; i < w; i++) {
+        var r = rows[i], nxt = rows[i + 1], slot = i >= w - Math.floor(w / 5) ? FG : NOISE;
+        asciiPut(cv, i, r, nxt === r ? "─" : nxt < r ? "/" : "\\", slot);
+        for (var y = Math.min(r, nxt) + 1; y < Math.max(r, nxt); y++) asciiPut(cv, i, y, "|", slot);
+    }
+};
+
 function asciiRender(effect, w, h, t) {
     effect.resize(w, h);
     var cv = asciiCanvas(w, h);
@@ -977,5 +1301,6 @@ if (typeof module !== "undefined" && module.exports) {
     module.exports = { AsciiEye: AsciiEye, AsciiPlanets: AsciiPlanets, asciiRender: asciiRender, asciiCanvas: asciiCanvas,
                        asciiLines: asciiLines, asciiColorLines: asciiColorLines, asciiJackson: asciiJackson,
                        asciiRuns: asciiRuns, asciiHash: asciiHash, asciiLayers: asciiLayers, asciiCells: asciiCells,
-                       AsciiMorph: AsciiMorph, AsciiSaver: AsciiSaver, asciiPut: asciiPut, asciiFill: asciiFill };
+                       AsciiMorph: AsciiMorph, AsciiSaver: AsciiSaver, asciiPut: asciiPut, asciiFill: asciiFill,
+                       AsciiRain: AsciiRain, AsciiLogo: AsciiLogo, AsciiHeart: AsciiHeart };
 }

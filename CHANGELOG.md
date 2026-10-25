@@ -96,6 +96,14 @@ Work towards v0.1 «Первый сигнал».
   Four colors, 30 frames a second, never more than three flashes a second; over SSH only the cells
   that changed are sent, a narrow terminal gets a simpler picture, a pipe or `--quiet` one still frame.
   Settings in `[ascii]` of svoya.toml (fps, speed, quiet, timezone, colors).
+- Three more ASCII screensavers (`sos art` lists them). `sos art rain`: rain at night over still
+  water, near drops slanted by the wind and ringing on the water, far ones grey; every eighteen
+  seconds the rain writes the signal ··· ——— ··· into the water. `sos art logo`: the letters SOS
+  gather out of noise, a glint passes over them, the boot line grows under them and the signal types
+  itself into it; once a loop the picture glitches for two frames and flies apart. `sos art heart`:
+  a heart beats seventy-two times a minute, lub-dub, with a monitor line that spikes on every beat.
+  The desktop's live wallpaper can be the rain (Control center → Appearance), and
+  `qs ipc call ascii rain`, `logo` or `heart` shows one over everything.
 - SOS ASCII in the interface, not only in the terminal. The lock screen has a screensaver in every
   theme: after 30 seconds without input the face fades, Jackson turns from where he stands into his
   eye, the eye looks around and follows the pointer, and every few minutes it looks closer (the

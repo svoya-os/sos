@@ -16,7 +16,10 @@ from unittest import mock
 
 from svoya_cli.ascii.engine import ACCENT, Ansi, Canvas, Effect, parse_input, render, still
 from svoya_cli.ascii.eye import STORY_LEN, Eye
+from svoya_cli.ascii.heart import Heart
+from svoya_cli.ascii.logo import Logo
 from svoya_cli.ascii.planets import Planets
+from svoya_cli.ascii.rain import Rain
 
 GOLDEN = pathlib.Path(__file__).parent / "golden" / "ascii"
 UPDATE = os.environ.get("SOS_UPDATE_GOLDEN") == "1"
@@ -28,6 +31,10 @@ CASES = [
     ("eye-error", lambda: Eye(state="error", night=False), 1.5, [(80, 24)]),
     ("eye-story", lambda: Eye(story=True, night=False), 7.3, [(80, 24), (160, 48)]),
     ("planets", lambda: Planets(), 5.6, [(80, 24), (160, 48)]),
+    ("rain", lambda: Rain(), 9.0, [(80, 24), (160, 48)]),
+    ("logo", lambda: Logo(), 7.5, [(80, 24), (160, 48)]),
+    ("logo-gather", lambda: Logo(), 1.2, [(80, 24)]),
+    ("heart", lambda: Heart(), 0.07, [(80, 24), (160, 48)]),
 ]
 
 
@@ -74,11 +81,15 @@ class StyleRules(unittest.TestCase):
             cv = render(make(), *sizes[0], t)
             self.assertLessEqual(set(cv.co), {0, 1, 2, 3}, name)
         self.assertNotIn(ACCENT, render(Planets(), 120, 40, 5.6).co)          # planets are not alive
+        for make in (Rain, Logo):                                              # nor rain, nor letters
+            for t in (1.0, 6.0, 10.63, 12.5):
+                self.assertNotIn(ACCENT, render(make(), 120, 40, t).co)
         self.assertIn(ACCENT, render(Eye(night=False), 120, 40, 2.2).co)       # the pupil's rim is
+        self.assertIn(ACCENT, render(Heart(), 120, 40, 0.5).co)                # a heart is
 
     def test_narrow_and_tiny_terminals_simplify(self):
         for w, h in ((79, 24), (60, 20), (40, 12), (23, 8), (10, 5), (1, 1)):
-            for make in (lambda: Eye(night=False), lambda: Eye(story=True, night=False), Planets):
+            for make in (lambda: Eye(night=False), lambda: Eye(story=True, night=False), Planets, Rain, Logo, Heart):
                 cv = render(make(), w, h, 2.0)
                 self.assertEqual((cv.w, cv.h, len(cv.ch)), (w, h, w * h))
         wide, narrow = render(Eye(night=False), 120, 30, 2.2), render(Eye(night=False), 70, 30, 2.2)
@@ -169,7 +180,8 @@ class FrameRate(unittest.TestCase):
         for name, make, t0 in (("eye", lambda: Eye(state="thinking", night=False), 1.0),
                                ("eye error", lambda: Eye(state="error", night=False), 1.1),
                                ("story", lambda: Eye(story=True, night=False), 5.0),
-                               ("planets", Planets, 1.0)):
+                               ("planets", Planets, 1.0), ("rain", Rain, 4.0), ("logo", Logo, 1.0),
+                               ("logo glint", Logo, 3.5), ("heart", Heart, 0.0)):
             eff = make()
             eff.resize(160, 48)
             ansi, prev, times = Ansi(), None, []
@@ -192,10 +204,17 @@ class Command(unittest.TestCase):
                 contextlib.redirect_stdout(out):
             self.assertEqual(main.main(["eye", "--quiet"]), 0)
             self.assertEqual(main.main(["art", "planets", "--quiet"]), 0)
+            for name in ("rain", "logo", "heart"):
+                self.assertEqual(main.main(["art", name, "--quiet"]), 0)
         lines = out.getvalue().splitlines()
-        self.assertEqual(len(lines), 48)
+        self.assertEqual(len(lines), 24 * 5)
         self.assertIn("JACKSON::EYE", lines[0])
         self.assertIn("PLANETS", lines[24])
+        self.assertIn("SOS::ART::RAIN", lines[48])
+        self.assertIn("··· ——— ···", "".join(lines[48:72]))           # the signal in the water
+        self.assertIn("SOS::ART::LOGO", lines[72])
+        self.assertIn("··· ——— ···", "".join(lines[72:96]))
+        self.assertIn("72 BPM", lines[96])
 
 
 if __name__ == "__main__":

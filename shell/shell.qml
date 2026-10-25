@@ -237,7 +237,7 @@ ShellRoot {
         onTriggered: systemLook.apply()
     }
 
-    // SOS ASCII over everything: qs ipc call ascii eye | story | planets | saver
+    // SOS ASCII over everything: qs ipc call ascii eye | story | planets | saver | rain | logo | heart
     IpcHandler {
         target: "ascii"
 
@@ -252,6 +252,15 @@ ShellRoot {
         }
         function planets(): void {
             Ui.showAscii("planets");
+        }
+        function rain(): void {
+            Ui.showAscii("rain");
+        }
+        function logo(): void {
+            Ui.showAscii("logo");
+        }
+        function heart(): void {
+            Ui.showAscii("heart");
         }
     }
 

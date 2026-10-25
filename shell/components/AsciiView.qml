@@ -10,7 +10,10 @@ import "ascii.js" as Ascii
 //
 // scene:  "eye"     Jackson's eye (mood: idle | thinking | listening); the pupil follows the pointer
 //         "story"   the short film (it looks closer: Jackson is inside); `finished` at the end
-//         "planets" the screensaver planet
+//         "planets" the screensaver planet (`sos art planets`)
+//         "rain"    night rain that writes the signal into the water (`sos art rain`)
+//         "logo"    the letters SOS out of noise, the boot line and the signal (`sos art logo`)
+//         "heart"   a beating heart and its monitor (`sos art heart`)
 //         "saver"   Jackson, standing in `from`, turns into his eye; the film every few minutes
 //         "jackson" Jackson himself in symbols (mood = his pose), `cols` wide; drawn only on change
 Item {
@@ -74,6 +77,12 @@ Item {
         const night = root.night;
         if (root.scene === "planets") {
             root.fx = new Ascii.AsciiPlanets({ hud: false });       // no "Q QUIT" frame: nothing here takes keys
+        } else if (root.scene === "rain") {
+            root.fx = new Ascii.AsciiRain({ hud: false });
+        } else if (root.scene === "logo") {
+            root.fx = new Ascii.AsciiLogo({ hud: false });
+        } else if (root.scene === "heart") {
+            root.fx = new Ascii.AsciiHeart({ hud: false });
         } else if (root.scene === "story") {
             root.fx = new Ascii.AsciiEye({ story: true, night: night, sprite: sprite, look: look });
         } else if (root.scene === "saver") {
@@ -102,7 +111,7 @@ Item {
                 Ascii.asciiJackson(sprite, look, root.mood, root.gridW).forEach(e => Ascii.asciiPut(cv, e[0], e[1], e[2], e[3]));
         } else if (root.fx) {
             const t = root.now();
-            const loop = root.scene === "eye" || root.scene === "planets" ? t % 3600 : t;
+            const loop = ["eye", "planets", "rain", "logo", "heart"].indexOf(root.scene) >= 0 ? t % 3600 : t;
             if (root.scene === "eye" && root.fx.mode !== root.mood && ["idle", "thinking", "listening"].indexOf(root.mood) >= 0)
                 root.fx.mode = root.mood;
             if (root.fx.w !== cv.w || root.fx.h !== cv.h)
@@ -187,7 +196,7 @@ Item {
     }
 
     HoverHandler {
-        enabled: root.follow && root.scene !== "jackson" && root.scene !== "planets"
+        enabled: root.follow && ["eye", "story", "saver"].indexOf(root.scene) >= 0
         onPointChanged: {
             if (root.fx && root.fx.pointer && hovered)
                 root.fx.pointer(Math.floor((point.position.x - grid.x) / root.cellW), Math.floor((point.position.y - grid.y) / (2 * root.cellW)), root.scene === "saver" ? root.now() : root.now() % 3600);

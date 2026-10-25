@@ -55,7 +55,7 @@ def _parser() -> argparse.ArgumentParser:
             "  sos ai off | on                               the AI switch\n"
             "  sos models suggest                            the best local model for this machine\n"
             "  sos morse hello                               Morse code, with sound (just `sos morse`: SOS)\n"
-            "  sos eye · sos art planets                     Jackson's eye · ASCII screensavers\n"
+            "  sos eye · sos art                             Jackson's eye · ASCII screensavers\n"
             "Russian works too: sos установить, удалить, починить, видеокарта, обновить, откатить, тема, модели.",
             "каждый день:\n"
             "  sos установить obsidian | llm-local | qwen3.5-9b   приложение, модуль или модель\n"
@@ -67,7 +67,7 @@ def _parser() -> argparse.ArgumentParser:
             "  sos ии выкл | вкл                                 выключатель ИИ\n"
             "  sos модели подобрать                              лучшая локальная модель для этой машины\n"
             "  sos морзе привет                                  азбука Морзе со звуком (просто `sos морзе`: SOS)\n"
-            "  sos глаз · sos арт planets                        глаз Джексона · ASCII-заставки\n"
+            "  sos глаз · sos арт                                глаз Джексона · ASCII-заставки\n"
             "По-английски тоже можно: sos install, remove, fix, gpu, update, undo, theme, models."))
     p.add_argument("--version", action="version", version=f"sos {__version__}")
     p.add_argument("--no-color", action="store_true", help=tr("plain output", "без цвета"))
@@ -335,9 +335,9 @@ def _parser() -> argparse.ArgumentParser:
                                                             "один кадр, без анимации"))
     ey.add_argument("--fps", type=int, help=tr("frames a second (30)", "кадров в секунду (30)"))
     ey.add_argument("--seconds", type=float, help=tr("close after this long", "закрыть через столько секунд"))
-    ar = cmd("art", "ASCII screensavers: planets (rain, logo, heart are coming)",
-             "ASCII-заставки: planets (скоро rain, logo, heart)")
-    ar.add_argument("effect", nargs="?", choices=["planets"])
+    ar = cmd("art", "ASCII screensavers: planets, rain, logo, heart",
+             "ASCII-заставки: planets, rain, logo, heart")
+    ar.add_argument("effect", nargs="?", choices=["planets", "rain", "logo", "heart"])
     ar.add_argument("--quiet", action="store_true", help=tr("one still frame, no animation",
                                                             "один кадр, без анимации"))
     ar.add_argument("--fps", type=int, help=tr("frames a second (30)", "кадров в секунду (30)"))

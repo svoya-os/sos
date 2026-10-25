@@ -5,8 +5,8 @@ import qs.core
 // gradient + soft glows, the horizon line with one Morse «СОС» burst, grain,
 // and the colophon «SOS 26.10 · первый сигнал». Paper adds the 22px dot grid,
 // Phosphor adds scanlines. With the symbol layer (Theme.symbols) a live ASCII scene takes the
-// burst's place (Settings.asciiScene: the planet or Jackson's eye; it moves only while `live`, the
-// desktop's call). A configured image (Settings.wallpaper) replaces it all.
+// burst's place (Settings.asciiScene: the planet, Jackson's eye or the rain; it moves only while
+// `live`, the desktop's call). A configured image (Settings.wallpaper) replaces it all.
 // Composition is defined on a 1440×900 canvas and scaled with the screen.
 Item {
     id: root
@@ -23,7 +23,7 @@ Item {
     // screen and the greeter leave it off and get no scene at all
     property bool live: false
     property bool ascii: false
-    readonly property string scene: root.ascii && Theme.symbols && !root.useImage && ["planets", "eye"].indexOf(Settings.asciiScene) >= 0 ? Settings.asciiScene : ""
+    readonly property string scene: root.ascii && Theme.symbols && !root.useImage && ["planets", "eye", "rain"].indexOf(Settings.asciiScene) >= 0 ? Settings.asciiScene : ""
 
     readonly property real s: Math.max(1, Math.min(1.6, Math.max(width / 1440, height / 900)))
     readonly property string recipe: {
@@ -115,7 +115,7 @@ Item {
         sourceComponent: AsciiView {
             scene: root.scene
             rows: 48
-            fps: 10
+            fps: root.scene === "rain" ? 20 : 10        // drops jump at 10; the rain is the cheapest scene
             running: root.live && !Theme.reduceMotion && !Hypr.gaming
             opacity: 0.6
         }

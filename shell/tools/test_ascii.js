@@ -19,6 +19,10 @@ const cases = [
     ["eye-error", () => new A.AsciiEye({ state: "error", night: false }), 1.5, [[80, 24]]],
     ["eye-story", () => new A.AsciiEye({ story: true, night: false, sprite: imp }), 7.3, [[80, 24], [160, 48]]],
     ["planets", () => new A.AsciiPlanets(), 5.6, [[80, 24], [160, 48]]],
+    ["rain", () => new A.AsciiRain(), 9.0, [[80, 24], [160, 48]]],
+    ["logo", () => new A.AsciiLogo(), 7.5, [[80, 24], [160, 48]]],
+    ["logo-gather", () => new A.AsciiLogo(), 1.2, [[80, 24]]],
+    ["heart", () => new A.AsciiHeart(), 0.07, [[80, 24], [160, 48]]],
 ];
 
 let failed = 0, checked = 0;

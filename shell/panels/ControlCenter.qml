@@ -1033,7 +1033,7 @@ PanelFrame {
                 width: parent.width
                 current: Settings.asciiScene
                 fontSize: 12
-                options: ["planets", "eye", "off"].map(k => ({ "id": k, "label": Strings.asciiScenes[k] }))
+                options: ["planets", "eye", "rain", "off"].map(k => ({ "id": k, "label": Strings.asciiScenes[k] }))
                 onPicked: key => Settings.asciiScene = key
             }
 

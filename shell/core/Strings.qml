@@ -786,7 +786,7 @@ Singleton {
     readonly property string symbolsTitle: root.t("Символьный стиль", "Symbol style")
     readonly property var symbolsStyles: ({ auto: root.t("С Фосфором", "With Phosphor"), always: root.t("Всегда", "Always"), off: root.t("Выкл", "Off") })
     readonly property var symbolsParts: ({ widgets: root.t("Кнопки и переключатели", "Buttons and switches"), folders: root.t("Папки", "Folders"), cursor: root.t("Курсор", "Cursor"), browser: root.t("Firefox: новая вкладка и рамка", "Firefox: new tab and frame") })
-    readonly property var asciiScenes: ({ planets: root.t("Планета", "Planet"), eye: root.t("Глаз Джексона", "Jackson's eye"), off: root.t("Выкл", "Off") })
+    readonly property var asciiScenes: ({ planets: root.t("Планета", "Planet"), eye: root.t("Глаз Джексона", "Jackson's eye"), rain: root.t("Дождь", "Rain"), off: root.t("Выкл", "Off") })
     readonly property string lockSaver: root.t("Заставка", "Screensaver")
     readonly property string lockSaverNote: root.t("на экране блокировки", "on the lock screen")
     readonly property var lockSaverOptions: ({ "30": root.t("30 с", "30 s"), "120": root.t("2 мин", "2 min"), "0": root.t("Выкл", "Off") })
