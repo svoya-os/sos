@@ -7,6 +7,14 @@ linux-image-generic
 linux-firmware
 initramfs-tools          # live initrd needs it (casper); the installer switches the target to dracut
 ?thermald
+# real computers: CPU microcode (loaded early by the initramfs), the Wi-Fi regulatory database and
+# ALSA's use-case maps (laptops with SOF sound need them; the SOF firmware is in linux-firmware);
+# all Recommends the build skips
+?intel-microcode
+?amd64-microcode
+?wireless-regdb
+?alsa-ucm-conf
+?alsa-utils
 
 # --- init, users, time, locale ------------------------------------------------------------------
 systemd
@@ -59,6 +67,7 @@ iputils-ping
 openssh-client
 network-manager
 wpasupplicant
+?iw
 bluez
 rfkill
 

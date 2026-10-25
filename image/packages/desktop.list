@@ -30,6 +30,7 @@ qt6-wayland
 libgl1-mesa-dri
 mesa-vulkan-drivers
 ?mesa-va-drivers
+?intel-media-va-driver    # video decoding on Intel (Broadwell and newer): cooler, longer on battery
 
 # --- audio --------------------------------------------------------------------------------------
 pipewire
@@ -55,6 +56,7 @@ thunar
 ?tumbler
 mousepad
 ristretto
+?mpv                      # video and music files (its ffmpeg also gives Firefox H.264 and AAC)
 file-roller
 ?papers
 ?gnome-calculator

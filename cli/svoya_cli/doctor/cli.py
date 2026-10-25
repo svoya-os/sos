@@ -116,6 +116,9 @@ def render(checks: list[Check], rec: dict, gpu_only: bool) -> None:
 
 def main(args, ctx: Ctx | None = None) -> int:
     ctx = ctx or Ctx()
+    if getattr(args, "hardware", False):
+        from .hardware import main as hardware_main
+        return hardware_main(args, ctx)
     gpu_only = bool(args.gpu)
     checks, rec, _facts = diagnose(ctx, gpu_only)
     rep = report(checks, rec, ctx.now())

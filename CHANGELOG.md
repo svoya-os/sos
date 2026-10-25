@@ -104,6 +104,15 @@ Work towards v0.1 «Первый сигнал».
   a heart beats seventy-two times a minute, lub-dub, with a monitor line that spikes on every beat.
   The desktop's live wallpaper can be the rain (Control center → Appearance), and
   `qs ipc call ascii rain`, `logo` or `heart` shows one over everything.
+- `sos hardware` (`sos железо`): is this computer ready for daily work? The model and its firmware
+  (UEFI or BIOS, Secure Boot), the processor and memory, the graphics and the driver in use, the
+  screens, Wi-Fi and Ethernet with their drivers and radio switches, Bluetooth, the sound cards,
+  the battery's health, the sleep states, touchpad, camera and disks, and from the kernel log the
+  firmware it could not load and its last errors. Problems first, each with what to do; `--save`
+  writes a report to send (no serial numbers, no MAC addresses).
+- For real computers: CPU microcode, the Wi-Fi regulatory database, ALSA's use-case maps (sound on
+  many laptops), Intel's video decoder (cooler and longer on battery) and mpv for video and music
+  files, which also gives Firefox H.264 and AAC.
 - SOS ASCII in the interface, not only in the terminal. The lock screen has a screensaver in every
   theme: after 30 seconds without input the face fades, Jackson turns from where he stands into his
   eye, the eye looks around and follows the pointer, and every few minutes it looks closer (the

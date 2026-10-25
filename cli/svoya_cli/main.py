@@ -94,6 +94,12 @@ def _parser() -> argparse.ArgumentParser:
     d.add_argument("--fix", action="store_true", help=tr("apply safe fixes (snapshot first)",
                                                          "применить безопасные исправления (сначала снимок)"))
     d.add_argument("--gpu", action="store_true", help=tr("GPU checks only", "только проверки ГП"))
+    d.add_argument("--hardware", action="store_true", help=tr(
+        "is this computer ready for daily work: Wi-Fi, sound, battery, sleep, firmware (also: sos hardware)",
+        "готов ли компьютер к работе: Wi‑Fi, звук, батарея, сон, прошивки (также: sos железо)"))
+    d.add_argument("--save", nargs="?", const="", default=None, metavar="FILE", help=tr(
+        "with --hardware: also save the report to send (~/sos-hardware-report.txt)",
+        "с --hardware: ещё и сохранить отчёт, чтобы отправить (~/sos-hardware-report.txt)"))
     d.add_argument("--dry-run", action="store_true")
     d.add_argument("--yes", "-y", action="store_true")
     d.add_argument("--apply-root", nargs="*", help=argparse.SUPPRESS)

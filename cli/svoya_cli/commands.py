@@ -4,6 +4,7 @@
 
     sos fix                      → doctor --fix
     sos видеокарта               → doctor --gpu
+    sos железо                   → doctor --hardware
     sos установить obsidian      → install obsidian
     sos тема ночь                → theme apply graphite
     sos theme auto               → theme apply auto
@@ -16,7 +17,7 @@ from __future__ import annotations
 import difflib
 
 # canonical commands (argparse sub-parsers)
-COMMANDS = ("status", "doctor", "fix", "gpu", "install", "remove", "modules", "models", "theme", "accent", "accents",
+COMMANDS = ("status", "doctor", "fix", "gpu", "hardware", "install", "remove", "modules", "models", "theme", "accent", "accents",
             "ai", "new", "update", "undo", "snapshot", "run", "job", "apps", "morse", "eye", "art", "session-start", "menu",
             "help", "version")
 # easter eggs: they work, but stay out of help, completion and did-you-mean
@@ -34,6 +35,7 @@ ALIASES = {
     "доктор": "doctor", "проверить": "doctor", "проверка": "doctor",
     "починить": "fix", "исправить": "fix",
     "видеокарта": "gpu", "гп": "gpu",
+    "hw": "hardware", "железо": "hardware", "оборудование": "hardware",
     "установить": "install", "поставить": "install", "добавить": "install",
     "удалить": "remove", "убрать": "remove",
     "модули": "modules", "модели": "models", "модель": "models",
@@ -97,12 +99,14 @@ def normalize(argv: list[str]) -> list[str]:
         return ["--help"] if not rest else [ALIASES.get(rest[0].lower(), rest[0]), "--help"]
     if cmd == "version":
         return ["--version"]
-    if rest[:1] in (["-h"], ["--help"]) and cmd in COMMANDS and cmd not in ("fix", "gpu", "accent", "accents"):
+    if rest[:1] in (["-h"], ["--help"]) and cmd in COMMANDS and cmd not in ("fix", "gpu", "hardware", "accent", "accents"):
         return [cmd, *rest]                             # `sos theme --help` is the group's help, not `current`'s
     if cmd == "fix":
         return ["doctor", "--fix", *rest]
     if cmd == "gpu":
         return ["doctor", "--gpu", *rest]
+    if cmd == "hardware":
+        return ["doctor", "--hardware", *rest]
     if cmd == "accent":
         return ["theme", "accent", *rest]
     if cmd == "accents":

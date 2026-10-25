@@ -92,6 +92,7 @@ set it as the wallpaper; Enter draws another one.
 
 ```sh
 sos gpu      # check the driver, CUDA or ROCm, PyTorch, Secure Boot, suspend/resume, containers
+sos hardware # the whole computer: Wi-Fi, sound, battery, sleep, missing firmware (--save: a report)
 sos fix      # apply the safe fixes; a snapshot is taken first
 sos doctor   # the full check: GPU, storage and snapshots
 ```

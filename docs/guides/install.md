@@ -174,7 +174,13 @@ You land on the desktop as user `svoya`, with no password. Jackson says hello an
 | `Super+Esc` | Doctor: system check |
 | `Super+Alt+A` | accessibility (larger text, contrast) |
 
-Check the GPU before installing: open a terminal and run `sos gpu`.
+**Check the hardware before installing.** Open a terminal and run `sos hardware --save`. It lists
+the model, the graphics and its driver, Wi-Fi, sound, the battery's health, the sleep states and
+any firmware the kernel could not load, problems first, each with what to do; `--save` writes
+`~/sos-hardware-report.txt` to send to whoever helps you (it has no serial numbers or MAC
+addresses). Then try what you use every day: Wi-Fi and sound, the brightness and volume keys,
+closing the lid (sleep) and opening it again, an external screen. `sos gpu` checks the graphics
+card in depth.
 
 ## 6. Install SOS
 
