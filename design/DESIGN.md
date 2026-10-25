@@ -130,7 +130,8 @@ Auto / Phosphor with live preview) · 3 Layout (Clean floating · Classic taskba
 ## 6. Iconography
 Line icons, 1.5px stroke, round caps/joins, 15–16px in bars, 20px in lists. Use **Lucide** (ISC) as the base
 set; custom glyphs (Morse mark, scope, Jackson) follow the same stroke rules. App icons: Papirus (GPL-3.0) for
-coverage until our own set exists.
+coverage until our own set exists. GTK 3 apps: adw-gtk3 (LGPL-2.1), the libadwaita look, which draws with the
+named colors `sos theme` writes, so Files and the like wear the theme (Adwaita would ignore them).
 
 ## 7. Sound
 Soft, short, synthesized (no samples): startup = the Morse `··· ——— ···` as sine blips (≈1.8 s, −18 LUFS);

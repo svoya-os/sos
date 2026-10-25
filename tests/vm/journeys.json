@@ -271,7 +271,7 @@
     {"id": "ascii", "action": "sleep", "seconds": 1},
     {"id": "ascii", "action": "key", "keys": ["esc"], "continue_on_failure": true},
     {"id": "ascii", "action": "sleep", "seconds": 1},
-    {"id": "check", "action": "type", "text": "clear; logger -t sos-vm-test \"SOS-CHECK cursor=$(gsettings get org.gnome.desktop.interface cursor-theme) icons=$(gsettings get org.gnome.desktop.interface icon-theme) files=$(ls /usr/share/icons/sos-symbols/cursors | wc -l)\"\n", "continue_on_failure": true},
+    {"id": "check", "action": "type", "text": "clear; logger -t sos-vm-test \"SOS-CHECK cursor=$(gsettings get org.gnome.desktop.interface cursor-theme) icons=$(gsettings get org.gnome.desktop.interface icon-theme) gtk=$(gsettings get org.gnome.desktop.interface gtk-theme) themes=$(ls /usr/share/themes | grep -c adw-gtk3) files=$(ls /usr/share/icons/sos-symbols/cursors | wc -l)\"\n", "continue_on_failure": true},
     {"id": "check", "action": "type", "text": "grep -iE 'warn|error' $XDG_RUNTIME_DIR/sos-shell.log | tail -n 80 | logger -t sos-vm-test\n", "continue_on_failure": true},
     {"id": "check", "action": "wait_serial", "pattern": "SOS-CHECK cursor=", "timeout_s": 20, "continue_on_failure": true},
     {"id": "ascii", "action": "type", "text": "clear; sos theme apply auto\n", "continue_on_failure": true},

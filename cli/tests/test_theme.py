@@ -209,6 +209,23 @@ class SymbolsTest(SandboxTest):
         A.apply_theme(self.sb.ctx(r, WAYLAND_DISPLAY="wayland-1"), theme, cfg={"theme": {}, "location": {}}, force=True)
         return [c[-1] for c in r.calls if c[:4] == ["gsettings", "set", "org.gnome.desktop.interface", "icon-theme"]]
 
+    def gtk_theme_set(self, theme: str, current: str, installed=("adw-gtk3", "adw-gtk3-dark")):
+        for name in installed:
+            (self.sb.root / "usr/share/themes" / name).mkdir(parents=True, exist_ok=True)
+        r = FakeRunner(available={"gsettings"},
+                       responses={("gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"): f"'{current}'\n"})
+        A.apply_theme(self.sb.ctx(r, WAYLAND_DISPLAY="wayland-1"), theme, cfg={"theme": {}, "location": {}})
+        return [c[-1] for c in r.calls if c[:4] == ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme"]]
+
+    def test_gtk3_apps_get_adw_gtk3_and_the_theme_colors(self):
+        self.assertEqual(self.gtk_theme_set("phosphor", "Adwaita"), ["adw-gtk3-dark"])
+        self.assertEqual(self.gtk_theme_set("paper", "adw-gtk3-dark"), ["adw-gtk3"])
+        self.assertEqual(self.gtk_theme_set("graphite", "adw-gtk3-dark"), [])          # already right
+        self.assertEqual(self.gtk_theme_set("graphite", "Materia-dark"), [])           # the user's own pick
+
+    def test_without_adw_gtk3_the_gtk_theme_stays(self):
+        self.assertEqual(self.gtk_theme_set("graphite", "Adwaita", installed=()), [])
+
     def test_phosphor_gets_folders_in_symbols(self):
         self.assertEqual(self.icons_set("phosphor", None), ["SOS-Symbols-Dark"])          # the default: auto
         self.assertEqual(self.icons_set("graphite", None), ["Papirus-Dark"])

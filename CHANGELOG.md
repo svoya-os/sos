@@ -124,7 +124,8 @@ Work towards v0.1 «Первый сигнал».
   [mp3]…), over Papirus. The cursor: an arrow with a phosphor edge, pink over links, the [|] [/] [-]
   [\] spinner while something loads (the shell and Hyprland at once, GTK apps through their
   settings, every other app from the next login). And Firefox. Jackson in symbols and the live
-  wallpaper follow the style; with Phosphor, GTK apps such as Files are dark too. The lock
+  wallpaper follow the style; GTK apps such as Files wear the theme's own colors (adw-gtk3, the
+  libadwaita look for GTK 3, comes with SOS now). The lock
   screensaver also wakes on a decisive move of the mouse; a slow one only gets looked at.
 - SOS downloads like any other Linux: the newest test build is one file,
   [sos-26.10-amd64.iso](https://github.com/svoya-os/sos/releases/download/test/sos-26.10-amd64.iso)

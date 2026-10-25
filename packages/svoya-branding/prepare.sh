@@ -11,6 +11,7 @@
 #   logo/icon/             -> hicolor icon "sos" (png sizes, scalable sos.svg, symbolic sos-symbolic.svg)
 #   logo/svg/*, out/logo/* -> /usr/share/svoya/branding/logo/
 #   fastfetch/*            -> /usr/share/svoya/fastfetch/ (config.jsonc also -> /etc/xdg/fastfetch/)
+#   adw-gtk3 (downloaded, pinned) -> /usr/share/themes/adw-gtk3{,-dark}/
 # os/root/** (os-release, lsb-release, issue, motd) ships in svoya-base, which diverts base-files.
 set -euo pipefail
 : "${SVOYA_SRC:?}" "${PKG_DIR:?}"
@@ -100,6 +101,33 @@ for t in "$b"/icons/SOS-Symbols-*/ "$b"/cursors/sos-symbols/; do
     [ -f "$t/index.theme" ] || continue
     copy_tree "$t" "$f/usr/share/icons/$(basename "$t")"
 done
+# adw-gtk3 (LGPL-2.1, github.com/lassekongo83/adw-gtk3): libadwaita's look for GTK3 apps. Unlike
+# Adwaita it draws with the named colors ~/.config/gtk-3.0/gtk.css defines (`sos theme apply`), so
+# Files and the other GTK3 apps wear the SOS theme. Ubuntu does not package it: the release
+# tarball, pinned by its SHA-256 (the hash GitHub shows for the asset). Without the network the
+# build goes on and GTK3 apps keep Adwaita.
+ADW_GTK3_VERSION=6.5
+ADW_GTK3_SHA256=a81780fadfc432be0fc3d89c4ebb41aa28e4f032d42c36f9789c57dd10cfa41c
+adw=$(mktemp -d)
+if curl -fsSL --retry 5 --retry-delay 5 -o "$adw/adw-gtk3.tar.xz" \
+        "https://github.com/lassekongo83/adw-gtk3/releases/download/v$ADW_GTK3_VERSION/adw-gtk3v$ADW_GTK3_VERSION.tar.xz" &&
+    echo "$ADW_GTK3_SHA256  $adw/adw-gtk3.tar.xz" | sha256sum -c --quiet -; then
+    mkdir -p "$adw/x"
+    tar -C "$adw/x" -xJf "$adw/adw-gtk3.tar.xz"
+    for name in adw-gtk3 adw-gtk3-dark; do
+        src=$(find "$adw/x" -maxdepth 3 -type d -name "$name" -exec test -f '{}/gtk-3.0/gtk.css' ';' -print -quit)
+        if [ -n "$src" ]; then
+            copy_tree "$src" "$f/usr/share/themes/$name"
+            echo "    GTK theme: $name $ADW_GTK3_VERSION" >&2
+        else
+            echo "warning: $name is not in adw-gtk3v$ADW_GTK3_VERSION.tar.xz; GTK3 apps keep Adwaita" >&2
+        fi
+    done
+else
+    echo "warning: adw-gtk3 $ADW_GTK3_VERSION not downloaded or its hash differs; GTK3 apps keep Adwaita" >&2
+fi
+rm -rf "$adw"
+
 # fastfetch
 copy_tree "$b/fastfetch" "$f/usr/share/svoya/fastfetch"
 if [ -f "$b/fastfetch/config.jsonc" ]; then

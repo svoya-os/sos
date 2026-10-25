@@ -428,6 +428,10 @@ def apply_theme(ctx: Ctx, choice: str, *, force: bool = False, only: list[str] |
             "hooks": hooks, "dryRun": ctx.dry_run}
 
 
+# GTK 3 themes `sos theme apply` may replace with adw-gtk3 ("" when gsettings cannot answer)
+STOCK_GTK3 = ("", "Adwaita", "Adwaita-dark", "adw-gtk3", "adw-gtk3-dark", "Yaru", "Yaru-dark")
+
+
 def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool,
               accent: accents.Resolved | None = None) -> list[str]:
     """Live reloads for what changed. ``accent`` is given when the accent changed (→ GNOME accent-color)."""
@@ -448,14 +452,22 @@ def run_hooks(ctx: Ctx, theme: Theme, results: list[Result], mode_changed: bool,
         argv = ["pkill", "-USR1", "-x", "kitty"] + (["-u", user] if user else [])
         do(argv)
         ran.append("kitty reload")
-    if mode_changed and r.which("gsettings") and (ctx.env.get("DBUS_SESSION_BUS_ADDRESS") or ctx.env.get("WAYLAND_DISPLAY")):
+    session = bool(r.which("gsettings") and (ctx.env.get("DBUS_SESSION_BUS_ADDRESS") or ctx.env.get("WAYLAND_DISPLAY")))
+    if session:
+        # GTK 3 apps: adw-gtk3 draws with the named colors gtk-3.0/gtk.css defines (Adwaita ignores
+        # them). Set whenever it is installed and the current theme is a stock one, not only when
+        # the mode changes: a system updated to an image with adw-gtk3 gets it at the next login.
+        # A theme the user picked (anything else) is left alone.
+        gtk3 = "adw-gtk3-dark" if theme.mode == "dark" else "adw-gtk3"
+        if ctx.exists(f"/usr/share/themes/{gtk3}"):
+            cur = r.run(["gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"], timeout=5).out.strip().strip("'")
+            if cur != gtk3 and cur in STOCK_GTK3:
+                do(["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtk3])
+                ran.append(f"gsettings gtk-theme {gtk3}")
+    if mode_changed and session:
         scheme = "prefer-dark" if theme.mode == "dark" else "prefer-light"
         do(["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", scheme])
         ran.append(f"gsettings color-scheme {scheme}")
-        gtk3 = "adw-gtk3-dark" if theme.mode == "dark" else "adw-gtk3"
-        if ctx.exists(f"/usr/share/themes/{gtk3}"):
-            do(["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtk3])
-            ran.append(f"gsettings gtk-theme {gtk3}")
         # folders in symbols while the SOS ASCII layer covers them (the shell sets the same)
         icons = symbols.icon_theme(ctx.paths, theme.id, theme.mode, lambda n: ctx.exists(f"/usr/share/icons/{n}"))
         if ctx.exists(f"/usr/share/icons/{icons}"):
