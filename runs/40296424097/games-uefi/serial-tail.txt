@@ -1,0 +1,200 @@
+[  243.542317] steam[5491]: [----] Installing update...
+[  243.576736] steam[5491]: [----] Installing update...
+[  243.576736] steam[5491]: [----] Installing update...
+[  243.576736] steam[5491]: [2026-10-26 09:42:07] ProcessNextMessage: socket disconnected
+[  243.576884] steam[5491]: [2026-10-26 09:42:07] No more messages are expected - exiting
+[  243.633565] steam[5491]: steam.sh[5189]: Restarting Steam by request...
+[  243.705462] steam[5491]: steam.sh[5189]: Running Steam on sos 26.10 64-bit
+[  244.573816] steam[5491]: (zenity:5611): Gtk-WARNING **: 09:42:08.066: Unable to acquire the address of the accessibility bus: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files. If you are attempting to run GTK without a11y support, GTK_A11Y should be set to 'none'.
+[  244.758815] steam[5491]: libEGL warning: egl: failed to create dri2 screen
+[  244.770792] steam[5491]: libEGL warning: egl: failed to create dri2 screen
+[  245.890181] steam[5491]: (zenity:5790): Gtk-WARNING **: 09:42:09.385: Unable to acquire the address of the accessibility bus: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files. If you are attempting to run GTK without a11y support, GTK_A11Y should be set to 'none'.
+[  245.968516] steam[5491]: libEGL warning: egl: failed to create dri2 screen
+[  245.973086] steam[5491]: libEGL warning: egl: failed to create dri2 screen
+[  246.863895] steam[5491]: setup.sh[5783]: Forced use of runtime version for 64-bit libcurl.so.4
+[  246.882112] steam[5491]: setup.sh[5783]: Forced use of runtime version for 64-bit libcurl-gnutls.so.4
+[  247.855645] steam[5491]: setup.sh[5783]: Forced use of runtime version for 32-bit libgtk-x11-2.0.so.0
+[  248.081308] steam[5491]: setup.sh[5783]: Forced use of runtime version for 32-bit libdbusmenu-gtk.so.4
+[  248.088982] steam[5491]: setup.sh[5783]: Forced use of runtime version for 32-bit libdbusmenu-glib.so.4
+[  248.100850] steam[5491]: setup.sh[5783]: Forced use of runtime version for 32-bit libcurl.so.4
+[  248.119156] steam[5491]: setup.sh[5783]: Forced use of runtime version for 32-bit libcurl-gnutls.so.4
+[  248.842203] steam[5491]: steam.sh[5189]: Log already open
+[  248.931529] steam[5491]: steam.sh[5189]: Steam client's requirements are satisfied
+[  248.936083] steam[5491]: CProcessEnvironmentManager is ready, 5 preallocated environment variables.
+[  248.937303] steam[5491]: [2026-10-26 09:42:12] Startup - updater built Oct 21 2026 21:09:45
+[  248.937303] steam[5491]: [2026-10-26 09:42:12] Startup - Steam Client launched with: '/home/svoya/.steam/debian-installation/ubuntu12_32/steam' '-srt-logger-opened' '-nominidumps' '-nobreakpad'
+[  248.938058] steam[5491]: 10/26 09:42:12 minidumps folder is set to /tmp/dumps
+[  248.938109] steam[5491]: 10/26 09:42:12 Init: Installing breakpad exception handler for appid(steam)/version(0)/tid(6584)
+[  248.943473] steam[5491]: CProcessEnvironmentManager is ready, 5 preallocated environment variables.
+[  248.944101] steam[5491]: [2026-10-26 09:42:12] Process started with command-line: '/home/svoya/.steam/debian-installation/ubuntu12_32/steam' '-child-update-ui' '-child-update-ui-socket' '8' '-srt-logger-opened' '-nominidumps' '-nobreakpad'
+[  248.944708] steam[5491]: 10/26 09:42:12 minidumps folder is set to /tmp/dumps
+[  248.947501] steam[5491]: [2026-10-26 09:42:12] Using update UI: xwin
+[  248.947673] steam[5491]: 10/26 09:42:12 Init: Installing breakpad exception handler for appid(steam)/version(0)/tid(6586)
+[  248.947850] steam[5491]: [2026-10-26 09:42:12] Create window
+[  248.955343] steam[5491]: [2026-10-26 09:42:12] Loading cached metrics from disk (/home/svoya/.steam/debian-installation/package/steam_client_metrics.bin)
+[  248.955343] steam[5491]: [2026-10-26 09:42:12] Failed to load cached hosts file (File 'update_hosts_cached.vdf' not found), using defaults
+[  248.955343] steam[5491]: [2026-10-26 09:42:12] Using the following download hosts for Public, Realm steamglobal
+[  248.955343] steam[5491]: [2026-10-26 09:42:12] 1. https://client-update.steamstatic.com, /, Realm 'steamglobal', weight was 1, source = 'baked in'
+[  248.956369] steam[5491]: [2026-10-26 09:42:12] Verifying installation...
+[  248.956369] steam[5491]: [2026-10-26 09:42:12] Verifying file sizes only
+[  248.956534] steam[5491]: [2026-10-26 09:42:12] Unable to read and verify install manifest /home/svoya/.steam/debian-installation/package/steam_client_steamrt64.installed
+[  248.956534] steam[5491]: [2026-10-26 09:42:12] Verification complete
+[  248.956611] steam[5491]: [2026-10-26 09:42:12] Downloading update...
+[  248.956843] steam[5491]: [2026-10-26 09:42:12] Checking for available updates...
+[  248.956931] steam[5491]: [2026-10-26 09:42:12] Downloading manifest: https://client-update.steamstatic.com/steam_client_steamrt64
+[  248.958108] steam[5491]: [2026-10-26 09:42:12] Manifest download: send request
+[  249.041677] steam[5491]: [2026-10-26 09:42:12] Set percent complete: 0
+[  249.050090] steam[5491]: [2026-10-26 09:42:12] Set percent complete: -1
+[  249.055864] steam[5491]: [2026-10-26 09:42:12] Set status message: Verifying installation...
+[  249.061751] steam[5491]: [2026-10-26 09:42:12] Set percent complete: 0
+[  249.070158] steam[5491]: [2026-10-26 09:42:12] Set status message: Downloading update...
+[  249.078602] steam[5491]: [2026-10-26 09:42:12] Show window
+[  249.079861] steam[5491]: [2026-10-26 09:42:12] Set status message: Checking for available updates...
+[  249.082134] steam[5491]: [2026-10-26 09:42:12] Set percent complete: -1
+[  249.207450] steam[5491]: [2026-10-26 09:42:12] Manifest download: waiting for download to finish
+[  249.207450] steam[5491]: [2026-10-26 09:42:12] Manifest download: finished
+[  249.208295] steam[5491]: [2026-10-26 09:42:12] Downloaded new manifest: /steam_client_steamrt64 version 1792618285, installed version 0, existing pending version 0
+[  251.152494] steam[5491]: [2026-10-26 09:42:14] Package file bins_steamrt64.zip.vz.e06c518d148b245b6d442113caf221c2e0a9d2b4_43958791 missing or incorrect size
+[  251.153152] steam[5491]: [2026-10-26 09:42:14] Package file bins_sdk_steamrt64.zip.vz.e9ae6bc8e0116bd6d8ec14af21362f9f7399ea5c_24063512 missing or incorrect size
+[  251.153152] steam[5491]: [2026-10-26 09:42:14] Package file bins_codecs_steamrt64.zip.vz.0ceb4808651cbce441edfa95ae49474c40a6ed01_12851097 missing or incorrect size
+[  251.153152] steam[5491]: [2026-10-26 09:42:14] Package file bins_misc_steamrt64.zip.vz.c1fe69f2ddbbfd3d89ae14f20185fcf878df5cc8_19812282 missing or incorrect size
+[  251.153285] steam[5491]: [2026-10-26 09:42:14] Package file bins_hardware_steamrt64.zip.da8814f3cc3788fd3789ce233dd86f107b2b244a missing or incorrect size
+[  251.153285] steam[5491]: [2026-10-26 09:42:14] Package file webkit_steamrt64.zip.vz.2495a32baccf2a2f45f60d4f510d0216c721ba91_89726447 missing or incorrect size
+[  251.153468] steam[5491]: [2026-10-26 09:42:14] Package file miles_steamrt64.zip.vz.5093ef941e6e5195a60ab3259077694dec994016_295496 missing or incorrect size
+[  251.153668] steam[5491]: [2026-10-26 09:42:14] Package file sdl3_steamrt64.zip.vz.5a1c0cb021a8bd6e4b9299c82d0135a6fcbf462e_11298450 missing or incorrect size
+[  251.153883] steam[5491]: [2026-10-26 09:42:14] Package file steam_steamrt64.zip.vz.976d738e00f35c43c1a6c52cb3c1b82a6c5cb594_3526368 missing or incorrect size
+[  251.153943] steam[5491]: [2026-10-26 09:42:14] Package file runtime_scout_steamrt64.zip.a37e255026a39b3b80a15ac7e6a811344b961f71 missing or incorrect size
+[  251.154198] steam[5491]: [2026-10-26 09:42:14] Package file runtime_steamrt_steamrt64.zip.vz.dfd243123399054275e5f81d698c080c972de140_79627716 missing or incorrect size
+[  251.154385] steam[5491]: [2026-10-26 09:42:14] Package file bins_steamrt_steamrt64.zip.vz.2a2120358122e62dec62d5f8492c8dba4fe3f002_61644426 missing or incorrect size
+[  251.154576] steam[5491]: [2026-10-26 09:42:14] Package file bins_codecs_steamrt_steamrt64.zip.vz.75a161f8bb69602716a638c4e75baedb7ccd4f34_9644164 missing or incorrect size
+[  251.154768] steam[5491]: [2026-10-26 09:42:14] Package file bins_misc_steamrt_steamrt64.zip.vz.0ae48da2d448342e71c8ed1eae81b07cb30a0b28_788129 missing or incorrect size
+[  251.154946] steam[5491]: [2026-10-26 09:42:14] Package file webkit_steamrt_steamrt64.zip.c6b5282a313a4ba1558fb9c53c905d283645b590 missing or incorrect size
+[  251.155124] steam[5491]: [2026-10-26 09:42:14] Package file sdl3_steamrt_steamrt64.zip.f674af401dd2ff2eb5f22763ea0753308509c482 missing or incorrect size
+[  251.155379] steam[5491]: [2026-10-26 09:42:14] Package file steam_steamrt_steamrt64.zip.vz.2e9a94245d4f4416a9312ae1a836b86b5fdd0e27_3630705 missing or incorrect size
+[  251.155379] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/bins_steamrt64.zip.vz.e06c518d148b245b6d442113caf221c2e0a9d2b4_43958791
+[  251.158051] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.180572] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/bins_sdk_steamrt64.zip.vz.e9ae6bc8e0116bd6d8ec14af21362f9f7399ea5c_24063512
+[  251.180908] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.205762] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/bins_codecs_steamrt64.zip.vz.0ceb4808651cbce441edfa95ae49474c40a6ed01_12851097
+[  251.206380] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.231756] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/bins_misc_steamrt64.zip.vz.c1fe69f2ddbbfd3d89ae14f20185fcf878df5cc8_19812282
+[  251.233859] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.256916] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/bins_hardware_steamrt64.zip.da8814f3cc3788fd3789ce233dd86f107b2b244a
+[  251.258532] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.283201] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/webkit_steamrt64.zip.vz.2495a32baccf2a2f45f60d4f510d0216c721ba91_89726447
+[  251.283841] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.308416] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/miles_steamrt64.zip.vz.5093ef941e6e5195a60ab3259077694dec994016_295496
+[  251.309612] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.337169] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/sdl3_steamrt64.zip.vz.5a1c0cb021a8bd6e4b9299c82d0135a6fcbf462e_11298450
+[  251.369818] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.385325] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/steam_steamrt64.zip.vz.976d738e00f35c43c1a6c52cb3c1b82a6c5cb594_3526368
+[  251.387196] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.410923] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/runtime_scout_steamrt64.zip.a37e255026a39b3b80a15ac7e6a811344b961f71
+[  251.411624] steam[5491]: [2026-10-26 09:42:14] Manifest download: send request
+[  251.436019] steam[5491]: [2026-10-26 09:42:14] Add pending download: https://client-update.steamstatic.com/runtime_steamrt_steamrt64.zip.vz.dfd243123399054275e5f81d698c080c972de140_79627716
+[  251.523221] kernel: ------------[ cut here ]------------
+[  251.523301] kernel: [CRTC:38:crtc-0] vblank wait timed out
+[  251.523325] kernel: WARNING: drivers/gpu/drm/drm_atomic_helper.c:1921 at drm_atomic_helper_wait_for_vblanks.part.0+0x240/0x260, CPU#1: kworker/u16:3/80
+[  251.528117] kernel: Modules linked in: snd_seq_dummy snd_hrtimer snd_seq snd_seq_device snd_timer snd soundcore binfmt_misc intel_rapl_msr intel_rapl_common kvm_amd ppdev ccp kvm irqbypass i2c_i801 ghash_clmulni_intel parport_pc i2c_smbus aesni_intel i2c_mux parport lpc_ich joydev input_leds mac_hid sch_fq_codel msr efi_pstore zstd zram 842_decompress 842_compress lz4hc_compress lz4_compress dmi_sysfs qemu_fw_cfg virtiofs vmw_vsock_virtio_transport vmw_vsock_virtio_transport_common vsock autofs4 overlay isofs psmouse virtio_gpu serio_raw virtio_dma_buf ahci libahci hid_generic usbhid hid
+[  251.528248] kernel: CPU: 1 UID: 0 PID: 80 Comm: kworker/u16:3 Not tainted 7.0.0-31-generic #31-Ubuntu PREEMPT(lazy) 
+[  251.528271] kernel: Hardware name: SOS sos-vm-test, BIOS 2024.02-2ubuntu0.10 09/23/2026
+[  251.528290] kernel: Workqueue: events_unbound commit_work
+[  251.528309] kernel: RIP: 0010:drm_atomic_helper_wait_for_vblanks.part.0+0x247/0x260
+[  251.528337] kernel: Code: ff 84 c0 74 86 48 8d 75 a8 4c 89 ff e8 42 4f 34 ff 8b 45 98 85 c0 0f 85 f7 fe ff ff 48 8d 3d 00 33 d5 01 48 8b 53 20 8b 73 60 <67> 48 0f b9 3a e9 df fe ff ff e8 3a 3e 57 00 66 2e 0f 1f 84 00 00
+[  251.529189] kernel: RSP: 0018:ffffd07580b77d48 EFLAGS: 00210246
+[  251.529219] kernel: RAX: 0000000000000000 RBX: ffff8ac64d900040 RCX: 0000000000000000
+[  251.529239] kernel: RDX: ffff8ac640ae3298 RSI: 0000000000000026 RDI: ffffffff87f01aa0
+[  251.529256] kernel: RBP: ffffd07580b77db8 R08: 0000000000000000 R09: 0000000000000000
+[  251.529274] kernel: R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+[  251.529292] kernel: R13: 0000000000000000 R14: ffff8ac647766d80 R15: ffff8ac6413c0030
+[  251.529310] kernel: FS:  0000000000000000(0000) GS:ffff8ac82f87f000(0000) knlGS:0000000000000000
+[  251.529334] kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  251.530265] kernel: CR2: 000000005a9fc000 CR3: 00000001e3bde003 CR4: 0000000000370ef0
+[  251.530296] kernel: Call Trace:
+[  251.530316] kernel:  <TASK>
+[  251.530334] kernel:  ? __pfx_autoremove_wake_function+0x10/0x10
+[  251.530351] kernel:  drm_atomic_helper_commit_tail+0xa9/0xd0
+[  251.531296] kernel:  commit_tail+0x116/0x1b0
+[  251.531325] kernel:  commit_work+0x12/0x20
+[  251.531345] kernel:  process_one_work+0x1ac/0x3d0
+[  251.531369] kernel:  worker_thread+0x1b8/0x360
+[  251.531388] kernel:  ? __pfx_worker_thread+0x10/0x10
+[  251.531404] kernel:  kthread+0xf7/0x130
+[  251.531422] kernel:  ? __pfx_kthread+0x10/0x10
+[  251.532269] kernel:  ret_from_fork+0x195/0x2a0
+[  251.532298] kernel:  ? __pfx_kthread+0x10/0x10
+[  251.532317] kernel:  ? __pfx_kthread+0x10/0x10
+[  251.532334] kernel:  ret_from_fork_asm+0x1a/0x30
+[  251.532836] kernel:  </TASK>
+[  251.532866] kernel: ---[ end trace 0000000000000000 ]---
+[  251.540768] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.563078] steam[5491]: [2026-10-26 09:42:15] Add pending download: https://client-update.steamstatic.com/bins_steamrt_steamrt64.zip.vz.2a2120358122e62dec62d5f8492c8dba4fe3f002_61644426
+[  251.564430] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.588351] steam[5491]: [2026-10-26 09:42:15] Add pending download: https://client-update.steamstatic.com/bins_codecs_steamrt_steamrt64.zip.vz.75a161f8bb69602716a638c4e75baedb7ccd4f34_9644164
+[  251.590298] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.616817] steam[5491]: [2026-10-26 09:42:15] Add pending download: https://client-update.steamstatic.com/bins_misc_steamrt_steamrt64.zip.vz.0ae48da2d448342e71c8ed1eae81b07cb30a0b28_788129
+[  251.616817] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.642058] steam[5491]: [2026-10-26 09:42:15] Add pending download: https://client-update.steamstatic.com/webkit_steamrt_steamrt64.zip.c6b5282a313a4ba1558fb9c53c905d283645b590
+[  251.642912] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.666506] steam[5491]: [2026-10-26 09:42:15] Add pending download: https://client-update.steamstatic.com/sdl3_steamrt_steamrt64.zip.f674af401dd2ff2eb5f22763ea0753308509c482
+[  251.666967] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.692190] steam[5491]: [2026-10-26 09:42:15] Add pending download: https://client-update.steamstatic.com/steam_steamrt_steamrt64.zip.vz.2e9a94245d4f4416a9312ae1a836b86b5fdd0e27_3630705
+[  251.780248] steam[5491]: [2026-10-26 09:42:15] Manifest download: send request
+[  251.847369] steam[5491]: [2026-10-26 09:42:15] Downloading update (36,720 of 424,455 KB)...
+[  251.852658] steam[5491]: [2026-10-26 09:42:15] Set status message: Downloading update (36,720 of 424,455 KB)...
+[  251.858606] steam[5491]: [2026-10-26 09:42:15] Set percent complete: 8
+[  252.097632] steam[5491]: [2026-10-26 09:42:15] Downloading update (63,440 of 424,455 KB)...
+[  252.102993] steam[5491]: [2026-10-26 09:42:15] Set status message: Downloading update (63,440 of 424,455 KB)...
+[  252.111551] steam[5491]: [2026-10-26 09:42:15] Set percent complete: 14
+[  252.424282] steam[5491]: [2026-10-26 09:42:15] Downloading update (90,523 of 424,455 KB)...
+[  252.434299] steam[5491]: [2026-10-26 09:42:15] Set status message: Downloading update (90,523 of 424,455 KB)...
+[  252.434299] steam[5491]: [2026-10-26 09:42:15] Set percent complete: 21
+[  252.772940] steam[5491]: [2026-10-26 09:42:16] Downloading update (118,191 of 424,455 KB)...
+[  252.773088] steam[5491]: [2026-10-26 09:42:16] Set status message: Downloading update (118,191 of 424,455 KB)...
+[  252.783938] steam[5491]: [2026-10-26 09:42:16] Set percent complete: 27
+[  253.206258] steam[5491]: [2026-10-26 09:42:16] Downloading update (143,614 of 424,455 KB)...
+[  253.208241] steam[5491]: [2026-10-26 09:42:16] Set status message: Downloading update (143,614 of 424,455 KB)...
+[  253.216635] steam[5491]: [2026-10-26 09:42:16] Set percent complete: 33
+[  253.456973] steam[5491]: [2026-10-26 09:42:16] Downloading update (188,343 of 424,455 KB)...
+[  253.465583] steam[5491]: [2026-10-26 09:42:16] Set status message: Downloading update (188,343 of 424,455 KB)...
+[  253.473864] steam[5491]: [2026-10-26 09:42:16] Set percent complete: 44
+[  253.707300] steam[5491]: [2026-10-26 09:42:17] Downloading update (216,841 of 424,455 KB)...
+[  253.712354] steam[5491]: [2026-10-26 09:42:17] Set status message: Downloading update (216,841 of 424,455 KB)...
+[  253.722064] steam[5491]: [2026-10-26 09:42:17] Set percent complete: 51
+[  253.957196] steam[5491]: [2026-10-26 09:42:17] Downloading update (241,625 of 424,455 KB)...
+[  253.957804] steam[5491]: [2026-10-26 09:42:17] Set status message: Downloading update (241,625 of 424,455 KB)...
+[  253.969787] steam[5491]: [2026-10-26 09:42:17] Set percent complete: 56
+[  254.207504] steam[5491]: [2026-10-26 09:42:17] Downloading update (266,199 of 424,455 KB)...
+[  254.216016] steam[5491]: [2026-10-26 09:42:17] Set status message: Downloading update (266,199 of 424,455 KB)...
+[  254.225064] steam[5491]: [2026-10-26 09:42:17] Set percent complete: 62
+[  254.457709] steam[5491]: [2026-10-26 09:42:17] Downloading update (290,091 of 424,455 KB)...
+[  254.460720] steam[5491]: [2026-10-26 09:42:17] Set status message: Downloading update (290,091 of 424,455 KB)...
+[  254.469394] steam[5491]: [2026-10-26 09:42:17] Set percent complete: 68
+[  254.707992] steam[5491]: [2026-10-26 09:42:18] Downloading update (318,597 of 424,455 KB)...
+[  254.714540] steam[5491]: [2026-10-26 09:42:18] Set status message: Downloading update (318,597 of 424,455 KB)...
+[  254.723350] steam[5491]: [2026-10-26 09:42:18] Set percent complete: 75
+[  255.174682] steam[5491]: [2026-10-26 09:42:18] Downloading update (337,288 of 424,455 KB)...
+[  255.178192] steam[5491]: [2026-10-26 09:42:18] Set status message: Downloading update (337,288 of 424,455 KB)...
+[  255.186545] steam[5491]: [2026-10-26 09:42:18] Set percent complete: 79
+[  255.870214] steam[5491]: write /home/svoya/.steam/debian-installation/package/bins_codecs_steamrt_steamrt64.zip.vz.75a161f8bb69602716a638c4e75baedb7ccd4f34_9644164 failed, errno = 28
+[  255.870742] steam[5491]: [2026-10-26 09:42:19] Error: Saving package (bins_codecs_steamrt_steamrt64) failed.
+[  255.889438] steam[5491]: [2026-10-26 09:42:19] Saving metrics to disk (/home/svoya/.steam/debian-installation/package/steam_client_metrics.bin)
+[  255.889689] steam[5491]: [2026-10-26 09:42:19] Error: Steam needs to be online to update. Please confirm your network connection and try again.
+[  255.889977] steam[5491]: UpdateUI: skip show logo
+[  255.890041] steam[5491]: [2026-10-26 09:42:19] Shutdown
+[  255.895246] steam[5491]: [2026-10-26 09:42:19] Fatal error: Steam needs to be online to update. Please confirm your network connection and try again.
+[  255.946846] steam[5491]: CWorkThreadPool::~CWorkThreadPool: work complete queue not empty, 2 items discarded.
+[  257.236347] steam[5491]: ../tier0/threadtools.cpp (3807) : Assertion Failed: Illegal termination of worker thread 'Thread(0x0x598e32c0/0x0xe9970b'
+[  257.236347] steam[5491]: ../tier0/threadtools.cpp (3807) : Assertion Failed: Illegal termination of worker thread 'Thread(0x0x598e32c0/0x0xe9970b'
+[  257.236926] steam[5491]: 10/26 09:42:20 Init: Installing breakpad exception handler for appid(steam)/version(1.0)/tid(6584)
+[  257.364904] assert_20261026094220_7.dmp[6604]: Uploading dump (out-of-process)
+                                                  /tmp/dumps/assert_20261026094220_7.dmp
+[  257.365505] steam[5491]: assert_20261026094220_7.dmp[6604]: Uploading dump (out-of-process)
+[  257.365505] steam[5491]: /tmp/dumps/assert_20261026094220_7.dmp
+[  257.568769] steam[5491]: write /home/svoya/.steam/registry.vdf.3444388366.tmp failed, errno = 28
+[  257.861627] assert_20261026094220_7.dmp[6604]: Finished uploading minidump (out-of-process): success = yes
+[  257.861860] steam[5491]: assert_20261026094220_7.dmp[6604]: Finished uploading minidump (out-of-process): success = yes
+[  257.861860] steam[5491]: assert_20261026094220_7.dmp[6604]: response: CrashID=bp-33b8dff1-2ca0-4be0-9a8f-7d9892261026
+[  257.861860] steam[5491]: assert_20261026094220_7.dmp[6604]: file ''/tmp/dumps/assert_20261026094220_7.dmp'', upload yes: ''CrashID=bp-33b8dff1-2ca0-4be0-9a8f-7d9892261026''
+[  257.861647] assert_20261026094220_7.dmp[6604]: response: CrashID=bp-33b8dff1-2ca0-4be0-9a8f-7d9892261026
+[  257.861651] assert_20261026094220_7.dmp[6604]: file ''/tmp/dumps/assert_20261026094220_7.dmp'', upload yes: ''CrashID=bp-33b8dff1-2ca0-4be0-9a8f-7d9892261026''
