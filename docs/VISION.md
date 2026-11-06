@@ -90,6 +90,14 @@ yesterday's system is one entry in the boot menu.
 | Rollback of updates | ✔ snapshots | ✔ snapshots | — | ✔ image | — |
 | Newcomer-friendly (floating windows, mouse) | ✔ + tiling preset | tiling only | ✔ | ✔ | ✔ |
 
+**Against an all-in-one AI app** (chat, pictures, video and a coding agent in one window, for
+Windows and Linux): such an app lives in a window, SOS is the computer. Jackson changes the files,
+programs and settings themselves, with your approval, a snapshot first and undo; nothing leaves
+the machine until you allow it; drivers and models are solved once for the whole system (`sos
+gpu`, one model store for every tool); and he argues with himself before a hard answer (the Arena)
+instead of agreeing with you. Pictures and video are here too (the Studio), but they are not the
+point: a computer that listens and does not break is.
+
 ## 7. Milestones
 
 * **v0.1 «Первый сигнал» / First Signal** — bootable ISO, SOS Shell (bar, launcher, Jackson panel,

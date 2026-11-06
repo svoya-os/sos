@@ -164,6 +164,21 @@ class PersonaTest(unittest.TestCase):
             base = base or rules
             self.assertEqual(rules, base)
 
+    def test_no_flattery_for_every_persona_and_language(self) -> None:
+        """Jackson says «это неверно» when the user is wrong, in every persona: the rule is in the rules
+        section, which a persona cannot change (two videos on sycophantic assistants, 2026-11)."""
+        for persona in ("kent", "sysop", "dispatcher", "pirate"):
+            ru = system_prompt(lang="ru", persona=persona).split("## Правила", 1)[1]
+            self.assertIn("Не льсти и не поддакивай", ru)
+            self.assertIn("«это неверно»", ru)
+            self.assertIn("не выдумывай", ru)
+            en = system_prompt(lang="en", persona=persona).split("## Rules", 1)[1]
+            self.assertIn("Do not flatter", en)
+            self.assertIn("that's not right", en)
+        # the default persona's «базар» never means agreeing with a mistake
+        self.assertIn("если пользователь ошибается, не поддакиваешь", persona_text("kent", "ru", 1))
+        self.assertIn("agree only when the user is right", persona_text("kent", "en", 1))
+
     def test_humor_levels_and_fast_style(self) -> None:
         self.assertIn("без шуток", persona_text("kent", "ru", 0))
         self.assertIn("кентафурик", persona_text("kent", "ru", 1))

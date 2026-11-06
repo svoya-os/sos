@@ -55,6 +55,15 @@ class CliTest(unittest.TestCase):
         self.assertRegex(res.stderr, r"\d+ (мс|с) · 112 токенов · 0 € · данные не покидали компьютер")
         self.assertEqual(asked(self.srv.requests[-1]["messages"][-1]["content"]), "сколько будет 6*7?")
 
+    def test_arena_without_a_colon(self):
+        """`j арена стоит ли…`: three roles and the host's verdict, four requests, no colon to type."""
+        res = self.run_cli("арена", "стоит", "ли", "мне", "переходить?", prog="j")
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertEqual(len(self.srv.requests), 4)
+        for i in ("**Сторонник**", "**Критик**", "**Проверяющий**", "---"):
+            self.assertIn(i, res.stdout)
+        self.assertEqual(asked(self.srv.requests[0]["messages"][-1]["content"]), "стоит ли мне переходить?")
+
     def test_dash_reads_the_question_from_stdin(self):
         res = self.run_cli("-", stdin="вопрос из stdin\n", prog="j")
         self.assertEqual(res.returncode, 0, res.stderr)

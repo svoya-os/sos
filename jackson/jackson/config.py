@@ -120,6 +120,10 @@ DEFAULTS: dict[str, Any] = {
         "approval_timeout": 600,
     },
     "snapshots": {"enabled": True, "snapper_config": ""},
+    # «кто сделал, тот не проверяет» (jackson/check.py): after a turn that changed things, a separate
+    # model pass that did not do the work compares the request, the steps and their results with the
+    # answer. auto: after two or more changes, a change at tier 2+, or an unverified one; always; off.
+    "checks": {"after_actions": "auto"},
     "skills": {"enabled": True, "max_active": 2},
     # decide: a short system command the patterns missed is mapped to one by the local model
     # (one step, probabilities, nothing leaves the machine; see jackson/decide.py)
@@ -237,6 +241,7 @@ class Config:
     memory: MemoryConfig = field(default_factory=MemoryConfig)
     tools: ToolsConfig = field(default_factory=ToolsConfig)
     snapshots: SnapshotConfig = field(default_factory=SnapshotConfig)
+    checks_after_actions: str = "auto"
     skills_enabled: bool = True
     skills_max_active: int = 2
     fastpath_decide: bool = True
@@ -443,6 +448,9 @@ def build_config(data: dict[str, Any], warnings: list[str] | None = None,
     s = data.get("snapshots") or {}
     cfg.snapshots = SnapshotConfig(enabled=_as_bool(s.get("enabled"), True),
                                    snapper_config=str(s.get("snapper_config", "")))
+    ch = data.get("checks") or {}
+    cfg.checks_after_actions = _choice(ch.get("after_actions"), ("auto", "always", "off"), "auto",
+                                       "checks.after_actions", warnings)
     sk = data.get("skills") or {}
     cfg.skills_enabled = _as_bool(sk.get("enabled"), True)
     cfg.skills_max_active = int(_as_num(sk.get("max_active"), 2, 0, 10))

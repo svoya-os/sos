@@ -89,6 +89,12 @@ turn something on.
 - [x] Hash-chained audit log; undo through snapshots
 - [x] Memory as Markdown in git, optionally inside the user's Obsidian vault
 - [x] API keys in the Secret Service keyring, never in files or prompts
+- [x] Honest by rule, in every persona: no flattery, «это неверно» when the user is wrong, «не
+      знаю» instead of a guess
+- [x] The Arena («арена: …»): the Advocate, the Critic and the Checker answer on their own, then
+      Jackson sums up what they agree on, where they disagree and what is left to check
+- [x] «Кто сделал, тот не проверяет»: after changes, a separate request that did not do the work
+      compares the request, the tools' results and the answer
 
 ### The `sos` command
 
@@ -138,6 +144,19 @@ a file change; and the network silence test passes.
 - [ ] Studio module: image, video and voice tools such as ComfyUI (`sos install comfyui`),
       wired to the shared model store
 - [ ] Job queue: start a download or a render after the current job finishes
+- [ ] Night rule: heavy jobs (renders, training, big downloads) wait for the morning unless you
+      say yes; a quiet GPU mode (power limit) for long renders
+- [ ] Spoken approvals: Jackson asks «разрешаешь?» out loud and takes a spoken yes or no; an
+      agent's work is checked by the Checker before he reports it
+- [ ] Dictation: hold a key, speak, the text appears where the cursor is (local speech-to-text,
+      like OpenWhispr)
+- [ ] «Окей, Джексон»: a local wake phrase, off until you turn it on
+- [ ] Summaries to Telegram as a voice message, with your own bot (bots cannot call)
+- [ ] Focus mode: the apps you pick open after a pause screen or a few squats in front of the
+      webcam (MediaPipe Pose, local, nothing recorded)
+- [ ] Local models on modest cards: a 27B model on 8–16 GB with a 4-bit KV cache and threads =
+      physical cores; regular models only (no "abliterated"), every download checked by its hash
+- [ ] Model cascade: a small local model answers simple questions, the big one only hard ones
 
 **Done when:** a Russian and an English speaker can do a full task by voice without touching
 the network, and a new user can install Studio and generate an image from the wizard's
@@ -156,6 +175,15 @@ suggestions alone.
 - [ ] Signed skill registry: reviewed, signed skills; unsigned skills off by default; the source
       of every skill shown
 - [ ] Sandbox and permission code reviewed by someone outside the core team
+- [ ] Jackson sees the system as text (windows, the focused app, network, battery, jobs): cheaper
+      than screenshots, the base for computer use
+- [ ] Three coding agents on one task in their sandboxes, their results compared (the Arena for
+      code); local MoE models with few active parameters for code
+- [ ] A light headless browser for agents (MCP inside), evaluated against Firefox in a sandbox
+- [ ] Offline radio: a Meshtastic module (LoRa mesh, 868 MHz in Europe), a map of the nodes, and
+      Jackson relaying short messages without internet; an RTL-SDR module (scan, record, hints,
+      receive only)
+- [ ] Tor, said honestly: Tor Browser in one word, never "100 % anonymity"
 
 **Done when:** a coding agent can work on a project for an hour inside its sandbox, every
 action is in the audit log, and a documented escape attempt suite fails.
@@ -174,6 +202,12 @@ action is in the audit log, and a documented escape attempt suite fails.
 - [ ] Final trademark policy, reviewed by a lawyer
 - [ ] External security audit of Jackson's permissions and sandboxes
 - [ ] Accessibility review: WCAG AA, full keyboard use, reduce motion
+- [ ] An assistive mode for blind users: a screen reader that works in the shell and spoken
+      descriptions of what is on the screen
+- [ ] A start screen like an operator's console: the system, jobs, network and AI use at a glance
+- [ ] A dark theme in the mood of "Wired" (Serial Experiments Lain), with our own art, and one live
+      detail on every empty screen
+- [ ] Gestures through the webcam (local)
 - [ ] A software bill of materials (SBOM) for every ISO; Cyber Resilience Act steward duties in
       place before 11 December 2027 ([SECURITY.md](../SECURITY.md#eu-cyber-resilience-act))
 - [ ] Maintainer council formed ([GOVERNANCE.md](../GOVERNANCE.md#towards-a-maintainer-council))
@@ -186,3 +220,9 @@ From [VISION.md §5](VISION.md#5-what-we-deliberately-do-not-do): our own kernel
 manager; CUDA, cuDNN or model weights inside the ISO; anything that requires a cloud service, an
 account or an internet connection; dark patterns, including AI buttons where you did not ask
 for them.
+
+Looked at and left out (from the saved videos, 2026-11): proxies that promise "Claude Code for
+free", tools that share other people's OAuth logins, models from torrents without checked hashes,
+jailbreak prompts, "abliterated" models in the model store, closed apps as the base of a feature
+(Beeper, LM Studio: SOS keeps llama.cpp). Sensing people through walls with Wi-Fi (ESP32) stays an
+experiment, only with the consent of everyone at home.

@@ -63,6 +63,18 @@ things done. Talk to him in English or Russian.
   your approval. He shows the exact action with three buttons: *Allow once*, *Always in this
   project*, *Deny*.
 - **Undo** anything he did with `Super+Z` or `sos undo`.
+- **He does not just agree.** If you got a fact, a calculation or a plan wrong, Jackson says
+  "that's not right" and explains what is.
+- **The Arena**, for questions you cannot afford to get wrong: start with "arena:" (in a terminal
+  just `j arena …`). Three roles answer independently: the Advocate gives the best answer, the
+  Critic looks for where it is wrong, the Checker checks the facts and numbers. Then Jackson sums
+  up: what they agree on, where they disagree and who is right, what is left to check. That is
+  four model requests instead of one, so on a CPU the answer takes a couple of minutes.
+
+  ```sh
+  j arena should I buy an RTX 5070 now or wait?
+  ```
+
 - **His memory** is Markdown files that you can read and edit: in
   `~/.local/share/svoya/jackson/memory/`, or in your Obsidian vault if you chose that in the
   first-run wizard.

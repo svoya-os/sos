@@ -167,6 +167,9 @@ dir = "~/Obsidian/SOS"   # default: ~/.local/share/svoya/jackson/memory
 obsidian = "auto"        # auto (a parent has .obsidian/) | on | off
 journal = true
 
+[checks]                 # «кто сделал, тот не проверяет» (jackson/check.py)
+after_actions = "auto"   # auto: after 2+ changes, a tier 2+ change or an unverified one · always · off
+
 [draw]                   # «нарисуй …» (needs `sos install draw`)
 kit = ""                 # "" = FLUX.2 [klein] 4B · "qwen-image-2.1" (non-commercial, ≈ 16 GB VRAM)
 enhance = true           # a short request becomes an English description first (klein's own text encoder)
@@ -444,6 +447,12 @@ Proposed addition to §8 (look, name, AI switch):
 > whose message explains `sos ai on`. Jackson runs `sos ai off` only after its answer has been sent.
 > **Accent.** Jackson changes the accent only via `sos theme accent <word|#hex> --json` and verifies
 > `theme.json` `accentId`.
+> **Arena.** A request starting with «арена:», «консилиум:», "arena:" or "council:" (a colon, comma or
+> dash after the word) runs jackson/arena.py: three role requests without tools, then the host's verdict,
+> streamed as ordinary `token` events (each role under a bold title, `---` before the verdict; a spoken
+> request gets only the verdict). `state` carries `detail: "arena:<role>"` / `"arena:verdict"` meanwhile.
+> **Check.** After a turn that changed things (see `[checks]`), `done` may carry `check {ok, problems}`;
+> problems are also appended to the answer under «Проверка» / "Check". `state detail: "check"` meanwhile.
 
 ## Tests
 

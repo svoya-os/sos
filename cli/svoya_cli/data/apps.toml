@@ -327,3 +327,43 @@ category = "office"
 summary = { en = "password manager (offline)", ru = "менеджер паролей (без облака)" }
 license = "GPL-3.0"
 aliases = ["keepass", "кипас", "пароли"]
+
+[app.localsend]
+id = "org.localsend.localsend_app"
+name = "LocalSend"
+category = "internet"
+summary = { en = "send files to phones and computers nearby, no internet or account", ru = "файлы на телефон и компьютеры рядом, без интернета и аккаунта" }
+license = "Apache-2.0"
+aliases = ["локалсенд", "airdrop", "эирдроп"]
+
+[app.appflowy]
+id = "io.appflowy.AppFlowy"
+name = "AppFlowy"
+category = "office"
+summary = { en = "notes, tasks and wikis like Notion, kept on this computer", ru = "заметки, задачи и вики как в Notion, хранятся у тебя" }
+license = "AGPL-3.0"
+aliases = ["notion", "ноушн", "аппфлоуи"]
+
+[app.kicad]
+id = "org.kicad.KiCad"
+name = "KiCad"
+category = "dev"
+summary = { en = "electronics: schematics and circuit boards, ready to order (JLCPCB and others)", ru = "электроника: схемы и печатные платы, готовые к заказу (JLCPCB и другие)" }
+license = "GPL-3.0"
+aliases = ["кикад", "pcb", "платы"]
+
+[app.tor]
+id = "org.torproject.torbrowser-launcher"
+name = "Tor Browser"
+category = "internet"
+summary = { en = "browser over the Tor network: sites do not see your IP address; not a promise of full anonymity", ru = "браузер через сеть Tor: сайты не видят твой IP-адрес; полной анонимности не обещает" }
+license = "MIT"
+aliases = ["тор", "torbrowser", "тор-браузер"]
+
+[app.recorder]
+id = "com.dec05eba.gpu_screen_recorder"
+name = "GPU Screen Recorder"
+category = "media"
+summary = { en = "screen recording that barely touches the processor (the graphics card encodes)", ru = "запись экрана почти без нагрузки на процессор (кодирует видеокарта)" }
+license = "GPL-3.0"
+aliases = ["screenrecorder", "рекордер", "запись-экрана"]

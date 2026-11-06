@@ -159,6 +159,22 @@ Work towards v0.1 «Первый сигнал».
   (about 2.4 GB), with the NVIDIA drivers for installing without internet; it comes in two parts,
   and `sos-join.bat` (Windows) or `sos-join.sh` (Linux, macOS) joins and checks them. The standard
   image downloads the NVIDIA driver during the install when the computer is online.
+- The Arena: start a question with «арена:» (`j арена …` in a terminal, "arena:" in English) and
+  three roles answer it on their own: the Advocate gives the best answer, the Critic looks for
+  where it is wrong, the Checker checks the facts and the numbers. Then Jackson sums up: what they
+  agree on, where they disagree and who is right, what is left to check. Local by default, like
+  any question; a spoken one hears only the verdict.
+- Jackson does not flatter: when you get a fact, a calculation, code or a plan wrong, he says
+  «это неверно» and what is right, in every persona; and he says «не знаю» instead of guessing.
+- «Кто сделал, тот не проверяет»: after Jackson changed several things, changed the system or did
+  something a tool could not verify, a second request that did not do the work compares what you
+  asked, the steps with the tools' own results and his answer. If something does not add up, you
+  see it under «Проверка» right after the answer (`[checks] after_actions` in jackson.toml: auto,
+  always or off).
+- One word installs a few more apps: LocalSend (`sos install airdrop`: files to a phone nearby without
+  internet), AppFlowy (Notion-like notes kept on your computer), KiCad (circuit boards), GPU Screen
+  Recorder (screen recording that barely touches the processor) and Tor Browser, described as it
+  is: sites do not see your IP address, and that is not a promise of full anonymity.
 
 ### Changed
 

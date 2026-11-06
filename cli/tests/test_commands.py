@@ -170,9 +170,16 @@ class InstallResolveTest(SandboxTest):
     def test_russian_names_and_the_store(self):
         ctx = self.sb.ctx(FakeRunner())
         for word, app_id in (("майнкрафт", "org.prismlauncher.PrismLauncher"), ("магазин", "io.github.kolunmi.Bazaar"),
-                             ("торрент", "org.qbittorrent.qBittorrent"), ("дискорд", "com.discordapp.Discord")):
+                             ("торрент", "org.qbittorrent.qBittorrent"), ("дискорд", "com.discordapp.Discord"),
+                             # from the saved videos (2026-11): AirDrop, Notion, boards, Tor, Cap
+                             ("airdrop", "org.localsend.localsend_app"), ("ноушн", "io.appflowy.AppFlowy"),
+                             ("кикад", "org.kicad.KiCad"), ("тор", "org.torproject.torbrowser-launcher"),
+                             ("рекордер", "com.dec05eba.gpu_screen_recorder")):
             kind, obj = install.resolve(ctx, word)
             self.assertEqual((kind, obj["id"]), ("app", app_id), word)
+        # Tor is described honestly: never "100 % anonymity"
+        self.assertIn("полной анонимности не обещает", install.load_apps()["tor"]["summary"]["ru"])
+        self.assertIn("not a promise of full anonymity", install.load_apps()["tor"]["summary"]["en"])
         kind, obj = install.resolve(ctx, "стим")                   # Steam is the module (i386, drivers)
         self.assertEqual((kind, obj["id"]), ("module", "gaming"))
 

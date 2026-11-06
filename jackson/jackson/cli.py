@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 from typing import Any, TextIO
 
-from . import __version__
+from . import __version__, arena
 from .i18n import fmt_cost, fmt_number, meta_line, norm_lang
 from .paths import Paths
 
@@ -412,6 +412,9 @@ def read_stdin(explicit: bool, lang: str = "ru", patience: float = 2.0) -> str |
 
 def cmd_ask(words: list[str], opts: argparse.Namespace) -> int:
     context: dict[str, Any] = {"cwd": os.getcwd()}
+    # `j арена стоит ли…` is `арена: стоит ли…`: the Arena (jackson/arena.py) without typing the colon
+    if len(words) > 1 and words[0].lower() in arena.TRIGGERS:
+        words = [words[0] + ":"] + words[1:]
     question: str | None = " ".join(words).strip()
     lang = norm_lang(opts.lang or "ru")
     if question == "-":

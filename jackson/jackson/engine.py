@@ -20,12 +20,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
-from . import aiswitch, decide, fastpath
+from . import aiswitch, arena, check, decide, fastpath
 from . import draw as draw_mod
 from .config import set_toml_value
 from .i18n import meta_line, norm_lang, t
 from .permissions import Taint, project_root
-from .persona import context_blocks, context_note, mood_for, system_prompt
+from .persona import context_blocks, context_note, mood_for, persona_text, system_prompt
 from .providers import (CancelToken, Cancelled, ChatRequest, End, Progress, Provider, ProviderError, TextDelta,
                         ToolCall, Usage, cost_eur)
 from .router import Candidate, RouteDecision, RouteError
@@ -96,6 +96,8 @@ class Turn:
     provider: str = ""
     finished: bool = False
     suggestions: list[dict[str, Any]] = field(default_factory=list)   # buttons under the answer
+    steps: list[check.Step] = field(default_factory=list)              # tool calls that ran (jackson/check.py)
+    check: check.Verdict | None = None
 
     @property
     def lang(self) -> str:
@@ -200,6 +202,16 @@ class Engine:
                 cwd = Path(str(turn.context["cwd"])).expanduser()
                 if cwd.is_dir():
                     turn.session.cwd = cwd
+            question = arena.parse(turn.text)
+            if question is not None:
+                off = aiswitch.off_reason(self.app.paths)
+                if off:
+                    self.app.audit.append("ask.refused", turn=turn.id, reason=f"ai-off:{off}")
+                    await self._error(turn, t("ai.off." + ("system" if off == "system" else "user"), lang,
+                                              name=self.app.name(lang)), False, aiOff=True, off=off)
+                    return
+                await self._arena_turn(turn, question)
+                return
             if not turn.context.get("noFastpath"):
                 pending, turn.session.pending_draw = turn.session.pending_draw, None
                 req = draw_mod.parse(turn.text, (self.app.avatar.name,))
@@ -290,6 +302,8 @@ class Engine:
             event["cancelled"] = True
         if turn.suggestions and not cancelled:
             event["suggestions"] = turn.suggestions
+        if turn.check is not None and not cancelled:
+            event["check"] = turn.check.event()
         await self._emit(turn, event)
         log.info("turn done in %d ms: %s, %d+%d tokens%s%s", int(round(latency)),
                  "/".join(x for x in (turn.provider, route_model or turn.model) if x) or "fast path",
@@ -591,6 +605,7 @@ class Engine:
                                skills=app.skills.catalogue_block(norm_lang(lang)) if self.config.skills_enabled else "")
 
         step = 0
+        answered = False
         while True:
             tools = app.registry.tools()
             # rebuilt every step: a page read by a tool taints the conversation within this turn
@@ -629,6 +644,7 @@ class Engine:
             messages.append(assistant)
             turn_msgs.append(assistant)
             if not calls:
+                answered = True
                 break
             step += 1
             if step > self.config.max_steps:
@@ -646,9 +662,112 @@ class Engine:
                 messages.append(tool_msg)
                 turn_msgs.append(tool_msg)
             await self._state(turn, "thinking")
+        if answered:
+            verdict = await self._check(turn, chosen, text)
+            if verdict is not None and not verdict.ok:
+                extra_note = check.note(verdict, turn.lang, voice=bool(turn.context.get("voice")))
+                await self._emit(turn, {"type": "token", "text": extra_note})
+                turn_msgs[-1] = dict(turn_msgs[-1], content=(turn_msgs[-1].get("content") or "") + extra_note)
         session.history.append(turn_msgs)
         session.trim()
         await self._journal(turn)
+        await self._done(turn)
+
+    async def _check(self, turn: Turn, chosen: Candidate, answer: str) -> check.Verdict | None:
+        """«Кто сделал, тот не проверяет» (jackson/check.py): a request that did not do the work
+        compares the request, the steps with the tools' own results and the answer."""
+        if not check.needed(turn.steps, self.config.checks_after_actions):
+            return None
+        await self._state(turn, "thinking", detail="check")
+        req = ChatRequest(model=chosen.model, system=check.system(turn.lang),
+                          messages=[{"role": "user", "content": check.message(turn.text, turn.steps, answer,
+                                                                               turn.lang)}],
+                          max_tokens=check.CHECK_TOKENS)
+        try:
+            text, _calls, usage, _native = await self._stream(turn, self.app.providers[chosen.provider], req,
+                                                               quiet=True)
+        except ProviderError as exc:
+            if exc.kind == "cancelled":
+                raise
+            log.info("check skipped: %s", exc)
+            return None
+        self._account(turn, chosen, usage)
+        verdict = check.parse(text)
+        self.app.audit.append("check", turn=turn.id, model=chosen.id, steps=len(turn.steps),
+                              ok=None if verdict is None else verdict.ok,
+                              problems=[] if verdict is None else verdict.problems)
+        turn.check = verdict
+        return verdict
+
+    async def _arena_turn(self, turn: Turn, question: str) -> None:
+        """«арена: …»: three roles answer on their own, then the host sums up (jackson/arena.py).
+
+        The same route as an ordinary question (the policy, the budget, local first), no tools. The
+        person sees each role's answer as it comes and the verdict last; a spoken question hears only
+        the verdict. One turn in the history: the question and everything that was said.
+        """
+        app = self.app
+        session = turn.session
+        lang = turn.lang
+        voice = bool(turn.context.get("voice"))
+        decision = await asyncio.to_thread(app.router.decide, question, turn.context, turn.route, session.lang,
+                                           0, False)
+        await self._emit_route(turn, decision)
+        candidates = [decision.chosen] + decision.fallbacks
+        chosen = candidates.pop(0)
+        cwd = session.cwd or app.paths.home
+        home = str(app.paths.home)
+        cwd_text = "~" + str(cwd)[len(home):] if str(cwd).startswith(home) else str(cwd)
+        note = context_note(lang=lang, route=self._route_text(chosen, lang), cwd=cwd_text, voice=voice)
+        asked = {"role": "user", "content": f"{note}\n{question}"}
+        app.audit.append("arena", turn=turn.id, model=chosen.id, local=chosen.local, roles=len(arena.ROLES))
+        said: list[str] = []
+        answers: list[tuple[arena.Role, str]] = []
+        for i, role in enumerate(arena.ROLES):
+            await self._state(turn, "thinking", detail=f"arena:{role.id}")
+            if not voice:
+                head = ("" if i == 0 else "\n\n") + arena.heading(role, lang)
+                said.append(head)
+                await self._emit(turn, {"type": "token", "text": head})
+            while True:
+                provider = app.providers[chosen.provider]
+                app.key_check(chosen.provider)
+                req = ChatRequest(model=chosen.model, system=arena.role_system(role, lang), messages=[asked],
+                                  max_tokens=arena.ROLE_TOKENS)
+                try:
+                    text, _calls, usage, _native = await self._stream(turn, provider, req, quiet=voice)
+                except ProviderError as exc:
+                    # like an ordinary turn: another model only before anything was said
+                    if exc.kind == "cancelled" or exc.output_started or answers or not candidates:
+                        raise
+                    if not provider.cfg.local:
+                        app.health.mark_failed(provider.name, exc.message)
+                    failed, chosen = chosen, candidates.pop(0)
+                    why = (f"{failed.label}: {exc.message[:120]} — переключаюсь на {chosen.label} · {chosen.model}"
+                           if norm_lang(lang) == "ru" else
+                           f"{failed.label}: {exc.message[:120]} — switching to {chosen.label} · {chosen.model}")
+                    await self._emit_route(turn, RouteDecision(chosen, candidates, why, decision.task), why)
+                    continue
+                break
+            self._account(turn, chosen, usage)
+            answers.append((role, text))
+            if not voice:
+                said.append(text)
+        await self._state(turn, "thinking", detail="arena:verdict")
+        if not voice:
+            said.append(arena.VERDICT_RULE)
+            await self._emit(turn, {"type": "token", "text": arena.VERDICT_RULE})
+        system = arena.chair_system(lang, self.app.name(lang),
+                                    persona_text(self.config.persona, lang, self.config.humor), voice)
+        req = ChatRequest(model=chosen.model, system=system,
+                          messages=[{"role": "user", "content": arena.chair_message(question, answers, lang)}],
+                          max_tokens=arena.CHAIR_TOKENS)
+        verdict, _calls, usage, _native = await self._stream(turn, app.providers[chosen.provider], req)
+        self._account(turn, chosen, usage)
+        said.append(verdict)
+        session.history.append([dict(asked, content=f"{note}\n{turn.text}"),
+                                {"role": "assistant", "content": "".join(said)}])
+        session.trim()
         await self._done(turn)
 
     def _account(self, turn: Turn, c: Candidate, usage: Usage) -> None:
@@ -660,7 +779,7 @@ class Engine:
         if not c.local:
             turn.leave(c.label)
 
-    async def _stream(self, turn: Turn, provider: Provider, req: ChatRequest
+    async def _stream(self, turn: Turn, provider: Provider, req: ChatRequest, quiet: bool = False
                       ) -> tuple[str, list[ToolCall], Usage, dict[str, Any] | None]:
         loop = asyncio.get_running_loop()
         queue: asyncio.Queue[Any] = asyncio.Queue()
@@ -700,16 +819,18 @@ class Engine:
                 if isinstance(item, TextDelta):
                     if not started:
                         started = True
-                        await self._state(turn, "speaking")
+                        if not quiet:
+                            await self._state(turn, "speaking")
                     parts.append(item.text)
-                    await self._emit(turn, {"type": "token", "text": item.text})
+                    if not quiet:
+                        await self._emit(turn, {"type": "token", "text": item.text})
                 elif isinstance(item, ToolCall):
                     calls.append(item)
                 elif isinstance(item, Usage):
                     usage = item
                 elif isinstance(item, End):
                     native = item.native
-                elif isinstance(item, Progress) and not started and item.todo:
+                elif isinstance(item, Progress) and not started and item.todo and not quiet:
                     # a local model reading the prompt: minutes on a CPU, the client shows how far it got
                     await self._emit(turn, {"type": "progress", "stage": "prompt", "done": item.done,
                                             "total": item.todo, "ms": int(item.ms)})
@@ -826,6 +947,8 @@ class Engine:
         app.audit.append("tool", turn=turn.id, client=turn.session.client, callId=call_id, tool=tool.name,
                          ok=result.ok, verified=result.verified, summary=result.summary, actions=new_actions,
                          taint=result.taint, leftTo=result.left_to)
+        turn.steps.append(check.Step(tool.name, tier, args, result.ok, result.verified, result.summary,
+                                     changed=tier >= 1 and ("write" in tool.effects or tier >= 3) and not own_files))
         done_event = {"type": "tool", "callId": call_id, "name": tool.name, "args": args, "tier": tier,
                       "state": "done" if result.ok else "failed", "summary": result.summary,
                       "verified": result.verified, "actions": new_actions}
