@@ -5,7 +5,7 @@ import qs.components
 // Step 6, page 2 of 2 · what Jackson thinks with (design/mockups/setup-ai.html, owner
 // decision: ONE suggested model). Left: the detected GPU (or CPU) with RAM and GPU Doctor's
 // verdict, then the model from `sos models suggest --json` with its fit bar and «Установить»
-// → `sos models pull <id> --yes --json` (progress here and in the footer; the download keeps
+// → `sos models pull <id> --yes --now --json` (progress here and in the footer; the download keeps
 // going when you move on). Right: optional cloud keys stored with `secret-tool` (never in
 // files) and the cloud promise. Accent budget (DESIGN §11): the footer's «Дальше» is the one
 // primary action; «Установить» is an outline button; only the running download is accent.

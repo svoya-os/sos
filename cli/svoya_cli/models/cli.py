@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from .. import config as config_mod
-from .. import i18n, live, ui
+from .. import i18n, live, night, ui
 from ..context import Ctx
 from ..hw import gpu as gpu_mod
 from ..i18n import tr
@@ -525,6 +525,9 @@ def _pull_kit(kit: "kits.Kit", args, ctx: Ctx) -> int:
             return fail(tr("add --yes to download", "добавьте --yes, чтобы скачать"), 3)
         if not ui.confirm(tr("Download?", "Скачать?"), default=True):
             return 1
+    rc = _night(ctx, ev, args, total)
+    if rc is not None:
+        return rc
     for kf, repo, info, siblings, size in todo:
         err = _fetch(ctx, ev, repo, [kf.file], args.revision, token, siblings, info, {kf.file: size})
         if err is not None:
@@ -533,6 +536,33 @@ def _pull_kit(kit: "kits.Kit", args, ctx: Ctx) -> int:
     ev("done", ok=True, kit=kit.id, repo=kit.id, files=files)
     head(tr("done · the Studio sees it (ComfyUI view updated)", "готово · Студия его видит (представление ComfyUI обновлено)"))
     return 0
+
+
+def _night(ctx: Ctx, ev, args, total: int) -> int | None:
+    """A big download at night with nobody at the keyboard waits for the morning (night.py): the
+    exit code when it was put off (or could not be), None to download now. JSON callers (the
+    first-run wizard) are a person only when they say --now."""
+    if total <= night.BIG_DOWNLOAD:
+        return None
+    cfg = config_mod.load(ctx.paths)
+    when = night.should_wait(ctx, cfg, now=bool(getattr(args, "now", False)), attended=False if ev.enabled else None)
+    if when is None:
+        return None
+    flags = [*(f for p in getattr(args, "include", None) or [] for f in ("--include", p)),
+             *(["--revision", args.revision] if getattr(args, "revision", "main") != "main" else []),
+             *(["--accept-license"] if getattr(args, "accept_license", False) else []),
+             *(["--allow-uncensored"] if getattr(args, "allow_uncensored", False) else [])]
+    argv = ["models", "pull", args.repo, *getattr(args, "files", []), *flags, "--yes", "--now"]
+    res = night.put_off(ctx, argv, when, args.repo.split("/")[-1], ctx.paths.home)
+    if ev.enabled:
+        if res["ok"]:
+            ev("scheduled", at=res["at"], unit=res["unit"])
+            ev("done", ok=True, scheduled=True)
+            return 0
+        ev("error", message=f"night: {res.get('error')}")
+        return 75
+    night.say(res, night.span_text(cfg), night.shown(["models", "pull", args.repo]), ui)
+    return 0 if res["ok"] else 75
 
 
 def cmd_pull(args, ctx: Ctx) -> int:
@@ -685,6 +715,9 @@ def cmd_pull(args, ctx: Ctx) -> int:
             return fail(tr("add --yes to download", "добавьте --yes, чтобы скачать"), 3)
         if not ui.confirm(tr("Download?", "Скачать?"), default=True):
             return 1
+    rc = _night(ctx, ev, args, total)
+    if rc is not None:
+        return rc
 
     err = _fetch(ctx, ev, repo, files, revision, token, siblings, info, sizes)
     if err is not None:

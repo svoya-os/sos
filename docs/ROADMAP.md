@@ -144,8 +144,8 @@ a file change; and the network silence test passes.
 - [ ] Studio module: image, video and voice tools such as ComfyUI (`sos install comfyui`),
       wired to the shared model store
 - [ ] Job queue: start a download or a render after the current job finishes
-- [ ] Night rule: heavy jobs (renders, training, big downloads) wait for the morning unless you
-      say yes; a quiet GPU mode (power limit) for long renders
+- [x] Night rule: heavy jobs (training, big downloads) started with nobody at the keyboard wait
+      for the morning unless you say yes; a quiet GPU mode (power limit) for long renders
 - [ ] Spoken approvals: Jackson asks «разрешаешь?» out loud and takes a spoken yes or no; an
       agent's work is checked by the Checker before he reports it
 - [ ] Dictation: hold a key, speak, the text appears where the cursor is (local speech-to-text,

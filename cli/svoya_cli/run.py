@@ -30,7 +30,8 @@ import time
 import tomllib
 from pathlib import Path
 
-from . import i18n, jobs, ui
+from . import config as config_mod
+from . import i18n, jobs, night, ui
 from .context import Ctx
 from .i18n import tr
 
@@ -230,6 +231,14 @@ def upsil_cli_version(ctx: Ctx) -> str | None:
 def main(args, ctx: Ctx | None = None) -> int:
     ctx = ctx or Ctx()
     cwd = Path.cwd()
+    cfg = config_mod.load(ctx.paths)
+    when = night.should_wait(ctx, cfg, now=bool(getattr(args, "now", False)))
+    if when is not None:                     # at night, with nobody at the keyboard: in the morning
+        opts = [*(["--label", args.label] if args.label else []), *(["--no-job"] if args.no_job else []),
+                *(["--no-header"] if args.no_header else [])]
+        res = night.put_off(ctx, ["run", "--now", *opts, args.script, *args.args], when, Path(args.script).name, cwd)
+        night.say(res, night.span_text(cfg), night.shown(["run", args.script, *args.args]), ui)
+        return 0 if res["ok"] else 75
     project = find_project(cwd)
     manifest = read_manifest(project)
     is_upl = Path(args.script).suffix == ".upl"

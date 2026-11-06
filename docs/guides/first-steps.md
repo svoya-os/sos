@@ -174,6 +174,22 @@ region = "EU"
 commercial = true
 ```
 
+### At night
+
+Heavy work does not start at night when nobody is at the keyboard. If Jackson, a script or a
+timer starts `sos run` or a big `sos models pull` between 23:00 and 07:00, it waits for the
+morning (a one-shot timer; the output says how to cancel it), and `--now` starts it anyway. In a
+terminal you are there, so nothing is asked. The hours are yours to change:
+
+```toml
+[night]
+hours = "23:00-07:00"    # "" switches the rule off
+```
+
+For a long render, the card can run quieter: `sos quiet on` lowers its power limit to 70 % (less
+heat and fan noise, a little slower) until a reboot or `sos quiet off`. It asks for the
+administrator password; NVIDIA and AMD cards that allow it.
+
 ## Look and feel
 
 ```sh

@@ -19,7 +19,7 @@ import difflib
 # canonical commands (argparse sub-parsers)
 COMMANDS = ("status", "doctor", "fix", "gpu", "hardware", "install", "remove", "modules", "models", "theme", "accent", "accents",
             "ai", "new", "update", "undo", "snapshot", "run", "job", "apps", "morse", "eye", "art", "session-start", "menu",
-            "help", "version")
+            "quiet", "help", "version")
 # easter eggs: they work, but stay out of help, completion and did-you-mean
 HIDDEN = ("tea",)
 HIDDEN_ALIASES = {"чай": "tea", "чаю": "tea", "чайку": "tea", "coffee": "tea", "кофе": "tea", "кофейку": "tea",
@@ -35,6 +35,7 @@ ALIASES = {
     "доктор": "doctor", "проверить": "doctor", "проверка": "doctor",
     "починить": "fix", "исправить": "fix",
     "видеокарта": "gpu", "гп": "gpu",
+    "тихо": "quiet", "тихий": "quiet", "тише": "quiet",
     "hw": "hardware", "железо": "hardware", "оборудование": "hardware",
     "установить": "install", "поставить": "install", "добавить": "install",
     "удалить": "remove", "убрать": "remove",
@@ -51,6 +52,9 @@ ALIASES = {
     "глаз": "eye", "арт": "art", "заставка": "art", "заставки": "art",
     "приложения": "apps", "программы": "apps", "каталог": "apps",
 }
+
+QUIET_WORDS = {"вкл": "on", "включить": "on", "да": "on", "выкл": "off", "выключить": "off", "нет": "off",
+               "статус": "status", "как": "status"}
 
 THEME_WORDS = {
     "night": "graphite", "ночь": "graphite", "ночная": "graphite", "dark": "graphite", "тёмная": "graphite",
@@ -103,8 +107,14 @@ def normalize(argv: list[str]) -> list[str]:
         return [cmd, *rest]                             # `sos theme --help` is the group's help, not `current`'s
     if cmd == "fix":
         return ["doctor", "--fix", *rest]
+    if cmd == "gpu" and rest[:1] and ALIASES.get(rest[0].lower(), rest[0].lower()) == "quiet":
+        cmd, rest = "quiet", rest[1:]                   # `sos gpu quiet on`, `sos видеокарта тихо вкл`
     if cmd == "gpu":
         return ["doctor", "--gpu", *rest]
+    if cmd == "quiet":
+        if rest[:1] and not rest[0].startswith("-"):
+            rest = [QUIET_WORDS.get(rest[0].lower(), rest[0]), *rest[1:]]
+        return ["quiet", *rest]
     if cmd == "hardware":
         return ["doctor", "--hardware", *rest]
     if cmd == "accent":

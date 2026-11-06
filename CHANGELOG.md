@@ -197,6 +197,11 @@ Work towards v0.1 «Первый сигнал».
   these per-model settings to `presets.ini`; your own go in `~/.config/svoya/llm.env`.
 - `sos models pull` does not fetch a model with its safety training removed («abliterated»,
   «uncensored», Heretic) unless asked with `--allow-uncensored`, and SOS never suggests one.
+- The night rule: `sos run` and a big `sos models pull` started at night with nobody at the
+  keyboard (Jackson, a script, a timer) wait for the morning with a one-shot user timer; `--now`
+  starts them anyway, and `[night] hours` sets the night.
+- `sos quiet on` (`sos тихо вкл`, `sos gpu quiet on`): the graphics card's power limit at 70 % for
+  long renders, quieter and cooler, until a reboot or `sos quiet off` (NVIDIA and AMD).
 
 ### Fixed
 

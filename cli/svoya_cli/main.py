@@ -181,6 +181,9 @@ def _parser() -> argparse.ArgumentParser:
     mop.add_argument("--allow-uncensored", action="store_true",
                      help=tr("also a model with its safety training removed (abliterated, uncensored)",
                              "и модель со снятыми защитными ограничениями (abliterated, uncensored)"))
+    mop.add_argument("--now", action="store_true", help=tr(
+        "download even at night without a terminal (a big one otherwise waits for the morning)",
+        "качать и ночью без терминала (иначе большая загрузка ждёт утра)"))
     mop.add_argument("--dry-run", action="store_true")
     mop.add_argument("--json", action="store_true", help=tr("progress as JSON lines", "прогресс строками JSON"))
     mok = mosub.add_parser("kits", help=tr("model kits for the Studio and Jackson's drawing: what is there",
@@ -301,6 +304,9 @@ def _parser() -> argparse.ArgumentParser:
     r.add_argument("--label")
     r.add_argument("--no-job", action="store_true")
     r.add_argument("--no-header", action="store_true")
+    r.add_argument("--now", action="store_true", help=tr(
+        "start even at night without a terminal (otherwise it waits for the morning, see [night])",
+        "запустить и ночью без терминала (иначе ждёт утра, см. [night])"))
     r.add_argument("script")
     r.add_argument("args", nargs=argparse.REMAINDER)
     j = cmd("job", "report job progress to the bar", "сообщить прогресс задачи панели")
@@ -352,6 +358,13 @@ def _parser() -> argparse.ArgumentParser:
     ar.add_argument("--fps", type=int, help=tr("frames a second (30)", "кадров в секунду (30)"))
     ar.add_argument("--seconds", type=float, help=tr("close after this long", "закрыть через столько секунд"))
 
+    qu = cmd("quiet", "quiet graphics card: a lower power limit for long renders and the night",
+             "тихая видеокарта: ниже предел мощности для долгих рендеров и ночи")
+    qu.add_argument("state", nargs="?", choices=["on", "off", "status"], default="status")
+    qu.add_argument("--percent", type=int, default=70, help=tr("of the default limit (70)", "от обычного предела (70)"))
+    qu.add_argument("--json", action="store_true")
+    qu.add_argument("--dry-run", action="store_true")
+    qu.add_argument("--root-only", action="store_true", help=argparse.SUPPRESS)
     ss = cmd("session-start", "start the desktop session (Hyprland exec-once)", "запуск сеанса (exec-once в Hyprland)")
     ss.add_argument("--dry-run", action="store_true")
     ss.add_argument("--json", action="store_true")
@@ -453,6 +466,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "eye":
             from .ascii import cli as ascii_cli
             return ascii_cli.main_eye(args, ctx)
+        if args.cmd == "quiet":
+            from .hw import quiet
+            return quiet.main(args, ctx)
         if args.cmd == "art":
             from .ascii import cli as ascii_cli
             return ascii_cli.main_art(args, ctx)

@@ -15,7 +15,8 @@
 //   `j persona humor`), then his brain (one suggested local model with a fit bar and
 //   «Установить», optional cloud keys) · 7 privacy, first snapshot, keys.
 // Choices apply at once (reversible: settings, `sos theme apply`); the model
-// downloads while you continue (`sos models pull <id> --yes --json`). Module
+// downloads while you continue (`sos models pull <id> --yes --now --json`; --now: you are
+// here, so the night rule does not put it off until the morning). Module
 // installs need administrator rights, so they start after the wizard hides
 // (the polkit prompt must not be covered): `sos modules add --profile … notes
 // --yes`, reported with a notification. Cloud keys go to the keyring through
@@ -215,7 +216,7 @@ ShellRoot {
         root.pullBytes = 0;
         root.pullFileBase = 0;
         root.pullTotal = Number(d.sizeBytes) || 0;
-        pull.command = ["sh", "-c", 'c=$(command -v sos || command -v svoya) || exit 127; exec "$c" models pull "$1" --yes --json', "sh", d.id];
+        pull.command = ["sh", "-c", 'c=$(command -v sos || command -v svoya) || exit 127; exec "$c" models pull "$1" --yes --now --json', "sh", d.id];
         pull.running = true;
     }
 

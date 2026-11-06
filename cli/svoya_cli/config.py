@@ -34,6 +34,7 @@ DEFAULTS: dict[str, Any] = {
     "models": {"region": "EU", "commercial": True},
     "gpu": {"rocm_backend": "rocm7.2"},
     "session": {"shell": True, "jackson": True},
+    "night": {"hours": "23:00-07:00"},                 # night.py; "" switches the night rule off
 }
 
 
