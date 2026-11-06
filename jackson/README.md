@@ -148,8 +148,11 @@ policy = "local-only"    # local-only | eu | any   (an explicit per-turn route o
 default = "auto"         # auto | local | cloud
 offline = false          # …unless this hard switch is on: then nothing ever leaves the machine
 daily_budget_eur = 1.0   # cloud spend cap per day; exhausted → local only
-[route.task]             # preferred models per task class ("provider/model", "provider/*")
+[route.task]             # preferred models per task class: chat hard code vision long ("provider/model", "provider/*")
 code = ["local/*", "anthropic/claude-sonnet-5", "deepseek/deepseek-v4-pro"]
+# With several local models, chat goes to the smallest good one (3B and up) and hard (compare,
+# plan, prove, analyse; not for a spoken question unless it says «подумай»), code and long go
+# to the biggest practical one (up to 40B): the cascade.
 
 [providers.local]        # llama.cpp llama-server (router mode: --models-dir); models discovered via /v1/models
 base_url = "http://127.0.0.1:8080/v1"

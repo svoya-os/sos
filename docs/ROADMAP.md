@@ -158,7 +158,7 @@ a file change; and the network silence test passes.
       card otherwise, threads = physical cores (llama.cpp's default); regular models only (no
       "abliterated"), every download checked by its hash
 - [ ] Qwen3.8 27B (IQ4_XS) in the model ladder, once its files and sizes are checked on the Hub
-- [ ] Model cascade: a small local model answers simple questions, the big one only hard ones
+- [x] Model cascade: a small local model answers simple questions, the big one only hard ones
 
 **Done when:** a Russian and an English speaker can do a full task by voice without touching
 the network, and a new user can install Studio and generate an image from the wizard's
@@ -185,7 +185,7 @@ suggestions alone.
 - [ ] Offline radio: a Meshtastic module (LoRa mesh, 868 MHz in Europe), a map of the nodes, and
       Jackson relaying short messages without internet; an RTL-SDR module (scan, record, hints,
       receive only)
-- [ ] Tor, said honestly: Tor Browser in one word, never "100 % anonymity"
+- [x] Tor, said honestly: Tor Browser in one word, never "100 % anonymity"
 
 **Done when:** a coding agent can work on a project for an hour inside its sandbox, every
 action is in the audit log, and a documented escape attempt suite fails.

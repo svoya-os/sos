@@ -202,6 +202,10 @@ Work towards v0.1 «Первый сигнал».
   starts them anyway, and `[night] hours` sets the night.
 - `sos quiet on` (`sos тихо вкл`, `sos gpu quiet on`): the graphics card's power limit at 70 % for
   long renders, quieter and cooler, until a reboot or `sos quiet off` (NVIDIA and AMD).
+- The model cascade: with several local models, Jackson answers everyday questions with the
+  smallest good one and gives a question to think over (compare, plan, prove, analyse) to the
+  biggest, as code already was; the route line says so. A spoken question stays quick unless it
+  says «подумай».
 
 ### Fixed
 

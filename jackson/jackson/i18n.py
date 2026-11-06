@@ -166,6 +166,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ru": "локально · код: данные не покидают компьютер",
         "en": "local · code: data stays on this computer",
     },
+    "route.local.hard": {
+        "ru": "локально · вопрос на подумать: самая большая модель, данные не покидают компьютер",
+        "en": "local · a question to think over: the biggest model, data stays on this computer",
+    },
     "route.local.vision": {
         "ru": "локально · модель со зрением, данные не покидают компьютер",
         "en": "local · vision model, data stays on this computer",

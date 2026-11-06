@@ -21,7 +21,7 @@ from .paths import Paths
 POLICIES = ("local-only", "eu", "any")
 ROUTES = ("auto", "local", "cloud")
 PERSONAS = ("kent", "sysop", "dispatcher", "pirate")
-TASKS = ("chat", "code", "vision", "long")
+TASKS = ("chat", "hard", "code", "vision", "long")
 
 # Prices are EUR per 1M tokens (input, output), converted at ≈0.86 €/$ on 2026-09-24
 # from the providers' public price lists. Override any of them in [pricing].
@@ -59,6 +59,9 @@ DEFAULTS: dict[str, Any] = {
         "task": {
             "chat": ["local/*", "ollama/*", "anthropic/claude-haiku-4-5", "mistral/mistral-small-latest",
                      "gemini/gemini-3.5-flash-lite", "deepseek/deepseek-flash"],
+            # a question that needs thinking (compare, plan, prove, analyse): the cascade's big model
+            "hard": ["local/*", "ollama/*", "anthropic/claude-sonnet-5", "mistral/mistral-medium-latest",
+                     "deepseek/deepseek-v4-pro", "gemini/gemini-3.8-flash"],
             "code": ["local/*", "ollama/*", "anthropic/claude-sonnet-5", "mistral/mistral-medium-latest",
                      "deepseek/deepseek-v4-pro", "gemini/gemini-3.8-flash"],
             "vision": ["local/*", "ollama/*", "anthropic/claude-sonnet-5", "mistral/mistral-medium-latest",

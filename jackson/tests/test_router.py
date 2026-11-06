@@ -166,12 +166,29 @@ class RouterTest(unittest.TestCase):
         r.health.mark_failed("anthropic", "HTTP 529")
         self.assertEqual(r.decide("hi").chosen.provider, "gemini")
 
+    def test_the_cascade(self):
+        # the smallest good model answers quickly; a question to think over gets the biggest one
+        r, _ = make_router(self.root)
+        self.assertEqual(r.decide("какая погода завтра?", lang="ru").chosen.model, "qwen3.5-4b")
+        for text in ("Сравни ипотеку и аренду для меня: плюсы и минусы", "подумай, как мне лучше переехать",
+                     "составь план подготовки к экзамену", "compare these two job offers"):
+            with self.subTest(text=text):
+                d = r.decide(text, lang="ru")
+                self.assertEqual((d.task, d.chosen.model), ("hard", "qwen3.5-14b"))
+        self.assertIn("самая большая модель", r.decide("проанализируй мой бюджет", lang="ru").reason)
+        # spoken: quick, unless asked to think
+        self.assertEqual(r.decide("сравни два тарифа", {"voice": True}, lang="ru").task, "chat")
+        self.assertEqual(r.decide("подумай и сравни два тарифа", {"voice": True}, lang="ru").task, "hard")
+        # code stays code
+        self.assertEqual(r.decide("сравни две функции на python", lang="ru").task, "code")
+
     def test_local_model_ordering(self):
         from jackson.config import ProviderConfig
         pc = ProviderConfig("local", local=True)
         models = ["bge-m3-embed", "qwen3.5-1.5b", "qwen3.5-4b", "qwen3.5-14b", "qwen3.5-72b"]
         self.assertEqual(order_local_models(models, "chat", pc)[0], "qwen3.5-4b")
         self.assertEqual(order_local_models(models, "code", pc)[0], "qwen3.5-14b")
+        self.assertEqual(order_local_models(models, "hard", pc)[0], "qwen3.5-14b")
         self.assertNotIn("bge-m3-embed", order_local_models(models, "chat", pc))
 
 

@@ -30,6 +30,18 @@ CODE_RE = re.compile(
 NON_CHAT_RE = re.compile(r"embed|rerank|whisper|tts|bge-|e5-|clip|mmproj|parakeet|gigaam|silero|piper",
                          re.IGNORECASE)
 SIZE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*b(?![a-z])", re.IGNORECASE)
+# The cascade: a question that needs thinking goes to the biggest practical local model, the rest
+# to the smallest good one (order_local_models). Not for a spoken question: there a quick answer
+# matters more, and "подумай" asks for the big model anyway.
+HARD_RE = re.compile(
+    r"\b(подумай\w*|обдумай|продумай|проанализируй|анализ\w*|сравни\w*|сопостав\w*|докажи|доказ\w*|"
+    r"рассчитай|вычисли|спланируй|составь план|стратеги\w*|взвесь|плюсы и минусы|за и против|"
+    r"разбери\w*|спроектируй|архитектур\w*|оптимизир\w*|уравнени\w*|вероятност\w*|реши задач\w*|"
+    r"пошагов\w*|шаг за шагом|think (?:it )?through|think hard|analy[sz]\w*|compar\w*|pros and cons|"
+    r"prove|proof|calculate|derive|make a plan|plan (?:out|for)|strateg\w*|trade-?offs?|"
+    r"architect\w*|optimi[sz]\w*|equations?|probabilit\w*|step by step|solve)\b",
+    re.I)
+EXPLICIT_HARD_RE = re.compile(r"\b(подумай\w*|think (?:it )?through|think hard)\b", re.I)
 LONG_TOKENS = 24_000
 EXPECTED_OUTPUT_TOKENS = 1_000
 
@@ -147,7 +159,7 @@ def order_local_models(models: list[str], task: str, pcfg: ProviderConfig) -> li
         size = _model_size(m)
         if size is None:
             return (1, 0.0)
-        if task in ("code", "long"):
+        if task in ("code", "long", "hard"):
             return (0, -size if size <= 40 else size)  # biggest that is still practical
         return (0, size if size >= 3 else 100 + size)  # smallest that is still good
 
@@ -199,6 +211,8 @@ class Router:
         probe = text + "\n" + str(context.get("selection") or "")[:4000]
         if CODE_RE.search(probe):
             return "code"
+        if HARD_RE.search(text) and (not context.get("voice") or EXPLICIT_HARD_RE.search(text)):
+            return "hard"
         return "chat"
 
     def provider_ready(self, name: str) -> tuple[bool, str]:
@@ -354,6 +368,8 @@ class Router:
                 return t("route.local.budget", lang, budget=fmt_cost(self.config.route.daily_budget_eur, lang))
             if task == "code":
                 return t("route.local.code", lang)
+            if task == "hard":
+                return t("route.local.hard", lang)
             if task == "vision":
                 return t("route.local.vision", lang)
             if self.config.route.policy == "local-only" or self.config.route.offline:
