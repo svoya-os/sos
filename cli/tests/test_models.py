@@ -64,6 +64,39 @@ class ViewsTest(SandboxTest):
         self.assertFalse((out / "gpt-oss-20b-MXFP4.gguf").exists())
         self.assertEqual(len(rep2["stale"]), 1)
 
+    def test_llama_cpp_presets(self):
+        # one section per model that needs settings of its own, and never a setting outside a
+        # section: llama.cpp lists those as a model named "default"
+        cache_file(self.sb, "ggml-org/gpt-oss-20b-GGUF", "gpt-oss-20b-MXFP4.gguf", b"e")
+        cache_file(self.sb, "unsloth/Qwen3.5-9B-GGUF", "Qwen3.5-9B-Q4_K_M.gguf", b"a")
+        cache_file(self.sb, "unsloth/Qwen3.5-9B-GGUF", "mmproj-F16.gguf", b"b")
+        files = hfcache.scan(self.sb.path("/srv/ai/hub"))
+        out = self.sb.path("/srv/ai/views/llama.cpp")
+        seen = []
+
+        def presets(paths):
+            seen.append(paths)
+            if b"a" == paths[0].read_bytes():
+                return {"cache-type-k": "q4_0", "cache-type-v": "q4_0"}, "4-bit cache: why"
+            return None
+
+        rep = views.apply(views.llama_plan(files, out, presets), out)
+        self.assertEqual(rep["presets"], {"Qwen3.5-9B-Q4_K_M": {"cache-type-k": "q4_0", "cache-type-v": "q4_0"}})
+        self.assertEqual(len(seen), 2)                                      # the mmproj sidecar is no model
+        text = (out / views.PRESETS).read_text()
+        self.assertIn(f"[Qwen3.5-9B-Q4_K_M]\n; 4-bit cache: why\nmodel = {out}/Qwen3.5-9B-Q4_K_M/Qwen3.5-9B-Q4_K_M.gguf\n"
+                      "cache-type-k = q4_0\ncache-type-v = q4_0\n", text)
+        self.assertNotIn("gpt-oss", text)
+        before_first_section = text.split("[", 1)[0]
+        self.assertTrue(all(not line or line.startswith(";") for line in before_first_section.splitlines()))
+        self.assertEqual(oct((out / views.PRESETS).stat().st_mode & 0o777), "0o664")   # the group ai rewrites it
+        # no models, no presets callable: the file is still there (llama-server needs it)
+        hfcache.remove_repo(self.sb.path("/srv/ai/hub"), "unsloth/Qwen3.5-9B-GGUF")
+        hfcache.remove_repo(self.sb.path("/srv/ai/hub"), "ggml-org/gpt-oss-20b-GGUF")
+        views.apply(views.llama_plan(hfcache.scan(self.sb.path("/srv/ai/hub")), out), out)
+        self.assertNotIn("[", (out / views.PRESETS).read_text())
+        self.assertEqual([p.name for p in out.iterdir()], [views.PRESETS])  # no temporary files left
+
     def test_comfyui_folders_and_yaml(self):
         cache_file(self.sb, "Comfy-Org/Wan_2.2_ComfyUI_Repackaged", "split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors", b"1")
         cache_file(self.sb, "Comfy-Org/Wan_2.2_ComfyUI_Repackaged", "split_files/vae/wan2.2_vae.safetensors", b"2")
@@ -450,6 +483,110 @@ class SuggestTest(SandboxTest):
         self.assertEqual(events[-1], {"event": "done", "ok": True, "dryRun": True})
 
 
+class CachePresetsTest(SandboxTest):
+    """The conversation's cache in 8 bits by default; per model 16 bits or 4 (cli.kv_presets)."""
+
+    def model(self, name="m.gguf", **kw):
+        p = self.sb.dir / name
+        llama_like(p, n_layers=4, **kw)
+        return [p]
+
+    def decide(self, ram_gib, **env):
+        self.sb.write("/proc/meminfo", f"MemTotal: 67108864 kB\nMemAvailable: {ram_gib * 1024 * 1024} kB\n")
+        ctx = self.sb.ctx(FakeRunner(), **env)
+        return mcli.kv_presets(ctx, mcli.llm_settings(ctx))
+
+    def test_four_bits_only_where_eight_do_not_fit(self):
+        self.assertIsNone(self.decide(30)(self.model()))
+        opts, why = self.decide(1)(self.model())
+        self.assertEqual(opts, {"cache-type-k": "q4_0", "cache-type-v": "q4_0"})
+        self.assertIn("does not fit in RAM", why)
+
+    def test_heads_that_do_not_split_into_blocks_keep_16_bits(self):
+        # llama.cpp b8681: "K cache type q8_0 with block size 32 does not divide n_embd_head_k=80"
+        opts, why = self.decide(30)(self.model(head_dim=80))
+        self.assertEqual(opts, {"cache-type-k": "f16", "cache-type-v": "f16"})
+        self.assertIn("80/80", why)
+
+    def test_your_own_cache_type_stays(self):
+        conf = self.sb.ctx().paths.user_config_dir
+        conf.mkdir(parents=True, exist_ok=True)
+        (conf / "llm.env").write_text(
+                      "# mine\nLLAMA_ARG_CACHE_TYPE_K=f16\nexport LLAMA_ARG_CACHE_TYPE_V='f16'\nLLAMA_ARG_CTX_SIZE=32768\n")
+        ctx = self.sb.ctx(FakeRunner())
+        settings = mcli.llm_settings(ctx)
+        self.assertEqual((settings["LLAMA_ARG_CACHE_TYPE_K"], settings["LLAMA_ARG_CACHE_TYPE_V"],
+                          settings["LLAMA_ARG_CTX_SIZE"], settings["LLAMA_ARG_FLASH_ATTN"]), ("f16", "f16", "32768", "on"))
+        self.assertIsNone(self.decide(1)(self.model()))                     # tight, but you chose 16 bits
+        self.assertIsNone(self.decide(1)(self.model(head_dim=80)))
+        # 4 bits of your own, and a model that cannot take them: 16 bits for that one only
+        opts, _ = self.decide(30, LLAMA_ARG_CACHE_TYPE_K="q4_0", LLAMA_ARG_CACHE_TYPE_V="q4_0")(self.model(head_dim=80))
+        self.assertEqual(opts["cache-type-k"], "f16")
+        self.assertIsNone(self.decide(1, LLAMA_ARG_CACHE_TYPE_K="q4_0", LLAMA_ARG_CACHE_TYPE_V="q4_0")(self.model()))
+
+    def test_not_a_model_or_not_a_gguf(self):
+        junk = self.sb.dir / "junk.gguf"
+        junk.write_bytes(b"not a gguf")
+        self.assertIsNone(self.decide(1)([junk]))
+
+    def test_views_write_them(self):
+        p = self.model(head_dim=80)[0]
+        cache_file(self.sb, "o/odd-GGUF", "odd-Q4_K_M.gguf", p.read_bytes())
+        self.sb.write("/proc/meminfo", "MemTotal: 67108864 kB\nMemAvailable: 31457280 kB\n")
+        ctx = self.sb.ctx(FakeRunner())
+        rc, out = capture(mcli.cmd_views, argparse.Namespace(out=None, json=True, quiet=False), ctx)
+        self.assertEqual(rc, 0)
+        self.assertEqual(json.loads(out)["views"]["llama.cpp"]["presets"],
+                         {"odd-Q4_K_M": {"cache-type-k": "f16", "cache-type-v": "f16"}})
+        text = self.sb.path("/srv/ai/views/llama.cpp/presets.ini").read_text()
+        self.assertIn("[odd-Q4_K_M]", text)
+        self.assertIn(f"model = {self.sb.path('/srv/ai/views/llama.cpp/odd-Q4_K_M.gguf')}", text)
+
+
+class UncensoredTest(SandboxTest):
+    def test_the_words(self):
+        for name, word in (("mlabonne/gemma-3-27b-it-abliterated-GGUF", "abliterated"),
+                           ("someone/Qwen3-8B-Heretic-GGUF", "heretic"),
+                           ("x/Llama-3-8B-Uncensored-GGUF", "uncensored"), ("x/m-decensored", "decensored"),
+                           ("x/y/model-jailbroken-Q4_K_M.gguf", "jailbroken"), ("x/jailbreak-7b", "jailbreak")):
+            with self.subTest(name=name):
+                self.assertEqual(mcli.uncensored(name), word)
+        self.assertEqual(mcli.uncensored("x/y", "model-ABLITERATED-Q4.gguf"), "abliterated")
+        for name in ("unsloth/Qwen3.5-9B-GGUF", "ggml-org/gpt-oss-20b-GGUF", "x/theretical-7b", "x/heretical-7b"):
+            with self.subTest(name=name):
+                self.assertIsNone(mcli.uncensored(name))
+
+    def test_sos_suggests_none(self):
+        from svoya_cli.paths import REPO_ROOT
+        import re as _re
+        data = REPO_ROOT / "cli/svoya_cli/data"
+        repos = []
+        for f in ("model_ladder.toml", "model_catalog.toml"):
+            repos += _re.findall(r'(?m)^\s*repo\s*=\s*"([^"]+)"', (data / f).read_text())
+        repos += [f.repo for k in kits.kits() for f in k.files] + [a for k in kits.kits() for f in k.files for a in f.alt]
+        self.assertGreater(len(repos), 5)
+        self.assertEqual([r for r in repos if mcli.uncensored(r)], [])
+
+    def test_pull_refuses_without_asking_the_hub(self):
+        ctx = self.sb.ctx(FakeRunner(), dry_run=True)
+        self.sb.mkdir("/srv/ai")
+        args = argparse.Namespace(repo="mlabonne/gemma-3-27b-it-abliterated-GGUF/gemma-Q4_K_M.gguf", files=[],
+                                  revision="main", include=[], ctx=8192, yes=True, accept_license=False,
+                                  dry_run=True, json=True)
+        calls = []
+        real = remote.api_model
+        remote.api_model = lambda *a, **k: calls.append(a) or {}
+        try:
+            rc, out = capture(mcli.cmd_pull, args, ctx)
+        finally:
+            remote.api_model = real
+        self.assertEqual(rc, 3)
+        self.assertEqual(calls, [])
+        event = json.loads(out.splitlines()[-1])
+        self.assertEqual(event["event"], "error")
+        self.assertIn("(abliterated)", event["message"])
+
+
 class ListCliTest(SandboxTest):
     def test_list_installed_syncs_registry(self):
         p = self.sb.dir / "m.gguf"
@@ -486,6 +623,13 @@ class ServeTest(SandboxTest):
         self.assertIn(f"Environment=LLAMA_ARG_CTX_SIZE={mcli.SERVE_CTX}", unit)
         self.assertIn("EnvironmentFile=-%h/.config/svoya/llm.env", unit)
         self.assertLess(unit.index("Environment=LLAMA_ARG_CTX_SIZE"), unit.index("EnvironmentFile="))  # yours wins
+        # the 8-bit cache with flash attention, the same defaults as `sos models serve`, and the presets
+        for key, value in mcli.LLM_DEFAULTS.items():
+            self.assertRegex(unit, rf"(?m)^Environment=(.* )?{key}={value}( |$)")
+        self.assertLess(unit.index("LLAMA_ARG_CACHE_TYPE_K"), unit.index("EnvironmentFile="))
+        self.assertIn("--models-preset /srv/ai/views/llama.cpp/presets.ini ", unit)
+        install = (REPO_ROOT / "modules/llm-local/install.sh").read_text()
+        self.assertIn('"$AI/views/llama.cpp/presets.ini"', install)   # there before the first start
         seen = {}
 
         class Spawning(FakeRunner):
@@ -497,6 +641,11 @@ class ServeTest(SandboxTest):
         args = argparse.Namespace(port=18080, stop=False, status=False, foreground=False, json=False)
         self.assertEqual(mcli.cmd_serve(args, self.sb.ctx(r)), 0)
         self.assertEqual(seen["env"]["LLAMA_ARG_CTX_SIZE"], "16384")
+        self.assertEqual((seen["env"]["LLAMA_ARG_CACHE_TYPE_K"], seen["env"]["LLAMA_ARG_CACHE_TYPE_V"],
+                          seen["env"]["LLAMA_ARG_FLASH_ATTN"]), ("q8_0", "q8_0", "on"))
+        preset = seen["argv"][seen["argv"].index("--models-preset") + 1]
+        self.assertEqual(preset, str(self.sb.path("/srv/ai/views/llama.cpp/presets.ini")))
+        self.assertTrue(self.sb.path("/srv/ai/views/llama.cpp/presets.ini").is_file())
         # llama.cpp lists the store (a Hugging Face cache) by repository name and, online, asked
         # Hugging Face before loading: the model bot's answers timed out. Only the views, offline.
         self.assertEqual(seen["env"]["LLAMA_ARG_OFFLINE"], "1")

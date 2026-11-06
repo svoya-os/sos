@@ -111,6 +111,22 @@ downloaded once, or copied into `/srv/ai` from another machine.
 Yes. Put them into the shared store `/srv/ai`. SOS creates views of it for llama.cpp, Ollama and
 ComfyUI, and `sos models dedup` finds duplicate files.
 
+### How does a big model fit into 8 or 16 GB?
+
+The local model server keeps the conversation's cache (the KV cache) in 8 bits instead of 16: half
+the memory, and the answers stay the same as far as measurements show. When a model does not fit
+in the card's memory even then, SOS gives that model a 4-bit cache, which leaves room for more of
+its layers on the GPU. llama.cpp spreads the layers between the card and RAM by itself and uses as
+many threads as the processor has physical cores. Your own settings go in
+`~/.config/svoya/llm.env`, for example `LLAMA_ARG_CTX_SIZE=32768`, or `LLAMA_ARG_CACHE_TYPE_K=f16`
+with `LLAMA_ARG_CACHE_TYPE_V=f16`. `sos models fit <model> --kv q4_0` shows the difference.
+
+### Why does SOS not download "abliterated" models?
+
+These are models with the refusals cut out of them ("abliterated", "uncensored", "Heretic"). SOS
+does not suggest them, and `sos models pull` fetches one only with `--allow-uncensored`. Every
+download is checked against the SHA-256 the model hub publishes for the file.
+
 ### Why does SOS talk about licenses before a download?
 
 Some model licenses exclude the EU or forbid commercial use. SOS reads the license information

@@ -21,6 +21,19 @@ from .registry import Registry
 
 GiB = 2**30
 SHARD = re.compile(r"-(\d{5})-of-(\d{5})\.gguf$", re.I)
+# Models with their safety training cut out ("abliterated", "uncensored", made with Heretic): SOS
+# does not suggest them and `sos models pull` does not fetch one unless asked with --allow-uncensored.
+UNCENSORED = re.compile(r"[a-z]*(?:abliterat|obliterat|uncensor|decensor|jailbr(?:eak|ok))[a-z]*"
+                        r"|(?<![a-z])heretic(?![a-z])", re.I)
+
+
+def uncensored(*names: str) -> str | None:
+    """The word in a repository or file name that marks such a model (lower case), or None."""
+    for n in names:
+        m = UNCENSORED.search(n or "")
+        if m:
+            return m.group(0).lower()
+    return None
 
 
 # ---------------------------------------------------------------- GPU / RAM budget
@@ -64,6 +77,11 @@ def _shard_paths(path: Path, hdr: gguf.GGUFHeader) -> list[Path]:
     if not isinstance(n, int) or n <= 1 or not m:
         return [path]
     return [path.with_name(SHARD.sub(f"-{i:05d}-of-{n:05d}.gguf", path.name)) for i in range(1, n + 1)]
+
+
+def load_parts(paths: list[Path]) -> est_mod.ModelShape:
+    """The shape of a model from its files in order (a split GGUF: first shard first)."""
+    return est_mod.shape_from_headers([gguf.read_file(p) for p in paths], [p.stat().st_size for p in paths])
 
 
 def load_local(path: Path) -> tuple[est_mod.ModelShape, gguf.GGUFHeader]:
@@ -537,6 +555,17 @@ def cmd_pull(args, ctx: Ctx) -> int:
             ui.err(f"sos: {msg}")
         return rc
 
+    def refuse(word: str) -> int:
+        rc = fail(tr(f"{repo}: a model with its safety training removed ({word})",
+                     f"{repo}: модель со снятыми защитными ограничениями ({word})"), 3)
+        if not ev.enabled:
+            ui.note(tr("SOS does not suggest such models and does not download them by itself. "
+                       "If you need this one, add --allow-uncensored",
+                       "СОС такие модели не предлагает и сама не скачивает. Если она тебе точно нужна, "
+                       "добавь --allow-uncensored"))
+        return rc
+
+    allow = bool(getattr(args, "allow_uncensored", False))
     alias = suggest_mod.resolve(args.repo)
     siblings: dict = {}
     info: dict = {}
@@ -553,6 +582,9 @@ def cmd_pull(args, ctx: Ctx) -> int:
         files = list(args.files)
         if ref.filename:
             files.insert(0, ref.filename)
+        word = None if allow else uncensored(repo, *files)
+        if word:
+            return refuse(word)
         try:
             info = remote.api_model(repo, revision, token)
         except remote.RemoteError as e:
@@ -581,6 +613,9 @@ def cmd_pull(args, ctx: Ctx) -> int:
                     sf = SHARD.sub(f"-{i:05d}-of-{n:05d}.gguf", f)
                     if sf in siblings and sf not in files:
                         files.append(sf)
+        word = None if allow else uncensored(*files)
+        if word:
+            return refuse(word)
         sizes = {f: (siblings[f].get("lfs") or {}).get("size") or siblings[f].get("size") or 0 for f in files}
         card = info.get("cardData") or {}
         lic_id = card.get("license") if isinstance(card.get("license"), str) else None
@@ -675,6 +710,84 @@ def _healthy(url: str) -> bool:
 
 
 SERVE_CTX = "16384"                    # tokens; as Environment= in modules/llm-local/files/svoya-llm.service
+# What svoya-llm runs with unless ~/.config/svoya/llm.env says otherwise (the same Environment= lines
+# are in the unit). The cache of the conversation in 8 bits: half of the 16-bit default, and the
+# answers stay the same as far as measurements show. A quantized V cache needs flash attention: "on",
+# because llama.cpp's "auto" (b8681, Ubuntu 26.04) may switch it off and then refuses the model.
+LLM_DEFAULTS = {"LLAMA_ARG_CTX_SIZE": SERVE_CTX, "LLAMA_ARG_CACHE_TYPE_K": "q8_0",
+                "LLAMA_ARG_CACHE_TYPE_V": "q8_0", "LLAMA_ARG_FLASH_ATTN": "on"}
+FLOAT_KV = ("f32", "f16", "bf16")
+KV_BLOCK = 32                          # q8_0, q4_0, q5_*, iq4_nl: the cache is stored in blocks of 32 values
+
+
+def llm_settings(ctx: Ctx) -> dict[str, str]:
+    """svoya-llm's environment: SOS's defaults, then ~/.config/svoya/llm.env, then LLAMA_ARG_* from ours."""
+    out = dict(LLM_DEFAULTS)
+    try:
+        text = (ctx.paths.user_config_dir / "llm.env").read_text(encoding="utf-8")
+    except OSError:
+        text = ""
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip().removeprefix("export ").strip()
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+            out[key] = value.strip().strip("'\"")
+    out.update({k: v for k, v in ctx.env.items() if k.startswith("LLAMA_ARG_")})
+    return out
+
+
+def kv_presets(ctx: Ctx, settings: dict[str, str]) -> views.Presets:
+    """Per model, what the server's cache settings need changed (views.llama_plan writes it to
+    presets.ini): f16 when a head is not a whole number of blocks (llama.cpp refuses such a model
+    with a quantized cache), and 4 bits instead of SOS's 8 when the model then does not fit in the
+    GPU's memory (without a GPU: in RAM). A smaller cache leaves room for more of the model's layers
+    on the GPU; that is the advice for a 27B model on 8 GB. A cache type of your own in llm.env is
+    left as it is, except where the model could not load with it."""
+    k = settings.get("LLAMA_ARG_CACHE_TYPE_K", "f16").lower()
+    v = settings.get("LLAMA_ARG_CACHE_TYPE_V", "f16").lower()
+    try:
+        n_ctx = int(settings.get("LLAMA_ARG_CTX_SIZE") or SERVE_CTX)
+    except ValueError:
+        n_ctx = int(SERVE_CTX)
+    hw: dict = {}
+
+    def decide(paths: list[Path]) -> tuple[dict[str, str], str] | None:
+        try:
+            shape = load_parts(paths)
+        except (gguf.GGUFError, OSError, ValueError):
+            return None
+        if not shape.is_llm:
+            return None
+        heads = [shape.kv_lora_rank + shape.rope_dim] if shape.kv_lora_rank else [shape.d_k, shape.d_v]
+        if any(t not in FLOAT_KV for t in (k, v)) and any(d % KV_BLOCK for d in heads if d):
+            return ({"cache-type-k": "f16", "cache-type-v": "f16"},
+                    f"16-bit cache: heads of {'/'.join(str(d) for d in heads)} values do not split into "
+                    f"blocks of {KV_BLOCK}, and llama.cpp would not load the model with a quantized one")
+        if (k, v) != ("q8_0", "q8_0"):
+            return None
+        if not hw:
+            hw["gpu"], hw["ram"] = gpu_budget(ctx, "auto"), ram_available(ctx)
+        g, ram = hw["gpu"], hw["ram"]
+        try:
+            est = est_mod.estimate(shape, n_ctx if n_ctx > 0 else (shape.n_ctx_train or 8192), "q8_0",
+                                   backend=g["backend"])
+        except ValueError:
+            return None
+        if g["total"]:
+            if est_mod.fit(shape, est, g["total"], g["used"], ram).verdict == "fits":
+                return None
+            where = "the GPU's memory"
+        elif ram is None or est.total <= ram - est_mod.RAM_RESERVE:
+            return None
+        else:
+            where = "RAM"
+        return ({"cache-type-k": "q4_0", "cache-type-v": "q4_0"},
+                f"4-bit cache: with the 8-bit one the model does not fit in {where}")
+
+    return decide
 
 
 def cmd_serve(args, ctx: Ctx) -> int:
@@ -716,11 +829,13 @@ def cmd_serve(args, ctx: Ctx) -> int:
         cmd_views(SimpleNamespace(out=None, json=False, quiet=True), ctx)
         argv = ["llama-server", "--host", "127.0.0.1", "--port", str(args.port), "--models-dir", str(views_dir),
                 "--models-max", "2", "--jinja", "--batch-size", "512", "--offline"]
+        if (views_dir / views.PRESETS).is_file():
+            argv[-1:-1] = ["--models-preset", str(views_dir / views.PRESETS)]
         # as svoya-llm.service: a context window that fits in memory (llama.cpp's default is the model's
-        # training context), and the views only — an empty Hugging Face cache, or llama.cpp lists the
-        # store a second time under repository names and asks Hugging Face before loading those
+        # training context), the 8-bit cache, llm.env, and the views only — an empty Hugging Face cache,
+        # or llama.cpp lists the store a second time under repository names and asks Hugging Face first
         empty = ctx.paths.runtime_dir / "svoya-llm"
-        env = {**os.environ, "LLAMA_ARG_CTX_SIZE": os.environ.get("LLAMA_ARG_CTX_SIZE") or SERVE_CTX,
+        env = {**os.environ, **llm_settings(ctx),
                "LLAMA_ARG_OFFLINE": "1", "LLAMA_CACHE": str(empty / "cache"), "HF_HUB_CACHE": str(empty / "cache"),
                "HF_HOME": str(empty / "hf")}
         if args.foreground and not ctx.dry_run:
@@ -775,7 +890,7 @@ def cmd_suggest(args, ctx: Ctx) -> int:
             tr(f"Download {d['name']} ({size})?", f"Скачать {d['name']} ({size})?"), default=True)):
         ns = argparse.Namespace(models_cmd="pull", repo=d["id"], files=[], revision="main", include=[],
                                 ctx=res.get("ctx") or 8192, yes=True, accept_license=False,
-                                dry_run=ctx.dry_run, json=False)
+                                allow_uncensored=False, dry_run=ctx.dry_run, json=False)
         return main(ns, ctx)
     return 0
 
@@ -936,7 +1051,9 @@ def cmd_views(args, ctx: Ctx) -> int:
     out = Path(args.out) if args.out else root / "views"
     files = hfcache.scan(root / "hub")
     reports = {}
-    for name, planner in (("llama.cpp", views.llama_plan), ("comfyui", views.comfy_plan), ("ollama", views.ollama_plan)):
+    presets = kv_presets(ctx, llm_settings(ctx))
+    for name, planner in (("llama.cpp", lambda fs, d: views.llama_plan(fs, d, presets)),
+                          ("comfyui", views.comfy_plan), ("ollama", views.ollama_plan)):
         d = out / name
         plan = planner(files, d)
         reports[name] = views.apply(plan, d, dry_run=ctx.dry_run)
@@ -949,6 +1066,10 @@ def cmd_views(args, ctx: Ctx) -> int:
     ui.head(tr(f"views in {out}", f"представления в {out}") + (st.faint(tr(" · dry run", " · пробный запуск")) if ctx.dry_run else ""))
     ui.kv("llama.cpp", f"{reports['llama.cpp']['links']} {tr('links', 'ссылок')}  "
           + st.faint(f"llama-server --models-dir {out / 'llama.cpp'}"), width=11)
+    for model, opts in reports["llama.cpp"]["presets"].items():
+        bits = {"q4_0": tr("4-bit cache: does not fit otherwise", "кеш в 4 битах: иначе не влезет"),
+                "f16": tr("16-bit cache: a smaller one would not load", "кеш в 16 битах: с меньшим не загрузится")}
+        ui.note(f"{model}: {bits.get(opts.get('cache-type-k', ''), opts)}", indent=4)
     ui.kv("comfyui", f"{reports['comfyui']['links']} {tr('links', 'ссылок')}  "
           + st.faint(f"--extra-model-paths-config {out / 'comfyui' / 'extra_model_paths.yaml'}"), width=11)
     ui.kv("ollama", f"{len(reports['ollama']['commands'])} {tr('imports', 'импортов')}  "

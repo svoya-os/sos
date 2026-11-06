@@ -13,6 +13,12 @@ ConditionPathExists=!/etc/svoya/ai.off
 # 16k tokens fit Jackson's conversations and most documents in a few hundred MB. Your own value:
 # LLAMA_ARG_CTX_SIZE=32768 in ~/.config/svoya/llm.env
 Environment=LLAMA_ARG_CTX_SIZE=16384
+# The cache of the conversation in 8 bits: half the memory of the 16-bit default, the same answers as
+# far as measurements show. A quantized V cache needs flash attention, so "on" (with "auto",
+# llama.cpp may switch it off and then refuses the model). Per model, presets.ini (written by
+# `sos models views`) keeps 16 bits where a model cannot take 8, and goes down to 4 bits where the
+# model does not fit in the GPU's memory otherwise. Yours: LLAMA_ARG_CACHE_TYPE_K/_V in llm.env.
+Environment=LLAMA_ARG_CACHE_TYPE_K=q8_0 LLAMA_ARG_CACHE_TYPE_V=q8_0 LLAMA_ARG_FLASH_ATTN=on
 # The models are the ones in /srv/ai/views/llama.cpp (`sos models views`), nothing else. llama.cpp
 # also lists a Hugging Face cache (the store in /srv/ai is one) under repository names, loads those
 # through its downloader, which asks Hugging Face first (3 minutes in the model bot, the answers
@@ -24,7 +30,7 @@ EnvironmentFile=-%h/.config/svoya/llm.env
 ExecStartPre=-/usr/bin/sos models views --quiet
 # --batch-size 512: a request is read in pieces of 512 tokens, so a cancelled one stops after the
 # current piece (with 2048, a CPU kept reading an abandoned question for minutes, next to the new one).
-ExecStart=/usr/bin/llama-server --host 127.0.0.1 --port 8080 --models-dir /srv/ai/views/llama.cpp --models-max 2 --jinja --batch-size 512 --offline
+ExecStart=/usr/bin/llama-server --host 127.0.0.1 --port 8080 --models-dir /srv/ai/views/llama.cpp --models-preset /srv/ai/views/llama.cpp/presets.ini --models-max 2 --jinja --batch-size 512 --offline
 Restart=on-failure
 
 [Install]

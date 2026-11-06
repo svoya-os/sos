@@ -191,6 +191,12 @@ Work towards v0.1 «Первый сигнал».
   the prompt and the conversation instead of reading some 3,000 tokens again every time.
 - Local models answer without thinking first: Qwen3.5's template thinks by default, minutes on a CPU
   of text nobody sees (`thinking = true` under `[providers.local]` brings it back).
+- The local model server keeps the conversation's cache in 8 bits (half the memory), and a model
+  that does not fit in the card's memory even then gets a 4-bit cache, so more of its layers stay
+  on the GPU. A model that cannot take a quantized cache keeps 16 bits. `sos models views` writes
+  these per-model settings to `presets.ini`; your own go in `~/.config/svoya/llm.env`.
+- `sos models pull` does not fetch a model with its safety training removed («abliterated»,
+  «uncensored», Heretic) unless asked with `--allow-uncensored`, and SOS never suggests one.
 
 ### Fixed
 

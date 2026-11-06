@@ -154,8 +154,10 @@ a file change; and the network silence test passes.
 - [ ] Summaries to Telegram as a voice message, with your own bot (bots cannot call)
 - [ ] Focus mode: the apps you pick open after a pause screen or a few squats in front of the
       webcam (MediaPipe Pose, local, nothing recorded)
-- [ ] Local models on modest cards: a 27B model on 8–16 GB with a 4-bit KV cache and threads =
-      physical cores; regular models only (no "abliterated"), every download checked by its hash
+- [x] Local models on modest cards: the KV cache in 8 bits, in 4 where a model does not fit the
+      card otherwise, threads = physical cores (llama.cpp's default); regular models only (no
+      "abliterated"), every download checked by its hash
+- [ ] Qwen3.8 27B (IQ4_XS) in the model ladder, once its files and sizes are checked on the Hub
 - [ ] Model cascade: a small local model answers simple questions, the big one only hard ones
 
 **Done when:** a Russian and an English speaker can do a full task by voice without touching

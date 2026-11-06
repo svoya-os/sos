@@ -2,7 +2,9 @@
 
 ``/srv/ai/views/llama.cpp/``   for ``llama-server --models-dir`` (router mode):
     single-file models as ``<name>.gguf`` symlinks; multi-shard or vision models as ``<name>/``
-    directories (first shard ``-00001-of-``, ``mmproj*`` sidecar) — the layout llama.cpp scans.
+    directories (first shard ``-00001-of-``, ``mmproj*`` sidecar) — the layout llama.cpp scans —
+    and ``presets.ini`` for ``--models-preset``: a section for each model that needs settings of
+    its own (see ``kv_presets`` in cli.py), never a setting outside a section.
 ``/srv/ai/views/comfyui/``     ``extra_model_paths.yaml`` + category folders of symlinks
     (``split_files/<folder>/`` of Comfy-Org repackages and top-level ComfyUI folders such as
     ``diffusion_models/`` are honoured; otherwise filename heuristics).
@@ -14,7 +16,9 @@ from __future__ import annotations
 
 import os
 import re
+import tempfile
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -22,6 +26,7 @@ from .hfcache import CachedFile
 from .licenses import match_catalog
 
 MARK = "svoya:generated"
+PRESETS = "presets.ini"
 SHARD = re.compile(r"-(\d{5})-of-(\d{5})\.gguf$", re.I)
 COMFY_FOLDERS = ("checkpoints", "diffusion_models", "text_encoders", "vae", "loras", "clip_vision",
                  "controlnet", "upscale_models", "embeddings", "audio_encoders", "model_patches")
@@ -37,6 +42,7 @@ class Plan:
     remove: list[Path] = field(default_factory=list)                  # stale links we created
     commands: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    presets: dict[str, dict[str, str]] = field(default_factory=dict)  # model → llama.cpp settings
 
 
 def _stem(filename: str) -> str:
@@ -45,7 +51,22 @@ def _stem(filename: str) -> str:
     return re.sub(r"\.gguf$", "", base, flags=re.I)
 
 
-def llama_plan(files: list[CachedFile], out: Path) -> Plan:
+# What a model needs beyond the server's settings, from its files (first shard first):
+# (llama.cpp options, why) or None.
+Presets = Callable[[list[Path]], "tuple[dict[str, str], str] | None"]
+
+
+def presets_text(sections: list[tuple[str, Path, dict[str, str], str]]) -> str:
+    """``llama-server --models-preset``: one section per model, nothing outside a section (llama.cpp
+    would list such settings as a model of its own, named "default")."""
+    lines = [f"; {MARK} by `sos models views`: settings of single models for llama-server --models-preset.",
+             "; Rewritten at every start of svoya-llm; your own settings go in ~/.config/svoya/llm.env"]
+    for name, model, opts, why in sections:
+        lines += ["", f"[{name}]", f"; {why}", f"model = {model}"] + [f"{k} = {v}" for k, v in opts.items()]
+    return "\n".join(lines) + "\n"
+
+
+def llama_plan(files: list[CachedFile], out: Path, presets: Presets | None = None) -> Plan:
     plan = Plan()
     ggufs = [f for f in files if f.filename.lower().endswith(".gguf")]
     groups: dict[tuple[str, str, str], list[CachedFile]] = defaultdict(list)   # (repo, commit, dir)
@@ -63,15 +84,24 @@ def llama_plan(files: list[CachedFile], out: Path) -> Plan:
         for stem, parts in sorted(models.items()):
             entries.append((stem, sorted(parts, key=lambda p: p.filename), mmproj, repo))
             names[stem] += 1
+    sections: list[tuple[str, Path, dict[str, str], str]] = []
     for stem, parts, mmproj, repo in entries:
         name = stem if names[stem] == 1 else f"{repo.split('/')[0]}--{stem}"
         if len(parts) == 1 and mmproj is None:
-            plan.links.append((out / f"{name}.gguf", parts[0].blob_path))
+            model = out / f"{name}.gguf"
+            plan.links.append((model, parts[0].blob_path))
         else:
             for p in parts:
                 plan.links.append((out / name / Path(p.filename).name, p.blob_path))
             if mmproj is not None:
                 plan.links.append((out / name / Path(mmproj.filename).name, mmproj.blob_path))
+            model = out / name / Path(parts[0].filename).name
+        # a name the INI file cannot carry keeps the server's settings
+        got = presets([p.blob_path for p in parts]) if presets and not re.search(r"[]\[;#\n]", name) else None
+        if got:
+            sections.append((name, model, got[0], got[1]))
+            plan.presets[name] = dict(got[0])
+    plan.files.append((out / PRESETS, presets_text(sections)))     # always there: the server needs the file
     return plan
 
 
@@ -189,10 +219,21 @@ def apply(plan: Plan, root: Path, dry_run: bool = False) -> dict:
             made += 1
         for path, content in plan.files:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
+            # whole or not at all (a server starting meanwhile reads the old file), and into a
+            # folder shared by the group ai: replacing needs the folder's permission only
+            fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    f.write(content)
+                os.chmod(tmp, 0o664)
+                os.replace(tmp, path)
+            except BaseException:
+                Path(tmp).unlink(missing_ok=True)
+                raise
         # remove now-empty model dirs
         for dirpath, dirs, fns in sorted(os.walk(root), key=lambda x: -len(x[0])) if root.is_dir() else []:
             if dirpath != str(root) and not dirs and not fns:
                 os.rmdir(dirpath)
     return {"links": len(plan.links), "created": made, "stale": [str(p) for p in stale],
-            "files": [str(p) for p, _ in plan.files], "commands": plan.commands, "notes": plan.notes}
+            "files": [str(p) for p, _ in plan.files], "commands": plan.commands, "notes": plan.notes,
+            "presets": plan.presets}

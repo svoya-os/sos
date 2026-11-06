@@ -166,7 +166,7 @@ def _parser() -> argparse.ArgumentParser:
     mof.add_argument("model", help="path.gguf | org/repo/file.gguf | https://huggingface.co/...")
     mof.add_argument("--ctx", type=int, default=8192)
     mof.add_argument("--gpu", default="auto", help="auto | <index> | <GiB>")
-    mof.add_argument("--kv", default="f16", help="f16 | q8_0 | q4_0 | bf16 | f32")
+    mof.add_argument("--kv", default="q8_0", help="q8_0 (as svoya-llm) | q4_0 | f16 | bf16 | f32")
     mof.add_argument("--no-flash-attn", action="store_true")
     mof.add_argument("--revision", default="main")
     mof.add_argument("--json", action="store_true")
@@ -178,6 +178,9 @@ def _parser() -> argparse.ArgumentParser:
     mop.add_argument("--ctx", type=int, default=8192)
     mop.add_argument("--yes", "-y", action="store_true")
     mop.add_argument("--accept-license", action="store_true")
+    mop.add_argument("--allow-uncensored", action="store_true",
+                     help=tr("also a model with its safety training removed (abliterated, uncensored)",
+                             "и модель со снятыми защитными ограничениями (abliterated, uncensored)"))
     mop.add_argument("--dry-run", action="store_true")
     mop.add_argument("--json", action="store_true", help=tr("progress as JSON lines", "прогресс строками JSON"))
     mok = mosub.add_parser("kits", help=tr("model kits for the Studio and Jackson's drawing: what is there",
