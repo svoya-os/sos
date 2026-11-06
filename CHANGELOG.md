@@ -209,6 +209,14 @@ Work towards v0.1 «Первый сигнал».
 
 ### Fixed
 
+- A boot that stopped for good on the splash screen goes on: when plymouth got stuck, its first
+  step in the real system (`plymouth-read-write`, which the whole boot waits for) never ended. It
+  now gives up after 15 s. All the test VM boots that never reached the desktop (about 1 in 10 to
+  20) stood there.
+- Builds no longer fail when Ubuntu's snapshot server is slow or answers 500/503: the SOS packages
+  take their build tools from the live archive, and the image's bootstrap starts over after a
+  download failure (up to three times). A VM boot that stalls shows its last console lines in
+  the build log.
 - The Studio (`sos install studio`) starts: in the rootless container your Studio folder belonged
   to root, so ComfyUI's user could not write its settings there. `sos-studio build` now fetches the
   newest ComfyUI (PyTorch stays cached), and stopping the Studio no longer waits ten seconds.

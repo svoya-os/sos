@@ -171,14 +171,37 @@ setup_container() {
         apt-utils ca-certificates gpg gpgv curl python3 zstd cpio file rsync ubuntu-keyring
 }
 
+# A failed bootstrap whose log shows a download problem (not a bug in a hook).
+download_failed() { # LOG
+    grep -qE 'Failed to fetch|Unable to fetch|Could not (connect|resolve)|Connection (timed out|failed|reset)|Undetermined Error|Hash Sum mismatch|[[:space:]](500|502|503|504)[[:space:]]' "$1"
+}
+
 build_rootfs() {
     log "Bootstrapping $SUITE into $ROOTFS"
-    rm -rf "$ROOTFS"
     mkdir -p "$WORK"
     write_sources
     mmdebstrap_args
     export SVOYA_SRC=$ROOT SVOYA_IMAGE=$IMAGE_DIR SVOYA_WORK=$WORK SVOYA_REPO=$REPO
-    mmdebstrap "${MMDEBSTRAP_ARGS[@]}" "$SUITE" "$ROOTFS" "$WORK/sources.list"
+    # The snapshot server sometimes fails or crawls for a while (500/503 and 19 kB/s on 06.11.2026,
+    # after 10 tries per file): a bootstrap that failed on a download starts over after a pause, up
+    # to three times. Any other failure is a bug and ends the build at once.
+    local attempt rc=0
+    for attempt in 1 2 3; do
+        # a failed attempt may leave /proc, /sys or /dev mounted in the rootfs
+        findmnt -rn -o TARGET | grep -F "$ROOTFS/" | sort -r | xargs -r umount -l 2>/dev/null || true
+        rm -rf --one-file-system "$ROOTFS"
+        set +e
+        mmdebstrap "${MMDEBSTRAP_ARGS[@]}" "$SUITE" "$ROOTFS" "$WORK/sources.list" 2>&1 | tee "$WORK/mmdebstrap.log"
+        rc=${PIPESTATUS[0]}
+        set -e
+        [ "$rc" -eq 0 ] && break
+        if [ "$attempt" -lt 3 ] && download_failed "$WORK/mmdebstrap.log"; then
+            warn "a download failed (attempt $attempt of 3): starting over in $((attempt * 5)) minutes"
+            sleep $((attempt * 300))
+            continue
+        fi
+        die "mmdebstrap failed (exit $rc)"
+    done
     # mmdebstrap may drop files it copied from the host; make the final state explicit.
     echo "$LIVE_HOSTNAME" >"$ROOTFS/etc/hostname"
     rm -f "$ROOTFS/etc/resolv.conf"

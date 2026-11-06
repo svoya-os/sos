@@ -385,6 +385,12 @@ esac
         self.assertIn('GRUB_CMDLINE_LINUX_DEFAULT="quiet splash plymouth.nolog"', grubd)
         # Calamares writes its own grub.d file, read after svoya-base's: it must carry it too
         self.assertIn('"plymouth.nolog"', (ROOT / "installer/modules/grubcfg.conf").read_text())
+        # a stuck plymouthd held every stalled CI boot before sysinit.target (plymouth-read-write, a
+        # oneshot unit without a start timeout), and later the login (plymouth-quit-wait)
+        units = ROOT / "packages/svoya-session/files/usr/lib/systemd/system"
+        for unit, limit in (("plymouth-read-write", "15s"), ("plymouth-quit-wait", "30s")):
+            conf = (units / f"{unit}.service.d/50-svoya.conf").read_text()
+            self.assertRegex(conf, rf"(?m)^\[Service\]\nTimeoutStartSec={limit}$")
         for placeholder in set(re.findall(r"@[A-Z_]+@", cfg)):
             self.assertIn(placeholder, ("@DISK_ID@", "@LIVE_USER@", "@LIVE_HOSTNAME@", "@VERSION@"))
 

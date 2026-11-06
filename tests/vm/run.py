@@ -373,7 +373,11 @@ class Runner:
         except Exception as exc:  # noqa: BLE001
             lines.append(f"vCPUs: {exc}")
         lines.append("host: " + host_state())
-        start = len(self.serial())
+        console = self.serial()
+        start = len(console)
+        # where the boot stood: the last lines before the SysRq dumps, in the job log too
+        tail = [line for line in console.splitlines() if line.strip()][-25:]
+        lines += ["", "## the last lines on the serial console", *tail]
         for key, wait in (("9", 1), ("w", 4), ("l", 4), ("t", 15)):
             try:
                 self.qmp.send_key(["alt", "sysrq", key], hold_ms=200)
@@ -383,7 +387,7 @@ class Runner:
         dump = self.serial()[start:]
         lines += ["", "## serial after SysRq 9 (log level), w (blocked tasks), l (CPUs), t (all tasks)", dump[-400000:]]
         (self.out / "stall.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-        print("\n".join(lines[:4]), flush=True)
+        print("\n".join(lines[:6 + len(tail)]), flush=True)
 
     def evidence(self, name: str) -> None:
         try:
