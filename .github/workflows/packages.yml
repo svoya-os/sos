@@ -47,12 +47,21 @@ jobs:
           persist-credentials: false
           fetch-depth: 0 # package versions are derived from git describe / commit time
 
+      - name: Inputs of the third-party builds
+        id: inputs
+        run: |
+          # what the pinned builds depend on: their recipes, the helpers, and the archive they are
+          # built against (suite, snapshot), not the comments around it in image/config.env: one
+          # comment there threw the cache away and sent quickshell to a struggling server (06.11.2026)
+          archive=$(grep -E '^: "\$\{(SUITE|ARCH|COMPONENTS|SNAPSHOT|SNAPSHOT_MIRROR):=' image/config.env | sha256sum | cut -c1-16)
+          echo "archive=$archive" >>"$GITHUB_OUTPUT"
+
       - name: Restore third-party builds (pinned, rarely change)
         id: external
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: dist/external-cache
-          key: external-v2-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
+          key: external-v3-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'scripts/lib/**') }}-${{ steps.inputs.outputs.archive }}
 
       - name: Build
         env:
@@ -107,7 +116,7 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: dist/external-cache
-          key: external-v2-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'image/config.env', 'scripts/lib/**') }}
+          key: external-v3-${{ hashFiles('packages/versions.env', 'packages/external/**', 'packages/lib/**', 'scripts/lib/**') }}-${{ steps.inputs.outputs.archive }}
 
       - name: Upload repository
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

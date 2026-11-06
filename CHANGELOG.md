@@ -217,6 +217,10 @@ Work towards v0.1 «Первый сигнал».
   take their build tools from the live archive, and the image's bootstrap starts over after a
   download failure (up to three times). A VM boot that stalls shows its last console lines in
   the build log.
+- quickshell builds again when its cache is gone: the ubuntu:26.04 build container had moved past
+  the archive snapshot (libudev1), and the snapshot's -dev packages could not be installed. The
+  container is now brought back to the snapshot first. A comment in the image settings no longer
+  throws that cache away.
 - The Studio (`sos install studio`) starts: in the rootless container your Studio folder belonged
   to root, so ComfyUI's user could not write its settings there. `sos-studio build` now fetches the
   newest ComfyUI (PyTorch stays cached), and stopping the Studio no longer waits ten seconds.

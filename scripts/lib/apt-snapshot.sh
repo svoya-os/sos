@@ -44,5 +44,13 @@ Components: main restricted universe multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 EOF
     echo 'Acquire::Check-Valid-Until "false";' >/etc/apt/apt.conf.d/91svoya-snapshot
+    # The ubuntu:26.04 image moves on, the snapshot does not: a -dev package from the snapshot needs
+    # its library at exactly its own version, and the image may carry a newer one (06.11.2026:
+    # quickshell's build dependencies failed on libudev-dev 3.4 against the image's libudev1). Above
+    # 1000 the snapshot wins even where that means going back; the container then is the snapshot.
+    local host
+    host=$(snapshot_url "$snapshot" | sed -E 's#^[a-z]+://([^/:]+).*#\1#')
+    printf 'Package: *\nPin: origin "%s"\nPin-Priority: 1001\n' "$host" >/etc/apt/preferences.d/90svoya-snapshot
     apt-get update -q
+    apt-get -y -q --allow-downgrades dist-upgrade
 }
