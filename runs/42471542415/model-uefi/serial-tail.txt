@@ -1,0 +1,200 @@
+[  257.018462] llama-server[2442]: [45167] common_init_result: added <|file_sep|> logit bias = -inf
+[  257.018462] llama-server[2442]: [45167] llama_context: constructing llama_context
+[  257.018462] llama-server[2442]: [45167] llama_context: n_seq_max     = 4
+[  257.018462] llama-server[2442]: [45167] llama_context: n_ctx         = 16384
+[  257.018462] llama-server[2442]: [45167] llama_context: n_ctx_seq     = 16384
+[  257.018462] llama-server[2442]: [45167] llama_context: n_batch       = 512
+[  257.018462] llama-server[2442]: [45167] llama_context: n_ubatch      = 512
+[  257.018462] llama-server[2442]: [45167] llama_context: causal_attn   = 1
+[  257.018462] llama-server[2442]: [45167] llama_context: flash_attn    = enabled
+[  257.018462] llama-server[2442]: [45167] llama_context: kv_unified    = true
+[  257.018462] llama-server[2442]: [45167] llama_context: freq_base     = 10000000.0
+[  257.018462] llama-server[2442]: [45167] llama_context: freq_scale    = 1
+[  257.018462] llama-server[2442]: [45167] llama_context: n_ctx_seq (16384) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+[  257.021045] llama-server[2442]: [45167] llama_context:        CPU  output buffer size =     3.79 MiB
+[  257.021045] llama-server[2442]: [45167] llama_kv_cache:        CPU KV buffer size =   272.00 MiB
+[  257.205148] llama-server[2442]: [45167] llama_kv_cache: size =  272.00 MiB ( 16384 cells,   8 layers,  4/1 seqs), K (q8_0):  136.00 MiB, V (q8_0):  136.00 MiB
+[  257.205316] llama-server[2442]: [45167] llama_kv_cache: attn_rot_k = 1
+[  257.205367] llama-server[2442]: [45167] llama_kv_cache: attn_rot_v = 1
+[  257.343189] llama-server[2442]: [45167] llama_memory_recurrent:        CPU RS buffer size =   201.00 MiB
+[  257.351050] llama-server[2442]: [45167] llama_memory_recurrent: size =  201.00 MiB (     4 cells,  32 layers,  4 seqs), R (f32):    9.00 MiB, S (f32):  192.00 MiB
+[  257.351050] llama-server[2442]: [45167] sched_reserve: reserving ...
+[  257.351050] llama-server[2442]: [45167] sched_reserve: resolving fused Gated Delta Net support:
+[  257.360683] llama-server[2442]: [45167] sched_reserve: fused Gated Delta Net (autoregressive) enabled
+[  257.360683] llama-server[2442]: [45167] sched_reserve: fused Gated Delta Net (chunked) enabled
+[  257.364054] llama-server[2442]: [45167] sched_reserve:        CPU compute buffer size =   495.00 MiB
+[  257.364054] llama-server[2442]: [45167] sched_reserve: graph nodes  = 1929
+[  257.364054] llama-server[2442]: [45167] sched_reserve: graph splits = 1
+[  257.364054] llama-server[2442]: [45167] sched_reserve: reserve took 13.01 ms, sched copies = 1
+[  257.364054] llama-server[2442]: [45167] common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+[  259.267357] llama-server[2442]: [45167] clip_model_loader: model name:   Qwen3.5-4B
+[  259.267965] llama-server[2442]: [45167] clip_model_loader: description:
+[  259.268035] llama-server[2442]: [45167] clip_model_loader: GGUF version: 3
+[  259.268410] llama-server[2442]: [45167] clip_model_loader: alignment:    32
+[  259.268472] llama-server[2442]: [45167] clip_model_loader: n_tensors:    298
+[  259.268524] llama-server[2442]: [45167] clip_model_loader: n_kv:         32
+[  259.268573] llama-server[2442]: [45167]
+[  259.268622] llama-server[2442]: [45167] clip_model_loader: has vision encoder
+[  259.268671] llama-server[2442]: [45167] clip_ctx: CLIP using CPU backend
+[  259.268724] llama-server[2442]: [45167] load_hparams: Qwen-VL models require at minimum 1024 image tokens to function correctly on grounding tasks
+[  259.268781] llama-server[2442]: [45167] load_hparams: if you encounter problems with accuracy, try adding --image-min-tokens 1024
+[  259.268830] llama-server[2442]: [45167] load_hparams: more info: https://github.com/ggml-org/llama.cpp/issues/16842
+[  259.268877] llama-server[2442]: [45167]
+[  259.268963] llama-server[2442]: [45167] load_hparams: projector:          qwen3vl_merger
+[  259.269018] llama-server[2442]: [45167] load_hparams: n_embd:             1024
+[  259.269119] llama-server[2442]: [45167] load_hparams: n_head:             16
+[  259.269182] llama-server[2442]: [45167] load_hparams: n_ff:               4096
+[  259.269241] llama-server[2442]: [45167] load_hparams: n_layer:            24
+[  259.269294] llama-server[2442]: [45167] load_hparams: ffn_op:             gelu
+[  259.269342] llama-server[2442]: [45167] load_hparams: projection_dim:     2560
+[  259.269398] llama-server[2442]: [45167]
+[  259.269446] llama-server[2442]: [45167] --- vision hparams ---
+[  259.269495] llama-server[2442]: [45167] load_hparams: image_size:         768
+[  259.269546] llama-server[2442]: [45167] load_hparams: patch_size:         16
+[  259.269594] llama-server[2442]: [45167] load_hparams: has_llava_proj:     0
+[  259.269648] llama-server[2442]: [45167] load_hparams: minicpmv_version:   0
+[  259.269702] llama-server[2442]: [45167] load_hparams: n_merge:            2
+[  259.269751] llama-server[2442]: [45167] load_hparams: n_wa_pattern: 0
+[  259.269799] llama-server[2442]: [45167] load_hparams: image_min_pixels:   8192
+[  259.269851] llama-server[2442]: [45167] load_hparams: image_max_pixels:   4194304
+[  259.269904] llama-server[2442]: [45167]
+[  259.270003] llama-server[2442]: [45167] load_hparams: model size:         641.26 MiB
+[  259.270120] llama-server[2442]: [45167] load_hparams: metadata size:      0.10 MiB
+[  259.859577] llama-server[2442]: [45167] warmup: warmup with image size = 1472 x 1472
+[  259.862392] llama-server[2442]: [45167] alloc_compute_meta:        CPU compute buffer size =   223.30 MiB
+[  259.862506] llama-server[2442]: [45167] alloc_compute_meta: graph splits = 1, nodes = 736
+[  259.862624] llama-server[2442]: [45167] warmup: flash attention is enabled
+[  259.862726] llama-server[2442]: [45167] srv    load_model: loaded multimodal model, '/srv/ai/views/llama.cpp/Qwen3.5-4B-Q4_K_M/mmproj-F16.gguf'
+[  259.862815] llama-server[2442]: [45167] srv    load_model: initializing slots, n_slots = 4
+[  261.544821] llama-server[2442]: [45167] common_speculative_is_compat: the target context does not support partial sequence removal
+[  261.608138] llama-server[2442]: [45167] srv    load_model: speculative decoding not supported by this context
+[  261.608353] llama-server[2442]: [45167] slot   load_model: id  0 | task -1 | new slot, n_ctx = 16384
+[  261.608454] llama-server[2442]: [45167] slot   load_model: id  1 | task -1 | new slot, n_ctx = 16384
+[  261.608555] llama-server[2442]: [45167] slot   load_model: id  2 | task -1 | new slot, n_ctx = 16384
+[  261.608648] llama-server[2442]: [45167] slot   load_model: id  3 | task -1 | new slot, n_ctx = 16384
+[  261.608725] llama-server[2442]: [45167] srv    load_model: prompt cache is enabled, size limit: 8192 MiB
+[  261.608802] llama-server[2442]: [45167] srv    load_model: use `--cache-ram 0` to disable the prompt cache
+[  261.608889] llama-server[2442]: [45167] srv    load_model: for more info see https://github.com/ggml-org/llama.cpp/pull/16391
+[  261.608965] llama-server[2442]: [45167] srv          init: init: idle slots will be saved to prompt cache and cleared upon starting a new task
+[  261.636131] llama-server[2442]: [45167] init: chat template, example_format: '<|im_start|>system
+[  261.636316] llama-server[2442]: [45167] You are a helpful assistant<|im_end|>
+[  261.636393] llama-server[2442]: [45167] <|im_start|>user
+[  261.636460] llama-server[2442]: [45167] Hello<|im_end|>
+[  261.636524] llama-server[2442]: [45167] <|im_start|>assistant
+[  261.636595] llama-server[2442]: [45167] Hi there<|im_end|>
+[  261.636661] llama-server[2442]: [45167] <|im_start|>user
+[  261.636726] llama-server[2442]: [45167] How are you?<|im_end|>
+[  261.636791] llama-server[2442]: [45167] <|im_start|>assistant
+[  261.636855] llama-server[2442]: [45167] <think>
+[  261.636917] llama-server[2442]: [45167] '
+[  261.656228] llama-server[2442]: [45167] srv          init: init: chat template, thinking = 1
+[  261.656399] llama-server[2442]: [45167] main: model loaded
+[  261.656489] llama-server[2442]: [45167] main: server is listening on http://127.0.0.1:45167
+[  261.656560] llama-server[2442]: [45167] main: starting the main loop...
+[  261.659112] llama-server[2442]: [45167] cmd_child_to_router:ready
+[  261.659282] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[  261.659353] llama-server[2442]: [45167] srv    operator(): child server monitoring thread started, waiting for EOF on stdin...
+[  261.660109] llama-server[2442]: srv  proxy_reques: proxying request to model Qwen3.5-4B-Q4_K_M on port 45167
+[  261.722468] llama-server[2442]: [45167] srv  params_from_: Chat format: peg-native
+[  261.728089] llama-server[2442]: [45167] slot get_availabl: id  3 | task -1 | selected slot by LRU, t_last = -1
+[  261.728234] llama-server[2442]: [45167] srv  get_availabl: updating prompt cache
+[  261.728286] llama-server[2442]: [45167] srv          load:  - looking for better prompt, base f_keep = -1.000, sim = 0.000
+[  261.728332] llama-server[2442]: [45167] srv        update:  - cache state: 0 prompts, 0.000 MiB (limits: 8192.000 MiB, 16384 tokens, 8589934592 est)
+[  261.728379] llama-server[2442]: [45167] srv  get_availabl: prompt cache update took 0.01 ms
+[  261.728423] llama-server[2442]: [45167] slot launch_slot_: id  3 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist
+[  261.728469] llama-server[2442]: [45167] slot launch_slot_: id  3 | task 0 | processing task, is_child = 0
+[  261.728513] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | new prompt, n_ctx_slot = 16384, n_keep = 0, task.n_tokens = 3219
+[  261.728557] llama-server[2442]: [45167] srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  261.728602] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 0, memory_seq_rm [0, end)
+[  261.728646] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 512, batch.n_tokens = 512, progress = 0.159056
+[  261.729282] llama-server[2442]: srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  328.881562] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 512, memory_seq_rm [512, end)
+[  328.882273] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 1024, batch.n_tokens = 512, progress = 0.318111
+[  396.405071] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 1024, memory_seq_rm [1024, end)
+[  396.405708] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 1536, batch.n_tokens = 512, progress = 0.477167
+[  468.318855] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 1536, memory_seq_rm [1536, end)
+[  468.319625] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 2048, batch.n_tokens = 512, progress = 0.636222
+[  542.963278] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 2048, memory_seq_rm [2048, end)
+[  542.963889] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 2560, batch.n_tokens = 512, progress = 0.795278
+[  621.411128] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 2560, memory_seq_rm [2560, end)
+[  621.411758] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 2707, batch.n_tokens = 147, progress = 0.840944
+[  646.684340] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 2707, memory_seq_rm [2707, end)
+[  646.684867] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 3215, batch.n_tokens = 508, progress = 0.998757
+[  646.717977] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | created context checkpoint 1 of 32 (pos_min = 2706, pos_max = 2706, n_tokens = 2707, size = 50.251 MiB)
+[  728.741795] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 3215, memory_seq_rm [3215, end)
+[  728.743349] llama-server[2442]: [45167] slot init_sampler: id  3 | task 0 | init sampler, took 0.69 ms, tokens: text = 3219, total = 3219
+[  728.743464] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing done, n_tokens = 3219, batch.n_tokens = 4
+[  728.787379] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | created context checkpoint 2 of 32 (pos_min = 3214, pos_max = 3214, n_tokens = 3215, size = 50.251 MiB)
+[  741.231003] dbus-daemon[1012]: [system] Activating via systemd: service name='org.opensuse.Snapper' unit='snapperd.service' requested by ':1.51' (uid=1000 pid=2555 comm="snapper --utc --jsonout -c root list --disable-use" label="unconfined")
+[  741.238420] systemd[1]: Starting snapperd.service - DBus interface for snapper...
+[  741.299534] dbus-daemon[1012]: [system] Successfully activated service 'org.opensuse.Snapper'
+[  741.300154] systemd[1]: Started snapperd.service - DBus interface for snapper.
+[  801.367294] systemd[1]: snapperd.service: Deactivated successfully.
+[  805.146066] llama-server[2442]: [45167] slot print_timing: id  3 | task 0 |
+[  805.146066] llama-server[2442]: [45167] prompt eval time =  469411.33 ms /  3219 tokens (  145.83 ms per token,     6.86 tokens per second)
+[  805.146066] llama-server[2442]: [45167]        eval time =   74006.04 ms /    62 tokens ( 1193.65 ms per token,     0.84 tokens per second)
+[  805.146066] llama-server[2442]: [45167]       total time =  543417.38 ms /  3281 tokens
+[  805.153063] jacksond[1574]: INFO jackson.engine: turn done in 554108 ms: local/Qwen3.5-4B-Q4_K_M, 3219+62 tokens
+[  805.153490] llama-server[2442]: [45167] slot      release: id  3 | task 0 | stop processing: n_tokens = 3280, truncated = 0
+[  805.153490] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[  812.044991] llama-server[2442]: srv  proxy_reques: proxying request to model Qwen3.5-4B-Q4_K_M on port 45167
+[  812.104112] llama-server[2442]: [45167] srv  params_from_: Chat format: peg-native
+[  812.112123] llama-server[2442]: [45167] slot get_availabl: id  3 | task -1 | selected slot by LCP similarity, sim_best = 0.715 (> 0.100 thold), f_keep = 0.980
+[  812.112239] llama-server[2442]: [45167] slot launch_slot_: id  3 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist
+[  812.112291] llama-server[2442]: [45167] slot launch_slot_: id  3 | task 70 | processing task, is_child = 0
+[  812.112352] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | new prompt, n_ctx_slot = 16384, n_keep = 0, task.n_tokens = 4495
+[  812.112406] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_past = 3215, slot.prompt.tokens.size() = 3280, seq_id = 3, pos_min = 3279, n_swa = 0
+[  812.112451] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | Checking checkpoint with [3214, 3214] against 3215...
+[  812.116175] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | restored context checkpoint (pos_min = 3214, pos_max = 3214, n_tokens = 3215, n_past = 3215, size = 50.251 MiB)
+[  812.116361] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 3215, memory_seq_rm [3215, end)
+[  812.116583] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing progress, n_tokens = 3727, batch.n_tokens = 512, progress = 0.829143
+[  812.119097] llama-server[2442]: [45167] srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  812.119157] llama-server[2442]: srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  899.201110] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 3727, memory_seq_rm [3727, end)
+[  899.201735] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing progress, n_tokens = 3983, batch.n_tokens = 256, progress = 0.886096
+[  922.114293] systemd[1]: Starting systemd-tmpfiles-clean.service - Cleanup of Temporary Directories...
+[  922.149675] systemd[1]: systemd-tmpfiles-clean.service: Deactivated successfully.
+[  922.150107] systemd[1]: Finished systemd-tmpfiles-clean.service - Cleanup of Temporary Directories.
+[  944.162117] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 3983, memory_seq_rm [3983, end)
+[  944.162761] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing progress, n_tokens = 4491, batch.n_tokens = 508, progress = 0.999110
+[  944.205121] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | created context checkpoint 3 of 32 (pos_min = 3982, pos_max = 3982, n_tokens = 3983, size = 50.251 MiB)
+[ 1035.602106] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 4491, memory_seq_rm [4491, end)
+[ 1035.602744] llama-server[2442]: [45167] slot init_sampler: id  3 | task 70 | init sampler, took 0.94 ms, tokens: text = 4495, total = 4495
+[ 1035.602830] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing done, n_tokens = 4495, batch.n_tokens = 4
+[ 1035.645135] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | created context checkpoint 4 of 32 (pos_min = 4490, pos_max = 4490, n_tokens = 4491, size = 50.251 MiB)
+[ 1098.701923] llama-server[2442]: [45167] slot print_timing: id  3 | task 70 |
+[ 1098.702612] llama-server[2442]: [45167] prompt eval time =  225663.50 ms /  1280 tokens (  176.30 ms per token,     5.67 tokens per second)
+[ 1098.702696] llama-server[2442]: [45167]        eval time =   60928.57 ms /    57 tokens ( 1068.92 ms per token,     0.94 tokens per second)
+[ 1098.702767] llama-server[2442]: [45167]       total time =  286592.07 ms /  1337 tokens
+[ 1098.703373] llama-server[2442]: [45167] slot      release: id  3 | task 70 | stop processing: n_tokens = 4551, truncated = 0
+[ 1098.703462] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[ 1098.704753] jacksond[1574]: INFO jackson.engine: turn done in 286667 ms: local/Qwen3.5-4B-Q4_K_M, 4495+57 tokens
+[ 1104.656483] llama-server[2442]: srv  proxy_reques: proxying request to model Qwen3.5-4B-Q4_K_M on port 45167
+[ 1104.712459] llama-server[2442]: [45167] srv  params_from_: Chat format: peg-native
+[ 1104.718145] llama-server[2442]: [45167] slot get_availabl: id  3 | task -1 | selected slot by LCP similarity, sim_best = 0.957 (> 0.100 thold), f_keep = 0.732
+[ 1104.719308] llama-server[2442]: [45167] slot launch_slot_: id  3 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist
+[ 1104.719308] llama-server[2442]: [45167] slot launch_slot_: id  3 | task 131 | processing task, is_child = 0
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | new prompt, n_ctx_slot = 16384, n_keep = 0, task.n_tokens = 3483
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | n_past = 3333, slot.prompt.tokens.size() = 4551, seq_id = 3, pos_min = 4550, n_swa = 0
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | Checking checkpoint with [4490, 4490] against 3333...
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | Checking checkpoint with [3982, 3982] against 3333...
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | Checking checkpoint with [3214, 3214] against 3333...
+[ 1104.725078] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | restored context checkpoint (pos_min = 3214, pos_max = 3214, n_tokens = 3215, n_past = 3215, size = 50.251 MiB)
+[ 1104.725078] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | erased invalidated context checkpoint (pos_min = 3982, pos_max = 3982, n_tokens = 3983, n_swa = 0, pos_next = 3215, size = 50.251 MiB)
+[ 1104.731098] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | erased invalidated context checkpoint (pos_min = 4490, pos_max = 4490, n_tokens = 4491, n_swa = 0, pos_next = 3215, size = 50.251 MiB)
+[ 1104.736906] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | n_tokens = 3215, memory_seq_rm [3215, end)
+[ 1104.737441] llama-server[2442]: [45167] srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[ 1104.737554] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | prompt processing progress, n_tokens = 3479, batch.n_tokens = 264, progress = 0.998852
+[ 1104.737662] llama-server[2442]: srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[ 1150.909619] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | n_tokens = 3479, memory_seq_rm [3479, end)
+[ 1150.922075] llama-server[2442]: [45167] slot init_sampler: id  3 | task 131 | init sampler, took 0.72 ms, tokens: text = 3483, total = 3483
+[ 1150.922172] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | prompt processing done, n_tokens = 3483, batch.n_tokens = 4
+[ 1150.958120] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | created context checkpoint 3 of 32 (pos_min = 3478, pos_max = 3478, n_tokens = 3479, size = 50.251 MiB)
+[ 1166.923120] llama-server[2442]: [45167] slot print_timing: id  3 | task 131 |
+[ 1166.923653] llama-server[2442]: [45167] prompt eval time =   48228.36 ms /   268 tokens (  179.96 ms per token,     5.56 tokens per second)
+[ 1166.923752] llama-server[2442]: [45167]        eval time =   13975.12 ms /    16 tokens (  873.45 ms per token,     1.14 tokens per second)
+[ 1166.923799] llama-server[2442]: [45167]       total time =   62203.48 ms /   284 tokens
+[ 1166.933060] jacksond[1574]: INFO jackson.engine: turn done in 62283 ms: local/Qwen3.5-4B-Q4_K_M, 3483+16 tokens
+[ 1166.933766] llama-server[2442]: [45167] slot      release: id  3 | task 131 | stop processing: n_tokens = 3498, truncated = 0
+[ 1166.933968] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[ 1172.202120] systemd[1405]: Started kitty-2637-0.scope - kitty child process: 2655 launched by: 2637.

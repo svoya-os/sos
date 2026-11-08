@@ -1,0 +1,498 @@
+SOS-GRUB platform=efi unicode=1 theme-fonts=1 lockdown= gfxmode=auto
+      before booting or `c' for a command-line.                            *SOS 26.10  ?  ???                                                           SOS (safe graphics ? ?????????? ???????)                                    SOS ? test in RAM ? ???????? ? ?????? (toram)                               Language ? ????: en                                                         UEFI firmware settings ? ????????? UEFI                                     Reboot ? ????????????                                                       Power off ? ??????????                                                                                                                                                                                                                                                                                                                                                                                                                                                     The highlighted entry will be executed automatically in 45s.                   The highlighted entry will be executed automatically in 44s.                   The highlighted entry will be executed automatically in 43s.                   The highlighted entry will be executed automatically in 42s.                   The highlighted entry will be executed automatically in 41s.                                                                                                                                                                              SOS-MARK 97.38 agent-start
+[   97.335143] systemd[1]: Starting sos-live-user.service - SOS live session user groups...
+[   97.343173] systemd[1]: Started sos-vm-test.service - SOS VM test agent (serial milestones).
+SOS-MARK 97.44 network-online
+[   97.419924] systemd[1]: sos-live-user.service: Deactivated successfully.
+[   97.420391] systemd[1]: Finished sos-live-user.service - SOS live session user groups.
+[  117.359954] systemd[1]: plymouth-quit.service: Failed with result 'timeout'.
+[  117.360428] systemd[1]: Failed to start plymouth-quit.service - Terminate Plymouth Boot Screen.
+[  127.359615] systemd[1]: plymouth-quit-wait.service: Failed with result 'timeout'.
+[  127.360229] systemd[1]: Failed to start plymouth-quit-wait.service - Hold until boot process finishes up.
+[  127.364236] systemd[1]: Starting greetd.service - Greeter daemon...
+[  132.457232] systemd[1]: Started greetd.service - Greeter daemon.
+[  132.550680] greetd[1379]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[  132.564530] systemd-logind[1020]: New session '1' of user 'svoya' with class 'user' and type 'tty'.
+[  132.624429] (systemd)[1405]: pam_unix(systemd-user:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[  132.625916] systemd-logind[1020]: New session '2' of user 'svoya' with class 'manager' and type 'unspecified'.
+[  132.842219] systemd[1]: Started session-1.scope - Session 1 of User svoya.
+[  132.903188] pipewire[1426]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.903642] pipewire[1426]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.905944] pipewire[1426]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.911565] greetd[1379]: gkr-pam: couldn't unlock the login keyring.
+[  132.959690] wireplumber[1435]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.960403] wireplumber[1435]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.964687] pipewire-pulse[1439]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.965109] pipewire-pulse[1439]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.965120] wireplumber[1435]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.965618] pipewire-pulse[1439]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  133.015558] wireplumber[1435]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x57c3643899a0> Failed to connect to snapd: No such file or directory
+SOS-MARK 133.48 greetd-active
+[  133.212835] wireplumber[1435]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+SOS-MARK 134.52 hyprland-running
+[  135.217176] systemd[1405]: Started hyprpolkitagent.service - Hyprland Polkit Authentication Agent.
+[  135.836080] xdg-desktop-portal-gtk[1598]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[  136.142063] /usr/libexec/xdg-desktop-portal[1566]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[  136.142492] /usr/libexec/xdg-desktop-portal[1566]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[  136.142859] /usr/libexec/xdg-desktop-portal[1566]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[  136.163973] dbus-daemon[1425]: [session uid=1000 pid=1425 pidfd=5] Activating via systemd: service name='org.freedesktop.impl.portal.desktop.hyprland' unit='xdg-desktop-portal-hyprland.service' requested by ':1.20' (uid=1000 pid=1566 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+[  136.173217] systemd[1405]: Starting xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation)...
+[  136.201604] dbus-daemon[1425]: [session uid=1000 pid=1425 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.hyprland'
+[  136.202694] systemd[1405]: Started xdg-desktop-portal-hyprland.service - Portal service (Hyprland implementation).
+[  136.290896] hyprpolkitagent[1561]: qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for ''")
+[  136.559919] jacksond[1574]: INFO jackson.service: listening on /run/user/1000/svoya/jackson.sock
+[  136.741345] dbus-daemon[1012]: [system] Activating via systemd: service name='org.freedesktop.UPower' unit='upower.service' requested by ':1.32' (uid=1000 pid=1587 comm="quickshell -p /usr/share/svoya/shell" label="unconfined")
+SOS-MARK 140.63 desktop-ready
+SOS-DIAG begin ready
+## processes
+    PID USER     ELAPSED COMMAND
+      1 root         140 /sbin/init noprompt splash ---
+    650 root         134 /usr/lib/systemd/systemd-journald
+    703 systemd+     134 /usr/lib/systemd/systemd-resolved
+    706 root         134 /usr/lib/systemd/systemd-udevd
+    750 systemd+     133 /usr/lib/systemd/systemd-oomd
+   1009 root          43 /usr/libexec/accounts-daemon
+   1010 root          43 /bin/sh /usr/lib/systemd/scripts/chronyd-starter.sh -n -F 1
+   1012 message+      43 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1019 root          43 /usr/sbin/snapperd
+   1020 root          43 /usr/lib/systemd/systemd-logind
+   1022 root          43 /usr/libexec/udisks2/udisksd
+   1062 _chrony       43 /usr/sbin/chronyd -n -F 1
+   1063 _chrony       43 /usr/sbin/chronyd -n -F 1
+   1076 root          43 /usr/sbin/NetworkManager --no-daemon
+   1077 root          43 /usr/sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+   1079 polkitd       43 /usr/lib/polkit-1/polkitd --no-debug --log-level=notice
+   1137 root          43 /bin/bash /usr/lib/svoya/vm-test-agent
+   1170 root          43 /bin/bash /usr/lib/svoya/vm-test-agent
+   1172 root          43 journalctl -b -f -o short-monotonic --no-hostname --cursor-file=/run/sos-vm-test.journal-cursor
+   1344 root          13 /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d - linux
+   1345 root          13 /usr/libexec/power-profiles-daemon
+   1375 root           8 /usr/sbin/greetd --config /etc/svoya/greetd-live.toml
+   1379 root           8 /usr/sbin/greetd --session-worker 11
+   1405 svoya          8 /usr/lib/systemd/systemd --user
+   1407 svoya          8 (sd-pam)
+   1425 svoya          7 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1426 svoya          7 /usr/bin/pipewire
+   1428 svoya          7 /usr/bin/gnome-keyring-daemon --foreground --components=pkcs11,secrets --control-directory=/run/user/1000/keyring
+   1434 svoya          7 /usr/bin/mpris-proxy
+   1435 svoya          7 /usr/bin/wireplumber
+   1436 svoya          7 /usr/bin/pipewire -c filter-chain.conf
+   1437 svoya          7 start-hyprland -- --config /usr/share/svoya/hypr/hyprland.conf
+   1439 svoya          7 /usr/bin/pipewire-pulse
+   1492 svoya          6 /usr/libexec/dconf-service
+   1515 svoya          6 Hyprland --watchdog-fd 4 --config /usr/share/svoya/hypr/hyprland.conf
+   1553 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type text --watch cliphist store'
+   1555 svoya          5 /bin/sh -c sh -c 'command -v cliphist >/dev/null 2>&1 && exec wl-paste --type image --watch cliphist store'
+   1556 svoya          5 wl-paste --type text --watch cliphist store
+   1558 svoya          5 wl-paste --type image --watch cliphist store
+   1561 svoya          5 /usr/libexec/hyprpolkitagent
+   1566 svoya          5 /usr/libexec/xdg-desktop-portal
+   1572 svoya          5 /usr/libexec/xdg-permission-store
+   1574 svoya          5 /usr/bin/python3 /usr/lib/svoya/jacksond
+   1579 svoya          5 /usr/libexec/xdg-document-portal
+   1580 svoya          5 /bin/bash /usr/lib/svoya/shell-run /usr/share/svoya/shell
+   1583 svoya          5 sh -c  for _ in $(seq 1 30); do     busctl --user status org.freedesktop.Notifications >/dev/null 2>&1 && break     sleep 1 done a=$(notify-send -a "$1" -i sos -t 20000 -A install="$4" "$2" "$3") || exit 0 [ "$a" = install ] && exec "$5" exit 0  sh Jackson Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk. Install SOS /usr/bin/sos-install
+   1587 svoya          5 quickshell -p /usr/share/svoya/shell
+   1593 root           5 fusermount3 -o rw,nosuid,nodev,fsname=portal,auto_unmount,subtype=portal -- /run/user/1000/doc
+   1598 svoya          5 /usr/libexec/xdg-desktop-portal-gtk
+   1616 svoya          4 Xwayland :0 -rootless -core -listenfd 57 -listenfd 58 -displayfd 85 -wm 82
+   1642 svoya          4 /usr/libexec/gvfsd
+   1662 svoya          4 /usr/libexec/xdg-desktop-portal-hyprland
+   1679 root           3 /usr/libexec/upowerd
+   1688 svoya          3 /usr/bin/python3 -I /usr/bin/sos status --json --watch 2
+   1710 svoya          3 notify-send -a Jackson -i sos -t 20000 -A install=Install SOS Live session Yo, buddy! This is a live session: whatever you do is gone after a reboot. Like it? Put SOS on your disk.
+   1715 svoya          2 /usr/bin/systemd-inhibit --what=sleep --mode=delay --who=SOS Shell --why=Lock the screen before sleep sleep infinity
+   1716 svoya          2 /usr/bin/gdbus monitor --system --dest org.freedesktop.login1
+   1720 svoya          2 /usr/bin/sh -c bluetoothctl show 2>/dev/null; echo @connected; bluetoothctl devices Connected 2>/dev/null sh
+   1722 svoya          2 bluetoothctl show
+   1725 svoya          2 /usr/bin/nmcli monitor
+   1742 svoya          2 sleep infinity
+   1832 root           0 tail -n 70
+## sessions
+1 1000 svoya seat0 1379 user    tty7 no -
+2 1000 svoya -     1405 manager -    no -
+## failed system units
+plymouth-quit-wait.service  loaded failed failed Hold until boot process finish…
+plymouth-quit.service       loaded failed failed Terminate Plymouth Boot Screen
+plymouth-read-write.service loaded failed failed Tell Plymouth To Write Out Run…
+plymouth-start.service      loaded failed failed Show Plymouth Boot Screen
+## drm
+BOOT_IMAGE=/casper/vmlinuz boot=casper hostname=sos username=svoya locale=en_US.UTF-8 fsck.mode=skip noprompt plymouth.nolog console=ttyS0,115200 console=tty1 systemd.show_status=1 systemd.mask=serial-getty@ttyS0.service sos.vmtest=1 sysrq_always_enabled quiet splash ---
+total 0
+drwxr-xr-x  3 root root        100 Nov  8 10:55 .
+drwxr-xr-x 19 root root       4060 Nov  8 10:58 ..
+drwxr-xr-x  2 root root         80 Nov  8 10:55 by-path
+crw-rw----+ 1 root video  226,   1 Nov  8 10:58 card1
+crw-rw----+ 1 root render 226, 128 Nov  8 10:58 renderD128
+/sys/class/drm/card1-Virtual-1: connected
+/sys/class/drm/card1: virtio-pci
+## Hyprland rendering: 
+## network (NetworkManager devices, addresses, DNS, netplan)
+enp0s1:ethernet:connected:Wired connection 1
+lo:loopback:connected (externally):lo
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp0s1           UP             10.0.2.15/24 fec0::2d53:d2ef:5926:be9/64 fec0::97af:ee1:879d:369e/64 fe80::5bff:5293:1fb2:78c1/64 
+Global:
+Link 2 (enp0s1): 10.0.2.3
+/etc/netplan:
+total 0
+drwxr-xr-x 2 root root  50 Nov  6 13:54 .
+drwxr-xr-x 1 root root 600 Nov  8 10:57 ..
+-rw------- 1 root root 402 Nov  6 13:54 01-network-manager-all.yaml
+
+/run/NetworkManager/conf.d:
+total 0
+drwxr-xr-x 2 root root  60 Nov  8 10:57 .
+drwxr-xr-x 5 root root 140 Nov  8 10:57 ..
+-rw-r--r-- 1 root root   0 Nov  8 10:57 10-globally-managed-devices.conf
+## apparmor (user namespaces)
+apparmor.service: inactive; enabled: Y
+kernel.apparmor_restrict_unprivileged_userns = 0
+kernel.unprivileged_userns_clone = 1
+profiles loaded: 0
+/etc/apparmor.d: 153 files; bwrap-userns-restrict flatpak podman steam unprivileged_userns 
+apparmor.service - Load AppArmor profiles skipped, unmet condition check ConditionPathExists=!/rofs/etc/apparmor.d
+## identity (console welcome: /etc/update-motd.d/00-header)
+-rw-r--r-- 1 root root 123 Nov  6 13:54 /etc/lsb-release
+lrwxrwxrwx 1 root root  21 Aug 24 10:33 /etc/os-release -> ../usr/lib/os-release
+-rw-r--r-- 1 root root 751 Nov  6 13:54 /usr/lib/os-release
+/etc/lsb-release:DISTRIB_DESCRIPTION="SOS 26.10 «Первый сигнал»"
+22:[ -r /etc/lsb-release ] && . /etc/lsb-release
+24:if [ -z "$DISTRIB_DESCRIPTION" ] && [ -x /usr/bin/lsb_release ]; then
+25:	# Fall back to using the very slow lsb_release utility
+26:	DISTRIB_DESCRIPTION=$(lsb_release -s -d)
+29:printf "Welcome to %s (%s %s %s)\n" "$DISTRIB_DESCRIPTION" "$(uname -o)" "$(uname -r)" "$(uname -m)"
+Welcome to SOS 26.10 «Первый сигнал» (GNU/Linux 7.0.0-31-generic x86_64)
+## greetd
+[  127.364236] sos systemd[1]: Starting greetd.service - Greeter daemon...
+[  132.457232] sos systemd[1]: Started greetd.service - Greeter daemon.
+[  132.550680] sos greetd[1379]: pam_unix(greetd:session): session opened for user svoya(uid=1000) by svoya(uid=0)
+[  132.911565] sos greetd[1379]: gkr-pam: couldn't unlock the login keyring.
+## user svoya: warnings and errors
+[  132.903188] sos pipewire[1426]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.903209] sos pipewire[1426]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[  132.903642] sos pipewire[1426]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.903654] sos pipewire[1426]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[  132.905944] sos pipewire[1426]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.905958] sos pipewire[1426]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[  132.959690] sos wireplumber[1435]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.959750] sos wireplumber[1435]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[  132.960403] sos wireplumber[1435]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.960413] sos wireplumber[1435]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[  132.964687] sos pipewire-pulse[1439]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.964749] sos pipewire-pulse[1439]: mod.rt: RTKit does not give us MaxRealtimePriority, using 1
+[  132.965109] sos pipewire-pulse[1439]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.965119] sos pipewire-pulse[1439]: mod.rt: RTKit does not give us MinNiceLevel, using 0
+[  132.965120] sos wireplumber[1435]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.965134] sos wireplumber[1435]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[  132.965618] sos pipewire-pulse[1439]: mod.rt: RTKit error: org.freedesktop.DBus.Error.ServiceUnknown
+[  132.965627] sos pipewire-pulse[1439]: mod.rt: RTKit does not give us RTTimeUSecMax, using -1
+[  133.015558] sos wireplumber[1435]: m-snapd-permission-prompting: <WpAudioPermissionPrompting:0x57c3643899a0> Failed to connect to snapd: No such file or directory
+[  133.212835] sos wireplumber[1435]: default: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+[  133.214932] sos wireplumber[1435]: spa.bluez5: BlueZ system service is not available
+[  135.836080] sos xdg-desktop-portal-gtk[1598]: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+[  136.142063] sos /usr/libexec/xdg-desktop-portal[1566]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[  136.142492] sos /usr/libexec/xdg-desktop-portal[1566]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+[  136.142859] sos /usr/libexec/xdg-desktop-portal[1566]: Failed to load RealtimeKit property: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.RealtimeKit1 was not provided by any .service files
+## /home/svoya/.local/state/svoya/session.log (tail)
+2026-11-08T10:58:07Z theme: ok paper (sun)
+2026-11-08T10:58:07Z environment: ok WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP DISPLAY LANG
+2026-11-08T10:58:07Z jacksond: ok 
+2026-11-08T10:58:07Z shell: ok /usr/share/svoya/shell
+2026-11-08T10:58:07Z first-run: ok skipped (live session)
+2026-11-08T10:58:07Z skills: ok /home/svoya/.local/share/svoya/jackson/skills
+## /run/user/1000/sos-shell.log (tail)
+== 2026-11-08T10:58:06+00:00 quickshell -p /usr/share/svoya/shell
+  INFO: Launching config: "/usr/share/svoya/shell/shell.qml"
+  INFO: Shell ID: "8c389016dbc96c03c71f677019a4a1db" Path ID "8c389016dbc96c03c71f677019a4a1db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/381vsj6ot/log.qslog"
+libEGL warning: egl: failed to create dri2 screen
+libEGL warning: egl: failed to create dri2 screen
+  INFO: Configuration Loaded
+  WARN qt.svg.draw: The requested buffer size is too big, ignoring
+  WARN qt.svg.draw: The requested buffer size is too big, ignoring
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+  WARN qt.qpa.services: Failed to register with host portal QDBusError("org.freedesktop.portal.Error.Failed", "Could not register app ID: App info not found for 'sos.shell'")
+## /home/svoya/.local/state/svoya/hyprland.log (896 lines: renderer, errors, the end)
+== SOS session 2026-11-08T10:58:05+00:00 (config /usr/share/svoya/hypr/hyprland.conf)
+DEBUG ]: User-specified config location: '/usr/share/svoya/hypr/hyprland.conf'
+Welcome to Hyprland!
+67:DEBUG from aquamarine ]: [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+69:DEBUG from aquamarine ]: drm: Enumerated device /sys/devices/pci0000:00/0000:00:02.0/drm/card1
+71:DEBUG from aquamarine ]: drm: Found 1 GPUs
+72:DEBUG from aquamarine ]: drm: Starting backend for /dev/dri/card1, with driver virtio_gpu
+73:DEBUG from aquamarine ]: drm: Registered gpu /dev/dri/card1
+74:DEBUG from aquamarine ]: drm: Atomic supported, using atomic for modesetting
+75:DEBUG from aquamarine ]: drm: drmProps.supportsAsyncCommit: false
+76:DEBUG from aquamarine ]: drm: drmProps.supportsAddFb2Modifiers: false
+77:DEBUG from aquamarine ]: drm: drmProps.supportsTimelines: true
+78:DEBUG from aquamarine ]: drm: found 1 CRTCs
+79:DEBUG from aquamarine ]: drm: found 1 planes
+80:DEBUG from aquamarine ]: drm: Plane 34 has type 1
+81:DEBUG from aquamarine ]: drm: Plane 34 has 1 formats
+82:DEBUG from aquamarine ]: drm: Basic init pass for gpu /dev/dri/card1
+83:DEBUG from aquamarine ]: drm: Scanning connectors for /dev/dri/card1
+84:DEBUG from aquamarine ]: drm: Scanning connector id 39
+85:DEBUG from aquamarine ]: drm: Initializing connector id 39
+86:DEBUG from aquamarine ]: drm: Connector gets name Virtual-1
+87:DEBUG from aquamarine ]: drm: Connector 39 connection state: 1
+88:DEBUG from aquamarine ]: drm: Rechecking CRTCs
+89:DEBUG from aquamarine ]: drm: Skipping connector Virtual-1, has crtc 38 and is connected
+90:DEBUG from aquamarine ]: drm: slot 0 crtc 38 taken by Virtual-1, skipping
+91:DEBUG from aquamarine ]: drm: Connector Virtual-1 connected
+92:DEBUG from aquamarine ]: drm: Connecting connector Virtual-1, CRTC ID 38
+93:DEBUG from aquamarine ]: drm: Dumping detected modes:
+94:DEBUG from aquamarine ]: drm: Mode 0: 1440x900@75.00Hz  (preferred)
+95:DEBUG from aquamarine ]: drm: Mode 1: 5120x2160@50.00Hz 
+96:DEBUG from aquamarine ]: drm: Mode 2: 4096x2160@50.00Hz 
+97:DEBUG from aquamarine ]: drm: Mode 3: 3840x2160@60.00Hz 
+98:DEBUG from aquamarine ]: drm: Mode 4: 3840x2160@59.94Hz 
+99:DEBUG from aquamarine ]: drm: Mode 5: 3840x2160@50.00Hz 
+100:DEBUG from aquamarine ]: drm: Mode 6: 1920x1440@60.00Hz 
+101:DEBUG from aquamarine ]: drm: Mode 7: 2560x1080@50.00Hz 
+102:DEBUG from aquamarine ]: drm: Mode 8: 1856x1392@59.99Hz 
+103:DEBUG from aquamarine ]: drm: Mode 9: 1792x1344@60.00Hz 
+104:DEBUG from aquamarine ]: drm: Mode 10: 2048x1152@60.00Hz 
+105:DEBUG from aquamarine ]: drm: Mode 11: 1920x1200@59.88Hz 
+106:DEBUG from aquamarine ]: drm: Mode 12: 1920x1080@60.00Hz 
+107:DEBUG from aquamarine ]: drm: Mode 13: 1920x1080@50.00Hz 
+108:DEBUG from aquamarine ]: drm: Mode 14: 1600x1200@60.00Hz 
+109:DEBUG from aquamarine ]: drm: Mode 15: 1680x1050@59.95Hz 
+110:DEBUG from aquamarine ]: drm: Mode 16: 1400x1050@59.98Hz 
+111:DEBUG from aquamarine ]: drm: Mode 17: 1280x1024@60.02Hz 
+112:DEBUG from aquamarine ]: drm: Mode 18: 1440x900@59.89Hz 
+113:DEBUG from aquamarine ]: drm: Mode 19: 1280x960@60.00Hz 
+114:DEBUG from aquamarine ]: drm: Mode 20: 1360x768@60.02Hz 
+115:DEBUG from aquamarine ]: drm: Mode 21: 1280x768@59.87Hz 
+116:DEBUG from aquamarine ]: drm: Mode 22: 1024x768@60.00Hz 
+117:DEBUG from aquamarine ]: drm: Mode 23: 800x600@60.32Hz 
+118:DEBUG from aquamarine ]: drm: Mode 24: 640x480@60.00Hz 
+119:DEBUG from aquamarine ]: drm: Mode 25: 640x480@59.94Hz 
+120:DEBUG from aquamarine ]: drm: Physical size [Vector2D: x: 360, y: 220] (mm)
+121:DEBUG from aquamarine ]: drm: Description Red Hat, Inc. QEMU Monitor  (Virtual-1)
+122:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc is incapable of vrr: props.vrr_capable -> 0, crtc->props.vrr_enabled -> 25
+123:DEBUG from aquamarine ]: drm: Explicit sync supported
+124:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support CTM
+125:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support HDR (0)
+126:DEBUG from aquamarine ]: drm: connector Virtual-1 crtc doesn't support Colorspace (0)
+127:DEBUG from aquamarine ]: drm: gpu /dev/dri/card1 becomes primary drm
+131:ERR from aquamarine ]: Wayland backend cannot start: wl_display_connect failed (is a wayland compositor running?)
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: Applying monitor rule for Virtual-1
+DEBUG ]: Monitor Virtual-1: requested preferred, using preferred mode 1440x900@75.00Hz
+DEBUG ]: output Virtual-1 succeeded basic test on format DRM_FORMAT_XRGB8888
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+ERR from aquamarine ]: drm: Cannot commit when a page-flip is awaiting
+ERR ]: Couldn't commit output named Virtual-1
+DEBUG ]: Monitor Virtual-1 data dump: res 1440x900@75.00Hz, scale 1.00, transform 0, pos 0x0, 10b 0
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+WARN ]: No rule found for Virtual-1, trying to use the first.
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+DEBUG ]: arrangeMonitors: 1 to arrange
+DEBUG ]: arrangeMonitors: Virtual-1 auto [0, 0]
+DEBUG ]: arrangeMonitors: Virtual-1 xwayland [0, 0]
+DEBUG ]: [CXDGOutputProtocol] updating all xdg_output heads
+ERR ]: CConfigWatcher: got an event for wd 29 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 30 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 31 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 32 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 33 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 34 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 35 which we don't have?!
+DEBUG ]: Hyprctl: new connection from pid 1587
+DEBUG from aquamarine ]: drm: Modesetting Virtual-1 with 1440x900@75.00Hz
+DEBUG ]: Hyprctl: new connection from pid 1587
+DEBUG ]: Hyprctl: new connection from pid 1587
+DEBUG ]: Hyprctl: new connecti## /run/user/1000/hypr/dd220efe7b1e292415bd0ea7161f63df9c95bfd3_1794135485_1546062694/hyprland.log (renderer, errors, config, exec)
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 1 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 2 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 3 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 4 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 5 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 6 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 7 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 8 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 9 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 10 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 11 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 12 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 13 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 14 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 15 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 16 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 17 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 18 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 19 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 20 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 21 which we don't have?!
+DEBUG ]: CConfigManager: file /home/svoya/.config/hypr/svoya-shell.conf modified, reloading
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: CConfigWatcher: got an event for wd 22 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 23 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 25 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 26 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 27 which we don't have?!
+ERR ]: CConfigWatcher: got an event for wd 28 which we don't have?!
+DEBUG ]: Using config: /usr/share/svoya/hypr/hyprland.conf
+DEBUG ]: ApplyConfigToKeyboard for "power-button", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: ApplyConfigToKeyboard for "at-translated-set-2-keyboard", hasconfig: 0
+DEBUG ]: Not applying config to keyboard, it did not change.
+DEBUG ]: Applied config to mouse qemu-qemu-usb-tablet, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse, sens 0.00
+DEBUG ]: Applied config to mouse virtualps/2-vmware-vmmouse-1, sens 0.00
+WARN ]: No rule found for Virtual-1, trying to use the first.
+ERR ]: Couldn't commit output named Virtual-1
+WARN ]: FIXME: color management protocol is enabled and outputs changed, check preferred image description changes
+SOS-DIAG end ready
+[  169.247640] pkexec[1944]: pam_unix(polkit-1:session): session opened for user root(uid=0) by svoya(uid=1000)
+[  169.252172] pkexec[1944]: svoya: Executing command [USER=root] [TTY=/dev/pts/0] [CWD=/home/svoya] [COMMAND=/usr/bin/sos modules add llm-local --yes --root-only]
+[  205.740688] sos-vm-test[2418]: SOS-STEP model-ready
+[  251.251745] systemd[1405]: Starting svoya-llm.service - Local LLM server (llama.cpp router over /srv/ai) — SOS...
+[  252.116810] systemd[1405]: Started svoya-llm.service - Local LLM server (llama.cpp router over /srv/ai) — SOS.
+[  252.496086] llama-server[2442]: srv   load_models: Loaded 0 cached model presets
+[  252.496264] llama-server[2442]: srv   load_models: Loaded 1 local model presets from /srv/ai/views/llama.cpp
+[  252.496367] llama-server[2442]: srv   load_models: Loaded 0 custom model presets from /srv/ai/views/llama.cpp/presets.ini
+[  252.496419] llama-server[2442]: srv   load_models: Available models (1) (*: custom preset)
+[  252.496456] llama-server[2442]: srv   load_models:     Qwen3.5-4B-Q4_K_M
+[  252.663189] llama-server[2442]: srv  ensure_model: model name=Qwen3.5-4B-Q4_K_M is not loaded, loading...
+[  252.663365] llama-server[2442]: srv          load: spawning server instance with name=Qwen3.5-4B-Q4_K_M on port 45167
+[  252.663467] llama-server[2442]: srv          load: spawning server instance with args:
+[  252.663537] llama-server[2442]: srv          load:   /usr/bin/llama-server
+[  252.663606] llama-server[2442]: srv          load:   --host
+[  252.663670] llama-server[2442]: srv          load:   127.0.0.1
+[  252.663785] llama-server[2442]: srv          load:   --jinja
+[  252.663848] llama-server[2442]: srv          load:   --offline
+[  252.663922] llama-server[2442]: srv          load:   --port
+[  252.663988] llama-server[2442]: srv          load:   45167
+[  252.664129] llama-server[2442]: srv          load:   --alias
+[  252.664196] llama-server[2442]: srv          load:   Qwen3.5-4B-Q4_K_M
+[  252.664252] llama-server[2442]: srv          load:   --batch-size
+[  252.664319] llama-server[2442]: srv          load:   512
+[  252.664379] llama-server[2442]: srv          load:   --model
+[  252.664446] llama-server[2442]: srv          load:   /srv/ai/views/llama.cpp/Qwen3.5-4B-Q4_K_M/Qwen3.5-4B-Q4_K_M.gguf
+[  252.664507] llama-server[2442]: srv          load:   --mmproj
+[  252.664574] llama-server[2442]: srv          load:   /srv/ai/views/llama.cpp/Qwen3.5-4B-Q4_K_M/mmproj-F16.gguf
+[  252.667153] llama-server[2442]: srv  ensure_model: waiting until model name=Qwen3.5-4B-Q4_K_M is fully loaded...
+[  252.738435] llama-server[2442]: [45167] srv    load_model: loading model '/srv/ai/views/llama.cpp/Qwen3.5-4B-Q4_K_M/Qwen3.5-4B-Q4_K_M.gguf'
+[  257.018462] llama-server[2442]: [45167] llama_context: n_ctx         = 16384
+[  259.862726] llama-server[2442]: [45167] srv    load_model: loaded multimodal model, '/srv/ai/views/llama.cpp/Qwen3.5-4B-Q4_K_M/mmproj-F16.gguf'
+[  259.862815] llama-server[2442]: [45167] srv    load_model: initializing slots, n_slots = 4
+[  261.608138] llama-server[2442]: [45167] srv    load_model: speculative decoding not supported by this context
+[  261.608353] llama-server[2442]: [45167] slot   load_model: id  0 | task -1 | new slot, n_ctx = 16384
+[  261.608454] llama-server[2442]: [45167] slot   load_model: id  1 | task -1 | new slot, n_ctx = 16384
+[  261.608555] llama-server[2442]: [45167] slot   load_model: id  2 | task -1 | new slot, n_ctx = 16384
+[  261.608648] llama-server[2442]: [45167] slot   load_model: id  3 | task -1 | new slot, n_ctx = 16384
+[  261.608725] llama-server[2442]: [45167] srv    load_model: prompt cache is enabled, size limit: 8192 MiB
+[  261.608802] llama-server[2442]: [45167] srv    load_model: use `--cache-ram 0` to disable the prompt cache
+[  261.608889] llama-server[2442]: [45167] srv    load_model: for more info see https://github.com/ggml-org/llama.cpp/pull/16391
+[  261.608965] llama-server[2442]: [45167] srv          init: init: idle slots will be saved to prompt cache and cleared upon starting a new task
+[  261.656228] llama-server[2442]: [45167] srv          init: init: chat template, thinking = 1
+[  261.659282] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[  261.659353] llama-server[2442]: [45167] srv    operator(): child server monitoring thread started, waiting for EOF on stdin...
+[  261.660109] llama-server[2442]: srv  proxy_reques: proxying request to model Qwen3.5-4B-Q4_K_M on port 45167
+[  261.722468] llama-server[2442]: [45167] srv  params_from_: Chat format: peg-native
+[  261.728089] llama-server[2442]: [45167] slot get_availabl: id  3 | task -1 | selected slot by LRU, t_last = -1
+[  261.728234] llama-server[2442]: [45167] srv  get_availabl: updating prompt cache
+[  261.728286] llama-server[2442]: [45167] srv          load:  - looking for better prompt, base f_keep = -1.000, sim = 0.000
+[  261.728332] llama-server[2442]: [45167] srv        update:  - cache state: 0 prompts, 0.000 MiB (limits: 8192.000 MiB, 16384 tokens, 8589934592 est)
+[  261.728379] llama-server[2442]: [45167] srv  get_availabl: prompt cache update took 0.01 ms
+[  261.728423] llama-server[2442]: [45167] slot launch_slot_: id  3 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist
+[  261.728469] llama-server[2442]: [45167] slot launch_slot_: id  3 | task 0 | processing task, is_child = 0
+[  261.728513] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | new prompt, n_ctx_slot = 16384, n_keep = 0, task.n_tokens = 3219
+[  261.728557] llama-server[2442]: [45167] srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  261.728602] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 0, memory_seq_rm [0, end)
+[  261.728646] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 512, batch.n_tokens = 512, progress = 0.159056
+[  261.729282] llama-server[2442]: srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  328.881562] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 512, memory_seq_rm [512, end)
+[  328.882273] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 1024, batch.n_tokens = 512, progress = 0.318111
+[  396.405071] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 1024, memory_seq_rm [1024, end)
+[  396.405708] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 1536, batch.n_tokens = 512, progress = 0.477167
+[  468.318855] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 1536, memory_seq_rm [1536, end)
+[  468.319625] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 2048, batch.n_tokens = 512, progress = 0.636222
+[  542.963278] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 2048, memory_seq_rm [2048, end)
+[  542.963889] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 2560, batch.n_tokens = 512, progress = 0.795278
+[  621.411128] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 2560, memory_seq_rm [2560, end)
+[  621.411758] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 2707, batch.n_tokens = 147, progress = 0.840944
+[  646.684340] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 2707, memory_seq_rm [2707, end)
+[  646.684867] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing progress, n_tokens = 3215, batch.n_tokens = 508, progress = 0.998757
+[  646.717977] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | created context checkpoint 1 of 32 (pos_min = 2706, pos_max = 2706, n_tokens = 2707, size = 50.251 MiB)
+[  728.741795] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | n_tokens = 3215, memory_seq_rm [3215, end)
+[  728.743349] llama-server[2442]: [45167] slot init_sampler: id  3 | task 0 | init sampler, took 0.69 ms, tokens: text = 3219, total = 3219
+[  728.743464] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | prompt processing done, n_tokens = 3219, batch.n_tokens = 4
+[  728.787379] llama-server[2442]: [45167] slot update_slots: id  3 | task 0 | created context checkpoint 2 of 32 (pos_min = 3214, pos_max = 3214, n_tokens = 3215, size = 50.251 MiB)
+[  805.146066] llama-server[2442]: [45167] slot print_timing: id  3 | task 0 |
+[  805.153490] llama-server[2442]: [45167] slot      release: id  3 | task 0 | stop processing: n_tokens = 3280, truncated = 0
+[  805.153490] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[  812.044991] llama-server[2442]: srv  proxy_reques: proxying request to model Qwen3.5-4B-Q4_K_M on port 45167
+[  812.104112] llama-server[2442]: [45167] srv  params_from_: Chat format: peg-native
+[  812.112123] llama-server[2442]: [45167] slot get_availabl: id  3 | task -1 | selected slot by LCP similarity, sim_best = 0.715 (> 0.100 thold), f_keep = 0.980
+[  812.112239] llama-server[2442]: [45167] slot launch_slot_: id  3 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist
+[  812.112291] llama-server[2442]: [45167] slot launch_slot_: id  3 | task 70 | processing task, is_child = 0
+[  812.112352] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | new prompt, n_ctx_slot = 16384, n_keep = 0, task.n_tokens = 4495
+[  812.112406] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_past = 3215, slot.prompt.tokens.size() = 3280, seq_id = 3, pos_min = 3279, n_swa = 0
+[  812.112451] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | Checking checkpoint with [3214, 3214] against 3215...
+[  812.116175] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | restored context checkpoint (pos_min = 3214, pos_max = 3214, n_tokens = 3215, n_past = 3215, size = 50.251 MiB)
+[  812.116361] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 3215, memory_seq_rm [3215, end)
+[  812.116583] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing progress, n_tokens = 3727, batch.n_tokens = 512, progress = 0.829143
+[  812.119097] llama-server[2442]: [45167] srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  812.119157] llama-server[2442]: srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[  899.201110] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 3727, memory_seq_rm [3727, end)
+[  899.201735] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing progress, n_tokens = 3983, batch.n_tokens = 256, progress = 0.886096
+[  944.162117] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 3983, memory_seq_rm [3983, end)
+[  944.162761] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing progress, n_tokens = 4491, batch.n_tokens = 508, progress = 0.999110
+[  944.205121] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | created context checkpoint 3 of 32 (pos_min = 3982, pos_max = 3982, n_tokens = 3983, size = 50.251 MiB)
+[ 1035.602106] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | n_tokens = 4491, memory_seq_rm [4491, end)
+[ 1035.602744] llama-server[2442]: [45167] slot init_sampler: id  3 | task 70 | init sampler, took 0.94 ms, tokens: text = 4495, total = 4495
+[ 1035.602830] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | prompt processing done, n_tokens = 4495, batch.n_tokens = 4
+[ 1035.645135] llama-server[2442]: [45167] slot update_slots: id  3 | task 70 | created context checkpoint 4 of 32 (pos_min = 4490, pos_max = 4490, n_tokens = 4491, size = 50.251 MiB)
+[ 1098.701923] llama-server[2442]: [45167] slot print_timing: id  3 | task 70 |
+[ 1098.703373] llama-server[2442]: [45167] slot      release: id  3 | task 70 | stop processing: n_tokens = 4551, truncated = 0
+[ 1098.703462] llama-server[2442]: [45167] srv  update_slots: all slots are idle
+[ 1104.656483] llama-server[2442]: srv  proxy_reques: proxying request to model Qwen3.5-4B-Q4_K_M on port 45167
+[ 1104.712459] llama-server[2442]: [45167] srv  params_from_: Chat format: peg-native
+[ 1104.718145] llama-server[2442]: [45167] slot get_availabl: id  3 | task -1 | selected slot by LCP similarity, sim_best = 0.957 (> 0.100 thold), f_keep = 0.732
+[ 1104.719308] llama-server[2442]: [45167] slot launch_slot_: id  3 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist
+[ 1104.719308] llama-server[2442]: [45167] slot launch_slot_: id  3 | task 131 | processing task, is_child = 0
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | new prompt, n_ctx_slot = 16384, n_keep = 0, task.n_tokens = 3483
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | n_past = 3333, slot.prompt.tokens.size() = 4551, seq_id = 3, pos_min = 4550, n_swa = 0
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | Checking checkpoint with [4490, 4490] against 3333...
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | Checking checkpoint with [3982, 3982] against 3333...
+[ 1104.722099] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | Checking checkpoint with [3214, 3214] against 3333...
+[ 1104.725078] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | restored context checkpoint (pos_min = 3214, pos_max = 3214, n_tokens = 3215, n_past = 3215, size = 50.251 MiB)
+[ 1104.725078] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | erased invalidated context checkpoint (pos_min = 3982, pos_max = 3982, n_tokens = 3983, n_swa = 0, pos_next = 3215, size = 50.251 MiB)
+[ 1104.731098] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | erased invalidated context checkpoint (pos_min = 4490, pos_max = 4490, n_tokens = 4491, n_swa = 0, pos_next = 3215, size = 50.251 MiB)
+[ 1104.736906] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | n_tokens = 3215, memory_seq_rm [3215, end)
+[ 1104.737441] llama-server[2442]: [45167] srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[ 1104.737554] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | prompt processing progress, n_tokens = 3479, batch.n_tokens = 264, progress = 0.998852
+[ 1104.737662] llama-server[2442]: srv  log_server_r: done request: POST /v1/chat/completions 127.0.0.1 200
+[ 1150.909619] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | n_tokens = 3479, memory_seq_rm [3479, end)
+[ 1150.922075] llama-server[2442]: [45167] slot init_sampler: id  3 | task 131 | init sampler, took 0.72 ms, tokens: text = 3483, total = 3483
+[ 1150.922172] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | prompt processing done, n_tokens = 3483, batch.n_tokens = 4
+[ 1150.958120] llama-server[2442]: [45167] slot update_slots: id  3 | task 131 | created context checkpoint 3 of 32 (pos_min = 3478, pos_max = 3478, n_tokens = 3479, size = 50.251 MiB)
+[ 1166.923120] llama-server[2442]: [45167] slot print_timing: id  3 | task 131 |
+[ 1166.933766] llama-server[2442]: [45167] slot      release: id  3 | task 131 | stop processing: n_tokens = 3498, truncated = 0
+[ 1166.933968] llama-server[2442]: [45167] srv  update_slots: all slots are idle
