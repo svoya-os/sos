@@ -1,0 +1,145 @@
+{
+ "plan": "voice",
+ "firmware": "uefi",
+ "accel": "kvm",
+ "iso": "sos-26.10-amd64.iso",
+ "hostCpu": "AMD EPYC 9V74 80-Core Processor",
+ "ok": false,
+ "steps": [
+  {
+   "n": 1,
+   "id": "boot",
+   "action": "wait_serial",
+   "optional": true,
+   "detail": "matched \"before booting or `c' for a command-line.                           \\x1b[5;80H \\x1b[7m\\x1b[5;3H*SOS 26.10  ?  ???                                                          \\x1b[m\\x1b[5;78H\\x1b[m\\x1b[m\\x1b[6;3H SOS (safe graph\"",
+   "status": "ok",
+   "seconds": 3.0
+  },
+  {
+   "n": 2,
+   "id": "boot",
+   "action": "wait_screen",
+   "optional": false,
+   "detail": "screen has content (76.7% non-background)",
+   "status": "ok",
+   "seconds": 4.1
+  },
+  {
+   "n": 3,
+   "id": "boot",
+   "action": "key",
+   "optional": false,
+   "detail": "ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 4,
+   "id": "desktop",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 18.53 desktop-ready'",
+   "status": "ok",
+   "seconds": 21.0
+  },
+  {
+   "n": 5,
+   "id": "desktop",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 8s",
+   "status": "ok",
+   "seconds": 8.0
+  },
+  {
+   "n": 6,
+   "id": "desktop",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 1.1
+  },
+  {
+   "n": 7,
+   "id": "network",
+   "action": "wait_serial",
+   "optional": false,
+   "detail": "matched 'SOS-MARK 10.38 network-online'",
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "n": 8,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+ret",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 9,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 5s",
+   "status": "ok",
+   "seconds": 5.0
+  },
+  {
+   "n": 10,
+   "id": "terminal",
+   "action": "key",
+   "optional": false,
+   "detail": "meta_l+f",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 11,
+   "id": "terminal",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 2s",
+   "status": "ok",
+   "seconds": 2.0
+  },
+  {
+   "n": 12,
+   "id": "install",
+   "action": "type",
+   "optional": false,
+   "detail": "typed 117 characters",
+   "status": "ok",
+   "seconds": 7.7
+  },
+  {
+   "n": 13,
+   "id": "install",
+   "action": "sleep",
+   "optional": false,
+   "detail": "slept 45s",
+   "status": "ok",
+   "seconds": 45.0
+  },
+  {
+   "n": 14,
+   "id": "install",
+   "action": "screenshot",
+   "optional": false,
+   "detail": "1440x900 (pillow)",
+   "status": "ok",
+   "seconds": 0.1
+  },
+  {
+   "n": 15,
+   "id": "install",
+   "action": "wait_serial",
+   "optional": false,
+   "status": "failed",
+   "detail": "serial reported failure: '[  119.370365] sos-vm-test[1859]: SOS-STEP voice-failed'",
+   "seconds": 32.2
+  }
+ ]
+}
